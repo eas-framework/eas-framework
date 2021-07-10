@@ -1,0 +1,4 @@
+<@model>Website</@model>
+<@title>This is private page</@title>
+<@body/>
+<p>This is a private page</p>

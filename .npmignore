@@ -1,0 +1,8 @@
+/build
+/__test__
+/.vscode
+/examples
+tsconfig.json
+.eslintrc
+.eslintignore
+/projects

@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "outDir": "dist",
+        "target": "ESNEXT",
+        "declarationDir": "dist",
+        "module": "esnext",
+        "declaration": true,
+        "preserveSymlinks": true,
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "downlevelIteration": true,
+        "noUnusedLocals": false,
+        "noImplicitAny": false,
+        "noUnusedParameters": false,
+        "preserveConstEnums": true,
+        "skipLibCheck": true,
+        "moduleResolution": "Node",
+        "sourceMap": true,
+        "allowUnusedLabels": true,
+        "allowUmdGlobalAccess": false,
+        "forceConsistentCasingInFileNames": true,
+        "allowSyntheticDefaultImports": true,
+        "emitDeclarationOnly": false,
+    },
+    "include": [
+        "src"
+    ]
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?title/></title>
+    @style {
+        body {
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-bar {
+            margin-top: 10px;
+            border-bottom: solid 1px #777676;
+            margin-bottom: 30px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            font-size: 20px;
+        }
+
+        .nav-bar p {
+            margin: 8px;
+        }
+
+        .nav-bar a button {
+            margin: 5px;
+            color: #2a5b86;
+            border: solid 1px #1467ce;
+            background-color: aliceblue;
+            border-radius: 2px;
+            padding: 5px;
+            min-width: 80px;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .nav-bar a button:hover {
+            border: solid 1px #b65a5a;
+        }
+
+        .main {
+            margin:  10px;
+            color: #1c1e1e;
+            text-align: center;
+        }
+    }
+</head>
+<body>
+    <div class="nav-bar">
+        <p>Website</p>
+        <ButtonLink link="/">Home</ButtonLink>
+        <ButtonLink link="/About">About</ButtonLink>
+        <ButtonLink link="/PrivatePage">Private page</ButtonLink>
+        <ButtonLink link="/CannotSee.json">Private file</ButtonLink>
+    </div>
+    <div class="main">
+        <?body/>
+    </div>
+</body>
+</html>
