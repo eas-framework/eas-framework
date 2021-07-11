@@ -14,3 +14,8 @@ A lot of build-in module - make you write less.
 - Easy syntax of model - component - page (with fast ssr!)
 - Easy transform data with connectors - (Special component built in)
 - Simple and easy to use in all means!
+
+### Install
+```bash
+npm i git+ssh://git@gitlab.com/ido.very.much/beyond-easy.git
+```

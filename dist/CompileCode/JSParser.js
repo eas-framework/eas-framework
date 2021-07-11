@@ -259,7 +259,7 @@ export class PageTemplate extends JSParser {
     }
     static AddAfterBuild(text, isDebug) {
         if (isDebug) {
-            text = "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" + text;
+            text = "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install({hookRequire: true});" + text;
         }
         return text;
     }
