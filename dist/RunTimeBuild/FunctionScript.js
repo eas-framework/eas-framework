@@ -36,7 +36,7 @@ async function RequireFile(p, pathname, typeArray, LastRequire, isDebug) {
             if (p[1] == '/') {
                 p = p.substring(2);
             }
-            p = pathname + '/' + p;
+            p = pathname && (pathname + '/' + p) || p;
         }
         else if (p[0] != '/') {
             static_modules = true;
@@ -86,7 +86,7 @@ async function RequirePage(p, pathname, typeArray, LastRequire, DataObject) {
         else {
             p = p.substring(1);
         }
-        p = pathname + '/' + p;
+        p = pathname && (pathname + '/' + p) || p;
     }
     if (![BasicSettings.pageTypes.page, BasicSettings.pageTypes.component].includes(extname)) {
         const importText = await EasyFs.readFile(typeArray[0] + p);

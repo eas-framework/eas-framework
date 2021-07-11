@@ -47,7 +47,7 @@ async function RequireFile(p: string, pathname: string, typeArray: string[], Las
             if (p[1] == '/') {
                 p = p.substring(2);
             }
-            p = pathname + '/' + p;
+            p = pathname && (pathname + '/' + p) || p;
         } else if (p[0] != '/') {
             static_modules = true;
         } else {
@@ -96,7 +96,7 @@ async function RequirePage(p: string, pathname: string, typeArray: string[], Las
         } else {
             p = p.substring(1);
         }
-        p = pathname + '/' + p;
+        p = pathname && (pathname + '/' + p) || p;
     }
 
     if (![BasicSettings.pageTypes.page, BasicSettings.pageTypes.component].includes(extname)) {
