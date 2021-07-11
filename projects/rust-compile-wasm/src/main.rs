@@ -26,25 +26,25 @@ fn main() {
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarCollapse">
-                <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/">home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/login.html">login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/signup.html">signup</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/search.html">search</a>
-                    </li>
-                </ul>
-                <form class="d-flex" action="/search.html" method="GET">
-                    <input type="hidden" name="search_on" value="anime"/>
-                    <input class="form-control me-2" type="search" placeholder="search" name="query" aria-label="Search"/>
-                    <button class="btn btn-outline-success" type="submit"> search </button>
-                </form>
+                    <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/">home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login.html">login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/signup.html">signup</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/search.html">search</a>
+                        </li>
+                    </ul>
+                    <form class="d-flex" action="/search.html" method="GET">
+                        <input type="hidden" name="search_on" value="anime"/>
+                        <input class="form-control me-2" type="search" placeholder="search" name="query" aria-label="Search"/>
+                        <button class="btn btn-outline-success" type="submit"> search </button>
+                    </form>
                 </div>
             </div>
         </nav>
@@ -68,9 +68,9 @@ fn main() {
     println!("{:?}", actions::base_actions::cut_start(text, index as usize));
 
     
-//     // let text2: String = text.chars().skip(errors[0].index as usize).collect();
+    let text2: String = text.chars().skip(parser.error_vec[0].index as usize).collect();
 
-//     // println!("text {:?}", text2);
+    println!("text {:?}", text2);
 
 
 // println!("text {:?}", actions::base_reader::find_end_of_def_char("123>3", '>'));

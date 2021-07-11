@@ -14,10 +14,10 @@ pub fn find_end_of_q(text: &str, q_type: char) -> usize {
     length
 }
 
-fn is_any_def(text: &str, index: usize, end_type: &Vec<&str>) -> bool{
+fn is_any_def(text: &str, index: usize, length: usize, end_type: &Vec<&str>) -> bool{
 
     for i in end_type.iter() {
-        if &&cut(text,  i32::max(0, index as i32 - len(i) as i32) as usize, index) == i {
+        if &&cut(text, index, usize::min(length, index + len(i))) == i {
             return true;
         }
     }
@@ -34,9 +34,9 @@ pub fn find_end_of_def(text: &str, end_type: Vec<&str>) -> i32 {
 
         let char = chars[i];
         if TEXT_BLOCK.iter().any(|&x| x==&char) && get_from_vec(&chars, i,1) != '\\' {
-            i += find_end_of_q(&cut_start(text, i+1), char) + 1;
-        } else if is_any_def(text, i, &end_type) {
-            return i as i32 - 1;
+            i += find_end_of_q(&cut_start(text, i+1), char);
+        } else if is_any_def(text, i, length, &end_type) {
+            return i as i32;
         }
 
         i+=1;
@@ -54,9 +54,9 @@ pub fn find_end_of_def_char(text: &str, end_type: char) -> i32 {
 
         let char = chars[i];
         if TEXT_BLOCK.iter().any(|&x| x==&char) && get_from_vec(&chars, i,1) != '\\' {
-            i += find_end_of_q(&cut_start(text, i+1), char) + 1;
-        } else if i > 0 && chars[i-1] == end_type {
-            return i as i32 - 1;
+            i += find_end_of_q(&cut_start(text, i+1), char);
+        } else if char == end_type {
+            return i as i32;
         }
 
         i+=1;
