@@ -11,7 +11,8 @@ function ReplaceBefore(code: string, defineData?: { [key: string]: string }) {
 }
 
 function ReplaceAfter(code: string){
-    return code.replace('"use strict";Object.defineProperty(exports, "__esModule", {value: true});exports. default =', 'export default');
+    code = code.replace('"use strict";Object.defineProperty(exports, "__esModule", {value: true});', '');
+    return code.replace('exports. default =', 'export default');
 }
 /**
  * 

@@ -29,17 +29,19 @@ function ReplaceBefore(
 }
 
 function template(code: string, isDebug: boolean, dir: string, file: string) {
-  return `${isDebug ? "import * as sourceMapSupport from 'source-map-support'; sourceMapSupport.install()" : ''};var __dirname=\`${JSParser.fixText(dir)
+  return `${isDebug ? "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" : ''};var __dirname=\`${JSParser.fixText(dir)
     }\`,__filename=\`${JSParser.fixText(file)
     }\`;export default (async (require)=>{var module={exports:{}},exports=module.exports;\n${code}\nreturn module.exports;});`;
 }
 
 async function shiftLineSourceMap(map: RawSourceMap): Promise<string> {
+  map.file =  map.file.split(/\/|\\/).pop(); // only the name;
+
   const data = await SourceMapConsumer.with<string>(map, null, (consumer) => {
     const newMap = new SourceMapGenerator();
     consumer.eachMapping(function (m) {
       newMap.addMapping({
-        source: m.source,
+        source: map.file,
         original: { line: m.originalLine, column: m.originalColumn },
         generated: { line: m.generatedLine + 1, column: m.generatedColumn }
       });
@@ -68,7 +70,7 @@ async function BuildScript(
     sourceMapOptions: {
       compiledFilename: savepath ?? filepath,
     },
-    filePath: filepath,
+    filePath: filepath
   },
     define = {
       debug: "" + isDebug,

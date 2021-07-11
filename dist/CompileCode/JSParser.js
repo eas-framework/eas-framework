@@ -184,8 +184,9 @@ export default class JSParser extends BaseReader {
 export class PageTemplate extends JSParser {
     static CreateSourceMap(text, filePath) {
         const map = new SourceMapGenerator({
-            file: path.normalize(filePath)
+            file: filePath.split(/\/|\\/).pop()
         });
+        const thisDirFile = path.dirname(filePath);
         const allLines = text.split('\n');
         for (const [k, v] of Object.entries(allLines)) {
             const line = Number(k);
@@ -195,7 +196,7 @@ export class PageTemplate extends JSParser {
                         map.addMapping({
                             original: { line: b.StartInfo.line, column: 0 },
                             generated: { line: line, column: 0 },
-                            source: path.normalize(b.StartInfo.info.split('<line>').pop().trim())
+                            source: path.relative(thisDirFile, b.StartInfo.info.split('<line>').pop().trim()).replace(/\\/gi, '/')
                         });
                     }
                 }
@@ -258,7 +259,7 @@ export class PageTemplate extends JSParser {
     }
     static AddAfterBuild(text, isDebug) {
         if (isDebug) {
-            text = "import * as sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" + text;
+            text = "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" + text;
         }
         return text;
     }

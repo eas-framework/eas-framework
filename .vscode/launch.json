@@ -5,13 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "pwa-node",
+            "name": "Launch Edge",
+            "request": "launch",
+            "type": "pwa-msedge",
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}"
+        },
+
+        {
+            "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}\\tests\\core\\index.js"
-        }
+            "program": "${workspaceFolder}/tests/core/index.js",
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+          }
     ]
 }

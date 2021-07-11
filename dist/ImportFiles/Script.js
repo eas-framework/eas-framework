@@ -15,14 +15,15 @@ function ReplaceBefore(code, defineData) {
     return code;
 }
 function template(code, isDebug, dir, file) {
-    return `${isDebug ? "import * as sourceMapSupport from 'source-map-support'; sourceMapSupport.install()" : ''};var __dirname=\`${JSParser.fixText(dir)}\`,__filename=\`${JSParser.fixText(file)}\`;export default (async (require)=>{var module={exports:{}},exports=module.exports;\n${code}\nreturn module.exports;});`;
+    return `${isDebug ? "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" : ''};var __dirname=\`${JSParser.fixText(dir)}\`,__filename=\`${JSParser.fixText(file)}\`;export default (async (require)=>{var module={exports:{}},exports=module.exports;\n${code}\nreturn module.exports;});`;
 }
 async function shiftLineSourceMap(map) {
+    map.file = map.file.split(/\/|\\/).pop(); // only the name;
     const data = await SourceMapConsumer.with(map, null, (consumer) => {
         const newMap = new SourceMapGenerator();
         consumer.eachMapping(function (m) {
             newMap.addMapping({
-                source: m.source,
+                source: map.file,
                 original: { line: m.originalLine, column: m.originalColumn },
                 generated: { line: m.generatedLine + 1, column: m.generatedColumn }
             });
@@ -44,7 +45,7 @@ async function BuildScript(filepath, savepath, isTypescript, isDebug) {
         sourceMapOptions: {
             compiledFilename: savepath ?? filepath,
         },
-        filePath: filepath,
+        filePath: filepath
     }, define = {
         debug: "" + isDebug,
     };

@@ -5,6 +5,7 @@ import { SourceMapGenerator } from "source-map";
 import path from 'path';
 import {finalizeBuild} from '../BuildInComponents/index';
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
+import EasyFs from '../OutputInput/EasyFs';
 
 interface JSParserValues {
     type: 'text' | 'script' | 'none-track-script',
@@ -239,8 +240,10 @@ export class PageTemplate extends JSParser {
 
     private static CreateSourceMap(text: StringTracker, filePath: string): string {
         const map = new SourceMapGenerator({
-            file: path.normalize(filePath)
+            file: filePath.split(/\/|\\/).pop()
         });
+
+        const thisDirFile =path.dirname(filePath);
 
         const allLines = text.split('\n');
 
@@ -252,12 +255,12 @@ export class PageTemplate extends JSParser {
                         map.addMapping({
                             original: { line: b.StartInfo.line, column: 0 },
                             generated: { line: line, column: 0 },
-                            source: path.normalize(b.StartInfo.info.split('<line>').pop().trim())
+                            source: path.relative(thisDirFile, b.StartInfo.info.split('<line>').pop().trim()).replace(/\\/gi, '/')
                         });
                     }
                 }
         }
-
+        
         return "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(map.toString()).toString("base64");
     }
 
@@ -334,7 +337,7 @@ export class PageTemplate extends JSParser {
 
     static AddAfterBuild(text: string, isDebug: boolean) {
         if (isDebug) {
-            text = "import * as sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" + text;
+            text = "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" + text;
         }
         return text;
     }

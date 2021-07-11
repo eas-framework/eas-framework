@@ -1,4 +1,4 @@
-import * as sourceMapSupport from 'source-map-support'; sourceMapSupport.install();export default (__dirname, __filename, _require, _include, private_var, handelConnector) => {
+import sourceMapSupport from 'source-map-support'; sourceMapSupport.install(); function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }export default (__dirname, __filename, _require, _include, private_var, handelConnector) => {
             return (async function (page) {
                 const require = (p) => _require(page, p);
                 const include = (p, WithObject) => _include(page, p, WithObject);
@@ -105,19 +105,53 @@ out_run_script.text+=`
         
 `;
 run_script_code=`
+
+    m();
     import DateString from './DateString.serv.js';
+
+    if(Session){
+        if(!Session.count)
+            Session.count = 0;
+        Session.count++;
+    }
 ;`;
 //!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:4:3
 
-//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:5:51
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:5:1
+
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:6:9
+    m();
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:7:51
     const {default:DateString} = await require('./DateString.serv.js');
-//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:5:52
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:8:1
+
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:9:17
+    if(Session){
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:10:27
+        if(!Session.count)
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:11:31
+            Session.count = 0;
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:12:25
+        Session.count++;
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:13:6
+    }
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:13:7
 ;
 out_run_script.text+=`
 <p>Today date: `;
 run_script_code=`write((DateString()));`;
-//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:7:30
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:15:30
 write((DateString()));
+out_run_script.text+=`</p>
+<p>Debug Mode? `;
+run_script_code=`write(debug);`;
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:16:21
+write(true);
+out_run_script.text+=`</p>
+<p>Session count: `;
+run_script_code=`write((Session?.count));`;
+//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/index.page:17:35
+write((_optionalChain([Session, 'optionalAccess', _ => _.count])));
 out_run_script.text+=`</p>
 `;
 run_script_code=`run_script_name=\`Static/index.page\`;`;
@@ -142,4 +176,4 @@ out_run_script.text+=`
                     console.error("Error runing this code: '" + run_script_code + "'");
                     console.error("Error stack: " + e.stack);
                 }}});}
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkQ6XFxDb2RlXFxQcm9qZWN0c1xcYmV5b25kLWVhc3lcXHRlc3RzXFxjb3JlXFxXZWJzaXRlXFxNb2RlbHNcXFdlYnNpdGUubW9kZSIsIkQ6XFxDb2RlXFxQcm9qZWN0c1xcYmV5b25kLWVhc3lcXHRlc3RzXFxjb3JlXFxXZWJzaXRlXFxTdGF0aWNcXGluZGV4LnBhZ2UiLCJEOlxcQ29kZVxcUHJvamVjdHNcXGJleW9uZC1lYXN5XFx0ZXN0c1xcY29yZVxcV2Vic2l0ZVxcQ29tcG9uZW50c1xcQnV0dG9uTGluay5pbnRlIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQTtBQUNBLEFBREEsQUFDQTtBQUNBO0FBQ0EsQUFIQSxBQUdBLEFBQ0E7QUFDQSxBQ0pBLEFESUE7QUFDQSxBQTBDQTs7QUE5Q0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQUEsQUFLQTtBQUFBLEFBOUNBLEFBK0NBO0FBQ0E7QUFDQSxBQW5EQSxBQW1EQTtBQUNBO0FBQ0E7OztBRW5EQTtBQUNBO0FBQ0E7QUFDQTtBRmdEQTtBQUNBOzs7QUVwREE7QUFDQTtBQUNBO0FBQ0E7QUZpREE7QUFDQTs7O0FFckRBO0FBQ0E7QUFDQTtBQUNBO0FGa0RBO0FBQ0E7OztBRXREQTtBQUNBO0FBQ0E7QUFDQTtBRm1EQTtBQUNBLEFBTkEsQUFNQTtBQUNBLEFBMURBLEFBMERBO0FBQ0EsQUN6REE7QUFBQTs7Ozs7QUFDQTs7QUFDQTs7QUFBQTtBQUNBO0FBQ0E7OztBQUFBO0FBQ0EsQUFEQTtBQUFBOzs7QUNKQTtBQUNBO0FBQ0E7QUFDQTtBREVBO0FBQ0E7QURtREE7QUFDQSxBQUZBLEFBRUE7QUFBQSxBQVZBLEFBV0E7QUFBQSxBQTVEQSxBQTZEQSIsImZpbGUiOiJEOlxcQ29kZVxcUHJvamVjdHNcXGJleW9uZC1lYXN5XFxkaXN0XFxTeXN0ZW1EYXRhXFxTdGF0aWNDb21waWxlXFxpbmRleC5wYWdlLmpzIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3Rlc3RzL2NvcmUvV2Vic2l0ZS9Nb2RlbHMvV2Vic2l0ZS5tb2RlIiwiLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL1N0YXRpYy9pbmRleC5wYWdlIiwiLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL0NvbXBvbmVudHMvQnV0dG9uTGluay5pbnRlIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQTtBQUNBLEFBREEsQUFDQTtBQUNBO0FBQ0EsQUFIQSxBQUdBLEFBQ0E7QUFDQSxBQ0pBLEFESUE7QUFDQSxBQTBDQTs7QUE5Q0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQUEsQUFLQTtBQUFBLEFBOUNBLEFBK0NBO0FBQ0E7QUFDQSxBQW5EQSxBQW1EQTtBQUNBO0FBQ0E7OztBRW5EQTtBQUNBO0FBQ0E7QUFDQTtBRmdEQTtBQUNBOzs7QUVwREE7QUFDQTtBQUNBO0FBQ0E7QUZpREE7QUFDQTs7O0FFckRBO0FBQ0E7QUFDQTtBQUNBO0FGa0RBO0FBQ0E7OztBRXREQTtBQUNBO0FBQ0E7QUFDQTtBRm1EQTtBQUNBLEFBTkEsQUFNQTtBQUNBLEFBMURBLEFBMERBO0FBQ0EsQUN6REE7QUFBQTs7Ozs7Ozs7Ozs7OztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUFBO0FBQ0E7QUFDQTs7O0FBQUE7QUFDQSxBQURBO0FBQ0E7OztBQUFBO0FBQ0EsQUFEQTtBQUNBOzs7QUFBQTtBQUNBLEFBREE7QUFBQTs7O0FDZEE7QUFDQTtBQUNBO0FBQ0E7QURZQTtBQUNBO0FEeUNBO0FBQ0EsQUFGQSxBQUVBO0FBQUEsQUFWQSxBQVdBO0FBQUEsQUE1REEsQUE2REEiLCJmaWxlIjoiaW5kZXgucGFnZS5qcyJ9
