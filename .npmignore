@@ -1,4 +1,5 @@
 /build
+/src
 /__test__
 /.vscode
 /examples

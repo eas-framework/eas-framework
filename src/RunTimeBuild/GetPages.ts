@@ -8,11 +8,11 @@ import * as FuncScript from './FunctionScript';
 const { Export } = FuncScript;
 
 export interface ErrorPages {
-    NotFound? : {
+    NotFound?: {
         path: string,
         code?: number
     },
-    ServerError? : {
+    ServerError?: {
         path: string,
         code?: number
     }
@@ -46,7 +46,7 @@ async function LoadPageToRam(url) {
 
 async function LoadAllPagesToRam() {
     for (const i in PagesInfo) {
-        if (ExtensionInArray(i, <any>BasicSettings.pageTypesArray)) {
+        if (!ExtensionInArray(i, <any>BasicSettings.ReqFileTypesArray)) {
             await LoadPageToRam(i);
         }
     }
@@ -75,17 +75,17 @@ function isServerFile(filePath: string) {
     return ExtensionInArray(filePath, <any>BasicSettings.pageTypesArray, <any>BasicSettings.ReqFileTypesArray);
 }
 
-function GetErrorPage(code: number, LocSettings: 'NotFound' | 'ServerError'){
+function GetErrorPage(code: number, LocSettings: 'NotFound' | 'ServerError') {
     let arrayType: string[], url: string;
-    if(Settings.ErrorPages[LocSettings]){
+    if (Settings.ErrorPages[LocSettings]) {
         arrayType = getTypes.Static;
         url = Settings.ErrorPages[LocSettings].path;
         code = Settings.ErrorPages[LocSettings].code ?? code;
-    }else {
+    } else {
         arrayType = getTypes.Logs;
         url = 'e' + code;
     }
-    return {url, arrayType, code}
+    return { url, arrayType, code }
 }
 
 async function DynamicPage(Request: Request | any, Response: Response | any, url: string, arrayType = getTypes.Static, code = 200) {
@@ -106,7 +106,7 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
         Response.setHeader("Cache-Control", "max-age=" + (Settings.CacheDays * 24 * 60 * 60));
         await GetStaticFile(url, Settings.DevMode, Request, Response);
     } else {
-        let DynamicFunc: (...data:any[]) => any;
+        let DynamicFunc: (...data: any[]) => any;
         let smallPath = fullPageUrl + '/' + url;
 
         async function ReBuildPage() {
@@ -171,8 +171,8 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
             }
         } else {
             code = Settings.ErrorPages.NotFound?.code ?? 404;
-            const ErrorPage = Settings.ErrorPages.NotFound && Export.PageLoadRam[getTypes.Static[2] + '/' +  Settings.ErrorPages.NotFound.path] 
-                                || Export.PageLoadRam[getTypes.Logs[2] + '/e404'];
+            const ErrorPage = Settings.ErrorPages.NotFound && Export.PageLoadRam[getTypes.Static[2] + '/' + Settings.ErrorPages.NotFound.path]
+                || Export.PageLoadRam[getTypes.Logs[2] + '/e404'];
             if (ErrorPage) {
                 DynamicFunc = ErrorPage[1];
             } else {
@@ -210,7 +210,7 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
         try {
             DynamicResponse = await DynamicFunc(Response, Request, Request.body, Request.query, Request.signedCookies, Request.session, Request.files || {}, Settings.DevMode);
         } catch (e) {
-            
+
             print.error(e);
             Request.error = e;
 

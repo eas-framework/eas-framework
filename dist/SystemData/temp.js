@@ -1,6 +1,6 @@
 import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();;var __dirname=`D:\\Code\\Projects\\beyond-easy\\tests\\core/Website`,__filename=`D:\\Code\\Projects\\beyond-easy\\tests\\core/Website/Settings.ts`;export default (async (require)=>{var module={exports:{}},exports=module.exports;
 "use strict";Object.defineProperty(exports, "__esModule", {value: true});exports. default = {
-    "development": true,
+    "development": false,
     "save-page-ram": true,
     "ignore-types": ["json"],
     "ignore-start-paths": ["/Private"],

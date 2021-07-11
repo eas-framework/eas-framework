@@ -20,7 +20,7 @@ async function LoadPageToRam(url) {
 }
 async function LoadAllPagesToRam() {
     for (const i in PagesInfo) {
-        if (ExtensionInArray(i, BasicSettings.pageTypesArray)) {
+        if (!ExtensionInArray(i, BasicSettings.ReqFileTypesArray)) {
             await LoadPageToRam(i);
         }
     }

@@ -23,10 +23,13 @@ async function compileFile(path, arrayType, isDebug, debugFromPage, sessionInfo)
     return { CompiledData, dependenceObject };
 }
 function isFileType(types, name) {
-    for (const type in types) {
-        name = name.toLowerCase();
-        return name.endsWith('.' + type);
+    name = name.toLowerCase();
+    for (const type of types) {
+        if (name.endsWith('.' + type)) {
+            return true;
+        }
     }
+    return false;
 }
 async function FilesInFolder(arrayType, path = "") {
     const allInFolder = await EasyFs.readdir(arrayType[0] + path, { withFileTypes: true });

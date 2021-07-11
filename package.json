@@ -7,7 +7,7 @@
     "build": "node build",
     "build:ts": "tsc --project tsconfig.json",
     "test:dist": "node tests/core/index.js",
-    "test": "node build & npm run test:dist"
+    "test": "npm run build & npm run test:dist"
   },
   "repository": {
     "type": "git",

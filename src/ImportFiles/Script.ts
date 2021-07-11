@@ -203,7 +203,7 @@ export function ImportFile(
   isDebug = false,
 ) {
   if (!isDebug) {
-    return SavedModules[typeArray[2] + "/" + InStaticPath];
+    return SavedModules[typeArray[2] + "\\" + InStaticPath];
   }
   return LoadImport(InStaticPath, typeArray, isDebug);
 }

@@ -1,5 +1,5 @@
 export default {
-    "development": true,
+    "development": false,
     "save-page-ram": true,
     "ignore-types": ["json"],
     "ignore-start-paths": ["/Private"],

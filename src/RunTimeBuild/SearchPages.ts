@@ -32,10 +32,14 @@ async function compileFile(path: string, arrayType: string[], isDebug?: boolean,
 }
 
 function isFileType(types: string[], name: string) {
-    for (const type in types) {
-        name = name.toLowerCase();
-        return name.endsWith('.' + type);
+    name = name.toLowerCase();
+
+    for (const type of types) {
+        if(name.endsWith('.' + type)){
+            return true;
+        }
     }
+    return false;
 }
 
 async function FilesInFolder(arrayType: string[], path = "") {

@@ -3,7 +3,6 @@
 <@body/>
 @{
 
-    m();
     import DateString from './DateString.serv.js';
 
     if(Session){
