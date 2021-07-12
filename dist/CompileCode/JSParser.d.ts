@@ -36,7 +36,7 @@ export declare class EnableGlobalReplace {
     private savedBuildData;
     private buildCode;
     private path;
-    constructor(code: StringTracker, path: string);
+    load(code: StringTracker, path: string): Promise<void>;
     private ExtractAndSaveCode;
     private ParseOutsideOfComment;
     StartBuild(): string;

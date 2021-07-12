@@ -7,7 +7,8 @@ import MinCss from '../../CompileCode/CssMinimizer.js';
 import { EnableGlobalReplace } from '../../CompileCode/JSParser.js';
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent) {
     const lang = dataTag.find(x => x.n.eq == 'lang');
-    const SaveServerCode = new EnableGlobalReplace(BetweenTagData.removeEmptyStart(), pathName);
+    const SaveServerCode = new EnableGlobalReplace();
+    await SaveServerCode.load(BetweenTagData.removeEmptyStart(), pathName);
     let outStyle = SaveServerCode.StartBuild();
     if (['sass', 'scss'].includes(lang?.v?.eq)) {
         await new Promise((res) => {

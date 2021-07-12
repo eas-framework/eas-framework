@@ -20,11 +20,11 @@ import StringTracker from "../EasyDebug/StringTracker";
 import { SourceMapConsumer, SourceMapGenerator } from "source-map";
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache';
 
-function ReplaceBefore(
+async function ReplaceBefore(
   code: string,
   defineData: { [key: string]: string },
 ) {
-  code = EasySyntax.BuildAndExportImports(code, defineData);
+  code = await EasySyntax.BuildAndExportImports(code, defineData);
   return code;
 }
 
@@ -80,7 +80,7 @@ async function BuildScript(
     Options.transforms.push("typescript");
   }
 
-  let Result = ReplaceBefore(
+  let Result = await ReplaceBefore(
     await EasyFs.readFile(filepath),
     define,
   ),

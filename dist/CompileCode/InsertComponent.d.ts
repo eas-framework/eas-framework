@@ -7,8 +7,6 @@ interface DefaultValues {
     elements: string[];
 }
 export default class InsertComponent extends InsertComponentBase {
-    private SimpleSkip;
-    private SkipSpecialTag;
     dirFolder: string;
     PluginBuild: AddPlugin;
     CompileInFile: CompileInFileFunc;
@@ -16,7 +14,8 @@ export default class InsertComponent extends InsertComponentBase {
     MicroPlugins: StringArrayOrObject;
     GetPlugin: (name: string) => any;
     SomePlugins: (...names: string[]) => boolean;
-    constructor(PluginBuild: AddPlugin, SimpleSkip?: string[], SkipSpecialTag?: string[][]);
+    constructor(PluginBuild: AddPlugin);
+    FindSpecialTagByStart(string: string): string[];
     tagData(text: StringTracker, a?: tagDataObject[]): tagDataObject[];
     tagDataAsText(data: tagDataObject): tagDataObjectAsText;
     findIndexSearchTag(query: string, tag: StringTracker): number;

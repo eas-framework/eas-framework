@@ -14,7 +14,9 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
     let result = { code: '' }, ResCode = BetweenTagData;
 
-    const SaveServerCode = new EnableGlobalReplace(BetweenTagData, pathName);
+    const SaveServerCode = new EnableGlobalReplace();
+    await SaveServerCode.load(BetweenTagData, pathName);
+
     const BetweenTagDataExtracted = SaveServerCode.StartBuild();
 
     const langName = lang?.v?.eq || 'js';

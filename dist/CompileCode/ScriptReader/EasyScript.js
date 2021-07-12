@@ -1,6 +1,8 @@
-import { build_stream } from './RustBind/index.js';
-export function ParseTextStream(text) {
-    return JSON.parse(build_stream(text));
+import Multithreading from '../Multithreading.js';
+import { getDirname } from '../../RunTimeBuild/SearchFileSystem.js';
+const parse_stream = new Multithreading(10, getDirname(import.meta.url) + '/RustBind/worker.js');
+export async function ParseTextStream(text) {
+    return JSON.parse(await parse_stream.getMethod(['build_stream'], text));
 }
 class BaseEntityCode {
     ReplaceAll(text, find, replace) {

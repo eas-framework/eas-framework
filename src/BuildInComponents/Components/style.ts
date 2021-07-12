@@ -10,7 +10,9 @@ import { EnableGlobalReplace } from '../../CompileCode/JSParser';
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any): Promise<BuildInComponent> {
     const lang = dataTag.find(x => x.n.eq == 'lang');
 
-    const SaveServerCode = new EnableGlobalReplace(BetweenTagData.removeEmptyStart(), pathName);
+    const SaveServerCode = new EnableGlobalReplace();
+    await SaveServerCode.load(BetweenTagData.removeEmptyStart(), pathName);
+
     let outStyle = SaveServerCode.StartBuild();
 
 

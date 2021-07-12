@@ -1,6 +1,6 @@
 export default class EasySyntax {
     private Build;
-    constructor(code: string);
+    load(code: string): Promise<void>;
     private BuildImportType;
     private BuildInOneWord;
     private replaceWithSpace;
@@ -12,5 +12,5 @@ export default class EasySyntax {
     BuiltString(): string;
     static BuildAndExportImports(code: string, defineData?: {
         [key: string]: string;
-    }): string;
+    }): Promise<string>;
 }

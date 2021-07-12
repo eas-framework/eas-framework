@@ -4,14 +4,12 @@ export declare class BaseReader {
     findEndOfDef(text: string, EndType: string[] | string): any;
 }
 export declare class InsertComponentBase extends BaseReader {
-    private printNew;
-    private tree_map;
-    private SimpleSkip_;
-    private SkipSpecialTag_;
-    constructor(printNew?: any, SimpleSkip?: string[], SkipSpecialTag?: string[][]);
-    FindSpecialTagByStart(string: StringTracker): string[];
-    FindCloseChar2(text: StringTracker, Search: string, Open?: string, End?: string, CharBeforeEnd?: string, TypeAsEndBigTag?: boolean): number;
+    private printNew?;
+    private asyncMethod;
+    SimpleSkip: string[];
+    SkipSpecialTag: string[][];
+    constructor(printNew?: any);
     private printErrors;
-    FindCloseChar(text: StringTracker, Search: string, Open?: string, End?: string, CharBeforeEnd?: string, TypeAsEndBigTag?: boolean): number;
-    FindCloseCharHTML(text: StringTracker, Search: string): any;
+    FindCloseChar(text: StringTracker, Search: string): Promise<any>;
+    FindCloseCharHTML(text: StringTracker, Search: string): Promise<any>;
 }

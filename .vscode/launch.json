@@ -13,11 +13,15 @@
         },
 
         {
-            "type": "node",
+            "type": "pwa-node",
             "request": "launch",
             "name": "Launch Program",
             "program": "${workspaceFolder}/tests/core/index.js",
-            "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "skipFiles": [
+                "<node_internals>/**",
+                "{workspaceFolder}/**"
+            ]
           }
     ]
 }

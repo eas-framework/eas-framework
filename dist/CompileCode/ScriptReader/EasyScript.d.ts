@@ -3,7 +3,7 @@ interface SplitText {
     type_name: string;
     is_skip: boolean;
 }
-export declare function ParseTextStream(text: string): SplitText[];
+export declare function ParseTextStream(text: string): Promise<SplitText[]>;
 declare abstract class BaseEntityCode {
     ReplaceAll(text: string, find: string, replace: string): string;
 }

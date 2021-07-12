@@ -14,8 +14,6 @@ interface DefaultValues {
 }
 
 export default class InsertComponent extends InsertComponentBase {
-    private SimpleSkip: string[];
-    private SkipSpecialTag: string[][];
     public dirFolder: string;
     public PluginBuild: AddPlugin;
     public CompileInFile: CompileInFileFunc;
@@ -24,20 +22,41 @@ export default class InsertComponent extends InsertComponentBase {
     public GetPlugin: (name: string) => any;
     public SomePlugins: (...names: string[]) => boolean;
 
-    constructor(PluginBuild: AddPlugin, SimpleSkip = ['textarea','script', 'style'], SkipSpecialTag = [["%", "%"], ["#{debug}", "{debug}#"]]) {
-        super(PrintIfNew, SimpleSkip, SkipSpecialTag);
+    constructor(PluginBuild: AddPlugin) {
+        super(PrintIfNew);
         this.dirFolder = 'Components/';
-        this.SimpleSkip = SimpleSkip;
-        this.SkipSpecialTag = SkipSpecialTag;
         this.PluginBuild = PluginBuild;
     }
 
+    FindSpecialTagByStart(string: string) {
+        for (const i of this.SkipSpecialTag) {
+            if (string.substring(0, i[0].length) == i[0]) {
+                return i;
+            }
+        }
+    }
+
     tagData(text: StringTracker, a: tagDataObject[] = []): tagDataObject[] {
+        this.FindSpecialTagByStart
 
         const SkipTypes = ['"', "'", '`'];
         text = text.trim();
 
         while (text.length) {
+            const skip = this.FindSpecialTagByStart(text.eq);
+
+            if(skip){
+                const endLength = text.substring(skip[0].length).indexOf(skip[1]) + skip[0].length + skip[1].length;
+                
+                a.push({ 
+                    n: text.substring(0, endLength),
+                    v: new StringTracker(text.DefaultInfoText)
+                });
+
+                text = text.substring(endLength).trim();
+                continue;
+            }
+            
             let i = 0;
             for (; i < text.length; i++) {
                 const char = text.at(i).eq;
@@ -323,6 +342,19 @@ export default class InsertComponent extends InsertComponentBase {
         
         while((find = data.search(/<[\p{L}_\-:0-9]/u)) != -1){
 
+            //heck if there is special tag - need to skip it
+            const locSkip = data.eq;
+            const specialSkip = this.FindSpecialTagByStart(locSkip.trim());
+
+            if(specialSkip){
+                const start = locSkip.indexOf(specialSkip[0]) + specialSkip[0].length;
+                const end = locSkip.substring(start).indexOf(specialSkip[1]) + start + specialSkip[1].length;
+                promiseBuild.push(data.substring(0, end));
+                data = data.substring(end);
+                continue;
+            }
+
+            //finding the tag
             const cutStartData = data.substring(0, find); //<
 
             const startFrom = data.substring(find);
@@ -332,7 +364,7 @@ export default class InsertComponent extends InsertComponentBase {
     
             const tagType = startFrom.substring(1, tagTypeEnd);
     
-            const findEndOfSmallTag = this.findEndOfDef(startFrom.eq, '>');
+            const findEndOfSmallTag = await this.FindCloseChar(startFrom.substring(1), '>')+1;
     
             let inTag = startFrom.substring(tagTypeEnd + 1, findEndOfSmallTag);
     
@@ -358,8 +390,8 @@ export default class InsertComponent extends InsertComponentBase {
             if (this.SimpleSkip.includes(tagType.eq)) {
                 BetweenTagDataCloseIndex = NextTextTag.indexOf('</' + tagType);
             } else {
-                BetweenTagDataCloseIndex = this.FindCloseCharHTML(NextTextTag, tagType.eq);
-                if (BetweenTagDataCloseIndex == null) {
+                BetweenTagDataCloseIndex = await this.FindCloseCharHTML(NextTextTag, tagType.eq);
+                if (BetweenTagDataCloseIndex == -1) {
                     PrintIfNew({
                         text: `\nWarning, you didn't write right this tag: "${tagType}", used in: ${tagType.lineInfo}\n(the system will auto close it)\n`,
                         errorName: "close-tag"
@@ -401,17 +433,12 @@ export default class InsertComponent extends InsertComponentBase {
 
     async Insert(data: StringTracker, path: string, pathName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: StringAnyMap) {
 
-        for (let i = 0; i < data.length - 4; i++) {
-            const s = data.substring(i, i + 4);
-            if (s.eq == '<!--') {
-                const nextText = data.substring(i + 4);
-                const index = this.FindCloseChar(nextText, '-->', '<!--', '-->', '');
-                data = data.substring(0, i).Plus(nextText.substring(index + 3));
-            }
-        }
+        //removing html comment tags
+        data = data.replace(/<!--[^-->]*-->/, '');
 
         data = await this.StartReplace(data, pathName, path, smallPath, isDebug, dependenceObject, buildScript, sessionInfo);
 
+        //if there is a reader, replacing him with 'codebase'
         data = data.replace(/<\?reader+( )*\/>/gi, '<%typeof page.codebase == "function" ? page.codebase(): write(page.codebase)%>') // replace for importing pages / components
         return this.RemoveUnnecessarySpace(data);
     }

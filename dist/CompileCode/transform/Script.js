@@ -2,8 +2,8 @@ import { transform } from 'sucrase';
 import { minify } from "terser";
 import { PrintIfNew } from '../../OutputInput/PrintNew.js';
 import EasySyntax from './EasySyntax.js';
-function ReplaceBefore(code, defineData) {
-    code = EasySyntax.BuildAndExportImports(code, defineData);
+async function ReplaceBefore(code, defineData) {
+    code = await EasySyntax.BuildAndExportImports(code, defineData);
     return code;
 }
 function ReplaceAfter(code) {
@@ -28,7 +28,7 @@ export default async function BuildScript(text, pathName, isTypescript, isDebug,
     }
     let Result = { code: '' };
     try {
-        Result = transform(ReplaceBefore(text.eq, define), Options);
+        Result = transform(await ReplaceBefore(text.eq, define), Options);
         Result.code = ReplaceAfter(Result.code);
     }
     catch (err) {

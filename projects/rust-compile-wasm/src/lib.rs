@@ -15,18 +15,13 @@ lazy_static!{
 }
 
 #[wasm_bindgen]
-pub fn find_close_char(text: &str, search: &str, open: &str, close: &str, char_before_end: &str, as_big_tag: bool) -> i32{
-    component_builder.lock().unwrap().find_close_char(text, search, open, close, &char_before_end.chars().next().unwrap(), as_big_tag, 0)
-}
-
-#[wasm_bindgen]
-pub fn find_close_char_html_elem(text: &str, search: &str) -> i32{
+pub fn find_close_char_html_elem(text: &str, search: &str) -> i32 {
     component_builder.lock().unwrap().public_html_element(text, search)
 }
 
 #[wasm_bindgen]
-pub fn attribute(text: &str) -> String {
-    serde_json::to_string(&InsertComponent::get_attribute(text)).unwrap()
+pub fn find_close_char(text: &str, search: &str) -> i32 {
+    component_builder.lock().unwrap().find_close_char(text, search)
 }
 
 #[wasm_bindgen]

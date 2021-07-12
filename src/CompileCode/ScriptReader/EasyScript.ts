@@ -1,5 +1,6 @@
 
-import {build_stream} from './RustBind/index';
+import Multithreading from '../Multithreading';
+import {getDirname} from '../../RunTimeBuild/SearchFileSystem';
 
 interface SplitText {
     text: string,
@@ -7,8 +8,10 @@ interface SplitText {
     is_skip: boolean
 }
 
-export function ParseTextStream(text: string): SplitText[] {
-    return JSON.parse(build_stream(text));
+const parse_stream = new Multithreading(10, getDirname(import.meta.url) + '/RustBind/worker.js');
+
+export async function ParseTextStream(text: string): Promise<SplitText[]> {
+    return JSON.parse(await parse_stream.getMethod(['build_stream'], text));
 }
 
 abstract class BaseEntityCode {

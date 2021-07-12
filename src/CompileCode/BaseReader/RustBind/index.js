@@ -71,30 +71,6 @@ function passStringToWasm0(arg, malloc, realloc) {
 /**
 * @param {string} text
 * @param {string} search
-* @param {string} open
-* @param {string} close
-* @param {string} char_before_end
-* @param {boolean} as_big_tag
-* @returns {number}
-*/
-export function find_close_char(text, search, open, close, char_before_end, as_big_tag) {
-    var ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len0 = WASM_VECTOR_LEN;
-    var ptr1 = passStringToWasm0(search, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len1 = WASM_VECTOR_LEN;
-    var ptr2 = passStringToWasm0(open, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len2 = WASM_VECTOR_LEN;
-    var ptr3 = passStringToWasm0(close, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len3 = WASM_VECTOR_LEN;
-    var ptr4 = passStringToWasm0(char_before_end, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len4 = WASM_VECTOR_LEN;
-    var ret = wasm.find_close_char(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4, as_big_tag);
-    return ret;
-}
-
-/**
-* @param {string} text
-* @param {string} search
 * @returns {number}
 */
 export function find_close_char_html_elem(text, search) {
@@ -103,6 +79,20 @@ export function find_close_char_html_elem(text, search) {
     var ptr1 = passStringToWasm0(search, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     var len1 = WASM_VECTOR_LEN;
     var ret = wasm.find_close_char_html_elem(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+* @param {string} text
+* @param {string} search
+* @returns {number}
+*/
+export function find_close_char(text, search) {
+    var ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len0 = WASM_VECTOR_LEN;
+    var ptr1 = passStringToWasm0(search, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len1 = WASM_VECTOR_LEN;
+    var ret = wasm.find_close_char(ptr0, len0, ptr1, len1);
     return ret;
 }
 
@@ -123,25 +113,6 @@ cachedTextDecoder.decode();
 function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
-/**
-* @param {string} text
-* @returns {string}
-*/
-export function attribute(text) {
-    try {
-        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        var ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        var len0 = WASM_VECTOR_LEN;
-        wasm.attribute(retptr, ptr0, len0);
-        var r0 = getInt32Memory0()[retptr / 4 + 0];
-        var r1 = getInt32Memory0()[retptr / 4 + 1];
-        return getStringFromWasm0(r0, r1);
-    } finally {
-        wasm.__wbindgen_add_to_stack_pointer(16);
-        wasm.__wbindgen_free(r0, r1);
-    }
-}
-
 /**
 * @returns {string}
 */

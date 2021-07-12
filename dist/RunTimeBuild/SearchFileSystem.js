@@ -2,8 +2,10 @@ import fs from 'fs';
 import EasyFs from '../OutputInput/EasyFs.js';
 import { cwd } from 'process';
 import path from 'path';
-const __dirname = path.dirname(new URL(import.meta.url).pathname).substring(1);
-const SystemData = __dirname + '/../SystemData';
+function getDirname(url) {
+    return path.dirname(new URL(url).pathname).substring(1);
+}
+const SystemData = getDirname(import.meta.url) + '/../SystemData';
 const PagesInfoPath = SystemData + '/PagesInfo.json';
 let WebSiteFolder_ = "WebSite";
 const StaticName = 'Static', LogsName = 'Logs';
@@ -116,5 +118,5 @@ async function CheckDependencyChange(path) {
     }
     return !o;
 }
-export { SystemData, workingDirectory, filesInDirectory, DeleteInDirectory, getTypes, BasicSettings, PagesInfo, ClearPagesDependency, UpdatePageDependency, CheckDependencyChange };
+export { getDirname, SystemData, workingDirectory, filesInDirectory, DeleteInDirectory, getTypes, BasicSettings, PagesInfo, ClearPagesDependency, UpdatePageDependency, CheckDependencyChange };
 //# sourceMappingURL=SearchFileSystem.js.map

@@ -1,8 +1,8 @@
 import { ParseTextStream, ReBuildCodeString } from '../ScriptReader/EasyScript.js';
 export default class EasySyntax {
     Build;
-    constructor(code) {
-        const parseArray = ParseTextStream(code);
+    async load(code) {
+        const parseArray = await ParseTextStream(code);
         this.Build = new ReBuildCodeString(parseArray);
     }
     BuildImportType(type, totype = type) {
@@ -95,8 +95,9 @@ export default class EasySyntax {
     BuiltString() {
         return this.Build.BuildCode();
     }
-    static BuildAndExportImports(code, defineData = {}) {
-        const builder = new EasySyntax(code);
+    static async BuildAndExportImports(code, defineData = {}) {
+        const builder = new EasySyntax();
+        await builder.load(code);
         builder.BuildImports(defineData);
         return builder.BuiltString();
     }

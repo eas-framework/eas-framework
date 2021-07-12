@@ -5,7 +5,7 @@ import { print } from '../OutputInput/Console';
 import fetch, { RequestInfo } from 'node-fetch';
 import { workingDirectory } from '../RunTimeBuild/SearchFileSystem';
 
-function req_get(url: RequestInfo, json: boolean) {
+function req_get(url: RequestInfo, json?: boolean) {
     return new Promise(res => {
         fetch(url).then(response => {
             if (json) {

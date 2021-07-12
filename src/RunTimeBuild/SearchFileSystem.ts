@@ -3,8 +3,11 @@ import EasyFs from '../OutputInput/EasyFs';
 import {cwd} from 'process';
 import path from 'path'; 
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname).substring(1);
-const SystemData = __dirname + '/../SystemData';
+function getDirname(url: string){
+    return path.dirname(new URL(url).pathname).substring(1);
+}
+
+const SystemData = getDirname(import.meta.url) + '/../SystemData';
 
 const PagesInfoPath = SystemData + '/PagesInfo.json';
 
@@ -141,6 +144,7 @@ async function CheckDependencyChange(path:string) {
 }
 
 export {
+    getDirname,
     SystemData,
     workingDirectory,
     filesInDirectory,

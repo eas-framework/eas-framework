@@ -1,7 +1,7 @@
 import DBFastActions from './IndexActionsSQL';
 import BetterSqlite3, { Database } from 'better-sqlite3';
 import { RequestInfo } from 'node-fetch';
-declare function req_get(url: RequestInfo, json: boolean): Promise<unknown>;
+declare function req_get(url: RequestInfo, json?: boolean): Promise<unknown>;
 declare class FastSqlite extends DBFastActions {
     folder?: string;
     private logs;

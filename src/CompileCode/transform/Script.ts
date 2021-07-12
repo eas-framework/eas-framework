@@ -2,11 +2,10 @@ import { Options as TransformOptions, transform } from 'sucrase';
 import { minify } from "terser";
 import StringTracker from '../../EasyDebug/StringTracker';
 import { PrintIfNew } from '../../OutputInput/PrintNew';
-import { BasicSettings } from '../../RunTimeBuild/SearchFileSystem';
 import EasySyntax from './EasySyntax';
 
-function ReplaceBefore(code: string, defineData?: { [key: string]: string }) {
-    code = EasySyntax.BuildAndExportImports(code, defineData);
+async function ReplaceBefore(code: string, defineData?: { [key: string]: string }) {
+    code = await EasySyntax.BuildAndExportImports(code, defineData);
     return code;
 }
 
@@ -35,7 +34,7 @@ export default async function BuildScript(text: StringTracker, pathName: string,
     let Result = { code: '' };
 
     try {
-        Result = transform(ReplaceBefore(text.eq, define), Options);
+        Result = transform(await ReplaceBefore(text.eq, define), Options);
         Result.code = ReplaceAfter(Result.code);
 
     } catch (err) {

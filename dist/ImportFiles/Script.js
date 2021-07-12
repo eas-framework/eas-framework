@@ -10,8 +10,8 @@ import { isTs } from "../CompileCode/InsertModels.js";
 import StringTracker from "../EasyDebug/StringTracker.js";
 import { SourceMapConsumer, SourceMapGenerator } from "source-map";
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.js';
-function ReplaceBefore(code, defineData) {
-    code = EasySyntax.BuildAndExportImports(code, defineData);
+async function ReplaceBefore(code, defineData) {
+    code = await EasySyntax.BuildAndExportImports(code, defineData);
     return code;
 }
 function template(code, isDebug, dir, file) {
@@ -52,7 +52,7 @@ async function BuildScript(filepath, savepath, isTypescript, isDebug) {
     if (isTypescript) {
         Options.transforms.push("typescript");
     }
-    let Result = ReplaceBefore(await EasyFs.readFile(filepath), define), sourceMap;
+    let Result = await ReplaceBefore(await EasyFs.readFile(filepath), define), sourceMap;
     try {
         const { code, sourceMap: map } = transform(Result, Options);
         Result = code;

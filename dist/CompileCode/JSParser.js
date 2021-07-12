@@ -61,25 +61,27 @@ export default class JSParser extends BaseReader {
             if (EndIndex == -1) {
                 throw new Error(`JSParser, can't find close tag for ${this.type}, at: ${this.path}`);
             }
-            let script = text.substring(0, EndIndex);
+            let script = text.substring(0, EndIndex).trimEnd();
             const t = script.at(0).eq;
             if (t == '=' || t == ':') {
                 const index = this.findEndOfDefGlobal(script);
                 const stringCopy = new StringTracker(script.StartInfo);
                 script = script.substring(1, index);
+                if (script.endsWith(';')) {
+                    script = script.substring(0, script.length - 1);
+                }
                 if (t == ':') {
-                    stringCopy.Plus$ `safeWrite(${script})`;
+                    stringCopy.Plus$ `safeWrite(${script});`;
                 }
                 else {
-                    stringCopy.Plus$ `write(${script})`;
+                    stringCopy.Plus$ `write(${script});`;
                 }
                 script = new StringTracker(script.StartInfo).Plus$ `${stringCopy};${script.substring(index)}`;
             }
-            const closeIt = script.trim().endsWith(';');
-            if (!closeIt) {
-                script.Plus(';');
-            }
             if (t != '#') {
+                if (!script.endsWith(';')) {
+                    script.Plus(';');
+                }
                 if (script.startsWith('{?debug_file?}')) {
                     const info = script.substring(14);
                     this.values.push({
@@ -217,7 +219,7 @@ export class PageTemplate extends JSParser {
         
                 var module = { exports: {} },
                     exports = module.exports,
-                    { sendFile, safeWrite, write, setResponse, out_run_script, run_script_name, Response, Request, Post, Query, Session, Files, Cookies, isDebug, RequireVar, codebase} = page,
+                    { sendFile, safeWrite, write, setResponse, out_run_script, run_script_name, Response, Request, Post, Query, Session, Files, Cookies, isDebug, RequireVar} = page,
                     
                     run_script_code = run_script_name; 
 
@@ -268,8 +270,8 @@ export class EnableGlobalReplace {
     savedBuildData = [];
     buildCode;
     path;
-    constructor(code, path) {
-        this.buildCode = new ReBuildCodeString(ParseTextStream(this.ExtractAndSaveCode(code)));
+    async load(code, path) {
+        this.buildCode = new ReBuildCodeString(await ParseTextStream(this.ExtractAndSaveCode(code)));
         this.path = path;
     }
     ExtractAndSaveCode(code) {
