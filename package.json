@@ -6,6 +6,8 @@
   "scripts": {
     "build": "node build",
     "build:ts": "tsc --project tsconfig.json",
+    "push": "node build/gitPush.js",
+    "buildAndPush": "npm run build & npm run push",
     "test:dist": "node tests/core/index.js",
     "test": "npm run build & npm run test:dist"
   },

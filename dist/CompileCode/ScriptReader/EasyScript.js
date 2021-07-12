@@ -1,6 +1,6 @@
 import Multithreading from '../Multithreading.js';
 import { getDirname } from '../../RunTimeBuild/SearchFileSystem.js';
-const parse_stream = new Multithreading(10, getDirname(import.meta.url) + '/RustBind/worker.js');
+const parse_stream = new Multithreading(2, getDirname(import.meta.url) + '/RustBind/worker.js');
 export async function ParseTextStream(text) {
     return JSON.parse(await parse_stream.getMethod(['build_stream'], text));
 }

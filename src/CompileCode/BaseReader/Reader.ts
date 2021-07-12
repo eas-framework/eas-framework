@@ -29,7 +29,7 @@ export class InsertComponentBase extends BaseReader {
     constructor(private printNew?:any){
         super();
 
-        this.asyncMethod = new Multithreading(10, __dirname + '/RustBind/worker.js');
+        this.asyncMethod = new Multithreading(8, __dirname + '/RustBind/worker.js');
     }
 
     private printErrors(text: StringTracker, errors: any[]){
