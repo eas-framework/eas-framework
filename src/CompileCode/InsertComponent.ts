@@ -370,7 +370,7 @@ export default class InsertComponent extends InsertComponentBase {
     
             const NextTextTag = startFrom.substring(findEndOfSmallTag + 1);
     
-            if (['/', '>'].includes(inTag.at(inTag.length - 1).eq)) {
+            if (inTag.at(inTag.length - 1).eq == '/') {
                 inTag = inTag.substring(0, inTag.length - 1);
             }
     

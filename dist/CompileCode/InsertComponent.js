@@ -277,7 +277,7 @@ export default class InsertComponent extends InsertComponentBase {
             const findEndOfSmallTag = await this.FindCloseChar(startFrom.substring(1), '>') + 1;
             let inTag = startFrom.substring(tagTypeEnd + 1, findEndOfSmallTag);
             const NextTextTag = startFrom.substring(findEndOfSmallTag + 1);
-            if (['/', '>'].includes(inTag.at(inTag.length - 1).eq)) {
+            if (inTag.at(inTag.length - 1).eq == '/') {
                 inTag = inTag.substring(0, inTag.length - 1);
             }
             if (startFrom.at(findEndOfSmallTag - 1).eq == '/') { //small tag

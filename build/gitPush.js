@@ -18,7 +18,6 @@ function StreamCommand(command){
    return promise;
 }
 
-console.log(process.argv[2])
 await StreamCommand('git add .');
 await StreamCommand(`git commit -am "${process.argv[2] ?? "Fix bug - " + new Date().toLocaleString()}"`);
 await StreamCommand('git push');
