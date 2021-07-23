@@ -1,5 +1,5 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import {find_end_of_def, find_end_of_q} from './RustBind/index.js';
+import {find_end_of_def, find_end_of_q, find_end_block} from './RustBind/index.js';
 import * as Settings from './Settings';
 import {getDirname} from '../../RunTimeBuild/SearchFileSystem';
 import Multithreading from '../Multithreading';
@@ -7,27 +7,30 @@ import Multithreading from '../Multithreading';
 const __dirname = getDirname(import.meta.url);
 
 export class BaseReader {
-    findEntOfQ(text: string, qType: string) {
+    static findEntOfQ(text: string, qType: string) {
         return find_end_of_q(text, qType);
     }
 
-    findEndOfDef(text: string, EndType: string[] | string) {
+    static findEndOfDef(text: string, EndType: string[] | string) {
         if(!Array.isArray(EndType)){
             EndType = [EndType];
         }
 
         return find_end_of_def(text, JSON.stringify(EndType));
     }
+
+    static FindEndOfBlock(text: string, open: string, end: string){
+        return find_end_block(text, open+end);
+    }
 }
 
-export class InsertComponentBase extends BaseReader {
+export class InsertComponentBase {
     private asyncMethod: Multithreading;
 
     SimpleSkip: string[] = Settings.SimpleSkip;
     SkipSpecialTag: string[][] = Settings.SkipSpecialTag;
 
     constructor(private printNew?:any){
-        super();
 
         this.asyncMethod = new Multithreading(8, __dirname + '/RustBind/worker.js');
     }

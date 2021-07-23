@@ -1,12 +1,8 @@
 import StringTracker from '../../EasyDebug/StringTracker';
 import { tagDataObject, StringNumberMap, BuildInComponent } from '../../CompileCode/XMLHelpers/CompileTypes';
-import { Options as TransformOptions, transform, TransformResult } from 'sucrase';
+import { Options as TransformOptions, transform } from 'sucrase';
 import { minify } from "terser";
-import sass from 'sass';
 import { PrintIfNew } from '../../OutputInput/PrintNew';
-import EasyFs from '../../OutputInput/EasyFs';
-import { CreateFilePath, PathTypes } from './../../CompileCode/XMLHelpers/CodeInfoAndDebug';
-import { BasicSettings } from '../../RunTimeBuild/SearchFileSystem';
 import { EnableGlobalReplace } from '../../CompileCode/JSParser';
 
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any): Promise<BuildInComponent> {
@@ -14,7 +10,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
     let result = { code: '' }, ResCode = BetweenTagData;
 
-    const SaveServerCode = new EnableGlobalReplace();
+    const SaveServerCode = new EnableGlobalReplace("serv()");
     await SaveServerCode.load(BetweenTagData, pathName);
 
     const BetweenTagDataExtracted = SaveServerCode.StartBuild();

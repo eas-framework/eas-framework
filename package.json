@@ -44,6 +44,7 @@
     "sass": "^1.34.0",
     "selfsigned": "^1.10.11",
     "source-map": "^0.7.3",
+    "source-map-js": "^0.6.2",
     "source-map-support": "^0.5.19",
     "sucrase": "^3.18.1",
     "terser": "^5.7.0",

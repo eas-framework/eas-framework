@@ -30,9 +30,8 @@ export default class StringTracker {
         this.OnLine = Info.line;
         this.OnChar = Info.char;
     }
-    removeAllEmpty() {
-        this.setDefualt();
-        this.DataArray = this.DataArray.filter(x => x.text.length);
+    getDataArray() {
+        return this.DataArray;
     }
     /**
      * allow indexing like string does: myString[0] -> StringTracker
@@ -116,7 +115,7 @@ export default class StringTracker {
         return newData;
     }
     AddClone(data) {
-        this.DataArray.push(...data.DataArray.map(({ text, line, char, info }) => ({ text, line, char, info })));
+        this.DataArray.push(...data.DataArray);
         this.setDefualt({
             info: data.InfoText,
             line: data.OnLine,
@@ -198,14 +197,16 @@ export default class StringTracker {
     AddTextAction(text, action, info = this.DefaultInfoText.info, LineCount = 0, CharCount = 1) {
         const dataStore = [];
         for (const i of text) {
-            dataStore.push({
-                text: i,
-                info,
-                line: LineCount,
-                char: CharCount
-            });
-            CharCount++;
-            if (LineCount && i == '\n') {
+            if (i) {
+                dataStore.push({
+                    text: i,
+                    info,
+                    line: LineCount,
+                    char: CharCount
+                });
+                CharCount++;
+            }
+            if (i == '\n') {
                 LineCount++;
                 CharCount = 1;
             }
@@ -241,8 +242,7 @@ export default class StringTracker {
      */
     CutString(start = 0, end = this.length) {
         const newString = new StringTracker(this.StartInfo);
-        this.removeAllEmpty();
-        newString.DataArray.push(...this.DataArray.filter((_, index) => index >= start && index < end));
+        newString.DataArray.push(...this.DataArray.slice(start, end));
         return newString;
     }
     // private CutString(start = 0, end = this.length): StringTracker {
@@ -329,8 +329,10 @@ export default class StringTracker {
         return this.charAt(pos).OneString.codePointAt(0);
     }
     *[Symbol.iterator]() {
-        for (let i = 0; i < this.OneString.length; i++) {
-            yield this.charAt(Number(i));
+        for (const i of this.DataArray) {
+            const char = new StringTracker();
+            char.DataArray.push(i);
+            yield char;
         }
     }
     getLine(line, startFromOne = true) {

@@ -23,6 +23,7 @@ stream.on('exit', nextBuild);
 async function nextBuild() {
     await import('./copyWasm.js');
     await import('./addExt.js');
+    await import('./minifyClient.js');
 
     //coping the 'SystemData' directory
     await copy(__dirname + '/src/SystemData', dist + 'SystemData');

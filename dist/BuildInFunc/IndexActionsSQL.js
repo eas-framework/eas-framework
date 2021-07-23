@@ -472,7 +472,7 @@ class DBFastActions {
                 sqlBuild += ` CHECK(${i.check})`;
             }
             if (i.default != undefined) {
-                sqlBuild += ` DEFAULT ${i.default}`;
+                sqlBuild += ` DEFAULT (${i.default})`;
             }
             const foreignKeyActions = [];
             if (i.references) {
@@ -587,6 +587,74 @@ class DBFastActions {
      */
     ComlexSelect(UnionType = 'UNION') {
         return new ComlexSelect(this.queryDB, UnionType);
+    }
+    table(tablaName) {
+        return new TableIt(tablaName, this);
+    }
+    simpleTable(tablaName) {
+        return this.table(tablaName).simple;
+    }
+}
+class TableIt {
+    tableName;
+    connectDataBase;
+    simpleTable;
+    constructor(tableName, connectDataBase) {
+        this.tableName = tableName;
+        this.connectDataBase = connectDataBase;
+        this.simpleTable = new SimpleTable(this);
+    }
+    get simple() {
+        return this.simpleTable;
+    }
+    Insert(values) {
+        return this.connectDataBase.Insert(this.tableName, values);
+    }
+    Select(ObjectData) {
+        return this.connectDataBase.Select({ table: this.tableName, ...ObjectData });
+    }
+    SelectOne(types, ...where) {
+        return this.connectDataBase.SelectOne(this.tableName, types, ...where);
+    }
+    Delete(...where) {
+        return this.connectDataBase.Delete(this.tableName, ...where);
+    }
+    Update(set, ...where) {
+        return this.connectDataBase.Update(this.tableName, set, ...where);
+    }
+}
+class SimpleTable {
+    connectDataBase;
+    constructor(connectDataBase) {
+        this.connectDataBase = connectDataBase;
+    }
+    simpleWhere(simpleWhere) {
+        const where = [];
+        for (const [filed, value] of Object.entries(simpleWhere)) {
+            where.push({
+                filed,
+                value
+            });
+        }
+        return where;
+    }
+    Insert(values) {
+        return this.connectDataBase.Insert(values);
+    }
+    Select(ObjectData) {
+        return this.connectDataBase.Select({
+            ...ObjectData,
+            where: this.simpleWhere(ObjectData.where)
+        });
+    }
+    SelectOne(types, where) {
+        return this.connectDataBase.SelectOne(types, ...this.simpleWhere(where));
+    }
+    Delete(where) {
+        return this.connectDataBase.Delete(...this.simpleWhere(where));
+    }
+    Update(set, where) {
+        return this.connectDataBase.Update(set, ...this.simpleWhere(where));
     }
 }
 export default DBFastActions;

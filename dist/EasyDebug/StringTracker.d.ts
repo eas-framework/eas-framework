@@ -19,7 +19,7 @@ export default class StringTracker {
     constructor(Info?: string | StringTrackerDataInfo, text?: string);
     static get emptyInfo(): StringTrackerDataInfo;
     setDefualt(Info?: StringTrackerDataInfo): void;
-    private removeAllEmpty;
+    getDataArray(): StringTrackerDataInfo[];
     /**
      * allow indexing like string does: myString[0] -> StringTracker
      * @returns proxy that allow Proxy

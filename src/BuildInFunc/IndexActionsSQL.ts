@@ -257,8 +257,7 @@ interface JoinSqlInput {
     }
 }
 
-interface SelectOptions {
-    table: string,
+interface SelectOption {
     types?: string,
     limit?: number,
     OrderStart?: string,
@@ -266,9 +265,13 @@ interface SelectOptions {
     where?: (WhereDB | WhereDB[])[]
 }
 
+interface SelectOptionsTable extends SelectOption {
+    table: string
+}
+
 interface ComlexSelectAddForBuild {
     type: "join" | "select",
-    ObjectData: JoinSqlInput | SelectOptions
+    ObjectData: JoinSqlInput | SelectOptionsTable
 }
 
 class ComlexSelect extends JoinSQL {
@@ -295,7 +298,7 @@ class ComlexSelect extends JoinSQL {
         }
     }
 
-    private AddAsSQl(type: "join" | "select", ObjectData: JoinSqlInput | SelectOptions) {
+    private AddAsSQl(type: "join" | "select", ObjectData: JoinSqlInput | SelectOptionsTable) {
         switch (type) {
             case "join":
                 ObjectData = <JoinSqlInput>ObjectData;
@@ -318,7 +321,7 @@ class ComlexSelect extends JoinSQL {
                 this.WhereCounter += this.values.length;
                 break;
             case "select": {
-                ObjectData = <SelectOptions>ObjectData;
+                ObjectData = <SelectOptionsTable>ObjectData;
 
                 const sql = `SELECT ${ObjectData.types ? ObjectData.types.toString() : '*'} FROM ${ObjectData.table}`;
 
@@ -348,7 +351,7 @@ class ComlexSelect extends JoinSQL {
         }
     }
 
-    public Add(type: "join" | "select", ObjectData: JoinSqlInput | SelectOptions) {
+    public Add(type: "join" | "select", ObjectData: JoinSqlInput | SelectOptionsTable) {
         this.AddForBuild.push({
             type,
             ObjectData
@@ -375,14 +378,14 @@ class ComlexSelect extends JoinSQL {
                 }
             }
             else {
-                const e = <SelectOptions>i.ObjectData;
+                const e = <SelectOptionsTable>i.ObjectData;
                 sum += this.CheckTypes(e.types);
             }
         }
         return sum;
     }
 
-    private RunOnTypesSelect(t: SelectOptions, Settings: { lastStop: number, sum: number, ObjectInfo: any }): () => void {
+    private RunOnTypesSelect(t: SelectOptionsTable, Settings: { lastStop: number, sum: number, ObjectInfo: any }): () => void {
         const fixTypesArray = [];
         let typesSplit = [];
 
@@ -521,7 +524,7 @@ class ComlexSelect extends JoinSQL {
                 this.ReturnBasicArray.push(...this.RunOnTypesJoin(e.TablesJoin.tables, Settings));
             }
             else {
-                const e = <SelectOptions>i.ObjectData;
+                const e = <SelectOptionsTable>i.ObjectData;
                 this.ReturnBasicArray.push(this.RunOnTypesSelect(e, Settings));
             }
         }
@@ -642,7 +645,7 @@ abstract class DBFastActions {
             }
 
             if (i.default != undefined) {
-                sqlBuild += ` DEFAULT ${i.default}`;
+                sqlBuild += ` DEFAULT (${i.default})`;
             }
 
             const foreignKeyActions: referencesAction[] = [];
@@ -702,7 +705,7 @@ abstract class DBFastActions {
         return (await this.runDB(sql, ...outValues)).lastInsertRowid;
     }
 
-    async Select(ObjectData: SelectOptions) {
+    async Select(ObjectData: SelectOptionsTable) {
         const addWhere = CreateWhere.RunAndBuild(ObjectData.where);
         let sql = `SELECT ${ObjectData.types ? ObjectData.types.toString() : '*'} FROM ${ObjectData.table}` + addWhere.sql;
         if (ObjectData.OrderStart) {
@@ -717,7 +720,7 @@ abstract class DBFastActions {
         return await this.queryDB(sql, ...addWhere.values);
     }
 
-    async SelectOne(table, types, ...where: (WhereDB | WhereDB[])[]) {
+    async SelectOne(table: string, types: string, ...where: (WhereDB | WhereDB[])[]) {
         return (await this.Select({ table, types, where, limit: 1 }))[0];
     }
 
@@ -737,7 +740,7 @@ abstract class DBFastActions {
         return [c1, c2];
     }
 
-    public async Update(table: string, set: { [key: string]: any }, ...where: (WhereDB | WhereDB[])[]) {
+    async Update(table: string, set: { [key: string]: any }, ...where: (WhereDB | WhereDB[])[]) {
         let sql = `UPDATE ${table} SET `;
         const values = [];
         let count = 1;
@@ -764,15 +767,108 @@ abstract class DBFastActions {
     /**
      * JoinSelect
      */
-    public JoinSelect(TablesJoin: JoinConnect, ...WhereArray: (WhereDB | WhereDB[])[]) {
+    JoinSelect(TablesJoin: JoinConnect, ...WhereArray: (WhereDB | WhereDB[])[]) {
         return JoinSQL.RunAndBuild(this.queryDB, TablesJoin, ...WhereArray);
     }
     /**
      * ComlexSelect - select with join and union
      */
-    public ComlexSelect(UnionType = 'UNION') {
+    ComlexSelect(UnionType = 'UNION') {
         return new ComlexSelect(this.queryDB, UnionType);
     }
+
+    table(tablaName: string){
+        return new TableIt(tablaName, this);
+    }
+
+    simpleTable(tablaName: string){
+        return this.table(tablaName).simple;
+    }
+}
+
+class TableIt {
+    private simpleTable: SimpleTable;
+
+    constructor(private tableName: string, private connectDataBase: DBFastActions){
+        this.simpleTable = new SimpleTable(this);
+    }
+
+    get simple(){
+        return this.simpleTable;
+    }
+
+    Insert(values: { [key: string]: any }){
+        return this.connectDataBase.Insert(this.tableName, values);
+    }
+
+    Select(ObjectData: SelectOption){
+        return this.connectDataBase.Select({ table: this.tableName, ...ObjectData});
+    }
+
+    SelectOne(types: string, ...where: (WhereDB | WhereDB[])[]){
+        return this.connectDataBase.SelectOne(this.tableName, types, ...where);
+    }
+
+    Delete(...where: (WhereDB | WhereDB[])[]){
+        return this.connectDataBase.Delete(this.tableName, ...where);
+    }
+
+    Update(set: { [key: string]: any }, ...where: (WhereDB | WhereDB[])[]){
+        return this.connectDataBase.Update(this.tableName, set, ...where);
+    }
+}
+
+interface SimpleSelectOption {
+    types?: string,
+    limit?: number,
+    OrderStart?: string,
+    OrderEnd?: string
+    where?: { [key: string]: any }
+}
+
+class SimpleTable {
+
+    constructor(private connectDataBase: TableIt){
+
+    }
+
+    private simpleWhere(simpleWhere: { [key: string]: any }){
+        const where: WhereDB[] = [];
+
+        for(const [filed, value] of Object.entries(simpleWhere)){
+            where.push({
+                filed,
+                value
+            });
+        }
+
+        return where;
+    }
+
+    Insert(values: { [key: string]: any }){
+        return this.connectDataBase.Insert(values);
+    }
+
+    Select(ObjectData: SimpleSelectOption){
+        
+        return this.connectDataBase.Select({
+            ...ObjectData,
+            where: this.simpleWhere(ObjectData.where)
+        });
+    }
+
+    SelectOne(types: string, where: { [key: string]: any }){
+        return this.connectDataBase.SelectOne(types, ...this.simpleWhere(where));
+    }
+
+    Delete(where: { [key: string]: any }){
+        return this.connectDataBase.Delete(...this.simpleWhere(where));
+    }
+
+    Update(set: { [key: string]: any }, where: { [key: string]: any }){
+        return this.connectDataBase.Update(set, ...this.simpleWhere(where));
+    }
+
 }
 
 export default DBFastActions;

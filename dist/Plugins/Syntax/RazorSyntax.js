@@ -1,50 +1,51 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
+import { BaseReader } from '../../CompileCode/BaseReader/Reader.js';
 class Razor {
     typeLoad;
     comment;
     skipWords;
     CharNotSkip;
+    StringNotSkip;
     checkEnd;
     notPrint;
     values;
-    constructor(typeLoad = '@', comment = '*', skipWords = ["basic"], CharNotSkip = [".", " ", "\n"], checkEnd = [" ", "\n", ";"], notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }) {
+    constructor(typeLoad = '@', comment = '*', skipWords = ["basic"], CharNotSkip = [".", " ", "\n"], StringNotSkip = ["?."], checkEnd = [" ", "\n", ";"], notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }) {
         this.typeLoad = typeLoad;
         this.comment = comment;
         this.skipWords = skipWords;
         this.CharNotSkip = CharNotSkip;
+        this.StringNotSkip = StringNotSkip;
         this.checkEnd = checkEnd;
         this.notPrint = notPrint;
     }
-    findEntOfQ(text, qType) {
-        let i = 0;
-        for (; i < text.length; i++) {
-            if (text.at(i).eq == qType && text.at(i - 1).eq != '\\') {
-                return i + 1;
-            }
-        }
-        return i;
-    }
-    FindEndOfBlock(text, open = '(', close = ')') {
-        const SkipTypes = ['"', "'", '`'];
-        let counter = 1;
-        let i = 0;
-        for (; i < text.length; i++) {
-            const char = text.at(i);
-            if (SkipTypes.includes(char.eq) && text.at(i - 1).eq != '\\') {
-                i += this.findEntOfQ(text.substring(i + 1), char.eq); // no +1 becuse i is doing ++ in the loop
-            }
-            else if (text.substring(i, i + close.length).eq == open) {
-                counter++;
-            }
-            else if (text.substring(i, i + close.length).eq == close) {
-                counter--;
-                if (counter == 0) {
-                    return i;
-                }
-            }
-        }
-        return i;
-    }
+    // findEntOfQ(text:StringTracker, qType:string) {
+    //     let i = 0;
+    //     for (; i < text.length; i++) {
+    //         if (text.at(i).eq == qType && text.at(i - 1).eq != '\\') {
+    //             return i + 1;
+    //         }
+    //     }
+    //     return i;
+    // }
+    // BaseReader.FindEndOfBlock(text:StringTracker, open = '(', close = ')') {
+    //     const SkipTypes = ['"', "'", '`'];
+    //     let counter = 1;
+    //     let i = 0;
+    //     for (; i < text.length; i++) {
+    //         const char = text.at(i);
+    //         if (SkipTypes.includes(char.eq) && text.at(i - 1).eq != '\\') {
+    //             i += this.findEntOfQ(text.substring(i + 1), char.eq); // no +1 becuse i is doing ++ in the loop
+    //         } else if (text.substring(i, i + close.length).eq == open) {
+    //             counter++;
+    //         } else if (text.substring(i, i + close.length).eq == close) {
+    //             counter--;
+    //             if (counter == 0) {
+    //                 return i;
+    //             }
+    //         }
+    //     }
+    //     return i;
+    // }
     CheckWithoutSpace(text, ArrayCheck) {
         for (const i of ArrayCheck) {
             const index = text.indexOf(i);
@@ -63,17 +64,25 @@ class Razor {
         }
         return counter;
     }
+    AnyStringNotSkip(text, index) {
+        for (const i of this.StringNotSkip) {
+            if (text.substring(index, index + i.length).eq == i) {
+                return true;
+            }
+        }
+        return false;
+    }
     ParseScript(text, SmallScript = false, i = 0, ArrayNext = [], ReFirst) {
         const typeQ = [
             ["(", "[", "{"],
             [")", "]", "}"]
         ];
-        let nextBrack, addToBreak = 0;
+        let nextBreak = 0;
         for (; i < text.length; i++) {
             const char = text.at(i);
             const indexQ = typeQ[0].indexOf(char.eq);
             if (indexQ != -1) {
-                const EndBlock = this.FindEndOfBlock(text.substring(i + 1), char.eq, typeQ[1][indexQ]); // no +1 becuse i is doing ++ in the loop;
+                const EndBlock = BaseReader.FindEndOfBlock(text.eq.substring(i + 1), char.eq, typeQ[1][indexQ]); // no +1 because i is doing ++ in the loop;
                 if (!SmallScript && char.eq == typeQ[0][2]) {
                     if (ReFirst) {
                         ReFirst(text.substring(0, i + 1));
@@ -107,22 +116,19 @@ class Razor {
                     return;
                 }
                 else {
-                    if (SmallScript) {
-                        nextBrack = true;
-                        if (text.at(0).eq == "(" && i) {
-                            addToBreak++;
-                        }
+                    if (SmallScript && text.at(0).eq == "(") {
+                        nextBreak = 1;
                     }
                     i += 1 + EndBlock;
                 }
             }
-            else if (nextBrack && this.checkEnd.includes(char.eq) || !this.CharNotSkip.includes(char.eq) && this.findFirstWordIndex(char) != -1) {
+            else if (nextBreak || this.checkEnd.includes(char.eq) || !this.CharNotSkip.includes(char.eq) && !this.AnyStringNotSkip(text, i) && this.findFirstWordIndex(char) != -1) {
                 if (char.eq == ';') {
                     i++;
                 }
                 this.values.push({
                     type: 'script' + (SmallScript ? '-print' : ''),
-                    data: text.substring(addToBreak, i - addToBreak)
+                    data: text.substring(nextBreak, i - nextBreak)
                 });
                 this.Builder(text.substring(i));
                 return;
@@ -130,7 +136,7 @@ class Razor {
         }
         this.values.push({
             type: 'script' + (SmallScript ? '-print' : ''),
-            data: text.substring(addToBreak, text.length - addToBreak).Plus(';')
+            data: text.substring(nextBreak, text.length - nextBreak).Plus(';')
         });
     }
     findFirstWordIndex(text) {
@@ -138,24 +144,24 @@ class Razor {
     }
     SwitchParser(text) {
         let start = text.indexOf('(') + 1;
-        start += this.FindEndOfBlock(text.substring(start), '(', ')');
+        start += BaseReader.FindEndOfBlock(text.eq.substring(start), '(', ')');
         start += text.substring(start).indexOf('{') + 1;
         this.values.push({
             type: 'script',
             data: text.substring(0, start)
         });
         text = text.substring(start);
-        const endMain = this.FindEndOfBlock(text, '{', '}');
+        const endMain = BaseReader.FindEndOfBlock(text.eq, '{', '}');
         const maindata = text.substring(0, endMain).split('case');
         maindata.shift();
         for (let i of maindata) {
-            const startIndex = this.FindEndOfBlock(i, null, ':') + 1;
+            const startIndex = BaseReader.findEndOfDef(i.eq, ':') + 1;
             this.values.push({
                 type: 'script',
                 data: new StringTracker(i.DefaultInfoText, 'case ').Plus(i.substring(0, startIndex))
             });
             i = i.substring(startIndex);
-            const endIndex = this.FindEndOfBlock(i, null, 'break');
+            const endIndex = BaseReader.findEndOfDef(i.eq, 'break');
             this.Builder(i.substring(0, endIndex));
             i = i.substring(endIndex);
             this.values.push({
@@ -171,14 +177,14 @@ class Razor {
     }
     FunctionParser(text) {
         let start = text.indexOf('(') + 1;
-        start += this.FindEndOfBlock(text.substring(start), '(', ')');
+        start += BaseReader.FindEndOfBlock(text.eq.substring(start), '(', ')');
         start += text.substring(start).indexOf('{') + 1;
         this.values.push({
             type: 'script',
             data: text.substring(0, start)
         });
         text = text.substring(start);
-        const endMain = this.FindEndOfBlock(text, '{', '}');
+        const endMain = BaseReader.FindEndOfBlock(text.eq, '{', '}');
         const maindata = text.substring(0, endMain);
         this.Builder(maindata);
         this.values.push({
@@ -240,7 +246,7 @@ class Razor {
         }
         else if (text.at(0).eq == '{') {
             text = text.substring(1);
-            const blockEnd = this.FindEndOfBlock(text, '{', '}');
+            const blockEnd = BaseReader.FindEndOfBlock(text.eq, '{', '}');
             this.values.push({
                 type: 'script',
                 data: text.substring(0, blockEnd).Plus(';')

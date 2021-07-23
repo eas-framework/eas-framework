@@ -1,7 +1,7 @@
 import path from 'path';
 import { BuildJS, BuildJSX, BuildTS, BuildTSX } from './ForStatic/Script.js';
 import { BuildStyleSass } from './ForStatic/Style.js';
-import { getTypes, SystemData, BasicSettings } from '../RunTimeBuild/SearchFileSystem.js';
+import { getTypes, SystemData, BasicSettings, getDirname } from '../RunTimeBuild/SearchFileSystem.js';
 import EasyFs from '../OutputInput/EasyFs.js';
 import fs from 'fs';
 const SupportedTypes = ['js', 'ts', 'jsx', 'tsx', 'css', 'sass', 'scss'];
@@ -67,6 +67,7 @@ const getStatic = [{
 export function serverBuild(path) {
     return getStatic.find(x => x.path == path);
 }
+const __dirname = getDirname(import.meta.url);
 export async function GetFile(SmallPath, isDebug, Request, Response) {
     //file built in
     const isBuildIn = serverBuild(SmallPath);

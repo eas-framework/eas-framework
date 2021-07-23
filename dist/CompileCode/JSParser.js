@@ -1,10 +1,10 @@
 import StringTracker from '../EasyDebug/StringTracker.js';
 import { BaseReader } from './BaseReader/Reader.js';
 import { ParseTextStream, ReBuildCodeString } from './ScriptReader/EasyScript.js';
-import { SourceMapGenerator } from "source-map";
+import { SourceMapGenerator } from "source-map-js";
 import path from 'path';
 import { finalizeBuild } from '../BuildInComponents/index.js';
-export default class JSParser extends BaseReader {
+export default class JSParser {
     start;
     text;
     end;
@@ -12,7 +12,6 @@ export default class JSParser extends BaseReader {
     path;
     values;
     constructor(text, path, start = "<%", end = "%>", type = 'script') {
-        super();
         this.start = start;
         this.text = text;
         this.end = end;
@@ -24,7 +23,7 @@ export default class JSParser extends BaseReader {
     }
     findEndOfDefGlobal(text) {
         const eq = text.eq;
-        const find = super.findEndOfDef(eq, [';', '\n', this.end]);
+        const find = BaseReader.findEndOfDef(eq, [';', '\n', this.end]);
         return find != -1 ? find + 1 : eq.length;
     }
     ScriptWithInfo(text) {
@@ -189,24 +188,64 @@ export class PageTemplate extends JSParser {
             file: filePath.split(/\/|\\/).pop()
         });
         const thisDirFile = path.dirname(filePath);
-        const allLines = text.split('\n');
-        for (const [k, v] of Object.entries(allLines)) {
-            const line = Number(k);
-            if (line)
-                for (const b of [...v]) {
-                    if (b.StartInfo.line && b.StartInfo.info) {
-                        map.addMapping({
-                            original: { line: b.StartInfo.line, column: 0 },
-                            generated: { line: line, column: 0 },
-                            source: path.relative(thisDirFile, b.StartInfo.info.split('<line>').pop().trim()).replace(/\\/gi, '/')
-                        });
-                    }
-                }
+        const DataArray = text.getDataArray(), length = DataArray.length;
+        let lineCount = 0;
+        for (let index = 1, element = DataArray[index]; index < length; index++) {
+            if (element.text == '\n') {
+                lineCount++;
+                continue;
+            }
+            if (!lineCount) {
+                continue;
+            }
+            const { line, info } = element;
+            if (line && info) {
+                map.addMapping({
+                    original: { line, column: 0 },
+                    generated: { line: lineCount, column: 0 },
+                    source: path.relative(thisDirFile, info.split('<line>').pop().trim()).replace(/\\/gi, '/')
+                });
+            }
         }
+        // const allLines = text.split('\n');
+        // for (let index = 1; index < length; index++) {
+        //     for (const { StartInfo } of [...allLines[index]]) {
+        //         if (StartInfo.line && StartInfo.info) {
+        //             map.addMapping({
+        //                 original: { line: StartInfo.line, column: 0 },
+        //                 generated: { line: index, column: 0 },
+        //                 source: path.relative(thisDirFile, StartInfo.info.split('<line>').pop().trim()).replace(/\\/gi, '/')
+        //             });
+        //         }
+        //     }
+        // }
+        // allLines[index].forEachInfo((text, info, line) => {
+        //     if (line && info) {
+        //         map.addMapping({
+        //             original: { line, column: 0 },
+        //             generated: { line: line, column: 0 },
+        //             source: path.relative(thisDirFile, info.split('<line>').pop().trim()).replace(/\\/gi, '/')
+        //         });
+        //     }
+        // });
+        // }
+        // for(const [k, v] of Object.entries(allLines)) {
+        //     const line = Number(k);
+        //     if (line)
+        //         for (const b of [...v]) {
+        //         if (b.StartInfo.line && b.StartInfo.info) {
+        //                 map.addMapping({
+        //                     original: { line: b.StartInfo.line, column: 0 },
+        //                     generated: { line: line, column: 0 },
+        //                     source: path.relative(thisDirFile, b.StartInfo.info.split('<line>').pop().trim()).replace(/\\/gi, '/')
+        //                 });
+        //             }
+        //         }
+        // }
         return "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(map.toString()).toString("base64");
     }
     static AddPageTemplate(text, isDebug, fullPathCompile, sessionInfo) {
-        text = PageTemplate.AddLineNumbers(text);
+        // text = PageTemplate.AddLineNumbers(text);
         text = finalizeBuild(text, sessionInfo);
         if (isDebug) {
             text.AddTextBefore(`try {\n`);
@@ -242,19 +281,19 @@ export class PageTemplate extends JSParser {
         }
         return text;
     }
-    static AddLineNumbers(code) {
-        const splitAll = code.split('\n'), length = splitAll.length;
-        let count = 1;
-        const newCode = new StringTracker(code.StartInfo);
-        for (const i of splitAll) {
-            newCode.Plus(i.replace(/__line_number/gi, '' + count));
-            if (count != length) {
-                newCode.Plus('\n');
-                count++;
-            }
-        }
-        return newCode;
-    }
+    // static AddLineNumbers(code: StringTracker) {
+    //     const splitAll = code.split('\n'), length = splitAll.length;
+    //     let count = 1;
+    //     const newCode = new StringTracker(code.StartInfo);
+    //     for (const i of splitAll) {
+    //         newCode.Plus(i.replace(/__line_number/gi, '' + count));
+    //         if (count != length) {
+    //             newCode.Plus('\n');
+    //             count++;
+    //         }
+    //     }
+    //     return newCode;
+    // }
     static BuildPage(text, path, isDebug, fullPathCompile, sessionInfo) {
         const builtCode = PageTemplate.RunAndExport(text, path, isDebug);
         return PageTemplate.AddPageTemplate(builtCode, isDebug, fullPathCompile, sessionInfo);
@@ -267,9 +306,15 @@ export class PageTemplate extends JSParser {
     }
 }
 export class EnableGlobalReplace {
+    addText;
     savedBuildData = [];
     buildCode;
     path;
+    replacer;
+    constructor(addText = "") {
+        this.addText = addText;
+        this.replacer = new RegExp(`system--<\\|ejs\\|([0-9])\\|>|\\/${addText}\\*!system--<\\|ejs\\|([0-9])\\|>\\*\\/`);
+    }
     async load(code, path) {
         this.buildCode = new ReBuildCodeString(await ParseTextStream(this.ExtractAndSaveCode(code)));
         this.path = path;
@@ -296,7 +341,7 @@ export class EnableGlobalReplace {
     ParseOutsideOfComment(text) {
         return text.replacer(/system--<\|ejs\|([0-9])\|>/, (SplitToReplace) => {
             const index = SplitToReplace[1];
-            return new StringTracker(index.StartInfo).Plus$ `/*!system--<|ejs|${index}|>*/`;
+            return new StringTracker(index.StartInfo).Plus$ `${this.addText}/*!system--<|ejs|${index}|>*/`;
         });
     }
     StartBuild() {
@@ -314,7 +359,7 @@ export class EnableGlobalReplace {
         return new StringTracker(Data.text.StartInfo).Plus$ `<%${Data.type == 'none-track-script' ? '!' : ''}${Data.text}%>`;
     }
     RestoreCode(code) {
-        return code.replacer(/system--<\|ejs\|([0-9])\|>|\/\*!system--<\|ejs\|([0-9])\|>\*\//, (SplitToReplace) => {
+        return code.replacer(this.replacer, (SplitToReplace) => {
             const index = Number(SplitToReplace[1] ?? SplitToReplace[2]);
             return this.RestoreAsCode(this.savedBuildData[index]);
         });

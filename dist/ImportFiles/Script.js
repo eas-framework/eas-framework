@@ -8,30 +8,13 @@ import JSParser from "../CompileCode/JSParser.js";
 import path from "path";
 import { isTs } from "../CompileCode/InsertModels.js";
 import StringTracker from "../EasyDebug/StringTracker.js";
-import { SourceMapConsumer, SourceMapGenerator } from "source-map";
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.js';
 async function ReplaceBefore(code, defineData) {
     code = await EasySyntax.BuildAndExportImports(code, defineData);
     return code;
 }
 function template(code, isDebug, dir, file) {
-    return `${isDebug ? "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" : ''};var __dirname=\`${JSParser.fixText(dir)}\`,__filename=\`${JSParser.fixText(file)}\`;export default (async (require)=>{var module={exports:{}},exports=module.exports;\n${code}\nreturn module.exports;});`;
-}
-async function shiftLineSourceMap(map) {
-    map.file = map.file.split(/\/|\\/).pop(); // only the name;
-    const data = await SourceMapConsumer.with(map, null, (consumer) => {
-        const newMap = new SourceMapGenerator();
-        consumer.eachMapping(function (m) {
-            newMap.addMapping({
-                source: map.file,
-                original: { line: m.originalLine, column: m.originalColumn },
-                generated: { line: m.generatedLine + 1, column: m.generatedColumn }
-            });
-        });
-        return newMap.toJSON().mappings;
-    });
-    map.mappings = data;
-    return JSON.stringify(map);
+    return `${isDebug ? "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" : ''};var __dirname=\`${JSParser.fixText(dir)}\`,__filename=\`${JSParser.fixText(file)}\`;export default (async (require)=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
 }
 /**
  *
@@ -39,32 +22,33 @@ async function shiftLineSourceMap(map) {
  * @param type
  * @returns
  */
-async function BuildScript(filepath, savepath, isTypescript, isDebug) {
+async function BuildScript(filePath, savePath, isTypescript, isDebug) {
+    const sourceMapFile = filePath.split(/\/|\\/).pop();
     const Options = {
         transforms: ["imports"],
         sourceMapOptions: {
-            compiledFilename: savepath ?? filepath,
+            compiledFilename: sourceMapFile,
         },
-        filePath: filepath
+        filePath: path.relative(path.dirname(savePath), filePath)
     }, define = {
         debug: "" + isDebug,
     };
     if (isTypescript) {
         Options.transforms.push("typescript");
     }
-    let Result = await ReplaceBefore(await EasyFs.readFile(filepath), define), sourceMap;
+    let Result = await ReplaceBefore(await EasyFs.readFile(filePath), define), sourceMap;
     try {
         const { code, sourceMap: map } = transform(Result, Options);
         Result = code;
-        sourceMap = await shiftLineSourceMap(map);
+        sourceMap = JSON.stringify(map);
     }
     catch (err) {
         PrintIfNew({
             errorName: "compilation-error",
-            text: `${err.message}, on file -> ${filepath}`,
+            text: `${err.message}, on file -> ${filePath}`,
         });
     }
-    Result = template(new StringTracker(filepath, Result).eq, isDebug, path.dirname(filepath), filepath);
+    Result = template(new StringTracker(filePath, Result).eq, isDebug, path.dirname(filePath), filePath);
     if (isDebug) {
         Result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," +
             Buffer.from(sourceMap).toString("base64");
@@ -72,9 +56,9 @@ async function BuildScript(filepath, savepath, isTypescript, isDebug) {
     else {
         Result = (await minify(Result, { module: false })).code;
     }
-    if (savepath) {
-        await EasyFs.makePathReal(path.dirname(savepath));
-        await EasyFs.writeFile(savepath, Result);
+    if (savePath) {
+        await EasyFs.makePathReal(path.dirname(savePath));
+        await EasyFs.writeFile(savePath, Result);
     }
     return Result;
 }
@@ -133,9 +117,8 @@ export function ImportFile(InStaticPath, typeArray, isDebug = false) {
     return LoadImport(InStaticPath, typeArray, isDebug);
 }
 export async function RequireOnce(filePath, isDebug) {
-    const code = await BuildScript(filePath, null, CheckTs(filePath), isDebug);
     const tempFile = path.join(SystemData, 'temp.js');
-    await EasyFs.writeFile(tempFile, code);
+    await BuildScript(filePath, tempFile, CheckTs(filePath), isDebug);
     const MyModule = await ImportWithoutCache(tempFile, async (requirePath) => await import('file:///' + requirePath));
     return await MyModule.default((path) => import(path));
 }

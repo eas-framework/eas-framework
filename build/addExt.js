@@ -35,10 +35,6 @@ async function fixImports(filepath){
     content = content.replace(mathRegex, (...match) => {
         const filePath = match[2];
 
-        //importing wasm
-
-
-
         if((filePath[0] == '.' || filePath[0] == '/') && !path.extname(filePath)){
             let newImport = match[0].substring(0, match[0].indexOf(match[1])); // the start of the import
 

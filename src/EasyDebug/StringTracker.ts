@@ -51,9 +51,8 @@ export default class StringTracker {
         this.OnChar = Info.char;
     }
 
-    private removeAllEmpty(){
-        this.setDefualt();
-        this.DataArray = this.DataArray.filter(x => x.text.length);
+    public getDataArray(){
+        return this.DataArray;
     }
     /**
      * allow indexing like string does: myString[0] -> StringTracker
@@ -149,7 +148,7 @@ export default class StringTracker {
     }
 
     private AddClone(data: StringTracker) {
-        this.DataArray.push(...data.DataArray.map(({text, line, char, info}) => ({text, line, char, info})));
+        this.DataArray.push(...data.DataArray);
 
         this.setDefualt({
             info:data.InfoText,
@@ -242,15 +241,18 @@ export default class StringTracker {
         const dataStore: StringTrackerDataInfo[] = [];
 
         for (const i of text) {
-            dataStore.push({
-                text: i,
-                info,
-                line: LineCount,
-                char: CharCount
-            });
-            CharCount++;
 
-            if(LineCount && i == '\n'){
+            if(i){
+                dataStore.push({
+                    text: i,
+                    info,
+                    line: LineCount,
+                    char: CharCount
+                });
+                CharCount++;
+            }
+
+            if(i == '\n'){
                 LineCount++;
                 CharCount = 1;
             }
@@ -289,9 +291,8 @@ export default class StringTracker {
      */
         private CutString(start = 0, end = this.length): StringTracker {
             const newString = new StringTracker(this.StartInfo);
-            this.removeAllEmpty();
 
-            newString.DataArray.push(...this.DataArray.filter((_, index) => index >= start && index < end));
+            newString.DataArray.push(...this.DataArray.slice(start, end));
 
             return newString;
         }
@@ -398,8 +399,10 @@ export default class StringTracker {
     }
 
     *[Symbol.iterator]() {
-        for (let i = 0; i < this.OneString.length; i++) {
-            yield this.charAt(Number(i));
+        for(const i of this.DataArray){
+            const char = new StringTracker();
+            char.DataArray.push(i);
+            yield char;
         }
     }
 

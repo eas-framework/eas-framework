@@ -1,18 +1,17 @@
-import StringTracker, {StringTrackerDataInfo} from '../EasyDebug/StringTracker';
+import StringTracker, { StringTrackerDataInfo } from '../EasyDebug/StringTracker';
 import { BaseReader } from './BaseReader/Reader';
 import { ParseTextStream, ReBuildCodeString } from './ScriptReader/EasyScript';
-import { SourceMapGenerator } from "source-map";
+import { SourceMapGenerator } from "source-map-js";
 import path from 'path';
-import {finalizeBuild} from '../BuildInComponents/index';
+import { finalizeBuild } from '../BuildInComponents/index';
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
-import EasyFs from '../OutputInput/EasyFs';
 
 interface JSParserValues {
     type: 'text' | 'script' | 'none-track-script',
     text: StringTracker
 }
 
-export default class JSParser extends BaseReader {
+export default class JSParser {
     public start: string;
     public text: StringTracker;
     public end: string;
@@ -21,7 +20,6 @@ export default class JSParser extends BaseReader {
     public values: JSParserValues[];
 
     constructor(text: StringTracker, path: string, start = "<%", end = "%>", type = 'script') {
-        super();
         this.start = start;
         this.text = text;
         this.end = end;
@@ -35,8 +33,8 @@ export default class JSParser extends BaseReader {
 
     findEndOfDefGlobal(text: StringTracker) {
         const eq = text.eq
-        const find = super.findEndOfDef(eq, [';', '\n', this.end]);
-        return find != -1 ? find + 1: eq.length;
+        const find = BaseReader.findEndOfDef(eq, [';', '\n', this.end]);
+        return find != -1 ? find + 1 : eq.length;
     }
 
     ScriptWithInfo(text: StringTracker): StringTracker {
@@ -98,8 +96,8 @@ export default class JSParser extends BaseReader {
                 const stringCopy = new StringTracker(script.StartInfo);
 
                 script = script.substring(1, index);
-                if(script.endsWith(';')){
-                    script = script.substring(0, script.length-1);
+                if (script.endsWith(';')) {
+                    script = script.substring(0, script.length - 1);
                 }
 
                 if (t == ':') {
@@ -206,33 +204,33 @@ export default class JSParser extends BaseReader {
         return parser.BuildAll(isDebug);
     }
 
-    private static split2FromEnd(text: string, splitChar: string, numToSplitFromEnd = 1){
-        for(let i = text.length - 1; i >= 0; i--){
-            if(text[i] == splitChar){
+    private static split2FromEnd(text: string, splitChar: string, numToSplitFromEnd = 1) {
+        for (let i = text.length - 1; i >= 0; i--) {
+            if (text[i] == splitChar) {
                 numToSplitFromEnd--;
             }
 
-            if(numToSplitFromEnd == 0){
-                return [text.substring(0, i), text.substring(i+1)]
+            if (numToSplitFromEnd == 0) {
+                return [text.substring(0, i), text.substring(i + 1)]
             }
         }
         return [text];
     }
 
-    static RestoreTrack(text:string, defaultInfo: StringTrackerDataInfo){
+    static RestoreTrack(text: string, defaultInfo: StringTrackerDataInfo) {
         const tracker = new StringTracker(defaultInfo);
 
         const allLines = text.split('\n//!');
 
         tracker.Plus(allLines.shift());
 
-        for(const i of allLines){
+        for (const i of allLines) {
             const infoLine = i.split('\n', 1).pop(), dataText = i.substring(infoLine.length);
 
             const [infoText, numbers] = JSParser.split2FromEnd(infoLine, ':', 2), [line, char] = numbers.split(':');
 
             tracker.Plus(new StringTracker(StringTracker.emptyInfo, '\n//!' + infoLine));
-            tracker.AddTextAfter(dataText, infoText, Number(line)-1, Number(char));
+            tracker.AddTextAfter(dataText, infoText, Number(line) - 1, Number(char));
         }
 
         return tracker;
@@ -246,38 +244,87 @@ export class PageTemplate extends JSParser {
             file: filePath.split(/\/|\\/).pop()
         });
 
-        const thisDirFile =path.dirname(filePath);
+        const thisDirFile = path.dirname(filePath);
 
-        const allLines = text.split('\n');
+        const DataArray = text.getDataArray(), length = DataArray.length;
 
-        for (const [k, v] of Object.entries(allLines)) {
-            const line = Number(k);
-            if (line)
-                for (const b of [...v]) {
-                if (b.StartInfo.line && b.StartInfo.info) {
-                        map.addMapping({
-                            original: { line: b.StartInfo.line, column: 0 },
-                            generated: { line: line, column: 0 },
-                            source: path.relative(thisDirFile, b.StartInfo.info.split('<line>').pop().trim()).replace(/\\/gi, '/')
-                        });
-                    }
-                }
+        let lineCount = 0;
+        for (let index = 1, element = DataArray[index]; index < length; index++) {
+
+            if(element.text == '\n'){
+                lineCount++;
+                continue;
+            }
+
+            if(!lineCount){
+                continue;
+            }
+
+            const {line, info} = element;
+
+            if (line && info) {
+                map.addMapping({
+                    original: { line, column: 0 },
+                    generated: { line: lineCount, column: 0 },
+                    source: path.relative(thisDirFile, info.split('<line>').pop().trim()).replace(/\\/gi, '/')
+                });
+            }
         }
+
+        // const allLines = text.split('\n');
+
+
+        // for (let index = 1; index < length; index++) {
+        //     for (const { StartInfo } of [...allLines[index]]) {
+        //         if (StartInfo.line && StartInfo.info) {
+        //             map.addMapping({
+        //                 original: { line: StartInfo.line, column: 0 },
+        //                 generated: { line: index, column: 0 },
+        //                 source: path.relative(thisDirFile, StartInfo.info.split('<line>').pop().trim()).replace(/\\/gi, '/')
+        //             });
+        //         }
+        //     }
+        // }
+
+        // allLines[index].forEachInfo((text, info, line) => {
+        //     if (line && info) {
+        //         map.addMapping({
+        //             original: { line, column: 0 },
+        //             generated: { line: line, column: 0 },
+        //             source: path.relative(thisDirFile, info.split('<line>').pop().trim()).replace(/\\/gi, '/')
+        //         });
+        //     }
+        // });
+    // }
+
+        // for(const [k, v] of Object.entries(allLines)) {
+        //     const line = Number(k);
+        //     if (line)
+        //         for (const b of [...v]) {
+        //         if (b.StartInfo.line && b.StartInfo.info) {
+        //                 map.addMapping({
+        //                     original: { line: b.StartInfo.line, column: 0 },
+        //                     generated: { line: line, column: 0 },
+        //                     source: path.relative(thisDirFile, b.StartInfo.info.split('<line>').pop().trim()).replace(/\\/gi, '/')
+        //                 });
+        //             }
+        //         }
+        // }
         
         return "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(map.toString()).toString("base64");
     }
 
     private static AddPageTemplate(text: StringTracker, isDebug: boolean, fullPathCompile: string, sessionInfo: StringAnyMap): StringTracker {
-        text = PageTemplate.AddLineNumbers(text);
+    // text = PageTemplate.AddLineNumbers(text);
 
-        text = finalizeBuild(text, sessionInfo);
+    text = finalizeBuild(text, sessionInfo);
 
-        if (isDebug) {
-            text.AddTextBefore(`try {\n`);
-        }
+    if (isDebug) {
+        text.AddTextBefore(`try {\n`);
+    }
 
 
-        text.AddTextBefore(`
+    text.AddTextBefore(`
         export default (__dirname, __filename, _require, _include, private_var, handelConnector) => {
             return (async function (page) {
                 const require = (p) => _require(page, p);
@@ -293,8 +340,8 @@ export class PageTemplate extends JSParser {
 
 
 
-        if (isDebug) {
-            text.AddTextAfter(`\n}
+    if (isDebug) {
+        text.AddTextAfter(`\n}
                 catch(e){
                     run_script_name += ' -> <line>' + e.stack.split(/\\n( )*at /)[2];
                     out_run_script.text += '${PageTemplate.printError(`<p>Error path: ' + run_script_name.replace(/<line>/gi, '<br/>') + '</p><p>Error message: ' + e.message + '</p>`)}';
@@ -304,46 +351,46 @@ export class PageTemplate extends JSParser {
                     console.error("Error runing this code: '" + run_script_code + "'");
                     console.error("Error stack: " + e.stack);
                 }`);
-        }
-
-        text.AddTextAfter(`}});}`);
-
-        if (isDebug) {
-            text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile));
-        }
-
-        return text;
     }
 
-    static AddLineNumbers(code: StringTracker) {
-        const splitAll = code.split('\n'), length = splitAll.length;
-        let count = 1;
-        const newCode = new StringTracker(code.StartInfo);
+    text.AddTextAfter(`}});}`);
 
-        for (const i of splitAll) {
-            newCode.Plus(i.replace(/__line_number/gi, '' + count));
-
-            if (count != length) {
-                newCode.Plus('\n');
-                count++;
-            }
-        }
-
-        return newCode;
+    if (isDebug) {
+        text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile));
     }
+
+    return text;
+}
+
+    // static AddLineNumbers(code: StringTracker) {
+    //     const splitAll = code.split('\n'), length = splitAll.length;
+    //     let count = 1;
+    //     const newCode = new StringTracker(code.StartInfo);
+
+    //     for (const i of splitAll) {
+    //         newCode.Plus(i.replace(/__line_number/gi, '' + count));
+
+    //         if (count != length) {
+    //             newCode.Plus('\n');
+    //             count++;
+    //         }
+    //     }
+
+    //     return newCode;
+    // }
 
     static BuildPage(text: StringTracker, path: string, isDebug: boolean, fullPathCompile: string, sessionInfo: StringAnyMap) {
-        const builtCode = PageTemplate.RunAndExport(text, path, isDebug);
+    const builtCode = PageTemplate.RunAndExport(text, path, isDebug);
 
-        return PageTemplate.AddPageTemplate(builtCode, isDebug, fullPathCompile, sessionInfo);
-    }
+    return PageTemplate.AddPageTemplate(builtCode, isDebug, fullPathCompile, sessionInfo);
+}
 
     static AddAfterBuild(text: string, isDebug: boolean) {
-        if (isDebug) {
-            text = "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install({hookRequire: true});" + text;
-        }
-        return text;
+    if (isDebug) {
+        text = "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install({hookRequire: true});" + text;
     }
+    return text;
+}
 }
 
 //build special class for parser comments /**/ so you be able to add Razor inside of style ot script tag
@@ -357,8 +404,13 @@ export class EnableGlobalReplace {
     private savedBuildData: GlobalReplaceArray[] = [];
     private buildCode: ReBuildCodeString;
     private path: string;
-    
-    async load(code: StringTracker, path: string){
+    private replacer: RegExp;
+
+    constructor(private addText = "") {
+        this.replacer = new RegExp(`system--<\\|ejs\\|([0-9])\\|>|\\/${addText}\\*!system--<\\|ejs\\|([0-9])\\|>\\*\\/`);
+    }
+
+    async load(code: StringTracker, path: string) {
         this.buildCode = new ReBuildCodeString(await ParseTextStream(this.ExtractAndSaveCode(code)));
         this.path = path;
     }
@@ -388,7 +440,7 @@ export class EnableGlobalReplace {
     private ParseOutsideOfComment(text: StringTracker): StringTracker {
         return text.replacer(/system--<\|ejs\|([0-9])\|>/, (SplitToReplace) => {
             const index = SplitToReplace[1];
-            return new StringTracker(index.StartInfo).Plus$`/*!system--<|ejs|${index}|>*/`;
+            return new StringTracker(index.StartInfo).Plus$`${this.addText}/*!system--<|ejs|${index}|>*/`;
         });
     }
 
@@ -411,7 +463,7 @@ export class EnableGlobalReplace {
     }
 
     public RestoreCode(code: StringTracker) {
-        return code.replacer(/system--<\|ejs\|([0-9])\|>|\/\*!system--<\|ejs\|([0-9])\|>\*\//, (SplitToReplace) => {
+        return code.replacer(this.replacer, (SplitToReplace) => {
             const index = Number(SplitToReplace[1] ?? SplitToReplace[2]);
 
             return this.RestoreAsCode(this.savedBuildData[index]);

@@ -235,10 +235,12 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
             }
         }
 
-        if (DynamicResponse.redirectPath.file) {
+        if (DynamicResponse.redirectPath?.file) {
             Response.sendFile(DynamicResponse.redirectPath.file);
+            await new Promise(res => Response.on('finish', res));
         } else if (DynamicResponse.redirectPath) {
             Response.writeHead(302, { Location: DynamicResponse.redirectPath });
+            Response.end();
         } else {
             const ResPage = DynamicResponse.out_run_script.trim();
             if (ResPage) {
@@ -247,8 +249,6 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
                 Response.end();
             }
         }
-
-        await new Promise(res => Response.on('finish', res));
 
         if (DynamicResponse.redirectPath.deleteAfter) {
             await EasyFs.unlinkIfExists(Response.redirectPath.file);

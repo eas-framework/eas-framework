@@ -22,27 +22,28 @@ export default class EasySyntax {
                 DataObject = data.substring(1).replace(' as ', '').trimStart();
             }
             else {
-                let Splited = [];
+                let Spliced = [];
                 if (data[0] == '{') {
-                    Splited = data.split('}', 1);
-                    Splited[0].Plus('}');
-                    Splited[1] = Splited[1]?.split(',').pop();
+                    Spliced = data.split('}', 2);
+                    Spliced[0] += '}';
+                    if (Spliced[1])
+                        Spliced[1] = Spliced[1].split(',').pop();
                 }
                 else {
-                    Splited = data.split(',', 1).reverse();
+                    Spliced = data.split(',', 1).reverse();
                 }
-                Splited = Splited.map(x => x.trim()).filter(x => x.length);
-                if (Splited.length == 1) {
-                    if (Splited[0][0] == '{') {
-                        DataObject = Splited[0];
+                Spliced = Spliced.map(x => x.trim()).filter(x => x.length);
+                if (Spliced.length == 1) {
+                    if (Spliced[0][0] == '{') {
+                        DataObject = Spliced[0];
                     }
                     else {
-                        DataObject = `{default:${Splited[0]}}`;
+                        DataObject = `{default:${Spliced[0]}}`;
                     }
                 }
                 else {
-                    DataObject = Splited[0];
-                    DataObject = `${DataObject.substring(0, DataObject.length - 1)},default:${Splited[1]}}`;
+                    DataObject = Spliced[0];
+                    DataObject = `${DataObject.substring(0, DataObject.length - 1)},default:${Spliced[1]}}`;
                 }
                 DataObject = DataObject.replace(/ as /, ':');
             }

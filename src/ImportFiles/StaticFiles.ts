@@ -1,7 +1,7 @@
 import path from 'path';
 import { BuildJS, BuildJSX, BuildTS, BuildTSX } from './ForStatic/Script';
 import { BuildStyleSass } from './ForStatic/Style';
-import { getTypes, SystemData,  BasicSettings} from '../RunTimeBuild/SearchFileSystem';
+import { getTypes, SystemData,  BasicSettings, getDirname} from '../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../OutputInput/EasyFs';
 import { Response, Request } from '@tinyhttp/app';
 import fs from 'fs';
@@ -91,6 +91,7 @@ export function serverBuild(path: string): null | buildIn{
     return getStatic.find(x => x.path == path);
 }
 
+const __dirname = getDirname(import.meta.url);
 
 export async function GetFile(SmallPath: string, isDebug: boolean, Request: Request, Response: Response) {
     //file built in

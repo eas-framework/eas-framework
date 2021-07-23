@@ -33,6 +33,11 @@ pub fn get_errors() -> String {
     copy_string
 }
 
+#[wasm_bindgen]
+pub fn find_end_block(text: &str, block: &str) -> i32 {
+    let block_chars = block.chars().collect::<Vec<char>>();
+    actions::base_reader::block_skip_text(text, block_chars)
+}
 
 #[wasm_bindgen]
 pub fn insert_component(skip_special_tag: &str, simple_skip: &str) {

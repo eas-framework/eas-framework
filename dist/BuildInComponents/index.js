@@ -2,8 +2,9 @@ import client from './Components/client.js';
 import script from './Components/script.js';
 import style from './Components/style.js';
 import page from './Components/page.js';
+import isolate from './Components/isolate.js';
 import connect, { addFinalizeBuild as addFinalizeBuildConnect } from './Components/connect.js';
-const AllBuildIn = ["client", "script", "style", "page", "connect"];
+const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate"];
 export function StartCompiling(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo) {
     let reData;
     switch (type.eq) {
@@ -22,11 +23,14 @@ export function StartCompiling(path, pathName, LastSmallPath, type, dataTag, Bet
         case "connect":
             reData = connect(type, dataTag, BetweenTagData, isDebug, InsertComponent, sessionInfo);
             break;
+        case "isolate":
+            reData = isolate(BetweenTagData);
+            break;
     }
     return reData;
 }
 export function IsInclude(tagname) {
-    return AllBuildIn.includes(tagname);
+    return AllBuildIn.includes(tagname.toLowerCase());
 }
 export function finalizeBuild(pageData, sessionInfo) {
     return addFinalizeBuildConnect(pageData, sessionInfo);

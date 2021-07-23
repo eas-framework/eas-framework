@@ -191,11 +191,13 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
                 Response.clearCookie(i);
             }
         }
-        if (DynamicResponse.redirectPath.file) {
+        if (DynamicResponse.redirectPath?.file) {
             Response.sendFile(DynamicResponse.redirectPath.file);
+            await new Promise(res => Response.on('finish', res));
         }
         else if (DynamicResponse.redirectPath) {
             Response.writeHead(302, { Location: DynamicResponse.redirectPath });
+            Response.end();
         }
         else {
             const ResPage = DynamicResponse.out_run_script.trim();
@@ -206,7 +208,6 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
                 Response.end();
             }
         }
-        await new Promise(res => Response.on('finish', res));
         if (DynamicResponse.redirectPath.deleteAfter) {
             await EasyFs.unlinkIfExists(Response.redirectPath.file);
         }

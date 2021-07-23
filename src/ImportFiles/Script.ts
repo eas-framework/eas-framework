@@ -17,7 +17,6 @@ import JSParser from "../CompileCode/JSParser";
 import path from "path";
 import { isTs } from "../CompileCode/InsertModels";
 import StringTracker from "../EasyDebug/StringTracker";
-import { SourceMapConsumer, SourceMapGenerator } from "source-map";
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache';
 
 async function ReplaceBefore(
@@ -31,26 +30,7 @@ async function ReplaceBefore(
 function template(code: string, isDebug: boolean, dir: string, file: string) {
   return `${isDebug ? "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" : ''};var __dirname=\`${JSParser.fixText(dir)
     }\`,__filename=\`${JSParser.fixText(file)
-    }\`;export default (async (require)=>{var module={exports:{}},exports=module.exports;\n${code}\nreturn module.exports;});`;
-}
-
-async function shiftLineSourceMap(map: RawSourceMap): Promise<string> {
-  map.file =  map.file.split(/\/|\\/).pop(); // only the name;
-
-  const data = await SourceMapConsumer.with<string>(map, null, (consumer) => {
-    const newMap = new SourceMapGenerator();
-    consumer.eachMapping(function (m) {
-      newMap.addMapping({
-        source: map.file,
-        original: { line: m.originalLine, column: m.originalColumn },
-        generated: { line: m.generatedLine + 1, column: m.generatedColumn }
-      });
-    });
-    return newMap.toJSON().mappings;
-  });
-
-  map.mappings = data;
-  return JSON.stringify(map);
+    }\`;export default (async (require)=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
 }
 
 /**
@@ -60,17 +40,20 @@ async function shiftLineSourceMap(map: RawSourceMap): Promise<string> {
  * @returns
  */
 async function BuildScript(
-  filepath: string,
-  savepath: string | null,
+  filePath: string,
+  savePath: string | null,
   isTypescript: boolean,
   isDebug: boolean,
 ): Promise<string> {
+
+  const sourceMapFile = filePath.split(/\/|\\/).pop();
+
   const Options: TransformOptions = {
     transforms: ["imports"],
     sourceMapOptions: {
-      compiledFilename: savepath ?? filepath,
+      compiledFilename: sourceMapFile,
     },
-    filePath: filepath
+    filePath: path.relative(path.dirname(savePath), filePath)
   },
     define = {
       debug: "" + isDebug,
@@ -81,7 +64,7 @@ async function BuildScript(
   }
 
   let Result = await ReplaceBefore(
-    await EasyFs.readFile(filepath),
+    await EasyFs.readFile(filePath),
     define,
   ),
     sourceMap: string;
@@ -89,19 +72,19 @@ async function BuildScript(
   try {
     const { code, sourceMap: map } = transform(Result, Options);
     Result = code;
-    sourceMap = await shiftLineSourceMap(map);
+    sourceMap = JSON.stringify(map);
   } catch (err) {
     PrintIfNew({
       errorName: "compilation-error",
-      text: `${err.message}, on file -> ${filepath}`,
+      text: `${err.message}, on file -> ${filePath}`,
     });
   }
 
   Result = template(
-    new StringTracker(filepath, Result).eq,
+    new StringTracker(filePath, Result).eq,
     isDebug,
-    path.dirname(filepath),
-    filepath,
+    path.dirname(filePath),
+    filePath,
   );
 
   if (isDebug) {
@@ -111,9 +94,9 @@ async function BuildScript(
     Result = (await minify(Result, { module: false })).code;
   }
 
-  if (savepath) {
-    await EasyFs.makePathReal(path.dirname(savepath));
-    await EasyFs.writeFile(savepath, Result);
+  if (savePath) {
+    await EasyFs.makePathReal(path.dirname(savePath));
+    await EasyFs.writeFile(savePath, Result);
   }
   return Result;
 }
@@ -209,16 +192,15 @@ export function ImportFile(
 }
 
 export async function RequireOnce(filePath: string, isDebug: boolean) {
-  const code = await BuildScript(
+
+  const tempFile = path.join(SystemData, 'temp.js');
+  
+  await BuildScript(
     filePath,
-    null,
+    tempFile,
     CheckTs(filePath),
     isDebug,
   );
-
-  const tempFile = path.join(SystemData, 'temp.js');
-  await EasyFs.writeFile(tempFile, code);
-
 
   const MyModule = await ImportWithoutCache(tempFile, async requirePath => await import('file:///' + requirePath));
   

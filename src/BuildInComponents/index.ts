@@ -4,9 +4,10 @@ import client from './Components/client';
 import script from './Components/script';
 import style from './Components/style';
 import page from './Components/page';
+import isolate from './Components/isolate';
 import connect, {addFinalizeBuild as addFinalizeBuildConnect} from './Components/connect';
 
-const AllBuildIn = ["client", "script", "style", "page", "connect"];
+const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate"];
 
 export function StartCompiling(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
     let reData: Promise<BuildInComponent>;
@@ -27,13 +28,16 @@ export function StartCompiling(path: string, pathName: string, LastSmallPath: st
         case "connect":
             reData = connect(type, dataTag, BetweenTagData, isDebug, InsertComponent, sessionInfo);
             break;
+        case "isolate":
+            reData = isolate(BetweenTagData);
+            break;
     }
 
     return reData;
 }
 
-export function IsInclude(tagname) {
-    return AllBuildIn.includes(tagname);
+export function IsInclude(tagname: string) {
+    return AllBuildIn.includes(tagname.toLowerCase());
 }
 
 export function finalizeBuild(pageData: StringTracker, sessionInfo: StringAnyMap) {

@@ -1,3 +1,21 @@
-<p <%=isDebug%>>
-kkk
-</p>
+@{
+        var en = isDebug
+        function be(){
+            return "loop"
+        }
+
+        if(Post){
+            Response.redirect('/');
+            return;
+        }
+}
+<div class="me-5" @be(en).substring(1)>
+    <input @(en ? 'checked ': '')type="radio" name="lang" value="en" class="form-check-input" id="en"/>
+    <label for="en" class="form-check-label">כתוביות באנגלית</label>
+</div>
+
+@be?.more;<br />
+is debug? @isDebug?
+<form method="post">
+<button type="submit">submit</button>
+</form>

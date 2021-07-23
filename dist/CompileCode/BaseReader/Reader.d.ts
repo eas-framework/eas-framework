@@ -1,9 +1,10 @@
 import StringTracker from '../../EasyDebug/StringTracker';
 export declare class BaseReader {
-    findEntOfQ(text: string, qType: string): any;
-    findEndOfDef(text: string, EndType: string[] | string): any;
+    static findEntOfQ(text: string, qType: string): any;
+    static findEndOfDef(text: string, EndType: string[] | string): any;
+    static FindEndOfBlock(text: string, open: string, end: string): any;
 }
-export declare class InsertComponentBase extends BaseReader {
+export declare class InsertComponentBase {
     private printNew?;
     private asyncMethod;
     SimpleSkip: string[];

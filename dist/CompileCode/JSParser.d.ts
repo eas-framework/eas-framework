@@ -1,11 +1,10 @@
 import StringTracker, { StringTrackerDataInfo } from '../EasyDebug/StringTracker';
-import { BaseReader } from './BaseReader/Reader';
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 interface JSParserValues {
     type: 'text' | 'script' | 'none-track-script';
     text: StringTracker;
 }
-export default class JSParser extends BaseReader {
+export default class JSParser {
     start: string;
     text: StringTracker;
     end: string;
@@ -28,14 +27,16 @@ export default class JSParser extends BaseReader {
 export declare class PageTemplate extends JSParser {
     private static CreateSourceMap;
     private static AddPageTemplate;
-    static AddLineNumbers(code: StringTracker): StringTracker;
     static BuildPage(text: StringTracker, path: string, isDebug: boolean, fullPathCompile: string, sessionInfo: StringAnyMap): StringTracker;
     static AddAfterBuild(text: string, isDebug: boolean): string;
 }
 export declare class EnableGlobalReplace {
+    private addText;
     private savedBuildData;
     private buildCode;
     private path;
+    private replacer;
+    constructor(addText?: string);
     load(code: StringTracker, path: string): Promise<void>;
     private ExtractAndSaveCode;
     private ParseOutsideOfComment;

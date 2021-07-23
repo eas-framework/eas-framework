@@ -1,4 +1,0 @@
-import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();;var __dirname=`D:\\Code\\Projects\\beyond-easy\\tests\\core/Website/Static`,__filename=`D:\\Code\\Projects\\beyond-easy\\tests\\core/Website/Static/DateString.serv.js`;export default (async (require)=>{var module={exports:{}},exports=module.exports;
-"use strict";Object.defineProperty(exports, "__esModule", {value: true});exports. default = () => new Date().toLocaleTimeString() + 'poop';
-return module.exports;});
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiRGF0ZVN0cmluZy5zZXJ2LmpzLmpzIiwic291cmNlcyI6WyJEOlxcQ29kZVxcUHJvamVjdHNcXGJleW9uZC1lYXN5XFx0ZXN0c1xcY29yZS9XZWJzaXRlL1N0YXRpYy9EYXRlU3RyaW5nLnNlcnYuanMiXSwibWFwcGluZ3MiOiI7QUFBQSIsIm5hbWVzIjpbXX0=

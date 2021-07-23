@@ -187,6 +187,9 @@ function BuildPage(LoadPageFunc, run_script_name) {
             }
             return Response;
         };
+        Response.reload = () => {
+            Response.redirect(Request.url);
+        };
         function sendFile(filePath, deleteAfter = false) {
             redirectPath = { file: filePath, deleteAfter };
         }

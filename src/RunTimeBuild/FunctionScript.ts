@@ -227,6 +227,10 @@ function BuildPage(LoadPageFunc: (...data:any[]) => void, run_script_name:string
             return Response;
         };
 
+        (<any>Response).reload = () => {
+            Response.redirect(Request.url);
+        }
+
         function sendFile(filePath, deleteAfter = false) {
             redirectPath = { file: filePath, deleteAfter };
         }

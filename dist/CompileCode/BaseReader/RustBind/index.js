@@ -130,6 +130,20 @@ export function get_errors() {
 }
 
 /**
+* @param {string} text
+* @param {string} block
+* @returns {number}
+*/
+export function find_end_block(text, block) {
+    var ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len0 = WASM_VECTOR_LEN;
+    var ptr1 = passStringToWasm0(block, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len1 = WASM_VECTOR_LEN;
+    var ret = wasm.find_end_block(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
 * @param {string} skip_special_tag
 * @param {string} simple_skip
 */

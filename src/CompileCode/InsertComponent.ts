@@ -6,7 +6,7 @@ import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/S
 import AddPlugin from '../Plugins/Index';
 import { tagDataObject, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, StringAnyMap } from './XMLHelpers/CompileTypes';
 import { PrintIfNew } from '../OutputInput/PrintNew';
-import {InsertComponentBase} from './BaseReader/Reader';
+import {InsertComponentBase, BaseReader} from './BaseReader/Reader';
 
 interface DefaultValues {
     value: StringTracker,
@@ -61,7 +61,7 @@ export default class InsertComponent extends InsertComponentBase {
             for (; i < text.length; i++) {
                 const char = text.at(i).eq;
                 if (SkipTypes.includes(char) && text.at(i - 1).eq != '\\') {
-                    i += this.findEntOfQ(text.substring(i + 1).eq, char) + 1;
+                    i += BaseReader.findEntOfQ(text.substring(i + 1).eq, char) + 1;
                     break;
                 } else if (text.substring(i - 1, i).eq == ' ') {
                     i--;
@@ -75,7 +75,7 @@ export default class InsertComponent extends InsertComponentBase {
             if (Attributes[1]) {
                 char = Attributes[1].at(0).eq;
                 if (SkipTypes.includes(char)) {
-                    const endIndex = this.findEntOfQ(Attributes[1].substring(1).eq, char);
+                    const endIndex = BaseReader.findEntOfQ(Attributes[1].substring(1).eq, char);
                     Attributes[1] = Attributes[1].substring(1, endIndex);
                 }
             } else {
@@ -404,7 +404,7 @@ export default class InsertComponent extends InsertComponentBase {
     
             //finding last close 
             const NextDataClose = NextTextTag.substring(BetweenTagDataCloseIndex);
-            const NextDataAfterClose = BetweenTagDataCloseIndex != null ? NextDataClose.substring(this.findEndOfDef(NextDataClose.eq, '>') + 1) : NextDataClose; // search for the close of a big tag just if the tag is valid
+            const NextDataAfterClose = BetweenTagDataCloseIndex != null ? NextDataClose.substring(BaseReader.findEndOfDef(NextDataClose.eq, '>') + 1) : NextDataClose; // search for the close of a big tag just if the tag is valid
     
             promiseBuild.push(
                 this.CheckMinHTML(cutStartData),

@@ -64,3 +64,35 @@ pub fn find_end_of_def_char(text: &str, end_type: char) -> i32 {
 
     -1
 }
+
+pub fn block_skip_text(text: &str, char_types: Vec<char>) -> i32 {
+    let chars: Vec<char> = text.chars().collect();
+    let mut count_have = 1;
+    let mut i = 0;
+
+    let length = len(text);
+    while i < length {
+        let char = chars[i];
+        
+        if TEXT_BLOCK.iter().any(|&x| x==&char) {
+             i += find_end_of_q(&cut_start(text, i + 1), char) + 1;
+            continue;
+        }
+
+        if char_types[0] == char{
+            count_have+=1;
+        }
+
+        if char_types[1] == char {
+            count_have-=1;
+            if count_have == 0 {
+                return i as i32;
+            }
+        }
+
+        i += 1;
+
+    }
+
+    -1
+}

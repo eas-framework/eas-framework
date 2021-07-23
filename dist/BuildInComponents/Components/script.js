@@ -6,7 +6,7 @@ import { EnableGlobalReplace } from '../../CompileCode/JSParser.js';
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent) {
     const lang = dataTag.find(x => x.n.eq == 'lang');
     let result = { code: '' }, ResCode = BetweenTagData;
-    const SaveServerCode = new EnableGlobalReplace();
+    const SaveServerCode = new EnableGlobalReplace("serv()");
     await SaveServerCode.load(BetweenTagData, pathName);
     const BetweenTagDataExtracted = SaveServerCode.StartBuild();
     const langName = lang?.v?.eq || 'js';

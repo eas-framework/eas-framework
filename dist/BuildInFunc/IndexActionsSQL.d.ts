@@ -55,13 +55,15 @@ interface JoinSqlInput {
         DefaultJoin: string;
     };
 }
-interface SelectOptions {
-    table: string;
+interface SelectOption {
     types?: string;
     limit?: number;
     OrderStart?: string;
     OrderEnd?: string;
     where?: (WhereDB | WhereDB[])[];
+}
+interface SelectOptionsTable extends SelectOption {
+    table: string;
 }
 declare class ComlexSelect extends JoinSQL {
     private SqlString;
@@ -73,7 +75,7 @@ declare class ComlexSelect extends JoinSQL {
     constructor(queryFunc: (query: string, ...values: any) => any, UnionType?: string);
     private UNIONSql;
     private AddAsSQl;
-    Add(type: "join" | "select", ObjectData: JoinSqlInput | SelectOptions): void;
+    Add(type: "join" | "select", ObjectData: JoinSqlInput | SelectOptionsTable): void;
     private CheckTypes;
     private SumNumberOfTypes;
     private RunOnTypesSelect;
@@ -113,8 +115,8 @@ declare abstract class DBFastActions {
     Insert(table: string, values: {
         [key: string]: any;
     }): Promise<any>;
-    Select(ObjectData: SelectOptions): Promise<any>;
-    SelectOne(table: any, types: any, ...where: (WhereDB | WhereDB[])[]): Promise<any>;
+    Select(ObjectData: SelectOptionsTable): Promise<any>;
+    SelectOne(table: string, types: string, ...where: (WhereDB | WhereDB[])[]): Promise<any>;
     Delete(table: string, ...where: (WhereDB | WhereDB[])[]): Promise<any>;
     private Split2;
     Update(table: string, set: {
@@ -128,5 +130,52 @@ declare abstract class DBFastActions {
      * ComlexSelect - select with join and union
      */
     ComlexSelect(UnionType?: string): ComlexSelect;
+    table(tablaName: string): TableIt;
+    simpleTable(tablaName: string): SimpleTable;
+}
+declare class TableIt {
+    private tableName;
+    private connectDataBase;
+    private simpleTable;
+    constructor(tableName: string, connectDataBase: DBFastActions);
+    get simple(): SimpleTable;
+    Insert(values: {
+        [key: string]: any;
+    }): Promise<any>;
+    Select(ObjectData: SelectOption): Promise<any>;
+    SelectOne(types: string, ...where: (WhereDB | WhereDB[])[]): Promise<any>;
+    Delete(...where: (WhereDB | WhereDB[])[]): Promise<any>;
+    Update(set: {
+        [key: string]: any;
+    }, ...where: (WhereDB | WhereDB[])[]): Promise<any>;
+}
+interface SimpleSelectOption {
+    types?: string;
+    limit?: number;
+    OrderStart?: string;
+    OrderEnd?: string;
+    where?: {
+        [key: string]: any;
+    };
+}
+declare class SimpleTable {
+    private connectDataBase;
+    constructor(connectDataBase: TableIt);
+    private simpleWhere;
+    Insert(values: {
+        [key: string]: any;
+    }): Promise<any>;
+    Select(ObjectData: SimpleSelectOption): Promise<any>;
+    SelectOne(types: string, where: {
+        [key: string]: any;
+    }): Promise<any>;
+    Delete(where: {
+        [key: string]: any;
+    }): Promise<any>;
+    Update(set: {
+        [key: string]: any;
+    }, where: {
+        [key: string]: any;
+    }): Promise<any>;
 }
 export default DBFastActions;
