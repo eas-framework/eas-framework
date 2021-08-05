@@ -1,5 +1,6 @@
 mod actions;
 mod builder;
+mod razor;
 use builder::InsertComponent;
 
 use wasm_bindgen::prelude::*;

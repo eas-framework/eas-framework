@@ -72,7 +72,7 @@ class Razor {
         }
         return false;
     }
-    ParseScript(text, SmallScript = false, i = 0, ArrayNext = [], ReFirst) {
+    ParseScript(text, SmallScript = false, i = 0, ArrayNext = [], needOneBig = false, ReFirst) {
         const typeQ = [
             ["(", "[", "{"],
             [")", "]", "}"]
@@ -84,6 +84,7 @@ class Razor {
             if (indexQ != -1) {
                 const EndBlock = BaseReader.FindEndOfBlock(text.eq.substring(i + 1), char.eq, typeQ[1][indexQ]); // no +1 because i is doing ++ in the loop;
                 if (!SmallScript && char.eq == typeQ[0][2]) {
+                    needOneBig = true;
                     if (ReFirst) {
                         ReFirst(text.substring(0, i + 1));
                     }
@@ -99,7 +100,7 @@ class Razor {
                     const next = this.CheckWithoutSpace(text, ArrayNext);
                     if (next) {
                         const values = this.values;
-                        this.ParseScript(text, false, this.GetNextSpaceIndex(text, new StringTracker(text.DefaultInfoText, next)), ArrayNext, (FirstScript) => {
+                        this.ParseScript(text, false, this.GetNextSpaceIndex(text, new StringTracker(text.DefaultInfoText, next)), ArrayNext, true, (FirstScript) => {
                             values.push({
                                 type: 'script',
                                 data: new StringTracker(FirstScript.DefaultInfoText, typeQ[1][indexQ]).Plus(FirstScript)
@@ -122,7 +123,7 @@ class Razor {
                     i += 1 + EndBlock;
                 }
             }
-            else if (nextBreak || this.checkEnd.includes(char.eq) || !this.CharNotSkip.includes(char.eq) && !this.AnyStringNotSkip(text, i) && this.findFirstWordIndex(char) != -1) {
+            else if (nextBreak || !needOneBig && this.checkEnd.includes(char.eq) || !this.CharNotSkip.includes(char.eq) && !this.AnyStringNotSkip(text, i) && this.findFirstWordIndex(char) != -1) {
                 if (char.eq == ';') {
                     i++;
                 }

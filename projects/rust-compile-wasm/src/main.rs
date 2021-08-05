@@ -1,6 +1,7 @@
 mod actions;
 mod builder;
 use builder::InsertComponent;
+mod razor;
 
 fn main() {
     //println!("{:?}", actions::base_reader::find_end_of_def("=newAlertsLength == 0 ? 'd-none': 'd-inline-block'", vec![";", "\n", "%>"]));
@@ -43,6 +44,8 @@ fn main() {
     // println!("text {:?}", text2);
 
 
-    // println!("text {:?}", actions::base_reader::find_end_of_def_char("123>3", '>'));
+    println!("text {:?}", actions::base_reader::block_skip_text(r#"    <div>refre</div>
+}"#, vec!['{', '}']));
+    
 
 }
