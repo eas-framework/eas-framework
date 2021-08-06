@@ -37,12 +37,18 @@ export class InsertComponentBase {
         }
     }
     async FindCloseChar(text, Search) {
-        const [point, errors] = await this.asyncMethod.getMethod(['FindCloseChar', 'GetErrors'], text.eq, Search);
+        const [point, errors] = await this.asyncMethod.getMethod({
+            FindCloseChar: [text.eq, Search],
+            GetErrors: []
+        });
         this.printErrors(text, JSON.parse(errors));
         return point;
     }
     async FindCloseCharHTML(text, Search) {
-        const [point, errors] = await this.asyncMethod.getMethod(['FindCloseCharHTML', 'GetErrors'], text.eq, Search);
+        const [point, errors] = await this.asyncMethod.getMethod({
+            FindCloseCharHTML: [text.eq, Search],
+            GetErrors: []
+        });
         this.printErrors(text, JSON.parse(errors));
         return point;
     }

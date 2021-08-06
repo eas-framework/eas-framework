@@ -45,7 +45,7 @@ impl InsertComponent {
     
         let mut i: usize = 0;
         let length = chars_len - search_len;
-        while i < length {
+        while i <= length {
             let this_char = chars[i];
             
             if find_char_arr(base_reader::TEXT_BLOCK, &&this_char) && get_from_vec(&chars, i, 1) != '\\'

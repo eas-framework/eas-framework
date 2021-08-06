@@ -10,6 +10,9 @@ export default class Multithreading {
     private addThread;
     /**
      * getting available method, or waiting for available thread
+     * doMethods {name: array of arguments}
      */
-    getMethod(doMethods: string[], ...args: any[]): any;
+    getMethod(doMethods: {
+        [name: string]: any[];
+    }): any;
 }

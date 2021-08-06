@@ -20,20 +20,20 @@ export default class Multithreading {
         if (!have) {
             return;
         }
-        const args = this.queue.shift();
-        const res = args.shift();
-        have.method(args).then(res);
+        const doMethods = this.queue.shift();
+        const res = doMethods.shift();
+        have.method(doMethods.shift()).then(res);
     }
     addThread() {
         const pool = workerPool.pool(this.workerPath);
         //eslint-disable-next-line
         const ThisInstance = this;
         const worker = {
-            async method(doMethods, args) {
+            async method(doMethods) {
                 worker.working = true;
                 const result = [];
-                for (const i of doMethods) {
-                    result.push(await pool.exec(i, args));
+                for (const [key, value] of Object.entries(doMethods)) {
+                    result.push(await pool.exec(key, value));
                 }
                 worker.working = false;
                 ThisInstance.available();
@@ -45,16 +45,16 @@ export default class Multithreading {
     }
     /**
      * getting available method, or waiting for available thread
+     * doMethods {name: array of arguments}
      */
-    getMethod(doMethods, ...args) {
+    getMethod(doMethods) {
         const have = this.finderArray.find(x => !x.working);
         if (have) {
-            return have.method(doMethods, args);
+            return have.method(doMethods);
         }
         let res;
         const wait = new Promise((resolve, reject) => { res = resolve; });
-        args.unshift(res);
-        this.queue.push(args);
+        this.queue.push([res, doMethods]);
         return wait;
     }
 }

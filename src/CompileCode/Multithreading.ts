@@ -30,10 +30,10 @@ export default class Multithreading {
             return;
         }
 
-        const args = this.queue.shift();
-        const res = args.shift();
+        const doMethods = this.queue.shift();
+        const res = doMethods.shift();
 
-        have.method(args).then(res);
+        have.method(doMethods.shift()).then(res);
     }
 
     private addThread(){
@@ -43,13 +43,13 @@ export default class Multithreading {
         const ThisInstance = this;
 
         const worker = {
-            async method (doMethods: string[], args: any[]) { 
+            async method (doMethods: {[name: string]: any[]}) { 
                 worker.working = true;
 
                 const result = [];
                 
-                for(const i of doMethods){
-                    result.push(await pool.exec(i, args))
+                for(const [key, value] of Object.entries(doMethods)){
+                    result.push(await pool.exec(key, value))
                 }
 
                 worker.working = false;
@@ -66,19 +66,19 @@ export default class Multithreading {
 
     /**
      * getting available method, or waiting for available thread
+     * doMethods {name: array of arguments}
      */
-    public getMethod(doMethods: string[], ...args: any[]){
+    public getMethod(doMethods: {[name: string]: any[]}){
         const have = this.finderArray.find(x => !x.working);
 
         if(have){
-            return have.method(doMethods, args);
+            return have.method(doMethods);
         }
 
         let res: any;
         const wait = new Promise((resolve, reject) => {res = resolve;});
-        args.unshift(res);
 
-        this.queue.push(args);
+        this.queue.push([res, doMethods]);
 
         return wait;
     }

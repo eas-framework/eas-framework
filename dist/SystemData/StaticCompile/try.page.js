@@ -11,21 +11,9 @@ import sourceMapSupport from 'source-map-support'; sourceMapSupport.install({hoo
 
                 {try {
 
-run_script_code=`if(true){;`;
-//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/try.page:1:10
-if(true){;
-out_run_script.text+=`
-    123
-`;
-run_script_code=`} else {;`;
-//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/try.page:3:8
-} else {;
-out_run_script.text+=`
-    <div>refre</div>
-`;
-run_script_code=`};`;
-//!D:\Code\Projects\beyond-easy\tests\core/Website/Static/try.page:1:1
-};
+run_script_code=`run_script_name=\`Static/try.page\`;`;
+//!Static/try.page -><line>D:\Code\Projects\beyond-easy\tests\core\Website\Components\css.inte:0:36
+run_script_name=`Static/try.page`;{"use strict";out_run_script.text+=`<link rel="stylesheet" href="/files/code/poo.css" />`;};
 }
                 catch(e){
                     run_script_name += ' -> <line>' + e.stack.split(/\n( )*at /)[2];
