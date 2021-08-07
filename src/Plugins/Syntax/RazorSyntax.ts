@@ -61,7 +61,7 @@ class Razor {
                     data: text.substring(removeOneStartEnd, i)
                 });
 
-                this.Builder(text.substring(i + 1 + (char == ';' ? 1 : 0))); // text
+                this.Builder(text.substring(i + removeOneStartEnd + (char == ';' ? 1 : 0))); // text
                 return;
             }
         }
