@@ -13,7 +13,7 @@
     <button type="submit">Submit</button>
 </form>*@
 
-@{
+@* @{
 
 
     let i = 0;
@@ -24,3 +24,23 @@
     @ConnectHere;
 }
 <connect name="getInfo" sendTo="servInfo" validate="text"/>
+
+*@
+
+@{
+    const me = 4;
+
+    function log(){
+        return (x) => {return {f:x + 1}};
+    }
+}
+
+@for(const {a} of [{a:1999}]){
+    @a
+}
+
+@(true) next
+
+@me;
+
+@log()(8)?.f;

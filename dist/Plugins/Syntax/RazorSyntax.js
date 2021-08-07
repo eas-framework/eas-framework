@@ -4,48 +4,18 @@ class Razor {
     typeLoad;
     comment;
     skipWords;
-    CharNotSkip;
-    StringNotSkip;
-    checkEnd;
     notPrint;
     values;
-    constructor(typeLoad = '@', comment = '*', skipWords = ["basic"], CharNotSkip = [".", " ", "\n"], StringNotSkip = ["?."], checkEnd = [";"], notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }) {
+    typeQ = [
+        ["(", "["],
+        [")", "]"]
+    ];
+    constructor(typeLoad = '@', comment = '*', skipWords = ["basic"], notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }) {
         this.typeLoad = typeLoad;
         this.comment = comment;
         this.skipWords = skipWords;
-        this.CharNotSkip = CharNotSkip;
-        this.StringNotSkip = StringNotSkip;
-        this.checkEnd = checkEnd;
         this.notPrint = notPrint;
     }
-    // findEntOfQ(text:StringTracker, qType:string) {
-    //     let i = 0;
-    //     for (; i < text.length; i++) {
-    //         if (text.at(i).eq == qType && text.at(i - 1).eq != '\\') {
-    //             return i + 1;
-    //         }
-    //     }
-    //     return i;
-    // }
-    // BaseReader.FindEndOfBlock(text:StringTracker, open = '(', close = ')') {
-    //     const SkipTypes = ['"', "'", '`'];
-    //     let counter = 1;
-    //     let i = 0;
-    //     for (; i < text.length; i++) {
-    //         const char = text.at(i);
-    //         if (SkipTypes.includes(char.eq) && text.at(i - 1).eq != '\\') {
-    //             i += this.findEntOfQ(text.substring(i + 1), char.eq); // no +1 becuse i is doing ++ in the loop
-    //         } else if (text.substring(i, i + close.length).eq == open) {
-    //             counter++;
-    //         } else if (text.substring(i, i + close.length).eq == close) {
-    //             counter--;
-    //             if (counter == 0) {
-    //                 return i;
-    //             }
-    //         }
-    //     }
-    //     return i;
-    // }
     CheckWithoutSpace(text, ArrayCheck) {
         for (const i of ArrayCheck) {
             const index = text.indexOf(i);
@@ -64,80 +34,69 @@ class Razor {
         }
         return counter;
     }
-    AnyStringNotSkip(text, index) {
-        for (const i of this.StringNotSkip) {
-            if (text.substring(index, index + i.length).eq == i) {
-                return true;
-            }
-        }
-        return false;
-    }
-    ParseScript(text, SmallScript = false, i = 0, ArrayNext = [], ReFirst) {
-        const typeQ = [
-            ["(", "[", "{"],
-            [")", "]", "}"]
-        ];
-        let nextBreak = 0;
-        for (; i < text.length; i++) {
-            const char = text.at(i);
-            const indexQ = typeQ[0].indexOf(char.eq);
+    ParseScriptSmall(text) {
+        const removeOneStartEnd = Number(text.at(0).eq == '('); // remove double parenthesis @(123) => write((123))
+        const stop = /(((?![\p{L}_\$0-9.]).)|[\r\n])+/u;
+        for (let i = 1, length = text.length; i < length; i++) {
+            const char = text.at(i).eq;
+            const indexQ = this.typeQ[0].indexOf(char);
             if (indexQ != -1) {
-                const EndBlock = BaseReader.FindEndOfBlock(text.eq.substring(i + 1), char.eq, typeQ[1][indexQ]); // no +1 because i is doing ++ in the loop;
-                if (!SmallScript && char.eq == typeQ[0][2]) {
-                    if (ReFirst) {
-                        ReFirst(text.substring(0, i + 1));
-                    }
-                    else {
-                        this.values.push({
-                            type: 'script',
-                            data: text.substring(0, i + 1)
-                        });
-                    }
-                    text = text.substring(i + 1);
-                    this.Builder(text.substring(0, EndBlock));
-                    text = text.substring(EndBlock + 1);
-                    const next = this.CheckWithoutSpace(text, ArrayNext);
-                    if (next) {
-                        const values = this.values;
-                        this.ParseScript(text, false, this.GetNextSpaceIndex(text, new StringTracker(text.DefaultInfoText, next)), ArrayNext, (FirstScript) => {
-                            values.push({
-                                type: 'script',
-                                data: new StringTracker(FirstScript.DefaultInfoText, typeQ[1][indexQ]).Plus(FirstScript)
-                            });
-                        });
-                    }
-                    else {
-                        this.values.push({
-                            type: 'script',
-                            data: new StringTracker(text.DefaultInfoText, typeQ[1][indexQ])
-                        });
-                        this.Builder(text);
-                    }
-                    return;
-                }
-                else {
-                    if (SmallScript && text.at(0).eq == "(") {
-                        nextBreak = 1;
-                    }
-                    i += 1 + EndBlock;
-                }
+                i += BaseReader.FindEndOfBlock(text.eq.substring(i + 1), char, this.typeQ[1][indexQ]) + 1;
+                continue;
             }
-            else if (nextBreak || this.checkEnd.includes(char.eq) || !this.CharNotSkip.includes(char.eq) && !this.AnyStringNotSkip(text, i) && this.findFirstWordIndex(char) != -1) {
-                if (!nextBreak && char.eq == ';') {
-                    nextBreak = 1;
-                }
+            //skip '?.'
+            if (!(char == '?' && text.at(i + 1).eq == '.') && stop.test(char)) {
                 this.values.push({
-                    type: 'script' + (SmallScript ? '-print' : ''),
-                    data: text.substring(nextBreak, i - nextBreak)
+                    type: 'script-print',
+                    data: text.substring(removeOneStartEnd, i)
                 });
-                this.Builder(text.substring(i + nextBreak));
+                this.Builder(text.substring(i + 1 + (char == ';' ? 1 : 0))); // text
                 return;
             }
         }
         this.values.push({
-            type: 'script' + (SmallScript ? '-print' : ''),
-            data: text.substring(nextBreak, text.length - nextBreak).Plus(';')
+            type: 'script',
+            data: text
         });
+    }
+    SkipTillChar(text, findChar) {
+        for (let i = 0, length = text.length; i < length; i++) {
+            const char = text.at(i).eq;
+            const indexQ = this.typeQ[0].indexOf(char);
+            if (indexQ != -1) {
+                i += BaseReader.FindEndOfBlock(text.eq.substring(i + 1), char, this.typeQ[1][indexQ]); // no +1 because i is doing ++ in the loop;
+                continue;
+            }
+            if (char == findChar)
+                return i;
+        }
+        return -1;
+    }
+    ParseScriptBig(text, ArrayNext = [], lastRecursive) {
+        const start = this.SkipTillChar(text, '{'); // need to add fined end with blocks
+        const startScript = text.substring(0, start + 1); // script before
+        if (lastRecursive)
+            lastRecursive(startScript);
+        else
+            this.values.push({
+                type: 'script',
+                data: startScript
+            });
+        text = text.substring(start + 1);
+        const end = BaseReader.FindEndOfBlock(text.eq, '{', '}');
+        const between = text.substring(0, end), after = text.substring(end + 1);
+        this.Builder(between); // text
+        const addToLast = (plus = '') => this.values.push({
+            type: 'script',
+            data: text.at(end).Plus(plus) // adding }
+        });
+        const next = this.CheckWithoutSpace(after, ArrayNext);
+        if (!next) {
+            addToLast();
+            this.Builder(after); // text
+            return;
+        }
+        this.ParseScriptBig(after, ArrayNext, addToLast);
     }
     findFirstWordIndex(text) {
         return text.search(/(((?![\p{L}_\$]).)|[\r\n])+/u); // not match any language, _, $
@@ -200,6 +159,15 @@ class Razor {
         });
         this.Builder(text.substring(indexStart));
     }
+    simpleBigScript(text) {
+        text = text.substring(1);
+        const blockEnd = BaseReader.FindEndOfBlock(text.eq, '{', '}');
+        this.values.push({
+            type: 'script',
+            data: text.substring(0, blockEnd)
+        });
+        this.Builder(text.substring(blockEnd + 1));
+    }
     Builder(text) {
         const index = text.indexOf(this.typeLoad);
         if (index == -1) {
@@ -235,27 +203,16 @@ class Razor {
             return;
         }
         text = textNext;
-        if (firstWord == 'switch') {
+        if (firstWord == 'switch')
             this.SwitchParser(text);
-        }
-        else if (firstWord == 'function') {
+        else if (firstWord == 'function')
             this.FunctionParser(text);
-        }
-        else if (this.notPrint[firstWord]) {
-            this.ParseScript(text, false, 0, this.notPrint[firstWord]);
-        }
-        else if (text.at(0).eq == '{') {
-            text = text.substring(1);
-            const blockEnd = BaseReader.FindEndOfBlock(text.eq, '{', '}');
-            this.values.push({
-                type: 'script',
-                data: text.substring(0, blockEnd).Plus(';')
-            });
-            this.Builder(text.substring(blockEnd + 1));
-        }
-        else {
-            this.ParseScript(text, true, text.at(0).eq == ':' ? 1 : 0);
-        }
+        else if (this.notPrint[firstWord])
+            this.ParseScriptBig(text, this.notPrint[firstWord]);
+        else if (text.at(0).eq == '{')
+            this.simpleBigScript(text);
+        else
+            this.ParseScriptSmall(text);
     }
     BuildAll(text) {
         this.values = [];
