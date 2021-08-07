@@ -50,7 +50,7 @@ export function addFinalizeBuild(pageData, sessionInfo) {
             }
         }`;
     if (pageData.includes("@ConnectHere"))
-        pageData = pageData.replacer(/@ConnectHere(;?)/, () => new StringTracker('@ConnectHere;', addScript));
+        pageData = pageData.replacer(/@ConnectHere(;?)/, () => new StringTracker(StringTracker.emptyInfo, addScript));
     else
         pageData.AddTextAfter(addScript);
     return pageData;
