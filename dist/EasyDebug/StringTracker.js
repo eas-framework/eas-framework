@@ -11,7 +11,7 @@ export default class StringTracker {
             this.InfoText = Info;
         }
         else if (Info) {
-            this.setDefualt(Info);
+            this.setDefault(Info);
         }
         if (text) {
             this.AddTextAfter(text, this.DefaultInfoText.info, 1);
@@ -25,7 +25,7 @@ export default class StringTracker {
             char: 0
         };
     }
-    setDefualt(Info = this.DefaultInfoText) {
+    setDefault(Info = this.DefaultInfoText) {
         this.InfoText = Info.info;
         this.OnLine = Info.line;
         this.OnChar = Info.char;
@@ -61,7 +61,7 @@ export default class StringTracker {
                 char: this.OnChar
             };
         }
-        return this.DataArray[this.DataArray.length - 1];
+        return this.DataArray[this.DataArray.length - 1] ?? StringTracker.emptyInfo;
     }
     /**
      * get the InfoText that are setted on the first InfoText
@@ -97,11 +97,7 @@ export default class StringTracker {
      * length of the string
      */
     get length() {
-        let countChars = 0;
-        for (const i of this.DataArray) {
-            countChars += i.text.length;
-        }
-        return countChars;
+        return this.DataArray.length;
     }
     /**
      *
@@ -116,7 +112,7 @@ export default class StringTracker {
     }
     AddClone(data) {
         this.DataArray.push(...data.DataArray);
-        this.setDefualt({
+        this.setDefault({
             info: data.InfoText,
             line: data.OnLine,
             char: data.OnChar
@@ -245,29 +241,6 @@ export default class StringTracker {
         newString.DataArray.push(...this.DataArray.slice(start, end));
         return newString;
     }
-    // private CutString(start = 0, end = this.length): StringTracker {
-    //     let addTillEnd = false;
-    //     let length = end - start;
-    //     const newString = new StringTracker(this.StartInfo);
-    //     for (const i of this.DataArray) {
-    //         if (length <= 0) {
-    //             break;
-    //         }
-    //         if (addTillEnd) {
-    //             newString.AddTextAfter(i.text.substr(0, length), i.info, i.line, i.char);
-    //             length -= i.text.length;
-    //             continue;
-    //         }
-    //         start -= i.text.length;
-    //         if (start <= 0) {
-    //             start += i.text.length;
-    //             newString.AddTextAfter(i.text.substr(start, length), i.info, i.line, i.char);
-    //             length -= i.text.length - start;
-    //             addTillEnd = true;
-    //         }
-    //     }
-    //     return newString;
-    // }
     /**
      * substring-like method, more like js cutting string, if there is not parameters it complete to 0
      */
@@ -378,7 +351,7 @@ export default class StringTracker {
     }
     trimStart() {
         const newString = this.Clone();
-        newString.setDefualt();
+        newString.setDefault();
         for (let i = 0; i < newString.DataArray.length; i++) {
             const e = newString.DataArray[i];
             if (e.text.trim() == '') {
@@ -397,7 +370,7 @@ export default class StringTracker {
     }
     trimEnd() {
         const newString = this.Clone();
-        newString.setDefualt();
+        newString.setDefault();
         for (let i = newString.DataArray.length - 1; i >= 0; i--) {
             const e = newString.DataArray[i];
             if (e.text.trim() == '') {
@@ -427,22 +400,6 @@ export default class StringTracker {
             copy.AddTextAfter(addInside || end.eq, end.DefaultInfoText.info, end.DefaultInfoText.line, end.DefaultInfoText.char);
         }
         return copy;
-    }
-    removeEmptyStart() {
-        const newString = this.Clone();
-        newString.setDefualt();
-        for (let i = 0; i < newString.DataArray.length; i++) {
-            const e = newString.DataArray[i];
-            if (e.text == '') {
-                newString.DataArray.shift();
-                i--;
-            }
-            else {
-                e.text = e.text.trimStart();
-                break;
-            }
-        }
-        return newString;
     }
     ActionString(Act) {
         const newString = this.Clone();

@@ -65,7 +65,7 @@ export function addFinalizeBuild(pageData: StringTracker, sessionInfo: StringAny
         if (i.type != 'form')
             continue;
 
-        const sendToUnicode = new StringTracker(StringTracker.emptyInfo, i.sendTo).unicode.eq
+        const sendToUnicode = new StringTracker(null, i.sendTo).unicode.eq
         const connect = new RegExp(`@ConnectHereForm\\([ ]*${sendToUnicode}[ ]*\\)(;?)`), connectDefault = new RegExp(`@\\?ConnectHereForm\\([ ]*${sendToUnicode}[ ]*\\)(;?)`);
 
         let counter = 0;

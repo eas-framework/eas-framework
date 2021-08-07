@@ -34,7 +34,7 @@ export default class JSParser {
         //file name in comment
         let count = 1;
         for (const i of allScript) {
-            WithInfo.Plus(new StringTracker(StringTracker.emptyInfo, `//!${i.lineInfo}\n`), i);
+            WithInfo.Plus(new StringTracker(null, `//!${i.lineInfo}\n`), i);
             if (count != length) {
                 WithInfo.Plus('\n');
                 count++;
@@ -47,9 +47,8 @@ export default class JSParser {
         let text = this.text;
         for (let i = 0; i < this.text.length; i++) {
             const StartIndex = text.indexOf(this.start);
-            if (StartIndex == -1) {
+            if (StartIndex == -1)
                 break;
-            }
             const TextBefore = text.substring(0, StartIndex);
             this.values.push({
                 type: 'text',
@@ -66,15 +65,12 @@ export default class JSParser {
                 const index = this.findEndOfDefGlobal(script);
                 const stringCopy = new StringTracker(script.StartInfo);
                 script = script.substring(1, index);
-                if (script.endsWith(';')) {
+                if (script.endsWith(';'))
                     script = script.substring(0, script.length - 1);
-                }
-                if (t == ':') {
+                if (t == ':')
                     stringCopy.Plus$ `safeWrite(${script});`;
-                }
-                else {
+                else
                     stringCopy.Plus$ `write(${script});`;
-                }
                 script = new StringTracker(script.StartInfo).Plus$ `${stringCopy};${script.substring(index)}`;
             }
             if (t != '#') {
@@ -85,7 +81,7 @@ export default class JSParser {
                     const info = script.substring(14);
                     this.values.push({
                         type: 'script',
-                        text: new StringTracker(StringTracker.emptyInfo).Plus$ `\nrun_script_name = \`${JSParser.fixText(info)}\`;`
+                        text: new StringTracker(null).Plus$ `\nrun_script_name = \`${JSParser.fixText(info)}\`;`
                     });
                 }
                 else if (t == '!') {
@@ -141,7 +137,7 @@ export default class JSParser {
             }
             else {
                 if (isDebug && i.type == 'script') {
-                    runScript.Plus(new StringTracker(StringTracker.emptyInfo, `\nrun_script_code=\`${JSParser.fixText(i.text)}\`;`), this.ScriptWithInfo(i.text));
+                    runScript.Plus(new StringTracker(null, `\nrun_script_code=\`${JSParser.fixText(i.text)}\`;`), this.ScriptWithInfo(i.text));
                 }
                 else {
                     runScript.Plus(i.text);
@@ -176,7 +172,7 @@ export default class JSParser {
         for (const i of allLines) {
             const infoLine = i.split('\n', 1).pop(), dataText = i.substring(infoLine.length);
             const [infoText, numbers] = JSParser.split2FromEnd(infoLine, ':', 2), [line, char] = numbers.split(':');
-            tracker.Plus(new StringTracker(StringTracker.emptyInfo, '\n//!' + infoLine));
+            tracker.Plus(new StringTracker(null, '\n//!' + infoLine));
             tracker.AddTextAfter(dataText, infoText, Number(line) - 1, Number(char));
         }
         return tracker;
@@ -345,7 +341,7 @@ export class EnableGlobalReplace {
         });
     }
     StartBuild() {
-        const extractComments = new JSParser(new StringTracker(StringTracker.emptyInfo, this.buildCode.CodeBuildText), this.path, '/*', '*/');
+        const extractComments = new JSParser(new StringTracker(null, this.buildCode.CodeBuildText), this.path, '/*', '*/');
         extractComments.findScripts();
         for (const i of extractComments.values) {
             if (i.type == 'text') {

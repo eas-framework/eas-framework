@@ -11,7 +11,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
     const lang = dataTag.find(x => x.n.eq == 'lang');
 
     const SaveServerCode = new EnableGlobalReplace();
-    await SaveServerCode.load(BetweenTagData.removeEmptyStart(), pathName);
+    await SaveServerCode.load(BetweenTagData.trimStart(), pathName);
 
     let outStyle = SaveServerCode.StartBuild();
 

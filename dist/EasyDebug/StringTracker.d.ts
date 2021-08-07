@@ -17,8 +17,8 @@ export default class StringTracker {
      * @param InfoText text info for all new string that are created in this object
      */
     constructor(Info?: string | StringTrackerDataInfo, text?: string);
-    static get emptyInfo(): StringTrackerDataInfo;
-    setDefualt(Info?: StringTrackerDataInfo): void;
+    private static get emptyInfo();
+    setDefault(Info?: StringTrackerDataInfo): void;
     getDataArray(): StringTrackerDataInfo[];
     /**
      * allow indexing like string does: myString[0] -> StringTracker
@@ -151,7 +151,6 @@ export default class StringTracker {
     trimRight(): StringTracker;
     trim(): StringTracker;
     SpaceOne(addInside?: string): StringTracker;
-    removeEmptyStart(): StringTracker;
     private ActionString;
     toLocaleLowerCase(locales?: string | string[]): StringTracker;
     toLocaleUpperCase(locales?: string | string[]): StringTracker;

@@ -2,7 +2,7 @@ export interface StringTrackerDataInfo {
     text?: string,
     info: string,
     line?: number,
-    char?:number
+    char?: number
 }
 
 interface StringIndexerInfo {
@@ -11,8 +11,8 @@ interface StringIndexerInfo {
 }
 
 export interface ArrayMatch extends Array<StringTracker> {
-        index?: number,
-        input?: StringTracker
+    index?: number,
+    input?: StringTracker
 }
 
 export default class StringTracker {
@@ -27,7 +27,7 @@ export default class StringTracker {
         if (typeof Info == 'string') {
             this.InfoText = Info;
         } else if (Info) {
-            this.setDefualt(Info);
+            this.setDefault(Info);
         }
 
         if (text) {
@@ -37,7 +37,8 @@ export default class StringTracker {
         return this.Indexing();
     }
 
-    public static get emptyInfo(): StringTrackerDataInfo{
+
+    private static get emptyInfo(): StringTrackerDataInfo {
         return {
             info: '',
             line: 0,
@@ -45,13 +46,13 @@ export default class StringTracker {
         }
     }
 
-    public setDefualt(Info = this.DefaultInfoText) {
+    public setDefault(Info = this.DefaultInfoText) {
         this.InfoText = Info.info;
         this.OnLine = Info.line;
         this.OnChar = Info.char;
     }
 
-    public getDataArray(){
+    public getDataArray() {
         return this.DataArray;
     }
     /**
@@ -84,7 +85,7 @@ export default class StringTracker {
             }
         }
 
-        return this.DataArray[this.DataArray.length - 1];
+        return this.DataArray[this.DataArray.length - 1] ?? StringTracker.emptyInfo;
     }
 
     /**
@@ -127,12 +128,7 @@ export default class StringTracker {
      * length of the string
      */
     get length(): number {
-        let countChars = 0;
-        for (const i of this.DataArray) {
-            countChars += i.text.length;
-        }
-
-        return countChars;
+        return this.DataArray.length;
     }
 
     /**
@@ -150,8 +146,8 @@ export default class StringTracker {
     private AddClone(data: StringTracker) {
         this.DataArray.push(...data.DataArray);
 
-        this.setDefualt({
-            info:data.InfoText,
+        this.setDefault({
+            info: data.InfoText,
             line: data.OnLine,
             char: data.OnChar
         });
@@ -242,7 +238,7 @@ export default class StringTracker {
 
         for (const i of text) {
 
-            if(i){
+            if (i) {
                 dataStore.push({
                     text: i,
                     info,
@@ -252,7 +248,7 @@ export default class StringTracker {
                 CharCount++;
             }
 
-            if(i == '\n'){
+            if (i == '\n') {
                 LineCount++;
                 CharCount = 1;
             }
@@ -289,45 +285,13 @@ export default class StringTracker {
      * @param end 
      * @returns new cutted string
      */
-        private CutString(start = 0, end = this.length): StringTracker {
-            const newString = new StringTracker(this.StartInfo);
+    private CutString(start = 0, end = this.length): StringTracker {
+        const newString = new StringTracker(this.StartInfo);
 
-            newString.DataArray.push(...this.DataArray.slice(start, end));
+        newString.DataArray.push(...this.DataArray.slice(start, end));
 
-            return newString;
-        }
-    // private CutString(start = 0, end = this.length): StringTracker {
-    //     let addTillEnd = false;
-    //     let length = end - start;
-
-    //     const newString = new StringTracker(this.StartInfo);
-
-    //     for (const i of this.DataArray) {
-
-    //         if (length <= 0) {
-    //             break;
-    //         }
-
-    //         if (addTillEnd) {
-    //             newString.AddTextAfter(i.text.substr(0, length), i.info, i.line, i.char);
-    //             length -= i.text.length;
-    //             continue;
-    //         }
-
-    //         start -= i.text.length;
-
-    //         if (start <= 0) {
-    //             start += i.text.length;
-
-    //             newString.AddTextAfter(i.text.substr(start, length), i.info, i.line, i.char);
-    //             length -= i.text.length - start;
-
-    //             addTillEnd = true;
-    //         }
-    //     }
-
-    //     return newString;
-    // }
+        return newString;
+    }
 
     /**
      * substring-like method, more like js cutting string, if there is not parameters it complete to 0
@@ -399,14 +363,14 @@ export default class StringTracker {
     }
 
     *[Symbol.iterator]() {
-        for(const i of this.DataArray){
+        for (const i of this.DataArray) {
             const char = new StringTracker();
             char.DataArray.push(i);
             yield char;
         }
     }
 
-    public getLine(line: number, startFromOne = true){
+    public getLine(line: number, startFromOne = true) {
         return this.split('\n')[line - +startFromOne];
     }
 
@@ -414,7 +378,7 @@ export default class StringTracker {
         return this.OneString.indexOf(text);
     }
 
-    public lastIndexOf(text: string){
+    public lastIndexOf(text: string) {
         return this.OneString.lastIndexOf(text);
     }
 
@@ -460,7 +424,7 @@ export default class StringTracker {
 
     public trimStart() {
         const newString = this.Clone();
-        newString.setDefualt();
+        newString.setDefault();
 
         for (let i = 0; i < newString.DataArray.length; i++) {
             const e = newString.DataArray[i];
@@ -483,7 +447,7 @@ export default class StringTracker {
 
     public trimEnd() {
         const newString = this.Clone();
-        newString.setDefualt();
+        newString.setDefault();
 
         for (let i = newString.DataArray.length - 1; i >= 0; i--) {
             const e = newString.DataArray[i];
@@ -521,25 +485,6 @@ export default class StringTracker {
         }
 
         return copy;
-    }
-
-    public removeEmptyStart() {
-        const newString = this.Clone();
-        newString.setDefualt();
-
-        for (let i = 0; i < newString.DataArray.length; i++) {
-            const e = newString.DataArray[i];
-
-            if (e.text == '') {
-                newString.DataArray.shift();
-                i--;
-            } else {
-                e.text = e.text.trimStart();
-                break;
-            }
-        }
-
-        return newString;
     }
 
     private ActionString(Act: (text: string) => string) {
@@ -600,8 +545,8 @@ export default class StringTracker {
         return allSplit;
     }
 
-    private RegexInString(searchValue: string | RegExp){
-        if(searchValue instanceof RegExp){
+    private RegexInString(searchValue: string | RegExp) {
+        if (searchValue instanceof RegExp) {
             return searchValue;
         }
         return new StringTracker('n', searchValue).unicode.eq;
@@ -654,16 +599,16 @@ export default class StringTracker {
         return this.replaceWithTimes(this.RegexInString(searchValue), replaceValue, searchValue instanceof RegExp ? undefined : 1)
     }
 
-    public replacer(searchValue: RegExp, func: (data: ArrayMatch) => StringTracker){
+    public replacer(searchValue: RegExp, func: (data: ArrayMatch) => StringTracker) {
         let copy = this.Clone(), SplitToReplace: ArrayMatch;
-        function ReMatch(){
+        function ReMatch() {
             SplitToReplace = copy.match(searchValue);
         }
         ReMatch();
 
         const newText = new StringTracker(copy.StartInfo);
 
-        while(SplitToReplace){
+        while (SplitToReplace) {
             newText.Plus(copy.substring(0, SplitToReplace.index));
             newText.Plus(func(SplitToReplace));
 
@@ -679,7 +624,7 @@ export default class StringTracker {
         return this.replaceWithTimes(this.RegexInString(searchValue), replaceValue)
     }
 
-    public matchAll(searchValue: string | RegExp): StringTracker[]{
+    public matchAll(searchValue: string | RegExp): StringTracker[] {
         const allMatchs = this.StringIndexer(searchValue);
         const mathArray = [];
 
@@ -690,14 +635,14 @@ export default class StringTracker {
         return mathArray;
     }
 
-    public match(searchValue: string | RegExp): ArrayMatch | StringTracker[]{
-        if(searchValue instanceof RegExp && searchValue.global){
+    public match(searchValue: string | RegExp): ArrayMatch | StringTracker[] {
+        if (searchValue instanceof RegExp && searchValue.global) {
             return this.matchAll(searchValue);
         }
 
         const find = this.OneString.match(searchValue);
 
-        if(find == null) return null;
+        if (find == null) return null;
 
         const ResultArray: ArrayMatch = [];
 
@@ -707,13 +652,13 @@ export default class StringTracker {
 
         let nextMath = ResultArray[0].Clone();
 
-        for(const i in find){
-            if(isNaN(Number(i))){
+        for (const i in find) {
+            if (isNaN(Number(i))) {
                 break;
             }
             const e = find[i];
 
-            if(e == null){
+            if (e == null) {
                 ResultArray.push(<any>e);
                 continue;
             }
