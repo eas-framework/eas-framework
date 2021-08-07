@@ -9,7 +9,7 @@ class Razor {
     checkEnd;
     notPrint;
     values;
-    constructor(typeLoad = '@', comment = '*', skipWords = ["basic"], CharNotSkip = [".", " ", "\n"], StringNotSkip = ["?."], checkEnd = [" ", "\n", ";"], notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }) {
+    constructor(typeLoad = '@', comment = '*', skipWords = ["basic"], CharNotSkip = [".", " ", "\n"], StringNotSkip = ["?."], checkEnd = [";"], notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }) {
         this.typeLoad = typeLoad;
         this.comment = comment;
         this.skipWords = skipWords;
@@ -72,7 +72,7 @@ class Razor {
         }
         return false;
     }
-    ParseScript(text, SmallScript = false, i = 0, ArrayNext = [], needOneBig = false, ReFirst) {
+    ParseScript(text, SmallScript = false, i = 0, ArrayNext = [], ReFirst) {
         const typeQ = [
             ["(", "[", "{"],
             [")", "]", "}"]
@@ -84,7 +84,6 @@ class Razor {
             if (indexQ != -1) {
                 const EndBlock = BaseReader.FindEndOfBlock(text.eq.substring(i + 1), char.eq, typeQ[1][indexQ]); // no +1 because i is doing ++ in the loop;
                 if (!SmallScript && char.eq == typeQ[0][2]) {
-                    needOneBig = true;
                     if (ReFirst) {
                         ReFirst(text.substring(0, i + 1));
                     }
@@ -100,7 +99,7 @@ class Razor {
                     const next = this.CheckWithoutSpace(text, ArrayNext);
                     if (next) {
                         const values = this.values;
-                        this.ParseScript(text, false, this.GetNextSpaceIndex(text, new StringTracker(text.DefaultInfoText, next)), ArrayNext, true, (FirstScript) => {
+                        this.ParseScript(text, false, this.GetNextSpaceIndex(text, new StringTracker(text.DefaultInfoText, next)), ArrayNext, (FirstScript) => {
                             values.push({
                                 type: 'script',
                                 data: new StringTracker(FirstScript.DefaultInfoText, typeQ[1][indexQ]).Plus(FirstScript)
@@ -123,15 +122,15 @@ class Razor {
                     i += 1 + EndBlock;
                 }
             }
-            else if (nextBreak || !needOneBig && this.checkEnd.includes(char.eq) || !this.CharNotSkip.includes(char.eq) && !this.AnyStringNotSkip(text, i) && this.findFirstWordIndex(char) != -1) {
-                if (char.eq == ';') {
-                    i++;
+            else if (nextBreak || this.checkEnd.includes(char.eq) || !this.CharNotSkip.includes(char.eq) && !this.AnyStringNotSkip(text, i) && this.findFirstWordIndex(char) != -1) {
+                if (!nextBreak && char.eq == ';') {
+                    nextBreak = 1;
                 }
                 this.values.push({
                     type: 'script' + (SmallScript ? '-print' : ''),
                     data: text.substring(nextBreak, i - nextBreak)
                 });
-                this.Builder(text.substring(i));
+                this.Builder(text.substring(i + nextBreak));
                 return;
             }
         }
@@ -263,7 +262,7 @@ class Razor {
         this.Builder(text);
         const output = new StringTracker(text.StartInfo);
         for (const i of this.values) {
-            if (i.type == 'text' && i.data.trim().eq != '') {
+            if (i.type == 'text' && i.data.eq != '') {
                 output.Plus(i.data);
             }
             else if (i.type == 'script') {

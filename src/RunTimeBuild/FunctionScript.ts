@@ -7,7 +7,7 @@ import { print } from '../OutputInput/Console';
 import {ImportFile, AddExtension} from '../ImportFiles/Script';
 import { Request, Response } from '@tinyhttp/app';
 import {Files} from 'formidable';
-import {handelConnector} from '../BuildInComponents/Components/connect';
+import {handelConnectorService} from '../BuildInComponents/index';
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache';
 
 function SplitFirst(type: string, string: string) {
@@ -179,7 +179,7 @@ async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
     try {
         const MyModule = await ImportWithoutCache(compiledPath, async compiledPath => await import('file:///' + compiledPath));
 
-        return MyModule.default(__dirname, __filename, _require, _include, private_var, handelConnector);
+        return MyModule.default(__dirname, __filename, _require, _include, private_var, handelConnectorService);
     } catch (e) {
         print.log("Error path -> ", Debug__filename, "->", e.message);
         return (DataObject:any) => DataObject.out_run_script.text += `<div style="color:red;text-align:left;font-size:16px;"><p>Error path: ${Debug__filename}</p><p>Error message: ${e.message}</p></div>`;

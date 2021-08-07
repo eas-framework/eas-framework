@@ -1,1 +1,26 @@
-<css path="poo"/>
+@*
+@{
+    function sendRes(myNum: string){
+        return '\nCool! ' + myNum
+    }
+
+    function not(err){
+        return 'info not valid - ' + err;
+    }
+}
+<form method="POST" sendTo="sendRes" validate="num:int" notValid="not">
+    <input type="text" name="num" value="6"/>
+    <button type="submit">Submit</button>
+</form>*@
+
+@{
+
+
+    let i = 0;
+    async function servInfo(text) {
+        return '123 ' + text + i;
+    }
+
+    @ConnectHere;
+}
+<connect name="getInfo" sendTo="servInfo" validate="text"/>

@@ -393,7 +393,7 @@ export default class InsertComponent extends InsertComponentBase {
                 BetweenTagDataCloseIndex = await this.FindCloseCharHTML(NextTextTag, tagType.eq);
                 if (BetweenTagDataCloseIndex == -1) {
                     PrintIfNew({
-                        text: `\nWarning, you didn't write right this tag: "${tagType}", used in: ${tagType.lineInfo}\n(the system will auto close it)\n`,
+                        text: `\nWarning, you didn't write right this tag: "${tagType}", used in: ${tagType.at(0).lineInfo}\n(the system will auto close it)\n`,
                         errorName: "close-tag"
                     });
                     BetweenTagDataCloseIndex = null;

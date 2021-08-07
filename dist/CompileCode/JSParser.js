@@ -190,7 +190,7 @@ export class PageTemplate extends JSParser {
         const thisDirFile = path.dirname(filePath);
         const DataArray = text.getDataArray(), length = DataArray.length;
         let lineCount = 0;
-        for (let index = 1, element = DataArray[index]; index < length; index++) {
+        for (let index = 1, element = DataArray[index]; index < length; index++, element = DataArray[index]) {
             if (element.text == '\n') {
                 lineCount++;
                 continue;

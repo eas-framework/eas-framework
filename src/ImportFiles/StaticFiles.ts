@@ -61,7 +61,7 @@ export default async function BuildFile(SmallPath: string, isDebug: boolean, ful
             break;
     }
 
-    if (isDebug && !await EasyFs.exists(fullCompilePath)) {
+    if (isDebug && await EasyFs.exists(fullCompilePath)) {
         updateDep(SmallPath, dependencies);
         return true;
     }

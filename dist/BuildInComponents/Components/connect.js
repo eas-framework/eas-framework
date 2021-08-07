@@ -1,4 +1,5 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
+import { compileValues, makeValidationJSON } from './serv-connect/index.js';
 const serveScript = `<script src="/serv/connect.js"></script>`;
 function template(name) {
     return `
@@ -21,6 +22,7 @@ export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, 
         tagScript = serveScript + tagScript;
     }
     sessionInfo.connectorArray.push({
+        type: 'connect',
         name,
         sendTo,
         message: message != null,
@@ -31,88 +33,48 @@ export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, 
         checkComponents: true
     };
 }
-const builtInConnection = ['string', 'text', 'number', 'num', 'integer', 'int', 'boolean', 'bool'];
 export function addFinalizeBuild(pageData, sessionInfo) {
-    if (sessionInfo.connectorArray.length) {
-        let buildObject = '';
-        for (const i of sessionInfo.connectorArray) {
-            buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${i.validator.map(validFunc => {
-                return builtInConnection.includes(validFunc) ? `"${validFunc}"` : validFunc;
-            })}]}`;
-        }
-        buildObject = `[${buildObject.substring(1)}]`;
-        const addScript = `
+    if (!sessionInfo.connectorArray.length)
+        return pageData;
+    let buildObject = '';
+    for (const i of sessionInfo.connectorArray) {
+        if (i.type != 'connect')
+            continue;
+        buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${i.validator.map(compileValues)}]}`;
+    }
+    buildObject = `[${buildObject.substring(1)}]`;
+    const addScript = `
         if(Post?.connectorCall){
-            if(await handelConnector(this, ${buildObject})){
+            if(await handelConnector("connect", page, ${buildObject})){
                 return;
             }
         }`;
-        if (pageData.includes("@ConnectHere")) {
-            pageData = pageData.replacer(/@ConnectHere(;?)/, () => new StringTracker(StringTracker.emptyInfo, addScript));
-        }
-        else {
-            pageData.AddTextAfter(addScript);
-        }
-    }
+    if (pageData.includes("@ConnectHere"))
+        pageData = pageData.replacer(/@ConnectHere(;?)/, () => new StringTracker('@ConnectHere;', addScript));
+    else
+        pageData.AddTextAfter(addScript);
     return pageData;
 }
-async function makeValidation(args, validatorArray) {
-    for (const i in validatorArray) {
-        const element = validatorArray[i];
-        let returnNow = false;
-        let isDefault = false;
-        switch (element.toLowerCase()) {
-            case 'string':
-            case 'text':
-                returnNow = typeof args[i] !== 'string';
-                break;
-            case 'number':
-            case 'num':
-                returnNow = typeof args[i] !== 'number';
-                break;
-            case 'boolean':
-            case 'bool':
-                returnNow = typeof args[i] !== 'boolean';
-                break;
-            case 'integer':
-            case 'int':
-                returnNow = !Number.isInteger(args[i]);
-                break;
-            default:
-                isDefault = true;
-                returnNow = !await element(args[i]);
-                break;
-        }
-        if (returnNow) {
-            return `failed at ${i} filed - ${isDefault ? returnNow : 'expected ' + element}`;
-        }
-    }
-    return true;
-}
 export async function handelConnector(thisPage, connectorArray) {
-    if (!thisPage.Post?.connectorCall) {
+    if (!thisPage.Post?.connectorCall)
         return false;
-    }
     const have = connectorArray.find(x => x.name == thisPage.Post.connectorCall.name);
-    if (!have) {
+    if (!have)
         return false;
-    }
     const values = thisPage.Post.connectorCall.values;
-    const isValid = have.validator && await makeValidation(values, have.validator);
+    const isValid = have.validator && await makeValidationJSON(values, have.validator);
     thisPage.setResponse('');
     if (!have.validator || isValid === true) {
         const obj = await have.sendTo(...values);
         thisPage.Response.setHeader('Content-Type', 'application/json');
         thisPage.Response.end(JSON.stringify(obj));
     }
-    else if (have.message) {
+    else if (have.message)
         thisPage.Response.json({
             error: isValid
         });
-    }
-    else {
+    else
         thisPage.Response.status(400);
-    }
     return true;
 }
 //# sourceMappingURL=connect.js.map

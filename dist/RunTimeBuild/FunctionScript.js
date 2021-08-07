@@ -4,7 +4,7 @@ import { BasicSettings, getTypes, CheckDependencyChange } from './SearchFileSyst
 import { FastCompile } from './SearchPages.js';
 import { print } from '../OutputInput/Console.js';
 import { ImportFile, AddExtension } from '../ImportFiles/Script.js';
-import { handelConnector } from '../BuildInComponents/Components/connect.js';
+import { handelConnectorService } from '../BuildInComponents/index.js';
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.js';
 function SplitFirst(type, string) {
     const index = string.indexOf(type);
@@ -147,7 +147,7 @@ async function LoadPage(url, ext = BasicSettings.pageTypes.page) {
     const private_var = {};
     try {
         const MyModule = await ImportWithoutCache(compiledPath, async (compiledPath) => await import('file:///' + compiledPath));
-        return MyModule.default(__dirname, __filename, _require, _include, private_var, handelConnector);
+        return MyModule.default(__dirname, __filename, _require, _include, private_var, handelConnectorService);
     }
     catch (e) {
         print.log("Error path -> ", Debug__filename, "->", e.message);

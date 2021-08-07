@@ -47,7 +47,7 @@ export default async function BuildFile(SmallPath, isDebug, fullCompilePath) {
             dependencies = await BuildStyleSass(SmallPath, ext, isDebug);
             break;
     }
-    if (isDebug && !await EasyFs.exists(fullCompilePath)) {
+    if (isDebug && await EasyFs.exists(fullCompilePath)) {
         updateDep(SmallPath, dependencies);
         return true;
     }
