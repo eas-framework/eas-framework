@@ -45,7 +45,7 @@ class Razor {
 
         const stop = /(((?![\p{L}_\$0-9.]).)|[\r\n])+/u;
 
-        for (let i = 1, length = text.length; i < length; i++) {
+        for (let i = Number(!removeOneStartEnd), length = text.length; i < length; i++) {
             const char = text.at(i).eq;
             const indexQ = this.typeQ[0].indexOf(char);
 
