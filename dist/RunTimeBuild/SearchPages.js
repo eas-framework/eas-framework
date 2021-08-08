@@ -4,17 +4,18 @@ import { ClearWarning } from '../OutputInput/PrintNew.js';
 import * as SearchFileSystem from './SearchFileSystem.js';
 import ReqScript from '../ImportFiles/Script.js';
 import StaticFiles from '../ImportFiles/StaticFiles.js';
+import path from 'path';
 export function RemoveEndType(string) {
     return string.substring(0, string.lastIndexOf('.'));
 }
 Components.RemoveEndType = RemoveEndType;
-async function compileFile(path, arrayType, isDebug, debugFromPage, sessionInfo) {
-    const FullFilePath = arrayType[0] + path, FullPathCompile = arrayType[1] + path + '.js';
+async function compileFile(filePath, arrayType, isDebug, debugFromPage, sessionInfo) {
+    const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.js';
     const dependenceObject = {
         thisPage: await EasyFs.stat(FullFilePath, 'mtimeMs')
     };
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
-    const ExcluUrl = (debugFromPage ? debugFromPage + ' -> ' : '') + arrayType[2] + '/' + path;
+    const ExcluUrl = (debugFromPage ? debugFromPage + ' -> ' : '') + arrayType[2] + '/' + filePath;
     const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(debugFromPage), sessionInfo);
     if (!debugFromPage) {
         await EasyFs.writeFile(FullPathCompile, CompiledData);

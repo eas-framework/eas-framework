@@ -6,20 +6,21 @@ import * as SearchFileSystem from './SearchFileSystem';
 import ReqScript from '../ImportFiles/Script';
 import StaticFiles from '../ImportFiles/StaticFiles';
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
+import path from 'path';
 
 export function RemoveEndType(string) {
     return string.substring(0, string.lastIndexOf('.'));
 }
 Components.RemoveEndType = RemoveEndType;
 
-async function compileFile(path: string, arrayType: string[], isDebug?: boolean, debugFromPage?: string, sessionInfo?: StringAnyMap) {
-    const FullFilePath = arrayType[0] + path, FullPathCompile = arrayType[1] + path + '.js';
+async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, debugFromPage?: string, sessionInfo?: StringAnyMap) {
+    const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.js';
     const dependenceObject: any = {
         thisPage: await EasyFs.stat(FullFilePath, 'mtimeMs')
     };
 
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
-    const ExcluUrl = (debugFromPage ? debugFromPage + ' -> ' : '') + arrayType[2] + '/' + path;
+    const ExcluUrl = (debugFromPage ? debugFromPage + ' -> ' : '') + arrayType[2] + '/' + filePath;
 
     const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(debugFromPage), sessionInfo);
 

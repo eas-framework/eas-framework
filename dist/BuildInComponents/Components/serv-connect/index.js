@@ -23,10 +23,6 @@ export async function makeValidationJSON(args, validatorArray) {
         let returnNow = false;
         let isDefault = false;
         switch (element) {
-            case 'string':
-            case 'text':
-                returnNow = typeof value !== 'string';
-                break;
             case 'number':
             case 'num':
                 returnNow = typeof value !== 'number';
@@ -39,11 +35,15 @@ export async function makeValidationJSON(args, validatorArray) {
             case 'int':
                 returnNow = !Number.isInteger(value);
                 break;
+            case 'string':
+            case 'text':
+                returnNow = typeof value !== 'string';
+                break;
             case 'email':
-                returnNow = emailValidator.test(value);
+                returnNow = !emailValidator.test(value);
                 break;
             case "number-range":
-                returnNow = builtInConnectionRegex[element][2](elementArgs, value);
+                returnNow = value == null || !builtInConnectionRegex[element][2](elementArgs, value);
                 break;
             default:
                 isDefault = true;
