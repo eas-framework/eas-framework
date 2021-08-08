@@ -48,7 +48,7 @@ class Razor {
             if (!(char == '?' && text.at(i + 1).eq == '.') && stop.test(char)) {
                 this.values.push({
                     type: 'script-print',
-                    data: text.substring(removeOneStartEnd, i)
+                    data: text.substring(removeOneStartEnd, i - removeOneStartEnd)
                 });
                 this.Builder(text.substring(i + removeOneStartEnd + (char == ';' ? 1 : 0))); // text
                 return;
