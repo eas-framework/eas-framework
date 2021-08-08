@@ -40,7 +40,7 @@ export function addFinalizeBuild(pageData, sessionInfo) {
     for (const i of sessionInfo.connectorArray) {
         if (i.type != 'connect')
             continue;
-        buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${i.validator.map(compileValues)}]}`;
+        buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${i.validator?.map(compileValues)?.join(',') ?? ''}]}`;
     }
     buildObject = `[${buildObject.substring(1)}]`;
     const addScript = `

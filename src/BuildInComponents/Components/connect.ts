@@ -57,7 +57,7 @@ export function addFinalizeBuild(pageData: StringTracker, sessionInfo: StringAny
         if (i.type != 'connect')
             continue;
 
-        buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${i.validator.map(compileValues)}]}`;
+        buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${i.validator?.map(compileValues)?.join(',') ?? ''}]}`;
     }
 
     buildObject = `[${buildObject.substring(1)}]`;

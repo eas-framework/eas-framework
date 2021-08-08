@@ -56,8 +56,8 @@ export function addFinalizeBuild(pageData, sessionInfo) {
                         {
                             sendTo:${i.sendTo},
                             notValid: ${i.notValid || 'null'},
-                            validator:[${i.validator?.map?.(compileValues) ?? ''}],
-                            order: [${i.order?.map?.(item => `"${item}"`) ?? ''}]
+                            validator:[${i.validator?.map?.(compileValues)?.join(',') ?? ''}],
+                            order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}]
                         }
                     );
                 }`;
