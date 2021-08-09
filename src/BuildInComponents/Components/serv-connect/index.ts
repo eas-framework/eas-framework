@@ -3,6 +3,8 @@ const builtInConnection = ['email', 'string', 'text', ...numbers, ...booleans];
 
 const emailValidator = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
+
+
 const builtInConnectionRegex = {
     "string-length-range": [
         /^[0-9]+:[0-9]+$/,

@@ -9,15 +9,7 @@ import { Request, Response } from '@tinyhttp/app';
 import {Files} from 'formidable';
 import {handelConnectorService} from '../BuildInComponents/index';
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache';
-
-function SplitFirst(type: string, string: string) {
-    const index = string.indexOf(type);
-    return [string.substring(0, index), string.substring(index + type.length)];
-}
-
-function CutTheLast(type: string, string: string) {
-    return string.substring(0, string.lastIndexOf(type));
-}
+import {CutTheLast, SplitFirst} from '../StringMethods/Splitting';
 
 const Export = {
     PageLoadRam: {},

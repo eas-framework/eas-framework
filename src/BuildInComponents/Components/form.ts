@@ -2,6 +2,7 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { tagDataObject, StringNumberMap, BuildInComponent, StringAnyMap, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
 import { compileValues, makeValidationJSON, parseValues } from './serv-connect/index';
+import {SplitFirst} from '../../StringMethods/Splitting';
 
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
 
@@ -26,11 +27,10 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
     const order = [];
 
     const validatorArray = validator && validator.split(',').map(x => { // Checking if there is an order information, for example "prop1: string, prop3: num, prop2: bool"
-        const split = x.trim().split(':');
+        const split = SplitFirst(x.trim(), ':');
 
-        if (split.length > 1) {
-            order.push(split.shift())
-        }
+        if (split.length > 1) 
+            order.push(split.shift());
 
         return split.pop();
     });
