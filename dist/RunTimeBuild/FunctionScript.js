@@ -6,13 +6,7 @@ import { print } from '../OutputInput/Console.js';
 import { ImportFile, AddExtension } from '../ImportFiles/Script.js';
 import { handelConnectorService } from '../BuildInComponents/index.js';
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.js';
-function SplitFirst(type, string) {
-    const index = string.indexOf(type);
-    return [string.substring(0, index), string.substring(index + type.length)];
-}
-function CutTheLast(type, string) {
-    return string.substring(0, string.lastIndexOf(type));
-}
+import { CutTheLast, SplitFirst } from '../StringMethods/Splitting.js';
 const Export = {
     PageLoadRam: {},
     PageRam: true

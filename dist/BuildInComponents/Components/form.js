@@ -1,6 +1,7 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
 import { v4 as uuid } from 'uuid';
 import { compileValues, makeValidationJSON, parseValues } from './serv-connect/index.js';
+import { SplitFirst } from '../../StringMethods/Splitting.js';
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, buildScript, sessionInfo) {
     const getAndRemoveAttr = (name) => {
         const data = InsertComponent.getFromDataTag(dataTag, name);
@@ -16,10 +17,9 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
     const name = getAndRemoveAttr('name').trim() || uuid(), validator = getAndRemoveAttr('validate'), notValid = getAndRemoveAttr('notValid');
     const order = [];
     const validatorArray = validator && validator.split(',').map(x => {
-        const split = x.trim().split(':');
-        if (split.length > 1) {
+        const split = SplitFirst(':', x.trim());
+        if (split.length > 1)
             order.push(split.shift());
-        }
         return split.pop();
     });
     sessionInfo.connectorArray.push({

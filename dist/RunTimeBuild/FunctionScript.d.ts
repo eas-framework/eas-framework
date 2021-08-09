@@ -1,6 +1,6 @@
 import { Request, Response } from '@tinyhttp/app';
 import { Files } from 'formidable';
-declare function SplitFirst(type: string, string: string): string[];
+import { SplitFirst } from '../StringMethods/Splitting';
 declare const Export: {
     PageLoadRam: {};
     PageRam: boolean;

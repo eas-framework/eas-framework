@@ -5,6 +5,7 @@ import { IsInclude, StartCompiling } from '../BuildInComponents/index.js';
 import StringTracker from '../EasyDebug/StringTracker.js';
 import { PrintIfNew } from '../OutputInput/PrintNew.js';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader.js';
+import { SplitFirst } from '../StringMethods/Splitting.js';
 export default class InsertComponent extends InsertComponentBase {
     dirFolder;
     PluginBuild;
@@ -52,7 +53,7 @@ export default class InsertComponent extends InsertComponentBase {
                     break;
                 }
             }
-            const Attributes = text.substring(0, i).splitTo2('=');
+            const Attributes = SplitFirst('=', text.substring(0, i));
             let char = null;
             if (Attributes[1]) {
                 char = Attributes[1].at(0).eq;
