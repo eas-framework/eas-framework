@@ -1,4 +1,4 @@
-@*
+
 @{
     function sendRes(myNum: string){
         return '\nCool! ' + myNum
@@ -8,10 +8,10 @@
         return 'info not valid - ' + err;
     }
 }
-<form method="POST" sendTo="sendRes" validate="num:int" notValid="not">
-    <input type="text" name="num" value="6"/>
+<form method="POST" sendTo="sendRes" validate="num: int => 5 | 6" notValid="not">
+    <input type="text" name="num" value="6"/> 
     <button type="submit">Submit</button>
-</form>*@
+</form>
 
 @* @{
 
@@ -44,7 +44,7 @@
 @me;
 
 @log()(8)?.f;
-*@
+
 
 @{
     const me = 9;
@@ -55,3 +55,4 @@
         --back: url(123_@me;_4)
     }
 }
+*@

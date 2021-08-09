@@ -87,7 +87,7 @@ export async function handelConnector(thisPage, connectorInfo) {
     if (isValid === true)
         response = await connectorInfo.sendTo(...values);
     else if (connectorInfo.notValid)
-        response = await connectorInfo.notValid(isValid);
+        response = await connectorInfo.notValid(...isValid);
     if (response)
         thisPage.write(response);
 }

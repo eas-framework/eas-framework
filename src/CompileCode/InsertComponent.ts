@@ -69,7 +69,7 @@ export default class InsertComponent extends InsertComponentBase {
                 }
             }
 
-            const Attributes = text.substring(0, i).split('=');
+            const Attributes = text.substring(0, i).splitTo2('=');
             let char = null;
 
             if (Attributes[1]) {

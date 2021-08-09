@@ -459,6 +459,12 @@ export default class StringTracker {
         newSplit.push(this.CutString(nextcut));
         return newSplit;
     }
+    splitTo2(separator) {
+        const index = this.indexOf(separator);
+        if (index == -1)
+            return [this.Clone()];
+        return [this.substring(0, index), this.substring(index + separator.length)];
+    }
     repeat(count) {
         const newString = this.Clone();
         for (let i = 0; i < count; i++) {

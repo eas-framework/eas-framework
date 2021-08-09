@@ -101,7 +101,7 @@ export async function handelConnector(thisPage: any, connectorArray: any[]) {
 
     } else if (have.message)
         thisPage.Response.json({
-            error: isValid
+            error: (<any>isValid).shift()
         });
     else
         thisPage.Response.status(400);

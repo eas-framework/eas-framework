@@ -160,6 +160,7 @@ export default class StringTracker {
     private StringIndexer;
     private RegexInString;
     split(separator: string | RegExp, limit?: number): StringTracker[];
+    splitTo2(separator: string): StringTracker[];
     repeat(count: number): StringTracker;
     private replaceWithTimes;
     replace(searchValue: string | RegExp, replaceValue: StringTracker | string): StringTracker;

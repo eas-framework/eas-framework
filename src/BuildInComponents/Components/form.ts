@@ -111,7 +111,7 @@ export async function handelConnector(thisPage: any, connectorInfo: any) {
         values.push(...Object.values(thisPage.Post));
 
 
-    let isValid: boolean | string = true;
+    let isValid: boolean | string[] = true;
 
     if (connectorInfo.validator.length) { // validate values
         values = parseValues(values, connectorInfo.validator);
@@ -123,7 +123,7 @@ export async function handelConnector(thisPage: any, connectorInfo: any) {
     if (isValid === true)
         response = await connectorInfo.sendTo(...values);
     else if (connectorInfo.notValid)
-        response = await connectorInfo.notValid(isValid);
+        response = await connectorInfo.notValid(...<any>isValid);
 
     if (response)
         thisPage.write(response);
