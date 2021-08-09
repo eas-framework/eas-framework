@@ -7,6 +7,7 @@ import AddPlugin from '../Plugins/Index';
 import { tagDataObject, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, StringAnyMap } from './XMLHelpers/CompileTypes';
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import {InsertComponentBase, BaseReader} from './BaseReader/Reader';
+import {SplitFirst} from '../StringMethods/Splitting';
 
 interface DefaultValues {
     value: StringTracker,
@@ -69,7 +70,7 @@ export default class InsertComponent extends InsertComponentBase {
                 }
             }
 
-            const Attributes = text.substring(0, i).splitTo2('=');
+            const Attributes = SplitFirst('=', text.substring(0, i));
             let char = null;
 
             if (Attributes[1]) {

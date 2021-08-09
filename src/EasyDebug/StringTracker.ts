@@ -567,14 +567,6 @@ export default class StringTracker {
 
         return newSplit;
     }
-
-    public splitTo2(separator: string) {
-        const index = this.indexOf(separator);
-        if(index == -1)
-            return [this.Clone()];
-        return [this.substring(0, index), this.substring(index + separator.length)];
-    }
-
     public repeat(count: number) {
         const newString = this.Clone();
         for (let i = 0; i < count; i++) {

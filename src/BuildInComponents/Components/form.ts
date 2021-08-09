@@ -27,7 +27,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
     const order = [];
 
     const validatorArray = validator && validator.split(',').map(x => { // Checking if there is an order information, for example "prop1: string, prop3: num, prop2: bool"
-        const split = SplitFirst(x.trim(), ':');
+        const split = SplitFirst(':', x.trim());
 
         if (split.length > 1) 
             order.push(split.shift());
