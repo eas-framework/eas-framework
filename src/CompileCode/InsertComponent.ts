@@ -253,10 +253,23 @@ export default class InsertComponent extends InsertComponentBase {
         return fileData;
     }
 
-    getFromDataTag(dataTag: tagDataObject[], name: string){
-        return dataTag.find(tag => tag.n.eq == name)?.v?.eq;
-    }
+    parseDataTagFunc(dataTag: tagDataObject[]){
+        const index = (name: string) => dataTag.findIndex(x => x.n.eq == name);
+        const getValue = (name: string) => dataTag.find(tag => tag.n.eq == name)?.v?.eq ?? '';
+        const pop = (name: string) => {
+            const nameIndex = index(name);
+            if(nameIndex == -1)
+                return '';
+            return dataTag.splice(nameIndex, 1).pop().v?.eq ?? '';
+        };
 
+        return {
+            have: (name: string) => index(name) != -1,
+            getValue,
+            pop
+        }
+    }
+    
     async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo}: { sessionInfo: StringAnyMap, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule, dependenceObject: StringNumberMap, isDebug: boolean }) {
         const data = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
 

@@ -1,7 +1,7 @@
 import path from 'path';
 import { BuildJS, BuildJSX, BuildTS, BuildTSX } from './ForStatic/Script';
 import { BuildStyleSass } from './ForStatic/Style';
-import { getTypes, SystemData,  BasicSettings, getDirname} from '../RunTimeBuild/SearchFileSystem';
+import { getTypes, SystemData, BasicSettings, getDirname } from '../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../OutputInput/EasyFs';
 import { Response, Request } from '@tinyhttp/app';
 import fs from 'fs';
@@ -17,7 +17,7 @@ function updateDep(path: string, deps: { [key: string]: number }) {
     EasyFs.writeJsonFile(locStaticFiles, StaticFiles);
 }
 
-async function CheckDependencyChange(path:string) {
+async function CheckDependencyChange(path: string) {
     const o = StaticFiles[path];
 
     for (const i in o) {
@@ -26,7 +26,7 @@ async function CheckDependencyChange(path:string) {
         if (i == 'thisFile') {
             p = path;
         }
-        
+
         const FilePath = BasicSettings.fullWebSitePath + getTypes.Static[2] + '/' + p;
         if (!await EasyFs.exists(FilePath) || await EasyFs.stat(FilePath, 'mtimeMs') != o[i]) {
             return true;
@@ -71,9 +71,10 @@ export default async function BuildFile(SmallPath: string, isDebug: boolean, ful
 }
 
 interface buildIn {
-    path: string;
+    path?: string;
+    ext?: string;
     type: string;
-    inServer: string;
+    inServer?: string;
 }
 
 const getStatic: buildIn[] = [{
@@ -86,20 +87,41 @@ const getStatic: buildIn[] = [{
     type: "js",
     inServer: "client/makeConnection.js"
 }];
+const __dirname = getDirname(import.meta.url);
+getStatic.forEach(x => x.inServer = __dirname + '/' + x.inServer); // make full path
 
-export function serverBuild(path: string): null | buildIn{
-    return getStatic.find(x => x.path == path);
+const getStaticFilesType: buildIn[] = [{
+    ext: '.pub.js',
+    type: 'js'
+},
+{
+    ext: '.pub.css',
+    type: 'css'
+}];
+
+async function serverBuildByType(filePath: string, checked: boolean) {
+    const found = getStaticFilesType.find(x => filePath.endsWith(x.ext));
+
+    if (!found)
+        return;
+
+    const inServer = path.join(getTypes.Static[1], filePath);
+
+    if(checked || await EasyFs.exists(inServer))
+        return { ...found, inServer};
 }
 
-const __dirname = getDirname(import.meta.url);
 
+export async function serverBuild(path: string, checked = false): Promise<null | buildIn> {
+    return await serverBuildByType(path, checked) || getStatic.find(x => x.path == path);
+}
 export async function GetFile(SmallPath: string, isDebug: boolean, Request: Request, Response: Response) {
     //file built in
-    const isBuildIn = serverBuild(SmallPath);
+    const isBuildIn = await serverBuild(SmallPath, true);
 
-    if(isBuildIn){
+    if (isBuildIn) {
         Response.type(isBuildIn.type);
-        Response.end(await EasyFs.readFile(__dirname + '/' + isBuildIn.inServer)); // sending the file
+        Response.end(await EasyFs.readFile(isBuildIn.inServer)); // sending the file
         return;
     }
 
@@ -125,9 +147,9 @@ export async function GetFile(SmallPath: string, isDebug: boolean, Request: Requ
     if (isDebug) { // re-compiling if necessary on debug mode
         if (Request.query.source == 'true') {
             resPath = fullPath;
-        } else if(await CheckDependencyChange(SmallPath)) {
+        } else if (await CheckDependencyChange(SmallPath)) {
 
-            if(!await BuildFile(SmallPath, isDebug, fullCompilePath)){
+            if (!await BuildFile(SmallPath, isDebug, fullCompilePath)) {
                 resPath = fullPath;
             }
         }

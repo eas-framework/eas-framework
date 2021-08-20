@@ -19,7 +19,7 @@ class Razor {
     CheckWithoutSpace(text, ArrayCheck) {
         for (const i of ArrayCheck) {
             const index = text.indexOf(i);
-            if (index != -1 && text.substring(0, index).trim().eq == '') {
+            if (index != -1 && text.substring(0, index).trim() == '') {
                 return i;
             }
         }
@@ -28,29 +28,30 @@ class Razor {
         const all = getFrom.split(' ');
         let counter = 0;
         for (const i of all) {
-            const index = text.indexOf(i.eq);
+            const index = text.indexOf(i);
             counter += index + i.length;
             text = text.substring(index + i.length);
         }
         return counter;
     }
     ParseScriptSmall(text) {
-        const removeOneStartEnd = Number(text.at(0).eq == '('); // remove double parenthesis @(123) => write((123))
+        const simpleText = text.eq;
+        const removeOneStartEnd = Number(simpleText.charAt(0) == '('); // remove double parenthesis @(123) => write((123))
         const stop = /(((?![\p{L}_\$0-9.]).)|[\r\n])+/u;
-        for (let i = Number(!removeOneStartEnd), length = text.length; i < length; i++) {
-            const char = text.at(i).eq;
+        for (let i = Number(!removeOneStartEnd), length = simpleText.length; i < length; i++) {
+            const char = simpleText.charAt(i);
             const indexQ = this.typeQ[0].indexOf(char);
             if (indexQ != -1) {
-                i += BaseReader.FindEndOfBlock(text.eq.substring(i + 1), char, this.typeQ[1][indexQ]) + 1;
+                i += BaseReader.FindEndOfBlock(simpleText.substring(i + 1), char, this.typeQ[1][indexQ]) + 1;
                 continue;
             }
             //skip '?.'
-            if (!(char == '?' && text.at(i + 1).eq == '.') && stop.test(char)) {
+            if (!(char == '?' && simpleText.charAt(i + 1) == '.') && stop.test(char)) {
                 this.values.push({
                     type: 'script-print',
                     data: text.substring(removeOneStartEnd, i - removeOneStartEnd)
                 });
-                this.Builder(text.substring(i + removeOneStartEnd + (char == ';' ? 1 : 0))); // text
+                this.Builder(text.substring(i + (char == ';' ? 1 : 0))); // text
                 return;
             }
         }
@@ -61,10 +62,10 @@ class Razor {
     }
     SkipTillChar(text, findChar) {
         for (let i = 0, length = text.length; i < length; i++) {
-            const char = text.at(i).eq;
+            const char = text.charAt(i);
             const indexQ = this.typeQ[0].indexOf(char);
             if (indexQ != -1) {
-                i += BaseReader.FindEndOfBlock(text.eq.substring(i + 1), char, this.typeQ[1][indexQ]); // no +1 because i is doing ++ in the loop;
+                i += BaseReader.FindEndOfBlock(text.substring(i + 1), char, this.typeQ[1][indexQ]); // no +1 because i is doing ++ in the loop;
                 continue;
             }
             if (char == findChar)
@@ -73,7 +74,7 @@ class Razor {
         return -1;
     }
     ParseScriptBig(text, ArrayNext = [], lastRecursive) {
-        const start = this.SkipTillChar(text, '{'); // need to add fined end with blocks
+        const start = this.SkipTillChar(text.eq, '{'); // need to add fined end with blocks
         const startScript = text.substring(0, start + 1); // script before
         if (lastRecursive)
             lastRecursive(startScript);
@@ -90,7 +91,7 @@ class Razor {
             type: 'script',
             data: text.at(end).Plus(plus) // adding }
         });
-        const next = this.CheckWithoutSpace(after, ArrayNext);
+        const next = this.CheckWithoutSpace(after.eq, ArrayNext);
         if (!next) {
             addToLast();
             this.Builder(after); // text

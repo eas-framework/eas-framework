@@ -1,5 +1,4 @@
 import StringTracker, { StringTrackerDataInfo } from '../EasyDebug/StringTracker';
-import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 interface JSParserValues {
     type: 'text' | 'script' | 'none-track-script';
     text: StringTracker;
@@ -23,12 +22,6 @@ export default class JSParser {
     static RunAndExport(text: StringTracker, path: string, isDebug: boolean): StringTracker;
     private static split2FromEnd;
     static RestoreTrack(text: string, defaultInfo: StringTrackerDataInfo): StringTracker;
-}
-export declare class PageTemplate extends JSParser {
-    private static CreateSourceMap;
-    private static AddPageTemplate;
-    static BuildPage(text: StringTracker, path: string, isDebug: boolean, fullPathCompile: string, sessionInfo: StringAnyMap): StringTracker;
-    static AddAfterBuild(text: string, isDebug: boolean): string;
 }
 export declare class EnableGlobalReplace {
     private addText;

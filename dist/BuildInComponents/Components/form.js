@@ -3,18 +3,14 @@ import { v4 as uuid } from 'uuid';
 import { compileValues, makeValidationJSON, parseValues } from './serv-connect/index.js';
 import { SplitFirst } from '../../StringMethods/Splitting.js';
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, buildScript, sessionInfo) {
-    const getAndRemoveAttr = (name) => {
-        const data = InsertComponent.getFromDataTag(dataTag, name);
-        data && dataTag.splice(dataTag.findIndex(x => x.n.eq == name), 1);
-        return data ?? '';
-    };
-    const sendTo = getAndRemoveAttr('sendTo').trim();
+    const { pop } = InsertComponent.parseDataTagFunc(dataTag);
+    const sendTo = pop('sendTo').trim();
     if (!sendTo) // special action not found
         return {
-            compiledString: new StringTracker(type.DefaultInfoText).Plus$ `<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>\n${BetweenTagData}\n</form>`,
+            compiledString: new StringTracker(type.DefaultInfoText).Plus$ `<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)}</form>`,
             checkComponents: true
         };
-    const name = getAndRemoveAttr('name').trim() || uuid(), validator = getAndRemoveAttr('validate'), notValid = getAndRemoveAttr('notValid');
+    const name = pop('name').trim() || uuid(), validator = pop('validate'), notValid = pop('notValid');
     const order = [];
     const validatorArray = validator && validator.split(',').map(x => {
         const split = SplitFirst(':', x.trim());

@@ -1,4 +1,5 @@
 
+@*
 @{
     function sendRes(myNum: string){
         return '\nCool! ' + myNum
@@ -12,7 +13,7 @@
     <input type="text" name="num" value="6"/> 
     <button type="submit">Submit</button>
 </form>
-
+*@
 @* @{
 
 
@@ -56,3 +57,4 @@
     }
 }
 *@
+<p>Session count: @(Session?.count)</p>

@@ -1,0 +1,27 @@
+<@model>Website</@model>
+<@title>Home Page</@title>
+<@head/>
+<script>
+var i = 3;
+</script>
+<style lang="sass">
+    div
+        font-size: 20px
+</style>
+<@body/>
+<p>cool</p>
+@{
+    var name = `poop`;
+
+    function getWord(addText: string) {
+        return name + ' ' + addText;
+    }
+}
+<connect name="getData" sendTo="getWord" validate="1:3"/>
+
+<button onclick="heyFromServer()">what</button>
+<script>
+    async function heyFromServer(){
+        alert(await getData(prompt('1-3 chars', '123')));
+    }
+</script> 

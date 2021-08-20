@@ -47,7 +47,7 @@
     "source-map-js": "^0.6.2",
     "source-map-support": "^0.5.19",
     "sucrase": "^3.18.1",
-    "terser": "^5.7.0",
+    "terser": "^5.7.1",
     "uuid": "^8.3.2",
     "workerpool": "^6.1.5"
   },
@@ -68,6 +68,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "fs-extra": "^10.0.0",
+    "madge": "^5.0.1",
     "prettier": "2.3.0",
     "typescript": "^4.3.5"
   },

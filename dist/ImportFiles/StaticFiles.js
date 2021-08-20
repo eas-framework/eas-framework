@@ -64,16 +64,33 @@ const getStatic = [{
         type: "js",
         inServer: "client/makeConnection.js"
     }];
-export function serverBuild(path) {
-    return getStatic.find(x => x.path == path);
-}
 const __dirname = getDirname(import.meta.url);
+getStatic.forEach(x => x.inServer = __dirname + '/' + x.inServer); // make full path
+const getStaticFilesType = [{
+        ext: '.pub.js',
+        type: 'js'
+    },
+    {
+        ext: '.pub.css',
+        type: 'css'
+    }];
+async function serverBuildByType(filePath, checked) {
+    const found = getStaticFilesType.find(x => filePath.endsWith(x.ext));
+    if (!found)
+        return;
+    const inServer = path.join(getTypes.Static[1], filePath);
+    if (checked || await EasyFs.exists(inServer))
+        return { ...found, inServer };
+}
+export async function serverBuild(path, checked = false) {
+    return await serverBuildByType(path, checked) || getStatic.find(x => x.path == path);
+}
 export async function GetFile(SmallPath, isDebug, Request, Response) {
     //file built in
-    const isBuildIn = serverBuild(SmallPath);
+    const isBuildIn = await serverBuild(SmallPath, true);
     if (isBuildIn) {
         Response.type(isBuildIn.type);
-        Response.end(await EasyFs.readFile(__dirname + '/' + isBuildIn.inServer)); // sending the file
+        Response.end(await EasyFs.readFile(isBuildIn.inServer)); // sending the file
         return;
     }
     //compiled files

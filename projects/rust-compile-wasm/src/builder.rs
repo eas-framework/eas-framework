@@ -9,11 +9,17 @@ pub struct ErrorInfo {
     pub index: usize,
 }
 
+pub struct ResultInsertComponent{
+    search: String,
+    index: usize,
+    result_index: i32
+}
+
 pub struct InsertComponent {
     pub skip_special_tag: Vec<Vec<String>>,
     pub simple_skip: Vec<String>,
     pub error_vec: Vec<ErrorInfo>,
-    pub map_ele: Vec<usize>,
+    cache: Vec<ResultInsertComponent>
 }
 
 impl InsertComponent {
@@ -22,7 +28,7 @@ impl InsertComponent {
             skip_special_tag,
             simple_skip,
             error_vec: vec![],
-            map_ele: vec![],
+            cache: vec![]
         }
     }
 
@@ -33,6 +39,24 @@ impl InsertComponent {
             }
         }
         None
+    }
+
+    fn char_html_element_with_cache(&mut self, text: &str, search: &str, search_len: usize, as_big_tag: bool,add_index: usize) -> i32 {
+        let found = self.cache.iter().find(|x| x.index == add_index && x.search == search);
+
+        if found.is_some() {
+            return found.unwrap().result_index;
+        }
+
+        let get_index = self.find_close_char_html_element(text, search, search_len, as_big_tag, add_index);
+
+        self.cache.push(ResultInsertComponent {
+            search: search.to_owned(),
+            index: add_index,
+            result_index: get_index
+        });
+
+        get_index
     }
 
     fn find_close_char_html_element(&mut self, text: &str, search: &str, search_len: usize, as_big_tag: bool,add_index: usize) -> i32 {
@@ -46,6 +70,7 @@ impl InsertComponent {
         let mut i: usize = 0;
         let length = chars_len - search_len;
         while i <= length {
+
             let this_char = chars[i];
             
             if find_char_arr(base_reader::TEXT_BLOCK, &&this_char) && get_from_vec(&chars, i, 1) != '\\'
@@ -65,7 +90,7 @@ impl InsertComponent {
                         continue;
                     }
     
-                    let found = self.find_close_char_html_element(&sub_text, &">", 1, false, 0) as usize;
+                     let found = self.find_close_char_html_element(&sub_text, &">", 1, false, 0) as usize;
     
                     i += found;
     
@@ -73,8 +98,6 @@ impl InsertComponent {
                     {
                         let max_find = cut_end(&sub_text, found);
                         let next_text = cut_start(&sub_text, found + 1);
-
-                        //println!("poo {:?}", next_text);
                         
                         let tag_type = split_max_2(&max_find, ' ')[0];
                         let mut end_tag_index;
@@ -85,10 +108,10 @@ impl InsertComponent {
                             add_index + copy_start_index + found + 1;
     
                         if skip_tag {
-                            end_tag_index =
-                                base_reader::find_end_of_def(&next_text, vec![find_end]);
+                            end_tag_index = base_reader::find_end_of_def(&next_text, vec![find_end]);
                         } else {
-                            end_tag_index = self.find_close_char_html_element(
+
+                            end_tag_index = self.char_html_element_with_cache(
                                 &next_text,
                                 find_end,
                                 2 + len(tag_type),
@@ -97,10 +120,14 @@ impl InsertComponent {
                             );
                         }
                         if end_tag_index == -1 {
-                            self.error_vec.push(ErrorInfo {
-                                type_name: String::from(tag_type),
-                                index: copy_start_index + add_index,
-                            });
+                            let index = copy_start_index + add_index;
+
+                            if !self.error_vec.iter().any(|x|x.index == index) {
+                                self.error_vec.push(ErrorInfo {
+                                    type_name: String::from(tag_type),
+                                    index,
+                                });
+                            }
                         }  else {
                             if skip_tag {
                                 end_tag_index += 1;
@@ -144,7 +171,7 @@ impl InsertComponent {
 
     pub fn clear(&mut self) {
         self.error_vec = vec![];
-        // self.map_ele = vec![];
+        self.cache = vec![];
     }
 }
 

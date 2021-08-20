@@ -5,24 +5,20 @@ import { compileValues, makeValidationJSON, parseValues } from './serv-connect/i
 import {SplitFirst} from '../../StringMethods/Splitting';
 
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
+    const {pop} = InsertComponent.parseDataTagFunc(dataTag);
 
-    const getAndRemoveAttr = (name: string) => {
-        const data = InsertComponent.getFromDataTag(dataTag, name);
-        data && dataTag.splice(dataTag.findIndex(x => x.n.eq == name), 1);
-
-        return data ?? '';
-    };
-
-    const sendTo = getAndRemoveAttr('sendTo').trim();
+    const sendTo = pop('sendTo').trim();
 
     if (!sendTo)  // special action not found
         return {
-            compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>\n${BetweenTagData}\n</form>`,
+            compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${
+                await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)
+            }</form>`,
             checkComponents: true
         }
 
 
-    const name = getAndRemoveAttr('name').trim() || uuid(), validator: string = getAndRemoveAttr('validate'), notValid: string = getAndRemoveAttr('notValid');
+    const name = pop('name').trim() || uuid(), validator: string = pop('validate'), notValid: string = pop('notValid');
 
     const order = [];
 

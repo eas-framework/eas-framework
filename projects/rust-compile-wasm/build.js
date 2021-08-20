@@ -4,7 +4,7 @@ import path from 'path';
 
 console.log('building...');
 
-const stream = spawn('wasm-pack', ['build']);
+const stream = spawn('wasm-pack', ['build', '--release']);
 
 stream.stdout.pipe(process.stdout);
 

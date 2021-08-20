@@ -1,0 +1,1 @@
+var __dirname="D:\\Code\\Projects\\beyond-easy\\tests\\core/Website/Static",__filename="D:\\Code\\Projects\\beyond-easy\\tests\\core/Website/Static/OnStart.serv.ts";export default async e=>{var t={},r=t;return Object.defineProperty(r,"__esModule",{value:!0}),r.StartServer=function(...e){console.log("loaded")},t};

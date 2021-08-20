@@ -8,7 +8,7 @@ function replaceForClient(BetweenTagData: string, exportInfo: string){
     return BetweenTagData;
 }
 
-const serveScript = `<script src="/serv/temp.js"></script>`;
+const serveScript = '/serv/temp.js';
 
 async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name: string, params: string, selector: string, mainCode: StringTracker, path: string, isDebug: boolean){
     const parse = JSParser.RunAndExport(mainCode, path, isDebug);
@@ -25,22 +25,17 @@ async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name
 }
 
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: StringAnyMap): Promise<BuildInComponent>{
-    
+    const {getValue} = InsertComponent.parseDataTagFunc(dataTag);
+
     BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, (x: StringTracker) => x.eq, sessionInfo);
 
-    let tagScript = '';
-
-    if (!sessionInfo.clientServeScript){
-        sessionInfo.clientServeScript = true;
-
-        tagScript += serveScript;
-    }
+    sessionInfo.scriptURLSet.add(serveScript);
 
     let scriptInfo = await template(
         BuildScriptWithoutModule,
-        InsertComponent.getFromDataTag(dataTag, 'name'),
-        InsertComponent.getFromDataTag(dataTag, 'params'),
-        InsertComponent.getFromDataTag(dataTag, 'selector'),
+        getValue(dataTag, 'name'),
+        getValue(dataTag, 'params'),
+        getValue(dataTag, 'selector'),
         BetweenTagData,
         pathName,
         isDebug && !InsertComponent.SomePlugins("SafeDebug")
@@ -52,12 +47,9 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         scriptInfo = (await minify(scriptInfo, { module: false, format: { comments: 'all' } })).code;
     }
 
-    tagScript += `
-    <script defer>${
-        scriptInfo
-    }</script>`;
-    
+    sessionInfo.script += scriptInfo;
+
     return {
-        compiledString: new StringTracker(type.DefaultInfoText, tagScript)
+        compiledString: new StringTracker()
     }
 }

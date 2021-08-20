@@ -32,7 +32,7 @@ function InFolderPagePath(inputPath: string, fullPath:string){
 }
 
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
-    const filepath = dataTag.find(x => x.n.eq == "from")?.v?.eq;
+    const filepath = InsertComponent.parseDataTagFunc(dataTag).getValue("from");
 
     const SmallPathWithoutFolder = InFolderPagePath(filepath, path);
 

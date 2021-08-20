@@ -14,7 +14,7 @@ async function ReplaceBefore(code, defineData) {
     return code;
 }
 function template(code, isDebug, dir, file) {
-    return `${isDebug ? "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" : ''};var __dirname=\`${JSParser.fixText(dir)}\`,__filename=\`${JSParser.fixText(file)}\`;export default (async (require)=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
+    return `${isDebug ? "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" : ''}var __dirname=\`${JSParser.fixText(dir)}\`,__filename=\`${JSParser.fixText(file)}\`;export default (async (require)=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
 }
 /**
  *

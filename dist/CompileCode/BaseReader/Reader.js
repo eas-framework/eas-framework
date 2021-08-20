@@ -24,7 +24,7 @@ export class InsertComponentBase {
     SkipSpecialTag = Settings.SkipSpecialTag;
     constructor(printNew) {
         this.printNew = printNew;
-        this.asyncMethod = new Multithreading(8, __dirname + '/RustBind/worker.js');
+        this.asyncMethod = new Multithreading(8, __dirname + '/RustBind/workerInsertComponent.js');
     }
     printErrors(text, errors) {
         if (this.printNew) {

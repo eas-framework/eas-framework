@@ -26,7 +26,11 @@ export default class InsertComponent extends InsertComponentBase {
     addDefaultValues(arrayValues: DefaultValues[], fileData: StringTracker): StringTracker;
     parseComponentProps(tagData: tagDataObject[], component: StringTracker): StringTracker;
     buildTagBasic(fileData: StringTracker, tagData: tagDataObject[], path: string, pathName: string, FullPath: string, SmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: StringAnyMap, BetweenTagData?: StringTracker): Promise<StringTracker>;
-    getFromDataTag(dataTag: tagDataObject[], name: string): string;
+    parseDataTagFunc(dataTag: tagDataObject[]): {
+        have: (name: string) => boolean;
+        getValue: (name: string) => string;
+        pop: (name: string) => string;
+    };
     insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }: {
         sessionInfo: StringAnyMap;
         BetweenTagData?: StringTracker;

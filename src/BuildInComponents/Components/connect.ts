@@ -2,36 +2,27 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { tagDataObject, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { compileValues, makeValidationJSON } from './serv-connect/index';
 
-const serveScript = `<script src="/serv/connect.js"></script>`;
+const serveScript = '/serv/connect.js';
 
 function template(name: string) {
-    return `
-    <script defer>
-        function ${name}(...args){
-            return connector("${name}", args);
-        }
-    </script>
-    `;
+    return `function ${name}(...args){return connector("${name}", args)}`;
 }
 
-export default async function BuildCode(type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, isDebug: boolean, InsertComponent: any, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
-    const name = InsertComponent.getFromDataTag(dataTag, 'name'),
-        sendTo = InsertComponent.getFromDataTag(dataTag, 'sendTo'),
-        validator: string = InsertComponent.getFromDataTag(dataTag, 'validate');
+export default async function BuildCode(type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, isDebug: boolean, { parseDataTagFunc, SomePlugins }, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
+    const { getValue } = parseDataTagFunc(dataTag),
+        name = getValue('name'),
+        sendTo = getValue('sendTo'),
+        validator: string = getValue('validate');
 
-    let message = InsertComponent.getFromDataTag(dataTag, 'message');
+    let message = getValue('message');
 
     if (message == null) {
-        message = isDebug && !InsertComponent.SomePlugins("SafeDebug");
+        message = isDebug && !SomePlugins("SafeDebug");
     }
 
-    let tagScript = BetweenTagData.eq + template(name);
+    sessionInfo.scriptURLSet.add(serveScript);
 
-    if (!sessionInfo.clientServeConnection) {
-        sessionInfo.clientServeConnection = true;
-
-        tagScript = serveScript + tagScript;
-    }
+    sessionInfo.script += template(name);
 
     sessionInfo.connectorArray.push({
         type: 'connect',
@@ -42,7 +33,7 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
     });
 
     return {
-        compiledString: new StringTracker(type.DefaultInfoText, tagScript),
+        compiledString: BetweenTagData,
         checkComponents: true
     }
 }
@@ -57,7 +48,7 @@ export function addFinalizeBuild(pageData: StringTracker, sessionInfo: StringAny
         if (i.type != 'connect')
             continue;
 
-        buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${i.validator?.map(compileValues)?.join(',') ?? ''}]}`;
+        buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${(i.validator && i.validator.map(compileValues).join(',')) ?? ''}]}`;
     }
 
     buildObject = `[${buildObject.substring(1)}]`;
@@ -78,15 +69,15 @@ export function addFinalizeBuild(pageData: StringTracker, sessionInfo: StringAny
 }
 
 export async function handelConnector(thisPage: any, connectorArray: any[]) {
-    if (!thisPage.Post?.connectorCall) 
+    if (!thisPage.Post?.connectorCall)
         return false;
-    
+
 
     const have = connectorArray.find(x => x.name == thisPage.Post.connectorCall.name);
 
-    if (!have) 
+    if (!have)
         return false;
-    
+
 
     const values = thisPage.Post.connectorCall.values;
     const isValid = have.validator && await makeValidationJSON(values, have.validator);
@@ -105,7 +96,6 @@ export async function handelConnector(thisPage: any, connectorArray: any[]) {
         });
     else
         thisPage.Response.status(400);
-
 
     return true;
 }

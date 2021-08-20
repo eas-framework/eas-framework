@@ -7,6 +7,10 @@ interface globalString<T> {
 
 export function SplitFirst<T extends globalString<T>>(type: string, string: T): T[] {
     const index = string.indexOf(type);
+
+    if(index == -1)
+        return [string];
+
     return [string.substring(0, index), string.substring(index + type.length)];
 }
 

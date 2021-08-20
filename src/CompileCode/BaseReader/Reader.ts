@@ -32,7 +32,7 @@ export class InsertComponentBase {
 
     constructor(private printNew?: any) {
 
-        this.asyncMethod = new Multithreading(8, __dirname + '/RustBind/worker.js');
+        this.asyncMethod = new Multithreading(8, __dirname + '/RustBind/workerInsertComponent.js');
     }
 
     private printErrors(text: StringTracker, errors: any[]) {

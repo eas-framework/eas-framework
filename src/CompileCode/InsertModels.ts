@@ -2,7 +2,7 @@ import EasyFs from '../OutputInput/EasyFs';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import { print } from '../OutputInput/Console';
 import InsertComponent from './InsertComponent';
-import {PageTemplate} from './JSParser';
+import {PageTemplate} from './ScriptTemplate';
 import AddPlugin from '../Plugins/Index';
 import { CreateFilePath, ParseDebugLine, AddDebugInfo} from './XMLHelpers/CodeInfoAndDebug';
 import * as extricate from './XMLHelpers/Extricate';
@@ -113,7 +113,7 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
 export async function Insert(data:string, fullPathCompile:string, pagePath:string, smallPath:string, isDebug:boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: StringAnyMap) {
     const BuildScriptWithPrams = (code: StringTracker, pathName:string, RemoveToModule = true):Promise<string> => BuildScript(code,pathName, isTs(),isDebug, RemoveToModule);
 
-    const sessionInfo: StringAnyMap = hasSessionInfo ?? {connectorArray: []};
+    const sessionInfo: StringAnyMap = hasSessionInfo ?? {connectorArray: [], scriptURLSet: new Set(), styleURLSet: new Set(), style: '', script: ''};
 
     let DebugString = new StringTracker(pagePath, data);
 
@@ -126,7 +126,7 @@ export async function Insert(data:string, fullPathCompile:string, pagePath:strin
     DebugString = ParseDebugLine(DebugString, smallPath);
 
     DebugString = debugFromPage ? PageTemplate.RunAndExport(DebugString, pagePath, isDebug):
-    PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
+    await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
 
     let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, `${smallPath} -><line>${pagePath}`, debugFromPage);
 

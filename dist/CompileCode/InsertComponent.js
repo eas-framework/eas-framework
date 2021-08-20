@@ -194,8 +194,20 @@ export default class InsertComponent extends InsertComponentBase {
         fileData = await NoTrackStringCode(fileData, `${pathName} ->\b${FullPath}`, isDebug, buildScript);
         return fileData;
     }
-    getFromDataTag(dataTag, name) {
-        return dataTag.find(tag => tag.n.eq == name)?.v?.eq;
+    parseDataTagFunc(dataTag) {
+        const index = (name) => dataTag.findIndex(x => x.n.eq == name);
+        const getValue = (name) => dataTag.find(tag => tag.n.eq == name)?.v?.eq ?? '';
+        const pop = (name) => {
+            const nameIndex = index(name);
+            if (nameIndex == -1)
+                return '';
+            return dataTag.splice(nameIndex, 1).pop().v?.eq ?? '';
+        };
+        return {
+            have: (name) => index(name) != -1,
+            getValue,
+            pop
+        };
     }
     async insertTagData(path, pathName, LastSmallPath, type, dataTag, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }) {
         const data = this.tagData(dataTag), BuildIn = IsInclude(type.eq);

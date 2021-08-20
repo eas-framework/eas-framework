@@ -1,26 +1,17 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
 import { compileValues, makeValidationJSON } from './serv-connect/index.js';
-const serveScript = `<script src="/serv/connect.js"></script>`;
+const serveScript = '/serv/connect.js';
 function template(name) {
-    return `
-    <script defer>
-        function ${name}(...args){
-            return connector("${name}", args);
-        }
-    </script>
-    `;
+    return `function ${name}(...args){return connector("${name}", args)}`;
 }
-export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, InsertComponent, sessionInfo) {
-    const name = InsertComponent.getFromDataTag(dataTag, 'name'), sendTo = InsertComponent.getFromDataTag(dataTag, 'sendTo'), validator = InsertComponent.getFromDataTag(dataTag, 'validate');
-    let message = InsertComponent.getFromDataTag(dataTag, 'message');
+export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, { parseDataTagFunc, SomePlugins }, sessionInfo) {
+    const { getValue } = parseDataTagFunc(dataTag), name = getValue('name'), sendTo = getValue('sendTo'), validator = getValue('validate');
+    let message = getValue('message');
     if (message == null) {
-        message = isDebug && !InsertComponent.SomePlugins("SafeDebug");
+        message = isDebug && !SomePlugins("SafeDebug");
     }
-    let tagScript = BetweenTagData.eq + template(name);
-    if (!sessionInfo.clientServeConnection) {
-        sessionInfo.clientServeConnection = true;
-        tagScript = serveScript + tagScript;
-    }
+    sessionInfo.scriptURLSet.add(serveScript);
+    sessionInfo.script += template(name);
     sessionInfo.connectorArray.push({
         type: 'connect',
         name,
@@ -29,7 +20,7 @@ export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, 
         validator: validator && validator.split(',').map(x => x.trim())
     });
     return {
-        compiledString: new StringTracker(type.DefaultInfoText, tagScript),
+        compiledString: BetweenTagData,
         checkComponents: true
     };
 }
@@ -40,7 +31,7 @@ export function addFinalizeBuild(pageData, sessionInfo) {
     for (const i of sessionInfo.connectorArray) {
         if (i.type != 'connect')
             continue;
-        buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${i.validator?.map(compileValues)?.join(',') ?? ''}]}`;
+        buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${(i.validator && i.validator.map(compileValues).join(',')) ?? ''}]}`;
     }
     buildObject = `[${buildObject.substring(1)}]`;
     const addScript = `

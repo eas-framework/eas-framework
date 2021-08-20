@@ -1,0 +1,1 @@
+var i=3;function getData(...args){return connector("getData", args)}async function heyFromServer(){alert(await getData(prompt("1-3 chars","123")))}

@@ -5,7 +5,19 @@ export default class EasySyntax {
         const parseArray = await ParseTextStream(code);
         this.Build = new ReBuildCodeString(parseArray);
     }
-    BuildImportType(type, totype = type) {
+    actionStringImport(replaceToType, dataObject) {
+        return `const ${dataObject} = await ${replaceToType}(<||>)`;
+    }
+    actionStringExport(replaceToType, dataObject) {
+        return `${this.actionStringImport(replaceToType, dataObject)};Object.assign(exports, ${dataObject})`;
+    }
+    actionStringImportAll(replaceToType) {
+        return `await ${replaceToType}(<||>)`;
+    }
+    actionStringExportAll(replaceToType) {
+        return `Object.assign(exports, ${this.actionStringImportAll(replaceToType)})`;
+    }
+    BuildImportType(type, replaceToType = type, actionString = this.actionStringImport) {
         let beforeString = "";
         let newString = this.Build.CodeBuildText;
         let match;
@@ -47,13 +59,13 @@ export default class EasySyntax {
                 }
                 DataObject = DataObject.replace(/ as /, ':');
             }
-            beforeString += `const ${DataObject} = await ${totype}(<||>)`;
+            beforeString += actionString(replaceToType, DataObject);
             Rematch();
         }
         beforeString += newString;
         this.Build.CodeBuildText = beforeString;
     }
-    BuildInOneWord(type, totype = type) {
+    BuildInOneWord(type, replaceToType = type, actionString = this.actionStringImportAll) {
         let beforeString = "";
         let newString = this.Build.CodeBuildText;
         let match;
@@ -64,7 +76,7 @@ export default class EasySyntax {
         while (match) {
             beforeString += newString.substring(0, match.index);
             newString = newString.substring(match.index + match[0].length);
-            beforeString += `await ${totype}(<||>)`;
+            beforeString += actionString(replaceToType);
             Rematch();
         }
         beforeString += newString;
@@ -75,20 +87,22 @@ export default class EasySyntax {
     }
     Define(data) {
         for (const [key, value] of Object.entries(data)) {
-            this.replaceWithSpace(text => text.replace(new RegExp(`((?!\\p{L}).)${key}((?!\\p{L}).)`), (...match) => {
+            this.replaceWithSpace(text => text.replace(new RegExp(`([^\\p{L}])${key}([^\\p{L}])`, 'gi'), (...match) => {
                 return match[1] + value + match[2];
             }));
         }
     }
     BuildInAsFunction(word, toWord) {
-        this.replaceWithSpace(text => text.replace(new RegExp(`((?!\\p{L}).)(${word})([ \\n]*\\()`), (...match) => {
-            return match[1] + toWord + match[3];
+        this.replaceWithSpace(text => text.replace(new RegExp(`([^\\p{L}])${word}([ \\n]*\\()`, 'gi'), (...match) => {
+            return match[1] + toWord + match[2];
         }));
     }
     BuildImports(defineData) {
         this.BuildImportType('import', 'require');
+        this.BuildImportType('export', 'require', this.actionStringExport);
         this.BuildImportType('include');
         this.BuildInOneWord('import', 'require');
+        this.BuildInOneWord('export', 'require', this.actionStringExportAll);
         this.BuildInOneWord('include');
         this.BuildInAsFunction('import', 'require');
         this.Define(defineData);
@@ -98,9 +112,10 @@ export default class EasySyntax {
     }
     static async BuildAndExportImports(code, defineData = {}) {
         const builder = new EasySyntax();
-        await builder.load(code);
+        await builder.load(` ${code} `);
         builder.BuildImports(defineData);
-        return builder.BuiltString();
+        code = builder.BuiltString();
+        return code.substring(1, code.length - 1);
     }
 }
 //# sourceMappingURL=EasySyntax.js.map

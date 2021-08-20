@@ -2,7 +2,7 @@ import EasyFs from '../OutputInput/EasyFs.js';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem.js';
 import { print } from '../OutputInput/Console.js';
 import InsertComponent from './InsertComponent.js';
-import { PageTemplate } from './JSParser.js';
+import { PageTemplate } from './ScriptTemplate.js';
 import AddPlugin from '../Plugins/Index.js';
 import { CreateFilePath, ParseDebugLine, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug.js';
 import * as extricate from './XMLHelpers/Extricate.js';
@@ -79,14 +79,14 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
 }
 export async function Insert(data, fullPathCompile, pagePath, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
     const BuildScriptWithPrams = (code, pathName, RemoveToModule = true) => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
-    const sessionInfo = hasSessionInfo ?? { connectorArray: [] };
+    const sessionInfo = hasSessionInfo ?? { connectorArray: [], scriptURLSet: new Set(), styleURLSet: new Set(), style: '', script: '' };
     let DebugString = new StringTracker(pagePath, data);
     DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject);
     DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);
     DebugString = await Components.Insert(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, BuildScriptWithPrams, sessionInfo); // add components
     DebugString = ParseDebugLine(DebugString, smallPath);
     DebugString = debugFromPage ? PageTemplate.RunAndExport(DebugString, pagePath, isDebug) :
-        PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
+        await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
     let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, `${smallPath} -><line>${pagePath}`, debugFromPage);
     if (!debugFromPage) {
         DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, isDebug);

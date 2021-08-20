@@ -1,11 +1,11 @@
 export default {
-    "development": true,
+    "development": false,
     "save-page-ram": true,
     "ignore-types": ["json"],
     "ignore-start-paths": ["/Private"],
     "require-on-start": ["OnStart.serv.ts"],
     "add-compile-syntax": ["JTags", "Razor", "TypeScript"],
-    "plugins": [/*"MinAll" */],
+    "plugins": ["MinAll"],
     "cache-days": 3,
     "rules": {
         "/Examples/User/": (req, res, url) => '/Files/User/Examples/' + url.split('/').pop()
