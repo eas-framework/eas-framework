@@ -4,11 +4,10 @@ export default class SourceMapStore {
     private filePath;
     private debug;
     private isCss;
-    private addToUrl;
     private storeString;
     private map;
     private lineCount;
-    constructor(filePath: string, debug: boolean, isCss?: boolean, addToUrl?: string);
+    constructor(filePath: string, debug: boolean, isCss?: boolean);
     notEmpty(): boolean;
     private getSource;
     addStringTracker(track: StringTracker, text?: string): void;

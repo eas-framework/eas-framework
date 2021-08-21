@@ -68,7 +68,7 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
 
     pageName += " -> " + SmallPath;
 
-    const allData = extricate.getDataTages(modelData, [''], '?', false, true);
+    const allData = extricate.getDataTages(modelData, [''], ':', false, true);
 
     if (allData.error) {
         print.error("Error within model ->", modelName, "at page: ", pageName);
@@ -114,16 +114,13 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
 export async function Insert(data: string, fullPathCompile: string, pagePath: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: SessionInfo) {
     const BuildScriptWithPrams = (code: StringTracker, pathName: string, RemoveToModule = true): Promise<string> => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
 
-    const publicPath = smallPath.substring(0, smallPath.length - BasicSettings.pageTypes.page.length) + 'source',
-        addToDebugUrl = smallPath.startsWith(getTypes.Logs[2]) ?  'sourceName=' + getTypes.Logs[2]: '';
-
     const debugInPage = isDebug && !GetPlugin("SafeDebug");  
     const sessionInfo: SessionInfo = hasSessionInfo ??
     {
         connectorArray: [], scriptURLSet: [], styleURLSet: [],
-        style: new SourceMapStore(publicPath, debugInPage, true, addToDebugUrl),
-        script: new SourceMapStore(publicPath, debugInPage, false, addToDebugUrl),
-        scriptModule: new SourceMapStore(publicPath, debugInPage, false, addToDebugUrl)
+        style: new SourceMapStore(smallPath, debugInPage, true),
+        script: new SourceMapStore(smallPath, debugInPage, false),
+        scriptModule: new SourceMapStore(smallPath, debugInPage, false)
     };
 
     let DebugString = new StringTracker(pagePath, data);

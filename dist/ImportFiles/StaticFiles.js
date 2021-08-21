@@ -90,8 +90,8 @@ async function serverBuildByType(filePath, checked) {
 }
 let debuggingWithSource = null;
 async function askDebuggingWithSource() {
-    if (debuggingWithSource)
-        return true;
+    if (typeof debuggingWithSource == 'boolean')
+        return debuggingWithSource;
     debuggingWithSource = (await promptly.prompt('Allow debugging JavaScript/CSS in source page? - exposing your source code (no)', {
         validator(v) {
             if (['yes', 'no'].includes(v.trim().toLowerCase()))
@@ -102,23 +102,23 @@ async function askDebuggingWithSource() {
     })).trim().toLowerCase() == 'yes';
     return debuggingWithSource;
 }
-async function unsafeDebug(Request, filePath, checked) {
-    if (!askDebuggingWithSource() || GetPlugin("SafeDebug") || path.extname(filePath) != '.' + 'source')
+const safeFolders = [getTypes.Static[2], getTypes.Logs[2], 'Models', 'Components'];
+async function unsafeDebug(filePath, checked) {
+    if (!await askDebuggingWithSource() || GetPlugin("SafeDebug") || path.extname(filePath) != '.source' || !safeFolders.includes(filePath.split(/\/|\\/).shift()))
         return;
-    const base = Request.query.sourceName == getTypes.Logs[2] ? getTypes.Logs[0] : getTypes.Static[0];
-    const fullPath = path.join(base, filePath.substring(0, filePath.length - 6) + BasicSettings.pageTypes.page); // replacing '.source' + with '.page'
+    const fullPath = path.join(BasicSettings.fullWebSitePath, filePath.substring(0, filePath.length - 7)); // removing '.source'
     if (checked || await EasyFs.exists(fullPath))
         return {
             type: 'html',
             inServer: fullPath
         };
 }
-export async function serverBuild(Request, path, checked = false) {
-    return await unsafeDebug(Request, path, checked) || await serverBuildByType(path, checked) || getStatic.find(x => x.path == path);
+export async function serverBuild(path, checked = false) {
+    return await unsafeDebug(path, checked) || await serverBuildByType(path, checked) || getStatic.find(x => x.path == path);
 }
 export async function GetFile(SmallPath, isDebug, Request, Response) {
     //file built in
-    const isBuildIn = await serverBuild(Request, SmallPath, true);
+    const isBuildIn = await serverBuild(SmallPath, true);
     if (isBuildIn) {
         Response.type(isBuildIn.type);
         Response.end(await EasyFs.readFile(isBuildIn.inServer)); // sending the file

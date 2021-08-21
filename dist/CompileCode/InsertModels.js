@@ -1,5 +1,5 @@
 import EasyFs from '../OutputInput/EasyFs.js';
-import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem.js';
+import { BasicSettings } from '../RunTimeBuild/SearchFileSystem.js';
 import { print } from '../OutputInput/Console.js';
 import InsertComponent from './InsertComponent.js';
 import { PageTemplate } from './ScriptTemplate.js';
@@ -48,7 +48,7 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
     let modelData = baseModelData.allData;
     modelData.AddTextBefore(baseModelData.stringInfo);
     pageName += " -> " + SmallPath;
-    const allData = extricate.getDataTages(modelData, [''], '?', false, true);
+    const allData = extricate.getDataTages(modelData, [''], ':', false, true);
     if (allData.error) {
         print.error("Error within model ->", modelName, "at page: ", pageName);
         return data;
@@ -80,14 +80,13 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
 }
 export async function Insert(data, fullPathCompile, pagePath, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
     const BuildScriptWithPrams = (code, pathName, RemoveToModule = true) => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
-    const publicPath = smallPath.substring(0, smallPath.length - BasicSettings.pageTypes.page.length) + 'source', addToDebugUrl = smallPath.startsWith(getTypes.Logs[2]) ? 'sourceName=' + getTypes.Logs[2] : '';
     const debugInPage = isDebug && !GetPlugin("SafeDebug");
     const sessionInfo = hasSessionInfo ??
         {
             connectorArray: [], scriptURLSet: [], styleURLSet: [],
-            style: new SourceMapStore(publicPath, debugInPage, true, addToDebugUrl),
-            script: new SourceMapStore(publicPath, debugInPage, false, addToDebugUrl),
-            scriptModule: new SourceMapStore(publicPath, debugInPage, false, addToDebugUrl)
+            style: new SourceMapStore(smallPath, debugInPage, true),
+            script: new SourceMapStore(smallPath, debugInPage, false),
+            scriptModule: new SourceMapStore(smallPath, debugInPage, false)
         };
     let DebugString = new StringTracker(pagePath, data);
     DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject);

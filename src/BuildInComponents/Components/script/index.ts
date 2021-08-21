@@ -9,7 +9,8 @@ export default function BuildCode(path: string, pathName: string, LastSmallPath:
 
     const language = dataTag.remove('lang') || 'js';
 
-    if(dataTag.remove('server')){
+    if (dataTag.have('server')) {
+        dataTag.remove('server');
         return scriptWithServer(language, path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent);
     }
 

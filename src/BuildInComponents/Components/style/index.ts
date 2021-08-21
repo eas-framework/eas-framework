@@ -7,7 +7,8 @@ import { SessionInfo } from '../../../CompileCode/XMLHelpers/CompileTypes';
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionInfo): Promise<BuildInComponent> {
     const language = dataTag.remove('lang') || 'css';
 
-    if(dataTag.remove('server')){
+    if(dataTag.have('server')){
+        dataTag.remove('server');
         return styleWithServer(language, path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent);
     }
 

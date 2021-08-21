@@ -120,8 +120,8 @@ async function serverBuildByType(filePath: string, checked: boolean) {
 let debuggingWithSource: null | boolean = null;
 
 async function askDebuggingWithSource() {
-    if (debuggingWithSource)
-        return true;
+    if (typeof debuggingWithSource == 'boolean')
+        return debuggingWithSource;
 
     debuggingWithSource = (await promptly.prompt(
         'Allow debugging JavaScript/CSS in source page? - exposing your source code (no)',
@@ -138,13 +138,13 @@ async function askDebuggingWithSource() {
     return debuggingWithSource;
 }
 
-async function unsafeDebug(Request: Request, filePath: string, checked: boolean) {
-    if (!askDebuggingWithSource() || GetPlugin("SafeDebug") || path.extname(filePath) != '.' + 'source')
+const safeFolders = [getTypes.Static[2], getTypes.Logs[2], 'Models', 'Components'];
+
+async function unsafeDebug(filePath: string, checked: boolean) {
+    if (!await askDebuggingWithSource() || GetPlugin("SafeDebug") || path.extname(filePath) != '.source' || !safeFolders.includes(filePath.split(/\/|\\/).shift()))
         return;
 
-    const base = Request.query.sourceName == getTypes.Logs[2] ? getTypes.Logs[0] : getTypes.Static[0];
-
-    const fullPath = path.join(base, filePath.substring(0, filePath.length - 6) + BasicSettings.pageTypes.page); // replacing '.source' + with '.page'
+    const fullPath = path.join(BasicSettings.fullWebSitePath, filePath.substring(0, filePath.length - 7)); // removing '.source'
 
     if (checked || await EasyFs.exists(fullPath))
         return {
@@ -153,13 +153,13 @@ async function unsafeDebug(Request: Request, filePath: string, checked: boolean)
         };
 }
 
-export async function serverBuild(Request: Request, path: string, checked = false): Promise<null | buildIn> {
-    return await unsafeDebug(Request, path, checked) || await serverBuildByType(path, checked) || getStatic.find(x => x.path == path);
+export async function serverBuild(path: string, checked = false): Promise<null | buildIn> {
+    return await unsafeDebug(path, checked) || await serverBuildByType(path, checked) || getStatic.find(x => x.path == path);
 }
 
 export async function GetFile(SmallPath: string, isDebug: boolean, Request: Request, Response: Response) {
     //file built in
-    const isBuildIn = await serverBuild(Request, SmallPath, true);
+    const isBuildIn = await serverBuild(SmallPath, true);
 
     if (isBuildIn) {
         Response.type(isBuildIn.type);

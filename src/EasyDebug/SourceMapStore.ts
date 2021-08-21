@@ -8,7 +8,7 @@ export default class SourceMapStore {
     private map: SourceMapGenerator;
     private lineCount = 0;
 
-    constructor(private filePath: string, private debug: boolean, private isCss = false, private addToUrl = '') {
+    constructor(private filePath: string, private debug: boolean, private isCss = false) {
 
         const name = filePath.split(/\/|\\/).pop();
         this.map = new SourceMapGenerator({
@@ -21,16 +21,15 @@ export default class SourceMapStore {
     }
 
     private getSource(source: string) {
-        let name = source.split(/\/|\\/).pop(), charQuery = '?';
+        let name = path.relative(BasicSettings.fullWebSitePath, source.split('<line>').pop());
 
-        if (path.extname(name) == '.' + BasicSettings.pageTypes.page)
-            name = name.substring(0, name.length - BasicSettings.pageTypes.page.length) + 'source';
-        else {
+        if (BasicSettings.pageTypesArray.includes(path.extname(name).substring(1)))
+            name += '.source';
+        else 
             name += '?source=true';
-            charQuery = '&';
-        }
+        
 
-        return name + (this.addToUrl ? charQuery + this.addToUrl : '');
+        return name;
     }
 
     addStringTracker(track: StringTracker, text = track.eq) {
