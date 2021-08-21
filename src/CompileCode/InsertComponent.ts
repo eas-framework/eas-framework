@@ -4,7 +4,7 @@ import { NoTrackStringCode, CreateFilePath, PathTypes, AddDebugInfo } from './XM
 import { IsInclude, StartCompiling } from '../BuildInComponents/index';
 import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/StringTracker';
 import AddPlugin from '../Plugins/Index';
-import { tagDataObject, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, StringAnyMap } from './XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, SessionInfo } from './XMLHelpers/CompileTypes';
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import {InsertComponentBase, BaseReader} from './BaseReader/Reader';
 import {SplitFirst} from '../StringMethods/Splitting';
@@ -37,7 +37,7 @@ export default class InsertComponent extends InsertComponentBase {
         }
     }
 
-    tagData(text: StringTracker, a: tagDataObject[] = []): tagDataObject[] {
+    tagData(text: StringTracker, a: tagDataObjectArray = []): tagDataObjectArray {
         this.FindSpecialTagByStart
 
         const SkipTypes = ['"', "'", '`'];
@@ -91,17 +91,20 @@ export default class InsertComponent extends InsertComponentBase {
             text = text.substring(i).trim();
         }
 
-        return a;
-    }
+        //methods to the array
+        const index = (name: string) => a.findIndex(x => x.n.eq == name);
+        const getValue = (name: string) => a.find(tag => tag.n.eq == name)?.v?.eq ?? '';
+        const remove = (name: string) => {
+            const nameIndex = index(name);
+            if(nameIndex == -1)
+                return '';
+            return a.splice(nameIndex, 1).pop().v?.eq ?? '';
+        };
 
-    tagDataAsText(data: tagDataObject): tagDataObjectAsText {
-        if (!data) {
-            return;
-        }
-        return {
-            n: data.n.eq,
-            v: data.v.eq
-        }
+        a.have = (name: string) => index(name) != -1;
+        a.getValue = getValue;
+        a.remove = remove;
+        return a;
     }
 
     findIndexSearchTag(query: string, tag: StringTracker) {
@@ -123,7 +126,7 @@ export default class InsertComponent extends InsertComponentBase {
         return counter + tag.search(/\ |\>/)
     }
 
-    ReBuildTagData(stringInfo: StringTrackerDataInfo, dataTagSplitter: tagDataObject[]) {
+    ReBuildTagData(stringInfo: StringTrackerDataInfo, dataTagSplitter: tagDataObjectArray) {
         let newAttributes = new StringTracker(stringInfo);
 
         for (const i of dataTagSplitter) {
@@ -148,7 +151,7 @@ export default class InsertComponent extends InsertComponentBase {
         return code;
     }
 
-    async ReBuildTag(type: StringTracker, dataTag: StringTracker, dataTagSpliced: tagDataObject[], BetweenTagData: StringTracker, SendDataFunc: (text: StringTracker) => Promise<StringTracker>) {
+    async ReBuildTag(type: StringTracker, dataTag: StringTracker, dataTagSpliced: tagDataObjectArray, BetweenTagData: StringTracker, SendDataFunc: (text: StringTracker) => Promise<StringTracker>) {
         if (BetweenTagData && this.SomePlugins("MinHTML", "MinAll")) {
             BetweenTagData = BetweenTagData.SpaceOne(' ');
             
@@ -198,7 +201,7 @@ export default class InsertComponent extends InsertComponentBase {
         return fileData;
     }
 
-    parseComponentProps(tagData: tagDataObject[], component: StringTracker){
+    parseComponentProps(tagData: tagDataObjectArray, component: StringTracker){
 
         // eslint-disable-next-line
         let {fileData, foundSetters} = this.exportDefaultValues(component);
@@ -237,7 +240,7 @@ export default class InsertComponent extends InsertComponentBase {
         return this.addDefaultValues(foundSetters, fileData);
     }
 
-    async buildTagBasic(fileData: StringTracker, tagData: tagDataObject[], path:string, pathName:string, FullPath:string, SmallPath:string, isDebug:boolean, dependenceObject:StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: StringAnyMap, BetweenTagData?: StringTracker){
+    async buildTagBasic(fileData: StringTracker, tagData: tagDataObjectArray, path:string, pathName:string, FullPath:string, SmallPath:string, isDebug:boolean, dependenceObject:StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo, BetweenTagData?: StringTracker){
         fileData = await this.PluginBuild.BuildComponent(fileData, path, pathName, sessionInfo);
 
         fileData = this.parseComponentProps(tagData, fileData);
@@ -252,25 +255,8 @@ export default class InsertComponent extends InsertComponentBase {
 
         return fileData;
     }
-
-    parseDataTagFunc(dataTag: tagDataObject[]){
-        const index = (name: string) => dataTag.findIndex(x => x.n.eq == name);
-        const getValue = (name: string) => dataTag.find(tag => tag.n.eq == name)?.v?.eq ?? '';
-        const pop = (name: string) => {
-            const nameIndex = index(name);
-            if(nameIndex == -1)
-                return '';
-            return dataTag.splice(nameIndex, 1).pop().v?.eq ?? '';
-        };
-
-        return {
-            have: (name: string) => index(name) != -1,
-            getValue,
-            pop
-        }
-    }
     
-    async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo}: { sessionInfo: StringAnyMap, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule, dependenceObject: StringNumberMap, isDebug: boolean }) {
+    async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo}: { sessionInfo: SessionInfo, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule, dependenceObject: StringNumberMap, isDebug: boolean }) {
         const data = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
 
         let fileData: StringTracker, SearchInComment = true, AllPathTypes: PathTypes = {}, addStringInfo: string;
@@ -280,13 +266,12 @@ export default class InsertComponent extends InsertComponentBase {
             fileData = compiledString;
             SearchInComment = checkComponents;
         } else {
-            const folder = this.tagDataAsText(data.find(x => x.n.eq == 'folder'));
+            let folder: boolean | string = data.have('folder');
 
-            if (folder?.v == '') {
-                folder.v = '.';
-            }
+            if(folder)
+                folder = data.remove('folder') || '.';
 
-            const tagPath = (folder ? folder.v + '/' : '') + type.replace(/:/gi, "/").eq;
+            const tagPath = (folder ? folder + '/' : '') + type.replace(/:/gi, "/").eq;
 
             AllPathTypes = CreateFilePath(path, LastSmallPath, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
 
@@ -348,7 +333,7 @@ export default class InsertComponent extends InsertComponentBase {
         return startData;
     }
 
-    async StartReplace(data: StringTracker, pathName: string, path: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: StringAnyMap): Promise<StringTracker> {
+    async StartReplace(data: StringTracker, pathName: string, path: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<StringTracker> {
         let find: number;
 
         const promiseBuild: (StringTracker | Promise<StringTracker>)[] = [];
@@ -445,7 +430,7 @@ export default class InsertComponent extends InsertComponentBase {
         return code;
     }
 
-    async Insert(data: StringTracker, path: string, pathName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: StringAnyMap) {
+    async Insert(data: StringTracker, path: string, pathName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo) {
 
         //removing html comment tags
         data = data.replace(/<!--[^-->]*-->/, '');

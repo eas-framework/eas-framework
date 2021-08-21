@@ -1,5 +1,5 @@
 import StringTracker from '../EasyDebug/StringTracker';
-import { tagDataObject, StringNumberMap, BuildInComponent, BuildScriptWithoutModule, StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWithoutModule, SessionInfo } from '../CompileCode/XMLHelpers/CompileTypes';
 import client from './Components/client';
 import script from './Components/script/index';
 import style from './Components/style/index';
@@ -11,7 +11,7 @@ import form, { addFinalizeBuild as addFinalizeBuildForm, handelConnector as hand
 
 const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head"];
 
-export function StartCompiling(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
+export function StartCompiling(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
     let reData: Promise<BuildInComponent>;
 
     switch (type.eq) {
@@ -48,7 +48,7 @@ export function IsInclude(tagname: string) {
     return AllBuildIn.includes(tagname.toLowerCase());
 }
 
-export async function finalizeBuild(pageData: StringTracker, sessionInfo: StringAnyMap, fullCompilePath:string) {
+export async function finalizeBuild(pageData: StringTracker, sessionInfo: SessionInfo, fullCompilePath:string) {
     pageData = addFinalizeBuildConnect(pageData, sessionInfo);
     pageData = addFinalizeBuildForm(pageData, sessionInfo);
     pageData = pageData.replace(/@ConnectHere(;?)/gi, '').replace(/@ConnectHereForm(;?)/gi, '');

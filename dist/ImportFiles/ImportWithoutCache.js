@@ -14,8 +14,8 @@ async function updateSourceMaps(fromPath, toPath) {
 export default async function (path, func) {
     const newPath = path.substring(0, path.length - 3) + '-' + uuid() + '.js';
     await updateSourceMaps(path, newPath);
-    let module = await func(newPath);
-    setTimeout(() => EasyFs.unlink(newPath));
+    const module = await func(newPath);
+    //setTimeout(() => EasyFs.unlink(newPath));
     return module;
 }
 //# sourceMappingURL=ImportWithoutCache.js.map

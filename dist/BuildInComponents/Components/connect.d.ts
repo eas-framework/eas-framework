@@ -1,8 +1,7 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObject, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
-export default function BuildCode(type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, isDebug: boolean, { parseDataTagFunc, SomePlugins }: {
-    parseDataTagFunc: any;
+import { tagDataObjectArray, BuildInComponent, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
+export default function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, isDebug: boolean, { SomePlugins }: {
     SomePlugins: any;
-}, sessionInfo: StringAnyMap): Promise<BuildInComponent>;
-export declare function addFinalizeBuild(pageData: StringTracker, sessionInfo: StringAnyMap): StringTracker;
+}, sessionInfo: SessionInfo): Promise<BuildInComponent>;
+export declare function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionInfo): StringTracker;
 export declare function handelConnector(thisPage: any, connectorArray: any[]): Promise<boolean>;

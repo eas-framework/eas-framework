@@ -2,7 +2,7 @@ import StringTracker from '../EasyDebug/StringTracker';
 import { SourceMapGenerator } from "source-map-js";
 import path from 'path';
 import { finalizeBuild } from '../BuildInComponents/index';
-import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
+import { SessionInfo } from '../CompileCode/XMLHelpers/CompileTypes';
 import JSParser from './JSParser';
 
 export class PageTemplate extends JSParser {
@@ -42,7 +42,7 @@ export class PageTemplate extends JSParser {
         return "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(map.toString()).toString("base64");
     }
 
-    private static async AddPageTemplate(text: StringTracker, isDebug: boolean, fullPathCompile: string, sessionInfo: StringAnyMap) {
+    private static async AddPageTemplate(text: StringTracker, isDebug: boolean, fullPathCompile: string, sessionInfo: SessionInfo) {
 
         text = await finalizeBuild(text, sessionInfo, fullPathCompile);
 
@@ -89,7 +89,7 @@ export class PageTemplate extends JSParser {
         return text;
     }
 
-    static BuildPage(text: StringTracker, path: string, isDebug: boolean, fullPathCompile: string, sessionInfo: StringAnyMap) {
+    static BuildPage(text: StringTracker, path: string, isDebug: boolean, fullPathCompile: string, sessionInfo: SessionInfo) {
         const builtCode = PageTemplate.RunAndExport(text, path, isDebug);
 
         return PageTemplate.AddPageTemplate(builtCode, isDebug, fullPathCompile, sessionInfo);

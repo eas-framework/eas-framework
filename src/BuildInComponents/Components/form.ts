@@ -1,13 +1,12 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObject, StringNumberMap, BuildInComponent, StringAnyMap, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, BuildInComponent, SessionInfo, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
 import { compileValues, makeValidationJSON, parseValues } from './serv-connect/index';
 import {SplitFirst} from '../../StringMethods/Splitting';
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
-    const {pop} = InsertComponent.parseDataTagFunc(dataTag);
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
 
-    const sendTo = pop('sendTo').trim();
+    const sendTo = dataTag.remove('sendTo').trim();
 
     if (!sendTo)  // special action not found
         return {
@@ -18,7 +17,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         }
 
 
-    const name = pop('name').trim() || uuid(), validator: string = pop('validate'), notValid: string = pop('notValid');
+    const name = dataTag.remove('name').trim() || uuid(), validator: string = dataTag.remove('validate'), notValid: string = dataTag.remove('notValid');
 
     const order = [];
 
@@ -53,7 +52,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 }
 
 
-export function addFinalizeBuild(pageData: StringTracker, sessionInfo: StringAnyMap) {
+export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionInfo) {
     if (!sessionInfo.connectorArray.length)
         return pageData;
 

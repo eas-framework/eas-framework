@@ -3,6 +3,7 @@
 <@head/>
 <script>
 var i = 3;
+debugger;
 </script>
 <style lang="sass">
     div

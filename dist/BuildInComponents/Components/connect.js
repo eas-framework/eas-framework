@@ -4,14 +4,17 @@ const serveScript = '/serv/connect.js';
 function template(name) {
     return `function ${name}(...args){return connector("${name}", args)}`;
 }
-export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, { parseDataTagFunc, SomePlugins }, sessionInfo) {
-    const { getValue } = parseDataTagFunc(dataTag), name = getValue('name'), sendTo = getValue('sendTo'), validator = getValue('validate');
-    let message = getValue('message');
+export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, { SomePlugins }, sessionInfo) {
+    const name = dataTag.getValue('name'), sendTo = dataTag.getValue('sendTo'), validator = dataTag.getValue('validate');
+    let message = dataTag.getValue('message');
     if (message == null) {
         message = isDebug && !SomePlugins("SafeDebug");
     }
-    sessionInfo.scriptURLSet.add(serveScript);
-    sessionInfo.script += template(name);
+    sessionInfo.scriptURLSet.push({
+        url: serveScript,
+        attributes: { async: null }
+    });
+    sessionInfo.script.addText(template(name));
     sessionInfo.connectorArray.push({
         type: 'connect',
         name,

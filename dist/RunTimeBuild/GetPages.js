@@ -64,7 +64,7 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
     if (code == 200) {
         fullPageUrl = getTypes.Static[0] + url;
         //check that is not server file
-        if (await serverBuild(url) || !isServerFile(url) && await EasyFs.exists(fullPageUrl) && (await EasyFs.stat(fullPageUrl)).isFile()) {
+        if (await serverBuild(Request, url) || !isServerFile(url) && await EasyFs.exists(fullPageUrl) && (await EasyFs.stat(fullPageUrl)).isFile()) {
             file = true;
         }
         else { // then it a server page or error page

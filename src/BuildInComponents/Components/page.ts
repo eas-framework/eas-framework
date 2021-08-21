@@ -1,5 +1,5 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObject, StringNumberMap, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { CreateFilePathOnePath, PathTypes } from './../../CompileCode/XMLHelpers/CodeInfoAndDebug';
 import { BasicSettings, CheckDependencyChange, getTypes, PagesInfo } from '../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../OutputInput/EasyFs';
@@ -31,8 +31,8 @@ function InFolderPagePath(inputPath: string, fullPath:string){
     return inputPath;
 }
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
-    const filepath = InsertComponent.parseDataTagFunc(dataTag).getValue("from");
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
+    const filepath = dataTag.getValue("from");
 
     const SmallPathWithoutFolder = InFolderPagePath(filepath, path);
 

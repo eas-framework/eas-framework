@@ -27,7 +27,7 @@ function InFolderPagePath(inputPath, fullPath) {
     return inputPath;
 }
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo) {
-    const filepath = InsertComponent.parseDataTagFunc(dataTag).getValue("from");
+    const filepath = dataTag.getValue("from");
     const SmallPathWithoutFolder = InFolderPagePath(filepath, path);
     const FullPath = getTypes.Static[0] + SmallPathWithoutFolder, FullPathCompile = getTypes.Static[1] + SmallPathWithoutFolder + '.js', SmallPath = getTypes.Static[2] + '/' + SmallPathWithoutFolder;
     if (!(await EasyFs.stat(FullPath, null, true)).isFile?.()) {

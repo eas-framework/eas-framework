@@ -20,8 +20,8 @@ export default async function (path: string, func: (path: string) => any) {
 
     await updateSourceMaps(path, newPath);
 
-    let module = await func(newPath);
-    setTimeout(() => EasyFs.unlink(newPath));
+    const module = await func(newPath);
+    //setTimeout(() => EasyFs.unlink(newPath));
 
     return module;
 }

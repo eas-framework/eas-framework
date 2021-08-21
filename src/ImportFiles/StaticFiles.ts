@@ -1,10 +1,12 @@
 import path from 'path';
 import { BuildJS, BuildJSX, BuildTS, BuildTSX } from './ForStatic/Script';
 import { BuildStyleSass } from './ForStatic/Style';
-import { getTypes, SystemData, BasicSettings, getDirname } from '../RunTimeBuild/SearchFileSystem';
+import { getTypes, SystemData, getDirname, BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../OutputInput/EasyFs';
 import { Response, Request } from '@tinyhttp/app';
+import { GetPlugin } from '../CompileCode/InsertModels';
 import fs from 'fs';
+import promptly from 'promptly';
 
 const SupportedTypes = ['js', 'ts', 'jsx', 'tsx', 'css', 'sass', 'scss'];
 
@@ -95,6 +97,10 @@ const getStaticFilesType: buildIn[] = [{
     type: 'js'
 },
 {
+    ext: '.pub.module.js',
+    type: 'js'
+},
+{
     ext: '.pub.css',
     type: 'css'
 }];
@@ -107,17 +113,53 @@ async function serverBuildByType(filePath: string, checked: boolean) {
 
     const inServer = path.join(getTypes.Static[1], filePath);
 
-    if(checked || await EasyFs.exists(inServer))
-        return { ...found, inServer};
+    if (checked || await EasyFs.exists(inServer))
+        return { ...found, inServer };
 }
 
+let debuggingWithSource: null | boolean = null;
 
-export async function serverBuild(path: string, checked = false): Promise<null | buildIn> {
-    return await serverBuildByType(path, checked) || getStatic.find(x => x.path == path);
+async function askDebuggingWithSource() {
+    if (debuggingWithSource)
+        return true;
+
+    debuggingWithSource = (await promptly.prompt(
+        'Allow debugging JavaScript/CSS in source page? - exposing your source code (no)',
+        {
+            validator(v: string) {
+                if (['yes', 'no'].includes(v.trim().toLowerCase()))
+                    return v;
+                throw new Error('yes or no');
+            },
+            timeout: 1000 * 30
+        }
+    )).trim().toLowerCase() == 'yes';
+
+    return debuggingWithSource;
 }
+
+async function unsafeDebug(Request: Request, filePath: string, checked: boolean) {
+    if (!askDebuggingWithSource() || GetPlugin("SafeDebug") || path.extname(filePath) != '.' + 'source')
+        return;
+
+    const base = Request.query.sourceName == getTypes.Logs[2] ? getTypes.Logs[0] : getTypes.Static[0];
+
+    const fullPath = path.join(base, filePath.substring(0, filePath.length - 6) + BasicSettings.pageTypes.page); // replacing '.source' + with '.page'
+
+    if (checked || await EasyFs.exists(fullPath))
+        return {
+            type: 'html',
+            inServer: fullPath
+        };
+}
+
+export async function serverBuild(Request: Request, path: string, checked = false): Promise<null | buildIn> {
+    return await unsafeDebug(Request, path, checked) || await serverBuildByType(path, checked) || getStatic.find(x => x.path == path);
+}
+
 export async function GetFile(SmallPath: string, isDebug: boolean, Request: Request, Response: Response) {
     //file built in
-    const isBuildIn = await serverBuild(SmallPath, true);
+    const isBuildIn = await serverBuild(Request, SmallPath, true);
 
     if (isBuildIn) {
         Response.type(isBuildIn.type);

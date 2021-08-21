@@ -2,8 +2,8 @@ import StringTracker from '../../../EasyDebug/StringTracker.js';
 import { transform } from 'sucrase';
 import { minify } from "terser";
 import { PrintIfNew } from '../../../OutputInput/PrintNew.js';
-export default async function BuildCode(language, BetweenTagData, pathName, InsertComponent, sessionInfo) {
-    let result = '';
+export default async function BuildCode(language, tagData, BetweenTagData, pathName, InsertComponent, sessionInfo) {
+    let resultCode = '';
     const AddOptions = {
         transforms: [],
         ...InsertComponent.GetPlugin("transformOptions")
@@ -23,9 +23,9 @@ export default async function BuildCode(language, BetweenTagData, pathName, Inse
                 Object.assign(AddOptions, InsertComponent.GetPlugin("TSXOptions") ?? {});
                 break;
         }
-        result = transform(BetweenTagData.eq, AddOptions).code;
+        resultCode = transform(BetweenTagData.eq, AddOptions).code;
         if (InsertComponent.SomePlugins("Min" + language.toUpperCase()) || InsertComponent.SomePlugins("MinAll"))
-            result = (await minify(result, { module: false, format: { comments: 'all' } })).code;
+            resultCode = (await minify(resultCode, { module: false, format: { comments: 'all' } })).code;
     }
     catch (err) {
         PrintIfNew({
@@ -33,7 +33,10 @@ export default async function BuildCode(language, BetweenTagData, pathName, Inse
             text: `${err.message}, on file -> ${pathName}:${BetweenTagData.getLine(err?.loc?.line ?? 0).DefaultInfoText.line}:${err.loc.column}`
         });
     }
-    sessionInfo.script += result;
+    if (tagData.getValue('type') == 'module')
+        sessionInfo.scriptModule.addStringTracker(BetweenTagData, resultCode);
+    else
+        sessionInfo.script.addStringTracker(BetweenTagData, resultCode);
     return {
         compiledString: new StringTracker()
     };

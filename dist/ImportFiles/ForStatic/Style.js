@@ -33,6 +33,7 @@ export async function BuildStyleSass(inputPath, type, isDebug) {
     const fileData = await EasyFs.readFile(fullPath);
     return await new Promise((res) => {
         sass.render({
+            sourceMap: isDebug,
             data: fileData,
             indentedSyntax: type == 'sass',
             outputStyle,

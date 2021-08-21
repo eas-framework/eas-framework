@@ -2,7 +2,6 @@ import {
   Options as TransformOptions,
   transform
 } from "sucrase";
-import { RawSourceMap } from "sucrase/dist/computeSourceMap";
 import { minify } from "terser";
 import { PrintIfNew } from "../OutputInput/PrintNew";
 import EasyFs from "../OutputInput/EasyFs";

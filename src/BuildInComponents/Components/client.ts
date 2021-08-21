@@ -1,5 +1,5 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObject, StringNumberMap, BuildInComponent, BuildScriptWithoutModule, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWithoutModule, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
 import JSParser from '../../CompileCode/JSParser'
 import { minify } from "terser";
 
@@ -24,18 +24,20 @@ async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name
     }\n${name}.exports = {};`
 }
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: StringAnyMap): Promise<BuildInComponent>{
-    const {getValue} = InsertComponent.parseDataTagFunc(dataTag);
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent>{
 
     BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, (x: StringTracker) => x.eq, sessionInfo);
 
-    sessionInfo.scriptURLSet.add(serveScript);
+    sessionInfo.scriptURLSet.push({
+        url: serveScript,
+        attributes: {async: null}
+    });
 
     let scriptInfo = await template(
         BuildScriptWithoutModule,
-        getValue(dataTag, 'name'),
-        getValue(dataTag, 'params'),
-        getValue(dataTag, 'selector'),
+        dataTag.getValue('name'),
+        dataTag.getValue('params'),
+        dataTag.getValue('selector'),
         BetweenTagData,
         pathName,
         isDebug && !InsertComponent.SomePlugins("SafeDebug")
@@ -47,7 +49,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         scriptInfo = (await minify(scriptInfo, { module: false, format: { comments: 'all' } })).code;
     }
 
-    sessionInfo.script += scriptInfo;
+    sessionInfo.script.addText(scriptInfo);
 
     return {
         compiledString: new StringTracker()

@@ -1,8 +1,14 @@
 import StringTracker from '../../EasyDebug/StringTracker';
+import SourceMapStore from '../../EasyDebug/SourceMapStore';
 export interface tagDataObject {
     n: StringTracker;
     v: StringTracker;
     char?: StringTracker;
+}
+export interface tagDataObjectArray extends Array<tagDataObject> {
+    have?: (name: string) => boolean;
+    remove?: (name: string) => string;
+    getValue?: (name: string) => string;
 }
 export interface tagDataObjectAsText {
     n: string;
@@ -13,6 +19,26 @@ export declare type StringNumberMap = {
 };
 export declare type StringAnyMap = {
     [key: string]: any;
+};
+export declare type setDataHTMLTag = {
+    url: string;
+    attributes?: StringAnyMap;
+};
+export declare type SessionInfo = {
+    connectorArray: {
+        type: string;
+        name: string;
+        sendTo: string;
+        validator: string[];
+        order?: string[];
+        notValid?: string;
+        message?: boolean;
+    }[];
+    scriptURLSet: setDataHTMLTag[];
+    styleURLSet: setDataHTMLTag[];
+    style: SourceMapStore;
+    script: SourceMapStore;
+    scriptModule: SourceMapStore;
 };
 export interface BuildInComponent {
     compiledString: StringTracker;

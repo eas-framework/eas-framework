@@ -15,15 +15,17 @@ async function template(BuildScriptWithoutModule, name, params, selector, mainCo
     }\n${name}.exports = {};`;
 }
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo) {
-    const { getValue } = InsertComponent.parseDataTagFunc(dataTag);
     BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, (x) => x.eq, sessionInfo);
-    sessionInfo.scriptURLSet.add(serveScript);
-    let scriptInfo = await template(BuildScriptWithoutModule, getValue(dataTag, 'name'), getValue(dataTag, 'params'), getValue(dataTag, 'selector'), BetweenTagData, pathName, isDebug && !InsertComponent.SomePlugins("SafeDebug"));
+    sessionInfo.scriptURLSet.push({
+        url: serveScript,
+        attributes: { async: null }
+    });
+    let scriptInfo = await template(BuildScriptWithoutModule, dataTag.getValue('name'), dataTag.getValue('params'), dataTag.getValue('selector'), BetweenTagData, pathName, isDebug && !InsertComponent.SomePlugins("SafeDebug"));
     const minScript = InsertComponent.SomePlugins("MinJS") || InsertComponent.SomePlugins("MinAll");
     if (minScript) {
         scriptInfo = (await minify(scriptInfo, { module: false, format: { comments: 'all' } })).code;
     }
-    sessionInfo.script += scriptInfo;
+    sessionInfo.script.addText(scriptInfo);
     return {
         compiledString: new StringTracker()
     };

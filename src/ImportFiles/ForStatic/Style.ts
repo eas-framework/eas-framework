@@ -43,6 +43,7 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
 
     return await new Promise((res: any) => {
         sass.render({
+            sourceMap: isDebug,
             data: fileData,
             indentedSyntax: type == 'sass',
             outputStyle,

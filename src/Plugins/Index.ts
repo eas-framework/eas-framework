@@ -1,6 +1,6 @@
 import AddSyntax from './Syntax/Index';
 import StringTracker from '../EasyDebug/StringTracker';
-import {StringAnyMap} from '../CompileCode/XMLHelpers/CompileTypes';
+import {SessionInfo} from '../CompileCode/XMLHelpers/CompileTypes';
 
 export default class AddPlugin {
 	public SettingsObject: any;
@@ -9,7 +9,7 @@ export default class AddPlugin {
         this.SettingsObject = SettingsObject
     }
 
-    async BuildBasic(text: StringTracker, OData:string |any, path:string, pathName: string, sessionInfo: StringAnyMap) {
+    async BuildBasic(text: StringTracker, OData:string |any, path:string, pathName: string, sessionInfo: SessionInfo) {
 
         //add Syntax
 
@@ -39,7 +39,7 @@ export default class AddPlugin {
      * @param pathName file location without start folder (small path)
      * @returns compiled code
      */
-    async BuildPage(text: StringTracker, path: string, pathName: string, sessionInfo: StringAnyMap): Promise<StringTracker>{
+    async BuildPage(text: StringTracker, path: string, pathName: string, sessionInfo: SessionInfo): Promise<StringTracker>{
         text = await this.BuildBasic(text, this.SettingsObject.AddCompileSyntax, path, pathName, sessionInfo);
         return text;
     }
@@ -51,7 +51,7 @@ export default class AddPlugin {
      * @param pathName file location without start folder (small path)
      * @returns compiled code
      */
-    async BuildComponent(text: StringTracker, path: string, pathName: string, sessionInfo: StringAnyMap): Promise<StringTracker>{
+    async BuildComponent(text: StringTracker, path: string, pathName: string, sessionInfo: SessionInfo): Promise<StringTracker>{
         text = await this.BuildBasic(text, this.SettingsObject.AddCompileSyntax, path, pathName, sessionInfo);
         return text;
     }

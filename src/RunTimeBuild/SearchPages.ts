@@ -5,7 +5,7 @@ import { ClearWarning } from '../OutputInput/PrintNew'
 import * as SearchFileSystem from './SearchFileSystem';
 import ReqScript from '../ImportFiles/Script';
 import StaticFiles from '../ImportFiles/StaticFiles';
-import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
+import { SessionInfo } from '../CompileCode/XMLHelpers/CompileTypes';
 import path from 'path';
 
 export function RemoveEndType(string) {
@@ -13,7 +13,7 @@ export function RemoveEndType(string) {
 }
 Components.RemoveEndType = RemoveEndType;
 
-async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, debugFromPage?: string, sessionInfo?: StringAnyMap) {
+async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, debugFromPage?: string, sessionInfo?: SessionInfo) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.js';
     const dependenceObject: any = {
         thisPage: await EasyFs.stat(FullFilePath, 'mtimeMs')
@@ -77,7 +77,7 @@ async function CreateCompile(t:string) {
  * @param path 
  * @param arrayType 
  */
-async function FastCompileInFile(path: string, arrayType: string[], debugFromPage?: string, sessionInfo?: StringAnyMap) {
+async function FastCompileInFile(path: string, arrayType: string[], debugFromPage?: string, sessionInfo?: SessionInfo) {
     await EasyFs.makePathReal(path, arrayType[1]);
     return await compileFile(path, arrayType, true, debugFromPage, sessionInfo);
 }

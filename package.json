@@ -8,7 +8,7 @@
     "build:ts": "tsc --project tsconfig.json",
     "push": "node build/gitPush.js",
     "buildAndPush": "npm run build & npm run push",
-    "test:dist": "node tests/core/index.js",
+    "test:dist": "node --inspect=127.0.0.1:9229 tests/core/index.js",
     "test": "npm run build & npm run test:dist"
   },
   "repository": {
@@ -41,6 +41,7 @@
     "formidable": "^1.2.2",
     "greenlock-express": "^4.0.3",
     "node-fetch": "^2.6.1",
+    "promptly": "^3.2.0",
     "sass": "^1.34.0",
     "selfsigned": "^1.10.11",
     "source-map": "^0.7.3",

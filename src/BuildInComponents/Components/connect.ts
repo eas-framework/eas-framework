@@ -1,5 +1,5 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObject, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, BuildInComponent, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { compileValues, makeValidationJSON } from './serv-connect/index';
 
 const serveScript = '/serv/connect.js';
@@ -8,21 +8,23 @@ function template(name: string) {
     return `function ${name}(...args){return connector("${name}", args)}`;
 }
 
-export default async function BuildCode(type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, isDebug: boolean, { parseDataTagFunc, SomePlugins }, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
-    const { getValue } = parseDataTagFunc(dataTag),
-        name = getValue('name'),
-        sendTo = getValue('sendTo'),
-        validator: string = getValue('validate');
+export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, isDebug: boolean, { SomePlugins }, sessionInfo: SessionInfo): Promise<BuildInComponent> {
+    const name = dataTag.getValue('name'),
+        sendTo = dataTag.getValue('sendTo'),
+        validator: string = dataTag.getValue('validate');
 
-    let message = getValue('message');
+    let message: string | boolean = dataTag.getValue('message');
 
     if (message == null) {
         message = isDebug && !SomePlugins("SafeDebug");
     }
 
-    sessionInfo.scriptURLSet.add(serveScript);
+    sessionInfo.scriptURLSet.push({
+        url: serveScript,
+        attributes: {async: null}
+    });
 
-    sessionInfo.script += template(name);
+    sessionInfo.script.addText(template(name));
 
     sessionInfo.connectorArray.push({
         type: 'connect',
@@ -38,7 +40,7 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
     }
 }
 
-export function addFinalizeBuild(pageData: StringTracker, sessionInfo: StringAnyMap) {
+export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionInfo) {
     if (!sessionInfo.connectorArray.length)
         return pageData;
 

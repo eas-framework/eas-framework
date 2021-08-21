@@ -1,17 +1,18 @@
 import EasyFs from '../OutputInput/EasyFs';
-import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
+import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem';
 import { print } from '../OutputInput/Console';
 import InsertComponent from './InsertComponent';
-import {PageTemplate} from './ScriptTemplate';
+import { PageTemplate } from './ScriptTemplate';
 import AddPlugin from '../Plugins/Index';
-import { CreateFilePath, ParseDebugLine, AddDebugInfo} from './XMLHelpers/CodeInfoAndDebug';
+import { CreateFilePath, ParseDebugLine, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug';
 import * as extricate from './XMLHelpers/Extricate';
 import StringTracker from '../EasyDebug/StringTracker';
-import {StringNumberMap, StringAnyMap} from './XMLHelpers/CompileTypes';
+import SourceMapStore from '../EasyDebug/SourceMapStore';
+import { StringNumberMap, SessionInfo } from './XMLHelpers/CompileTypes';
 import BuildScript from './transform/Script';
-import {Settings as BuildScriptSettings} from '../BuildInComponents/Settings';
+import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings';
 
-export const Settings = {AddCompileSyntax: ["JTags", "Razor"], plugins: []};
+export const Settings = { AddCompileSyntax: ["JTags", "Razor"], plugins: [] };
 const PluginBuild = new AddPlugin(Settings);
 export const Components = new InsertComponent(PluginBuild);
 
@@ -23,8 +24,8 @@ export function SomePlugins(...data: string[]) {
     return data.some(x => GetPlugin(x));
 }
 
-export function isTs(){
-    return  Settings.AddCompileSyntax.includes('TypeScript');
+export function isTs() {
+    return Settings.AddCompileSyntax.includes('TypeScript');
 }
 
 Components.MicroPlugins = Settings.plugins;
@@ -49,9 +50,9 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
         modelName = model.data.trim();
     }
 
-    const {SmallPath, FullPath} = CreateFilePath(pagePath, LastSmallPath, modelName.eq, 'Models', BasicSettings.pageTypes.model); // find location of the file
+    const { SmallPath, FullPath } = CreateFilePath(pagePath, LastSmallPath, modelName.eq, 'Models', BasicSettings.pageTypes.model); // find location of the file
 
-    if(!await EasyFs.exists(FullPath)){
+    if (!await EasyFs.exists(FullPath)) {
         const ErrorMessage = `Error model not found -> ${modelName} at page ${pageName}`;
 
         print.error(ErrorMessage);
@@ -59,7 +60,7 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
     }
 
     dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs'); // check page changed date, for dependenceObject
-    
+
     const baseModelData = await AddDebugInfo(pageName, FullPath); // read model
     let modelData = baseModelData.allData;
 
@@ -110,10 +111,20 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
     return await outPage(modelBuild, FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
 
-export async function Insert(data:string, fullPathCompile:string, pagePath:string, smallPath:string, isDebug:boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: StringAnyMap) {
-    const BuildScriptWithPrams = (code: StringTracker, pathName:string, RemoveToModule = true):Promise<string> => BuildScript(code,pathName, isTs(),isDebug, RemoveToModule);
+export async function Insert(data: string, fullPathCompile: string, pagePath: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: SessionInfo) {
+    const BuildScriptWithPrams = (code: StringTracker, pathName: string, RemoveToModule = true): Promise<string> => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
 
-    const sessionInfo: StringAnyMap = hasSessionInfo ?? {connectorArray: [], scriptURLSet: new Set(), styleURLSet: new Set(), style: '', script: ''};
+    const publicPath = smallPath.substring(0, smallPath.length - BasicSettings.pageTypes.page.length) + 'source',
+        addToDebugUrl = smallPath.startsWith(getTypes.Logs[2]) ?  'sourceName=' + getTypes.Logs[2]: '';
+
+    const debugInPage = isDebug && !GetPlugin("SafeDebug");  
+    const sessionInfo: SessionInfo = hasSessionInfo ??
+    {
+        connectorArray: [], scriptURLSet: [], styleURLSet: [],
+        style: new SourceMapStore(publicPath, debugInPage, true, addToDebugUrl),
+        script: new SourceMapStore(publicPath, debugInPage, false, addToDebugUrl),
+        scriptModule: new SourceMapStore(publicPath, debugInPage, false, addToDebugUrl)
+    };
 
     let DebugString = new StringTracker(pagePath, data);
 
@@ -125,12 +136,12 @@ export async function Insert(data:string, fullPathCompile:string, pagePath:strin
 
     DebugString = ParseDebugLine(DebugString, smallPath);
 
-    DebugString = debugFromPage ? PageTemplate.RunAndExport(DebugString, pagePath, isDebug):
-    await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
+    DebugString = debugFromPage ? PageTemplate.RunAndExport(DebugString, pagePath, isDebug) :
+        await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
 
     let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, `${smallPath} -><line>${pagePath}`, debugFromPage);
 
-    if(!debugFromPage){
+    if (!debugFromPage) {
         DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, isDebug);
     }
 

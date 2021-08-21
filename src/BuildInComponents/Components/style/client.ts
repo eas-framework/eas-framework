@@ -5,9 +5,9 @@ import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import EasyFs from '../../../OutputInput/EasyFs';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug';
 import MinCss from '../../../CompileCode/CssMinimizer';
-import { StringAnyMap } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { SessionInfo } from '../../../CompileCode/XMLHelpers/CompileTypes';
 
-export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionInfo): Promise<BuildInComponent> {
 
     let outStyle = BetweenTagData.eq;
 
@@ -34,6 +34,7 @@ export default async function BuildCode(language: string, path: string, pathName
     if (language != 'css')
         sassOutput = await new Promise((res: any) => {
             sass.render({
+                sourceMap: isDebug,
                 data: outStyle,
                 indentedSyntax: language == 'sass',
                 importer(url: string, prev: string, done) {
@@ -51,13 +52,16 @@ export default async function BuildCode(language: string, path: string, pathName
             type: expression?.status == 5 ? 'warn' : 'error'
         });
 
-
     outStyle = result?.css?.toString() ?? outStyle;
 
     if (InsertComponent.SomePlugins("MinCss", "MinAll", "MinSass"))
         outStyle = MinCss(outStyle);
 
-    sessionInfo.style += outStyle;
+    if (result?.map)
+        sessionInfo.style.addSourceMapWithStringTracker(JSON.parse(result.map.toString()), BetweenTagData, outStyle);
+    else
+        sessionInfo.style.addStringTracker(BetweenTagData, outStyle);
+
 
     return {
         compiledString: new StringTracker()

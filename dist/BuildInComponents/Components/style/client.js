@@ -26,6 +26,7 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
     if (language != 'css')
         sassOutput = await new Promise((res) => {
             sass.render({
+                sourceMap: isDebug,
                 data: outStyle,
                 indentedSyntax: language == 'sass',
                 importer(url, prev, done) {
@@ -43,7 +44,10 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
     outStyle = result?.css?.toString() ?? outStyle;
     if (InsertComponent.SomePlugins("MinCss", "MinAll", "MinSass"))
         outStyle = MinCss(outStyle);
-    sessionInfo.style += outStyle;
+    if (result?.map)
+        sessionInfo.style.addSourceMapWithStringTracker(JSON.parse(result.map.toString()), BetweenTagData, outStyle);
+    else
+        sessionInfo.style.addStringTracker(BetweenTagData, outStyle);
     return {
         compiledString: new StringTracker()
     };

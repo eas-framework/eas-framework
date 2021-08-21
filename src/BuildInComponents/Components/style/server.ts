@@ -1,5 +1,5 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { tagDataObject, StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import sass from 'sass';
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import EasyFs from '../../../OutputInput/EasyFs';
@@ -7,7 +7,7 @@ import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug
 import MinCss from '../../../CompileCode/CssMinimizer';
 import { EnableGlobalReplace } from '../../../CompileCode/JSParser';
 
-export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any): Promise<BuildInComponent> {
 
     const SaveServerCode = new EnableGlobalReplace();
     await SaveServerCode.load(BetweenTagData.trimStart(), pathName);

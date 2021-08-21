@@ -72,16 +72,19 @@ export default class InsertComponent extends InsertComponentBase {
             });
             text = text.substring(i).trim();
         }
-        return a;
-    }
-    tagDataAsText(data) {
-        if (!data) {
-            return;
-        }
-        return {
-            n: data.n.eq,
-            v: data.v.eq
+        //methods to the array
+        const index = (name) => a.findIndex(x => x.n.eq == name);
+        const getValue = (name) => a.find(tag => tag.n.eq == name)?.v?.eq ?? '';
+        const remove = (name) => {
+            const nameIndex = index(name);
+            if (nameIndex == -1)
+                return '';
+            return a.splice(nameIndex, 1).pop().v?.eq ?? '';
         };
+        a.have = (name) => index(name) != -1;
+        a.getValue = getValue;
+        a.remove = remove;
+        return a;
     }
     findIndexSearchTag(query, tag) {
         const all = query.split('.');
@@ -194,21 +197,6 @@ export default class InsertComponent extends InsertComponentBase {
         fileData = await NoTrackStringCode(fileData, `${pathName} ->\b${FullPath}`, isDebug, buildScript);
         return fileData;
     }
-    parseDataTagFunc(dataTag) {
-        const index = (name) => dataTag.findIndex(x => x.n.eq == name);
-        const getValue = (name) => dataTag.find(tag => tag.n.eq == name)?.v?.eq ?? '';
-        const pop = (name) => {
-            const nameIndex = index(name);
-            if (nameIndex == -1)
-                return '';
-            return dataTag.splice(nameIndex, 1).pop().v?.eq ?? '';
-        };
-        return {
-            have: (name) => index(name) != -1,
-            getValue,
-            pop
-        };
-    }
     async insertTagData(path, pathName, LastSmallPath, type, dataTag, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }) {
         const data = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
         let fileData, SearchInComment = true, AllPathTypes = {}, addStringInfo;
@@ -218,11 +206,10 @@ export default class InsertComponent extends InsertComponentBase {
             SearchInComment = checkComponents;
         }
         else {
-            const folder = this.tagDataAsText(data.find(x => x.n.eq == 'folder'));
-            if (folder?.v == '') {
-                folder.v = '.';
-            }
-            const tagPath = (folder ? folder.v + '/' : '') + type.replace(/:/gi, "/").eq;
+            let folder = data.have('folder');
+            if (folder)
+                folder = data.remove('folder') || '.';
+            const tagPath = (folder ? folder + '/' : '') + type.replace(/:/gi, "/").eq;
             AllPathTypes = CreateFilePath(path, LastSmallPath, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
             if (!await EasyFs.exists(AllPathTypes.FullPath)) {
                 if (folder) {

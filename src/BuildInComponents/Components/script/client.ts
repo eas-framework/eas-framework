@@ -1,13 +1,13 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { BuildInComponent, tagDataObjectArray } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { Options as TransformOptions, transform } from 'sucrase';
 import { minify } from "terser";
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
-import { StringAnyMap } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { SessionInfo } from '../../../CompileCode/XMLHelpers/CompileTypes';
 
-export default async function BuildCode(language: string, BetweenTagData: StringTracker, pathName: string, InsertComponent: any, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, tagData: tagDataObjectArray, BetweenTagData: StringTracker, pathName: string, InsertComponent: any, sessionInfo: SessionInfo): Promise<BuildInComponent> {
 
-    let result = '';
+    let resultCode = '';
 
     const AddOptions: TransformOptions = {
         transforms: [],
@@ -32,10 +32,10 @@ export default async function BuildCode(language: string, BetweenTagData: String
                 break;
         }
 
-        result = transform(BetweenTagData.eq, AddOptions).code;
+        resultCode = transform(BetweenTagData.eq, AddOptions).code;
 
         if (InsertComponent.SomePlugins("Min" + language.toUpperCase()) || InsertComponent.SomePlugins("MinAll"))
-            result = (await minify(result, { module: false, format: { comments: 'all' } })).code;
+            resultCode = (await minify(resultCode, { module: false, format: { comments: 'all' } })).code;
 
     } catch (err) {
         PrintIfNew({
@@ -44,7 +44,10 @@ export default async function BuildCode(language: string, BetweenTagData: String
         });
     }
 
-    sessionInfo.script += result;
+    if (tagData.getValue('type') == 'module')
+        sessionInfo.scriptModule.addStringTracker(BetweenTagData, resultCode);
+    else
+        sessionInfo.script.addStringTracker(BetweenTagData, resultCode);
 
     return {
         compiledString: new StringTracker()

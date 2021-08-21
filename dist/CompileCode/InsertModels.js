@@ -1,5 +1,5 @@
 import EasyFs from '../OutputInput/EasyFs.js';
-import { BasicSettings } from '../RunTimeBuild/SearchFileSystem.js';
+import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem.js';
 import { print } from '../OutputInput/Console.js';
 import InsertComponent from './InsertComponent.js';
 import { PageTemplate } from './ScriptTemplate.js';
@@ -7,6 +7,7 @@ import AddPlugin from '../Plugins/Index.js';
 import { CreateFilePath, ParseDebugLine, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug.js';
 import * as extricate from './XMLHelpers/Extricate.js';
 import StringTracker from '../EasyDebug/StringTracker.js';
+import SourceMapStore from '../EasyDebug/SourceMapStore.js';
 import BuildScript from './transform/Script.js';
 import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings.js';
 export const Settings = { AddCompileSyntax: ["JTags", "Razor"], plugins: [] };
@@ -79,7 +80,15 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
 }
 export async function Insert(data, fullPathCompile, pagePath, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
     const BuildScriptWithPrams = (code, pathName, RemoveToModule = true) => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
-    const sessionInfo = hasSessionInfo ?? { connectorArray: [], scriptURLSet: new Set(), styleURLSet: new Set(), style: '', script: '' };
+    const publicPath = smallPath.substring(0, smallPath.length - BasicSettings.pageTypes.page.length) + 'source', addToDebugUrl = smallPath.startsWith(getTypes.Logs[2]) ? 'sourceName=' + getTypes.Logs[2] : '';
+    const debugInPage = isDebug && !GetPlugin("SafeDebug");
+    const sessionInfo = hasSessionInfo ??
+        {
+            connectorArray: [], scriptURLSet: [], styleURLSet: [],
+            style: new SourceMapStore(publicPath, debugInPage, true, addToDebugUrl),
+            script: new SourceMapStore(publicPath, debugInPage, false, addToDebugUrl),
+            scriptModule: new SourceMapStore(publicPath, debugInPage, false, addToDebugUrl)
+        };
     let DebugString = new StringTracker(pagePath, data);
     DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject);
     DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);

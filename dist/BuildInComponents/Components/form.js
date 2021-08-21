@@ -3,14 +3,13 @@ import { v4 as uuid } from 'uuid';
 import { compileValues, makeValidationJSON, parseValues } from './serv-connect/index.js';
 import { SplitFirst } from '../../StringMethods/Splitting.js';
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, buildScript, sessionInfo) {
-    const { pop } = InsertComponent.parseDataTagFunc(dataTag);
-    const sendTo = pop('sendTo').trim();
+    const sendTo = dataTag.remove('sendTo').trim();
     if (!sendTo) // special action not found
         return {
             compiledString: new StringTracker(type.DefaultInfoText).Plus$ `<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)}</form>`,
             checkComponents: true
         };
-    const name = pop('name').trim() || uuid(), validator = pop('validate'), notValid = pop('notValid');
+    const name = dataTag.remove('name').trim() || uuid(), validator = dataTag.remove('validate'), notValid = dataTag.remove('notValid');
     const order = [];
     const validatorArray = validator && validator.split(',').map(x => {
         const split = SplitFirst(':', x.trim());

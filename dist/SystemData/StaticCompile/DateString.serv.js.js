@@ -1,1 +1,0 @@
-var __dirname="D:\\Code\\Projects\\beyond-easy\\tests\\core/Website/Static",__filename="D:\\Code\\Projects\\beyond-easy\\tests\\core/Website/Static/DateString.serv.js";export default async e=>{var t={},a=t;return Object.defineProperty(a,"__esModule",{value:!0}),a.default=()=>(new Date).toLocaleTimeString()+"poop",t};

@@ -1,6 +1,6 @@
 import StringTracker from '../EasyDebug/StringTracker';
-import { tagDataObject, StringNumberMap, BuildInComponent, BuildScriptWithoutModule, StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
-export declare function StartCompiling(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObject[], BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: StringAnyMap): Promise<BuildInComponent>;
+import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWithoutModule, SessionInfo } from '../CompileCode/XMLHelpers/CompileTypes';
+export declare function StartCompiling(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent>;
 export declare function IsInclude(tagname: string): boolean;
-export declare function finalizeBuild(pageData: StringTracker, sessionInfo: StringAnyMap, fullCompilePath: string): Promise<StringTracker>;
+export declare function finalizeBuild(pageData: StringTracker, sessionInfo: SessionInfo, fullCompilePath: string): Promise<StringTracker>;
 export declare function handelConnectorService(type: string, thisPage: any, connectorArray: any[]): Promise<void> | Promise<boolean>;
