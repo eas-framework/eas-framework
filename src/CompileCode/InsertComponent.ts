@@ -7,7 +7,6 @@ import AddPlugin from '../Plugins/Index';
 import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, SessionInfo } from './XMLHelpers/CompileTypes';
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
-import { SplitFirst } from '../StringMethods/Splitting';
 
 interface DefaultValues {
     value: StringTracker,
@@ -86,7 +85,7 @@ export default class InsertComponent extends InsertComponentBase {
                     i += 1 + endIndex;
                     break;
 
-                } else if (char == ' ') {
+                } else if (char == ' ' || i == fastText.length - 1 && ++i) {
                     a.push({
                         n: unToken(text.substring(0, i))
                     });
@@ -94,6 +93,7 @@ export default class InsertComponent extends InsertComponentBase {
                 }
 
             }
+
             fastText = fastText.substring(i).trim();
             text = text.substring(i).trim();
         }

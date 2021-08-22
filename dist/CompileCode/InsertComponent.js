@@ -68,7 +68,7 @@ export default class InsertComponent extends InsertComponentBase {
                     i += 1 + endIndex;
                     break;
                 }
-                else if (char == ' ') {
+                else if (char == ' ' || i == fastText.length - 1 && ++i) {
                     a.push({
                         n: unToken(text.substring(0, i))
                     });
