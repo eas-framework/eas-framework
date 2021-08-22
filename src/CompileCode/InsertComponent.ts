@@ -8,7 +8,6 @@ import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFile
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
 import { SplitFirst } from '../StringMethods/Splitting';
-import StringTracker from '../EasyDebug/StringTracker';
 
 interface DefaultValues {
     value: StringTracker,
@@ -41,12 +40,12 @@ export default class InsertComponent extends InsertComponentBase {
     tagData(text: StringTracker, a: tagDataObjectArray = []): tagDataObjectArray {
         const tokenArray = [];
 
-        text = text.trim().replacer(/(<%)([\w\W]+?)(%>)/gi, data => {
+        text = text.trim().replacer(/(<%)([\w\W]+?)(%>)/, data => {
             tokenArray.push(data[2]);
             return data[1].Plus(data[3]);
         });
 
-        const unToken = (text: StringTracker) => text.replacer(/<%%>/gi, () => tokenArray.shift())
+        const unToken = (text: StringTracker) => text.replacer(/<%%>/, () => tokenArray.shift())
 
         let fastText = text.eq;
         const SkipTypes = ['"', "'", '`'], BlockTypes = [
@@ -64,12 +63,12 @@ export default class InsertComponent extends InsertComponentBase {
 
                     let value: StringTracker, endIndex: number, blockEnd: string;
                     if (SkipTypes.includes(nextCharEq)) {
-                        endIndex = BaseReader.findEntOfQ(fastText.substring(i + 2), nextCharEq);
-                        value = text.substr(i + 2, endIndex - 1);
+                        endIndex = BaseReader.findEntOfQ(fastText.substring(i + 2), nextCharEq) + 1;
+                        value = text.substr(i + 2, endIndex - 2);
 
                     } else if ((blockEnd = BlockTypes.find(x => x[0] == nextCharEq)?.[1]) != null) {
                         endIndex = BaseReader.findEndOfDef(fastText.substring(i + 2), [nextCharEq, blockEnd]) + 1;
-                        value = text.substr(i + 1, endIndex+1);
+                        value = text.substr(i + 1, endIndex + 1);
 
                     } else {
                         endIndex = fastText.substring(i + 1).search(/ |\n/);
@@ -98,62 +97,6 @@ export default class InsertComponent extends InsertComponentBase {
             fastText = fastText.substring(i).trim();
             text = text.substring(i).trim();
         }
-
-
-
-
-        // this.FindSpecialTagByStart
-
-        // //const SkipTypes = ['"', "'", '`'];
-        // text = text.trim();
-
-        // while (text.length) {
-        //     const skip = this.FindSpecialTagByStart(text.eq);
-
-        //     if (skip) {
-        //         const endLength = text.substring(skip[0].length).indexOf(skip[1]) + skip[0].length + skip[1].length;
-
-        //         a.push({
-        //             n: text.substring(0, endLength),
-        //             v: new StringTracker(text.DefaultInfoText)
-        //         });
-
-        //         text = text.substring(endLength).trim();
-        //         continue;
-        //     }
-
-        //     let i = 0;
-        //     for (; i < text.length; i++) {
-        //         const char = text.at(i).eq;
-        //         if (SkipTypes.includes(char) && text.at(i - 1).eq != '\\') {
-        //             i += BaseReader.findEntOfQ(text.substring(i + 1).eq, char) + 1;
-        //             break;
-        //         } else if (text.substring(i - 1, i).eq == ' ') {
-        //             i--;
-        //             break;
-        //         }
-        //     }
-
-        //     const Attributes = SplitFirst('=', text.substring(0, i));
-        //     let char = null;
-
-        //     if (Attributes[1]) {
-        //         char = Attributes[1].at(0).eq;
-        //         if (SkipTypes.includes(char)) {
-        //             const endIndex = BaseReader.findEntOfQ(Attributes[1].substring(1).eq, char);
-        //             Attributes[1] = Attributes[1].substring(1, endIndex);
-        //         }
-        //     } else {
-        //         Attributes[1] = new StringTracker(Attributes[0].DefaultInfoText);
-        //     }
-
-        //     a.push({
-        //         n: Attributes[0],
-        //         v: Attributes[1] ?? new StringTracker(Attributes[0].DefaultInfoText),
-        //         char
-        //     });
-        //     text = text.substring(i).trim();
-        // }
 
         //methods to the array
         const index = (name: string) => a.findIndex(x => x.n.eq == name);
@@ -194,7 +137,7 @@ export default class InsertComponent extends InsertComponentBase {
         let newAttributes = new StringTracker(stringInfo);
 
         for (const i of dataTagSplitter) {
-            if (i.char) {
+            if (i.v) {
                 newAttributes.Plus$`${i.n}=${i.char}${i.v}${i.char} `;
             } else {
                 newAttributes.Plus(i.n, ' ');
@@ -289,7 +232,7 @@ export default class InsertComponent extends InsertComponentBase {
                 const startData = fileData.substring(0, FoundIndex);
                 fileDataNext.Plus(
                     startData,
-                    new StringTracker(fileData.DefaultInfoText).Plus$` ${re}="${i.v}"`,
+                    new StringTracker(fileData.DefaultInfoText).Plus$` ${re}="${i.v ?? ''}"`,
                     (startData.endsWith(' ') ? '' : ' '),
                     fileData.substring(FoundIndex)
                 );
@@ -297,7 +240,7 @@ export default class InsertComponent extends InsertComponentBase {
                 fileData = fileDataNext;
             } else {
                 const re = new RegExp("\\#" + i.n.eq, "gi");
-                fileData = fileData.replace(re, i.v);
+                fileData = fileData.replace(re, i.v ?? '');
             }
         }
 
@@ -497,7 +440,7 @@ export default class InsertComponent extends InsertComponentBase {
     async Insert(data: StringTracker, path: string, pathName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo) {
 
         //removing html comment tags
-        data = data.replace(/<!--[^-->]*-->/, '');
+        data = data.replace(/<!--[\w\W]+?-->/, '');
 
         data = await this.StartReplace(data, pathName, path, smallPath, isDebug, dependenceObject, buildScript, sessionInfo);
 

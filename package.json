@@ -8,7 +8,7 @@
     "build:ts": "tsc --project tsconfig.json",
     "push": "node build/gitPush.js",
     "buildAndPush": "npm run build & npm run push",
-    "test:dist": "node --inspect=127.0.0.1:9229 tests/core/index.js",
+    "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
     "test": "npm run build & npm run test:dist"
   },
   "repository": {

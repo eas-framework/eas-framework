@@ -487,7 +487,7 @@ export default class StringTracker {
         }
         ReMatch();
         const newText = new StringTracker(copy.StartInfo);
-        while (SplitToReplace?.length) {
+        while (SplitToReplace) {
             newText.Plus(copy.substring(0, SplitToReplace.index));
             newText.Plus(func(SplitToReplace));
             copy = copy.substring(SplitToReplace.index + SplitToReplace[0].length);
