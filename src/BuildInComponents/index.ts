@@ -5,11 +5,12 @@ import script from './Components/script/index';
 import style from './Components/style/index';
 import page from './Components/page';
 import isolate from './Components/isolate';
+import svelte from './Components/svelte';
 import head, {addFinalizeBuild as addFinalizeBuildHead} from './Components/head';
 import connect, { addFinalizeBuild as addFinalizeBuildConnect, handelConnector as handelConnectorConnect } from './Components/connect';
 import form, { addFinalizeBuild as addFinalizeBuildForm, handelConnector as handelConnectorForm } from './Components/form';
 
-const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head"];
+const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte"];
 
 export function StartCompiling(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
     let reData: Promise<BuildInComponent>;
@@ -38,6 +39,9 @@ export function StartCompiling(path: string, pathName: string, LastSmallPath: st
             break;
         case "head":
             reData = head(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            break;
+        case "svelte":
+            reData = svelte(path, LastSmallPath, dataTag, sessionInfo);
             break;
     }
 

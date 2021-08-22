@@ -3,6 +3,7 @@ import { tagDataObjectArray, StringNumberMap, setDataHTMLTag, BuildInComponent, 
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs';
 import { BasicSettings } from '../../RunTimeBuild/SearchFileSystem';
+import Base64Id from '../../StringMethods/Id';
 
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
     return {
@@ -14,7 +15,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
 function makeName(fullCompilePath: string) {
     let name = fullCompilePath.split(/\/|\\/).pop().split('.' + BasicSettings.pageTypes.page).shift(); // create name
-    name += '-' + Buffer.from(name).toString('base64').substring(0, 5) + '.pub';
+    name += '-' + Base64Id(name, 5) + '.pub';
 
     return [name, path.join(fullCompilePath, '../' + name)];
 }
@@ -34,7 +35,7 @@ function addHTMLTags(sessionInfo: SessionInfo) {
     for (const i of sessionInfo.styleURLSet)
         buildBundleString += `<link rel="stylesheet" href="${i.url}"${makeAttributes(i)}/>`;
     for (const i of sessionInfo.scriptURLSet)
-        buildBundleString += `<script type="text/javascript" src="${i.url}"${makeAttributes(i)}></script>`;
+        buildBundleString += `<script src="${i.url}"${makeAttributes(i)}></script>`;
 
     return buildBundleString;
 }

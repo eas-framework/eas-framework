@@ -51,7 +51,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
     let ReturnData: string;
 
-    if (!await EasyFs.exists(FullPathCompile) || await CheckDependencyChange(SmallPath) || isDebug) {
+    if (!await EasyFs.existsFile(FullPathCompile) || await CheckDependencyChange(SmallPath) || isDebug) {
         const { CompiledData, dependenceObject: dependence } = await InsertComponent.CompileInFile(SmallPathWithoutFolder, getTypes.Static, pathName, sessionInfo);
         dependence[SmallPath] = dependence.thisPage;
         delete dependence.thisPage;

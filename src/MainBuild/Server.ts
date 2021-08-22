@@ -105,7 +105,7 @@ async function TouchSystemFolder(foName, CreateInNotExits) {
         fopath += '/';
         const filePath = fopath + CreateInNotExits.name;
 
-        if (!await EasyFs.exists(filePath)) {
+        if (!await EasyFs.existsFile(filePath)) {
             await EasyFs.writeFile(filePath, CreateInNotExits.value);
         } else if (CreateInNotExits.exits) {
             await EasyFs.writeFile(filePath, await CreateInNotExits.exits(await EasyFs.readFile(filePath, 'utf8'), filePath, fopath));
@@ -117,7 +117,7 @@ async function GetDemoCertificate() {
     let Certificate;
     const CertificatePath = SystemData + '/Certificate.json';
 
-    if (await EasyFs.exists(CertificatePath)) {
+    if (await EasyFs.existsFile(CertificatePath)) {
         Certificate = EasyFs.readJsonFile(CertificatePath);
     } else {
         Certificate = await new Promise(res => {

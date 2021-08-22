@@ -6,14 +6,15 @@ import EasyFs from '../../../OutputInput/EasyFs';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug';
 import MinCss from '../../../CompileCode/CssMinimizer';
 import { SessionInfo } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { getTypes } from '../../../RunTimeBuild/SearchFileSystem';
 
 export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionInfo): Promise<BuildInComponent> {
 
     let outStyle = BetweenTagData.eq;
 
     async function importSass(url: string, res: any) {
-        const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, 'Static', 'sass');
-        if (!await EasyFs.exists(FullPath)) {
+        const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, getTypes.Static[2], 'sass');
+        if (!await EasyFs.existsFile(FullPath)) {
             PrintIfNew({
                 text: `Sass import not found, on file -> ${pathName}:${BetweenTagData.DefaultInfoText.line}`,
                 errorName: 'sass-import-not-found',

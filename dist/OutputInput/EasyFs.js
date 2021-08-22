@@ -24,6 +24,9 @@ function stat(path, filed, ignoreError) {
         });
     });
 }
+async function existsFile(path) {
+    return (await stat(path, null, true)).isFile?.();
+}
 function mkdir(path) {
     return new Promise(res => {
         fs.mkdir(path, (err) => {
@@ -132,6 +135,7 @@ export { Dirent };
 export default {
     ...fs.promises,
     exists,
+    existsFile,
     stat,
     mkdir,
     mkdirIfNotExists,

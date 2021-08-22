@@ -93,7 +93,7 @@ export async function compileAll() {
     SearchFileSystem.ClearPagesDependency();
     // await CheckPath(path,  SearchFileSystem.getTypes.Logs[1]);
     // await CheckPath(path, SearchFileSystem.getTypes.Static[1]);
-    await CreateCompile('Static');
-    await CreateCompile('Logs');
+    await CreateCompile(SearchFileSystem.getTypes.Static[2]);
+    await CreateCompile(SearchFileSystem.getTypes.Logs[2]);
     ClearWarning();
 }

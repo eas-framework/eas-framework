@@ -6,6 +6,7 @@ import EasyFs from '../../../OutputInput/EasyFs';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug';
 import MinCss from '../../../CompileCode/CssMinimizer';
 import { EnableGlobalReplace } from '../../../CompileCode/JSParser';
+import { getTypes } from '../../../RunTimeBuild/SearchFileSystem';
 
 export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any): Promise<BuildInComponent> {
 
@@ -15,8 +16,8 @@ export default async function BuildCode(language: string, path: string, pathName
     let outStyle = SaveServerCode.StartBuild();
 
     async function importSass(url: string, res: any) {
-        const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, 'Static', 'sass');
-        if (!await EasyFs.exists(FullPath)) {
+        const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, getTypes.Static[2], 'sass');
+        if (!await EasyFs.existsFile(FullPath)) {
             PrintIfNew({
                 text: `Sass import not found, on file -> ${pathName}:${BetweenTagData.DefaultInfoText.line}`,
                 errorName: 'sass-import-not-found',

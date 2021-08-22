@@ -18,11 +18,11 @@ export async function StartRequire(array: string[], isDebug: boolean) {
 }
 
 export async function SettingsExsit(filePath: string){
-    return await EasyFs.exists(filePath + '.ts') || await EasyFs.exists(filePath + '.js');
+    return await EasyFs.existsFile(filePath + '.ts') || await EasyFs.existsFile(filePath + '.js');
 }
 
 export async function GetSettings(filePath: string, isDebug: boolean){
-    if(await EasyFs.exists(filePath + '.ts')){
+    if(await EasyFs.existsFile(filePath + '.ts')){
         filePath += '.ts';
     } else {
         filePath += '.js'

@@ -13,10 +13,10 @@ export async function StartRequire(array, isDebug) {
     return arrayFuncServer;
 }
 export async function SettingsExsit(filePath) {
-    return await EasyFs.exists(filePath + '.ts') || await EasyFs.exists(filePath + '.js');
+    return await EasyFs.existsFile(filePath + '.ts') || await EasyFs.existsFile(filePath + '.js');
 }
 export async function GetSettings(filePath, isDebug) {
-    if (await EasyFs.exists(filePath + '.ts')) {
+    if (await EasyFs.existsFile(filePath + '.ts')) {
         filePath += '.ts';
     }
     else {

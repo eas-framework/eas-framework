@@ -27,6 +27,10 @@ function stat(path: string, filed?: string, ignoreError?: boolean): Promise<Stat
     });
 }
 
+async function existsFile(path: string): Promise<boolean>{
+    return (await stat(path, null, true)).isFile?.();
+}
+
 function mkdir(path: string): Promise<boolean>{
     return new Promise(res => {
         fs.mkdir(path, (err) => {
@@ -152,6 +156,7 @@ export {
 export default {
     ...fs.promises,
     exists,
+    existsFile,
     stat,
     mkdir,
     mkdirIfNotExists,

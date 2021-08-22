@@ -4,7 +4,7 @@ import { BasicSettings, workingDirectory, SystemData } from '../RunTimeBuild/Sea
 import * as BuildServer from '../RunTimeBuild/SearchPages';
 import { cookieParser } from '@tinyhttp/cookie-parser';
 import cookieEncrypter from 'cookie-encrypter';
-import { SetDevMode, print } from '../OutputInput/Console';
+import { SetDevMode } from '../OutputInput/Console';
 import session from 'express-session';
 import { Settings as InsertModelsSettings } from '../CompileCode/InsertModels';
 import bodyParser from 'body-parser';

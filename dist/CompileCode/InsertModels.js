@@ -38,7 +38,7 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
         modelName = model.data.trim();
     }
     const { SmallPath, FullPath } = CreateFilePath(pagePath, LastSmallPath, modelName.eq, 'Models', BasicSettings.pageTypes.model); // find location of the file
-    if (!await EasyFs.exists(FullPath)) {
+    if (!await EasyFs.existsFile(FullPath)) {
         const ErrorMessage = `Error model not found -> ${modelName} at page ${pageName}`;
         print.error(ErrorMessage);
         return new StringTracker(data.DefaultInfoText, PageTemplate.printError(ErrorMessage));

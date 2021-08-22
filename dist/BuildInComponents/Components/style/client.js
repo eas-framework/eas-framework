@@ -4,11 +4,12 @@ import { PrintIfNew } from '../../../OutputInput/PrintNew.js';
 import EasyFs from '../../../OutputInput/EasyFs.js';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug.js';
 import MinCss from '../../../CompileCode/CssMinimizer.js';
+import { getTypes } from '../../../RunTimeBuild/SearchFileSystem.js';
 export default async function BuildCode(language, path, pathName, LastSmallPath, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo) {
     let outStyle = BetweenTagData.eq;
     async function importSass(url, res) {
-        const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, 'Static', 'sass');
-        if (!await EasyFs.exists(FullPath)) {
+        const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, getTypes.Static[2], 'sass');
+        if (!await EasyFs.existsFile(FullPath)) {
             PrintIfNew({
                 text: `Sass import not found, on file -> ${pathName}:${BetweenTagData.DefaultInfoText.line}`,
                 errorName: 'sass-import-not-found',

@@ -2,6 +2,7 @@ import StringTracker from '../../EasyDebug/StringTracker.js';
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs.js';
 import { BasicSettings } from '../../RunTimeBuild/SearchFileSystem.js';
+import Base64Id from '../../StringMethods/Id.js';
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, buildScript, sessionInfo) {
     return {
         compiledString: new StringTracker(type.DefaultInfoText).Plus$ `<head${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)}<%!@DefaultInsertBundle%></head>`,
@@ -10,7 +11,7 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
 }
 function makeName(fullCompilePath) {
     let name = fullCompilePath.split(/\/|\\/).pop().split('.' + BasicSettings.pageTypes.page).shift(); // create name
-    name += '-' + Buffer.from(name).toString('base64').substring(0, 5) + '.pub';
+    name += '-' + Base64Id(name, 5) + '.pub';
     return [name, path.join(fullCompilePath, '../' + name)];
 }
 function addStyle(sessionInfo, compilePath, name) {
@@ -25,7 +26,7 @@ function addHTMLTags(sessionInfo) {
     for (const i of sessionInfo.styleURLSet)
         buildBundleString += `<link rel="stylesheet" href="${i.url}"${makeAttributes(i)}/>`;
     for (const i of sessionInfo.scriptURLSet)
-        buildBundleString += `<script type="text/javascript" src="${i.url}"${makeAttributes(i)}></script>`;
+        buildBundleString += `<script src="${i.url}"${makeAttributes(i)}></script>`;
     return buildBundleString;
 }
 function addScript(sessionInfo, compilePath, name) {

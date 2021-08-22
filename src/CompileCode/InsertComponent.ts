@@ -275,7 +275,7 @@ export default class InsertComponent extends InsertComponentBase {
 
             AllPathTypes = CreateFilePath(path, LastSmallPath, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
 
-            if (!await EasyFs.exists(AllPathTypes.FullPath)) {
+            if (!await EasyFs.existsFile(AllPathTypes.FullPath)) {
 
                 if (folder) {
                     PrintIfNew({

@@ -1,14 +1,15 @@
 import path from 'path';
 import { BuildJS, BuildJSX, BuildTS, BuildTSX } from './ForStatic/Script';
+import BuildSvelte from './ForStatic/Svelte';
 import { BuildStyleSass } from './ForStatic/Style';
-import { getTypes, SystemData, getDirname, BasicSettings } from '../RunTimeBuild/SearchFileSystem';
+import { getTypes, SystemData, getDirname, BasicSettings, workingDirectory } from '../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../OutputInput/EasyFs';
 import { Response, Request } from '@tinyhttp/app';
 import { GetPlugin } from '../CompileCode/InsertModels';
 import fs from 'fs';
 import promptly from 'promptly';
 
-const SupportedTypes = ['js', 'ts', 'jsx', 'tsx', 'css', 'sass', 'scss'];
+const SupportedTypes = ['js', 'svelte', 'ts', 'jsx', 'tsx', 'css', 'sass', 'scss'];
 
 const locStaticFiles = SystemData + '/StaticFiles.json';
 
@@ -30,7 +31,7 @@ async function CheckDependencyChange(path: string) {
         }
 
         const FilePath = BasicSettings.fullWebSitePath + getTypes.Static[2] + '/' + p;
-        if (!await EasyFs.exists(FilePath) || await EasyFs.stat(FilePath, 'mtimeMs') != o[i]) {
+        if (await EasyFs.stat(FilePath, 'mtimeMs', true) != o[i]) {
             return true;
         }
     }
@@ -61,9 +62,11 @@ export default async function BuildFile(SmallPath: string, isDebug: boolean, ful
         case 'scss':
             dependencies = await BuildStyleSass(SmallPath, ext, isDebug);
             break;
+        case 'svelte':
+            dependencies = await BuildSvelte(SmallPath, isDebug);
     }
 
-    if (isDebug && await EasyFs.exists(fullCompilePath)) {
+    if (isDebug && await EasyFs.existsFile(fullCompilePath)) {
         updateDep(SmallPath, dependencies);
         return true;
     }
@@ -78,19 +81,18 @@ interface buildIn {
     type: string;
     inServer?: string;
 }
+const __dirname = getDirname(import.meta.url);
 
 const getStatic: buildIn[] = [{
     path: "serv/temp.js",
     type: "js",
-    inServer: "client/buildTemplate.js"
+    inServer: __dirname + "/client/buildTemplate.js"
 },
 {
     path: "serv/connect.js",
     type: "js",
-    inServer: "client/makeConnection.js"
+    inServer: __dirname + "/client/makeConnection.js"
 }];
-const __dirname = getDirname(import.meta.url);
-getStatic.forEach(x => x.inServer = __dirname + '/' + x.inServer); // make full path
 
 const getStaticFilesType: buildIn[] = [{
     ext: '.pub.js',
@@ -113,12 +115,11 @@ async function serverBuildByType(filePath: string, checked: boolean) {
 
     const inServer = path.join(getTypes.Static[1], filePath);
 
-    if (checked || await EasyFs.exists(inServer))
+    if (checked || await EasyFs.existsFile(inServer))
         return { ...found, inServer };
 }
 
 let debuggingWithSource: null | boolean = null;
-
 async function askDebuggingWithSource() {
     if (typeof debuggingWithSource == 'boolean')
         return debuggingWithSource;
@@ -139,27 +140,59 @@ async function askDebuggingWithSource() {
 }
 
 const safeFolders = [getTypes.Static[2], getTypes.Logs[2], 'Models', 'Components'];
-
-async function unsafeDebug(filePath: string, checked: boolean) {
-    if (!await askDebuggingWithSource() || GetPlugin("SafeDebug") || path.extname(filePath) != '.source' || !safeFolders.includes(filePath.split(/\/|\\/).shift()))
+async function unsafeDebug(isDebug: boolean, filePath: string, checked: boolean) {
+    if (!isDebug || GetPlugin("SafeDebug") || path.extname(filePath) != '.source' || !safeFolders.includes(filePath.split(/\/|\\/).shift()) || !await askDebuggingWithSource())
         return;
 
     const fullPath = path.join(BasicSettings.fullWebSitePath, filePath.substring(0, filePath.length - 7)); // removing '.source'
 
-    if (checked || await EasyFs.exists(fullPath))
+    if (checked || await EasyFs.existsFile(fullPath))
         return {
             type: 'html',
             inServer: fullPath
         };
 }
 
-export async function serverBuild(path: string, checked = false): Promise<null | buildIn> {
-    return await unsafeDebug(path, checked) || await serverBuildByType(path, checked) || getStatic.find(x => x.path == path);
+async function svelteStyle(filePath: string, checked: boolean, isDebug: boolean) {
+    const baseFilePath = filePath.substring(0, filePath.length - 4); // removing '.css'
+    const fullPath = getTypes.Static[1] + filePath;
+
+    if (path.extname(baseFilePath) == '.svelte' && (checked || await EasyFs.existsFile(fullPath)))
+        return {
+            type: 'css',
+            inServer: fullPath
+        }
+
+    if (isDebug) {
+        await BuildFile(baseFilePath, isDebug, getTypes.Static[1] + baseFilePath);
+        return svelteStyle(filePath, checked, false);
+    }
+}
+
+async function svelteStatic(filePath: string, checked: boolean) {
+    if (!filePath.startsWith('serv/svelte/'))
+        return;
+
+    const fullPath = workingDirectory + 'node_modules' + filePath.substring(4) + '/index.mjs';
+
+    if (checked || await EasyFs.existsFile(fullPath))
+        return {
+            type: 'js',
+            inServer: fullPath
+        }
+}
+
+export async function serverBuild(isDebug: boolean, path: string, checked = false): Promise<null | buildIn> {
+    return await svelteStatic(path, checked) ||
+        await svelteStyle(path, checked, isDebug) ||
+        await unsafeDebug(isDebug, path, checked) ||
+        await serverBuildByType(path, checked) ||
+        getStatic.find(x => x.path == path);
 }
 
 export async function GetFile(SmallPath: string, isDebug: boolean, Request: Request, Response: Response) {
     //file built in
-    const isBuildIn = await serverBuild(SmallPath, true);
+    const isBuildIn = await serverBuild(isDebug, SmallPath, true);
 
     if (isBuildIn) {
         Response.type(isBuildIn.type);

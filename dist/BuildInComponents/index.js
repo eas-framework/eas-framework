@@ -3,10 +3,11 @@ import script from './Components/script/index.js';
 import style from './Components/style/index.js';
 import page from './Components/page.js';
 import isolate from './Components/isolate.js';
+import svelte from './Components/svelte.js';
 import head, { addFinalizeBuild as addFinalizeBuildHead } from './Components/head.js';
 import connect, { addFinalizeBuild as addFinalizeBuildConnect, handelConnector as handelConnectorConnect } from './Components/connect.js';
 import form, { addFinalizeBuild as addFinalizeBuildForm, handelConnector as handelConnectorForm } from './Components/form.js';
-const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head"];
+const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte"];
 export function StartCompiling(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo) {
     let reData;
     switch (type.eq) {
@@ -33,6 +34,9 @@ export function StartCompiling(path, pathName, LastSmallPath, type, dataTag, Bet
             break;
         case "head":
             reData = head(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            break;
+        case "svelte":
+            reData = svelte(path, LastSmallPath, dataTag, sessionInfo);
             break;
     }
     return reData;

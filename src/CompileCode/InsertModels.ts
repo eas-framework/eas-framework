@@ -52,7 +52,7 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
 
     const { SmallPath, FullPath } = CreateFilePath(pagePath, LastSmallPath, modelName.eq, 'Models', BasicSettings.pageTypes.model); // find location of the file
 
-    if (!await EasyFs.exists(FullPath)) {
+    if (!await EasyFs.existsFile(FullPath)) {
         const ErrorMessage = `Error model not found -> ${modelName} at page ${pageName}`;
 
         print.error(ErrorMessage);

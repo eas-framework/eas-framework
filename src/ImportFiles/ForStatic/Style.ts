@@ -23,7 +23,7 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
             connectUrl += '.' + type;
         }
 
-        if (!await EasyFs.exists(connectUrl)) {
+        if (!await EasyFs.existsFile(connectUrl)) {
             PrintIfNew({
                 text: `Sass import not found, on file -> ${url} at ${inputPath}`,
                 errorName: 'sass-import-not-found',

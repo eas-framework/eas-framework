@@ -12,7 +12,7 @@ const Settings = {
     ErrorPages: {}
 };
 async function LoadPageToRam(url) {
-    if (await EasyFs.exists(FuncScript.getFullPathCompile(url))) {
+    if (await EasyFs.existsFile(FuncScript.getFullPathCompile(url))) {
         Export.PageLoadRam[url] = [];
         Export.PageLoadRam[url][0] = await FuncScript.LoadPage(url);
         Export.PageLoadRam[url][1] = FuncScript.BuildPage(Export.PageLoadRam[url][0], url);
@@ -64,7 +64,7 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
     if (code == 200) {
         fullPageUrl = getTypes.Static[0] + url;
         //check that is not server file
-        if (await serverBuild(url) || !isServerFile(url) && await EasyFs.exists(fullPageUrl) && (await EasyFs.stat(fullPageUrl)).isFile()) {
+        if (await serverBuild(Settings.DevMode, url) || !isServerFile(url) && await EasyFs.existsFile(fullPageUrl)) {
             file = true;
         }
         else { // then it a server page or error page
@@ -87,14 +87,14 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
             DynamicFunc = pageArray[1];
         }
         async function GetNewUrl() {
-            if (!await EasyFs.exists(arrayType[0] + url + '.' + BasicSettings.pageTypes.page)) {
+            if (!await EasyFs.existsFile(arrayType[0] + url + '.' + BasicSettings.pageTypes.page)) {
                 const ErrorPage = GetErrorPage(404, 'NotFound');
                 url = ErrorPage.url;
                 arrayType = ErrorPage.arrayType;
                 code = ErrorPage.code;
                 smallPath = arrayType[2] + '/' + url;
                 fullPageUrl = url + "." + BasicSettings.pageTypes.page;
-                if (!await EasyFs.exists(arrayType[0] + fullPageUrl)) {
+                if (!await EasyFs.existsFile(arrayType[0] + fullPageUrl)) {
                     fullPageUrl = null;
                 }
                 else {
@@ -108,7 +108,7 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
         if (Settings.DevMode) {
             await GetNewUrl();
             if (fullPageUrl) {
-                if (!await EasyFs.exists(fullPageUrl) || await CheckDependencyChange(smallPath)) {
+                if (!await EasyFs.existsFile(fullPageUrl) || await CheckDependencyChange(smallPath)) {
                     await FastCompile(url + '.' + BasicSettings.pageTypes.page, arrayType);
                     await ReBuildPage();
                 }

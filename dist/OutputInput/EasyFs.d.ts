@@ -8,6 +8,7 @@ declare function exists(path: string): Promise<boolean>;
  * @returns the filed
  */
 declare function stat(path: string, filed?: string, ignoreError?: boolean): Promise<Stats | any>;
+declare function existsFile(path: string): Promise<boolean>;
 declare function mkdir(path: string): Promise<boolean>;
 declare function rmdir(path: string): Promise<boolean>;
 declare function unlink(path: string): Promise<boolean>;
@@ -22,6 +23,7 @@ declare function makePathReal(p: string, basic?: string): Promise<void>;
 export { Dirent };
 declare const _default: {
     exists: typeof exists;
+    existsFile: typeof existsFile;
     stat: typeof stat;
     mkdir: typeof mkdir;
     mkdirIfNotExists: typeof mkdirIfNotExists;

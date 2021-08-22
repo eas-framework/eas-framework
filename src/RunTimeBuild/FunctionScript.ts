@@ -27,7 +27,7 @@ async function RequireFile(p: string, pathname: string, typeArray: string[], Las
     const ReqFile = LastRequire[p];
     const fullPath = ReqFile && typeArray[0] + ReqFile
     let Exists: boolean, Stat: number;
-    if (ReqFile && (!isDebug || (isDebug && (LastRequireFiles[ReqFile].date == -1 || (!(Exists = await EasyFs.exists(fullPath)) && LastRequireFiles[ReqFile].date == 0) || Exists && LastRequireFiles[ReqFile].date == (Stat = await EasyFs.stat(fullPath, 'mtimeMs')))))) {
+    if (ReqFile && (!isDebug || (isDebug && (LastRequireFiles[ReqFile].date == -1 || (!(Exists = await EasyFs.existsFile(fullPath)) && LastRequireFiles[ReqFile].date == 0) || Exists && LastRequireFiles[ReqFile].date == (Stat = await EasyFs.stat(fullPath, 'mtimeMs')))))) {
         return LastRequireFiles[ReqFile].model;
     }
 
@@ -58,7 +58,7 @@ async function RequireFile(p: string, pathname: string, typeArray: string[], Las
 
         // add serv.js or serv.ts if needed
         p = AddExtension(p);
-        if (Exists || (Exists === undefined && await EasyFs.exists(typeArray[0] +p))) {
+        if (Exists || (Exists === undefined && await EasyFs.existsFile(typeArray[0] +p))) {
             if (!Stat) {
                 Stat = await EasyFs.stat(typeArray[0] + p, 'mtimeMs');
             }
@@ -75,7 +75,7 @@ async function RequireFile(p: string, pathname: string, typeArray: string[], Las
     return LastRequireFiles[p].model;
 }
 async function RequirePage(p: string, pathname: string, typeArray: string[], LastRequire: { [key: string]: any }, DataObject: any) {
-    if (LastRequire[p] && (DataObject.isDebug || LastRequire[p].date == -1 && !await EasyFs.exists(LastRequire[p].path))) {
+    if (LastRequire[p] && (DataObject.isDebug || LastRequire[p].date == -1 && !await EasyFs.existsFile(LastRequire[p].path))) {
         return await LastRequire[p].model(DataObject);
     }
 
@@ -101,14 +101,14 @@ async function RequirePage(p: string, pathname: string, typeArray: string[], Las
         p += '.' + BasicSettings.pageTypes.page;
     }
 
-    if (!await EasyFs.exists(typeArray[0] + p)) {
+    if (!await EasyFs.existsFile(typeArray[0] + p)) {
         LastRequire[copy] = { model: () => { }, date: -1, path: typeArray[0] + p };
         return LastRequire[copy].model;
     }
 
     const ForSavePath = typeArray[2] + p.substring(0, p.length - extname.length - 1);
 
-    const re_build = DataObject.isDebug && (!await EasyFs.exists(typeArray[1] + p + '.js') || await CheckDependencyChange(ForSavePath));
+    const re_build = DataObject.isDebug && (!await EasyFs.existsFile(typeArray[1] + p + '.js') || await CheckDependencyChange(ForSavePath));
 
     if (re_build) {
         await FastCompile(p.substring(1), typeArray);

@@ -73,7 +73,7 @@ const BasicSettings = {
         return fullWebSitePath_ + 'tsconfig.json'; 
     },
     async tsConfigFile() {
-        if(await EasyFs.exists(this.tsConfig)){
+        if(await EasyFs.existsFile(this.tsConfig)){
             return await EasyFs.readFile(this.tsConfig);
         }
     }
@@ -136,7 +136,7 @@ async function CheckDependencyChange(path:string) {
         }
 
         const FilePath = fullWebSitePath_  + p;
-        if (!await EasyFs.exists(FilePath) || await EasyFs.stat(FilePath, 'mtimeMs') != o[i]) {
+        if (await EasyFs.stat(FilePath, 'mtimeMs', true) != o[i]) {
             return true;
         }
     }

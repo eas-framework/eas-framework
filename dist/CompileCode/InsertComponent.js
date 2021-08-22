@@ -211,7 +211,7 @@ export default class InsertComponent extends InsertComponentBase {
                 folder = data.remove('folder') || '.';
             const tagPath = (folder ? folder + '/' : '') + type.replace(/:/gi, "/").eq;
             AllPathTypes = CreateFilePath(path, LastSmallPath, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
-            if (!await EasyFs.exists(AllPathTypes.FullPath)) {
+            if (!await EasyFs.existsFile(AllPathTypes.FullPath)) {
                 if (folder) {
                     PrintIfNew({
                         text: `Component ${type.eq} not found! -> ${pathName}\n-> ${type.lineInfo}`,
