@@ -607,7 +607,7 @@ export default class StringTracker {
 
         const newText = new StringTracker(copy.StartInfo);
 
-        while (SplitToReplace) {
+        while (SplitToReplace?.length) {
             newText.Plus(copy.substring(0, SplitToReplace.index));
             newText.Plus(func(SplitToReplace));
 

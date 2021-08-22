@@ -6,8 +6,9 @@ import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/S
 import AddPlugin from '../Plugins/Index';
 import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, SessionInfo } from './XMLHelpers/CompileTypes';
 import { PrintIfNew } from '../OutputInput/PrintNew';
-import {InsertComponentBase, BaseReader} from './BaseReader/Reader';
-import {SplitFirst} from '../StringMethods/Splitting';
+import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
+import { SplitFirst } from '../StringMethods/Splitting';
+import StringTracker from '../EasyDebug/StringTracker';
 
 interface DefaultValues {
     value: StringTracker,
@@ -38,65 +39,128 @@ export default class InsertComponent extends InsertComponentBase {
     }
 
     tagData(text: StringTracker, a: tagDataObjectArray = []): tagDataObjectArray {
-        this.FindSpecialTagByStart
+        const tokenArray = [];
 
-        const SkipTypes = ['"', "'", '`'];
-        text = text.trim();
+        text = text.trim().replacer(/(<%)([\w\W]+?)(%>)/gi, data => {
+            tokenArray.push(data[2]);
+            return data[1].Plus(data[3]);
+        });
 
-        while (text.length) {
-            const skip = this.FindSpecialTagByStart(text.eq);
+        const unToken = (text: StringTracker) => text.replacer(/<%%>/gi, () => tokenArray.shift())
 
-            if(skip){
-                const endLength = text.substring(skip[0].length).indexOf(skip[1]) + skip[0].length + skip[1].length;
-                
-                a.push({ 
-                    n: text.substring(0, endLength),
-                    v: new StringTracker(text.DefaultInfoText)
-                });
+        let fastText = text.eq;
+        const SkipTypes = ['"', "'", '`'], BlockTypes = [
+            ['{', '}'],
+            ['(', ')']
+        ];
 
-                text = text.substring(endLength).trim();
-                continue;
-            }
-            
+        while (fastText.length) {
             let i = 0;
-            for (; i < text.length; i++) {
-                const char = text.at(i).eq;
-                if (SkipTypes.includes(char) && text.at(i - 1).eq != '\\') {
-                    i += BaseReader.findEntOfQ(text.substring(i + 1).eq, char) + 1;
+            for (; i < fastText.length; i++) {
+                const char = fastText.charAt(i);
+                if (char == '=') {
+                    let nextChar = text.at(i + 1);
+                    const nextCharEq = nextChar.eq, attrName = text.substring(0, i);
+
+                    let value: StringTracker, endIndex: number, blockEnd: string;
+                    if (SkipTypes.includes(nextCharEq)) {
+                        endIndex = BaseReader.findEntOfQ(fastText.substring(i + 2), nextCharEq);
+                        value = text.substr(i + 2, endIndex - 1);
+
+                    } else if ((blockEnd = BlockTypes.find(x => x[0] == nextCharEq)?.[1]) != null) {
+                        endIndex = BaseReader.findEndOfDef(fastText.substring(i + 2), [nextCharEq, blockEnd]) + 1;
+                        value = text.substr(i + 1, endIndex+1);
+
+                    } else {
+                        endIndex = fastText.substring(i + 1).search(/ |\n/);
+                        if (endIndex == -1)
+                            endIndex = fastText.length;
+                        value = text.substr(i + 1, endIndex);
+                        nextChar = new StringTracker();
+                    }
+
+                    a.push({
+                        n: unToken(attrName),
+                        char: nextChar,
+                        v: unToken(value)
+                    });
+                    i += 1 + endIndex;
                     break;
-                } else if (text.substring(i - 1, i).eq == ' ') {
-                    i--;
+
+                } else if (char == ' ') {
+                    a.push({
+                        n: unToken(text.substring(0, i))
+                    });
                     break;
                 }
+
             }
-
-            const Attributes = SplitFirst('=', text.substring(0, i));
-            let char = null;
-
-            if (Attributes[1]) {
-                char = Attributes[1].at(0).eq;
-                if (SkipTypes.includes(char)) {
-                    const endIndex = BaseReader.findEntOfQ(Attributes[1].substring(1).eq, char);
-                    Attributes[1] = Attributes[1].substring(1, endIndex);
-                }
-            } else {
-                Attributes[1] = new StringTracker(Attributes[0].DefaultInfoText);
-            }
-
-            a.push({
-                n: Attributes[0],
-                v: Attributes[1] ?? new StringTracker(Attributes[0].DefaultInfoText),
-                char
-            });
+            fastText = fastText.substring(i).trim();
             text = text.substring(i).trim();
         }
+
+
+
+
+        // this.FindSpecialTagByStart
+
+        // //const SkipTypes = ['"', "'", '`'];
+        // text = text.trim();
+
+        // while (text.length) {
+        //     const skip = this.FindSpecialTagByStart(text.eq);
+
+        //     if (skip) {
+        //         const endLength = text.substring(skip[0].length).indexOf(skip[1]) + skip[0].length + skip[1].length;
+
+        //         a.push({
+        //             n: text.substring(0, endLength),
+        //             v: new StringTracker(text.DefaultInfoText)
+        //         });
+
+        //         text = text.substring(endLength).trim();
+        //         continue;
+        //     }
+
+        //     let i = 0;
+        //     for (; i < text.length; i++) {
+        //         const char = text.at(i).eq;
+        //         if (SkipTypes.includes(char) && text.at(i - 1).eq != '\\') {
+        //             i += BaseReader.findEntOfQ(text.substring(i + 1).eq, char) + 1;
+        //             break;
+        //         } else if (text.substring(i - 1, i).eq == ' ') {
+        //             i--;
+        //             break;
+        //         }
+        //     }
+
+        //     const Attributes = SplitFirst('=', text.substring(0, i));
+        //     let char = null;
+
+        //     if (Attributes[1]) {
+        //         char = Attributes[1].at(0).eq;
+        //         if (SkipTypes.includes(char)) {
+        //             const endIndex = BaseReader.findEntOfQ(Attributes[1].substring(1).eq, char);
+        //             Attributes[1] = Attributes[1].substring(1, endIndex);
+        //         }
+        //     } else {
+        //         Attributes[1] = new StringTracker(Attributes[0].DefaultInfoText);
+        //     }
+
+        //     a.push({
+        //         n: Attributes[0],
+        //         v: Attributes[1] ?? new StringTracker(Attributes[0].DefaultInfoText),
+        //         char
+        //     });
+        //     text = text.substring(i).trim();
+        // }
 
         //methods to the array
         const index = (name: string) => a.findIndex(x => x.n.eq == name);
         const getValue = (name: string) => a.find(tag => tag.n.eq == name)?.v?.eq ?? '';
         const remove = (name: string) => {
             const nameIndex = index(name);
-            if(nameIndex == -1)
+            if (nameIndex == -1)
                 return '';
             return a.splice(nameIndex, 1).pop().v?.eq ?? '';
         };
@@ -154,7 +218,7 @@ export default class InsertComponent extends InsertComponentBase {
     async ReBuildTag(type: StringTracker, dataTag: StringTracker, dataTagSpliced: tagDataObjectArray, BetweenTagData: StringTracker, SendDataFunc: (text: StringTracker) => Promise<StringTracker>) {
         if (BetweenTagData && this.SomePlugins("MinHTML", "MinAll")) {
             BetweenTagData = BetweenTagData.SpaceOne(' ');
-            
+
             dataTag = this.ReBuildTagData(type.DefaultInfoText, dataTagSpliced);
         } else if (dataTag.eq.length) {
             dataTag = new StringTracker(type.DefaultInfoText, ' ').Plus(dataTag);
@@ -173,11 +237,11 @@ export default class InsertComponent extends InsertComponentBase {
         return tagData;
     }
 
-    exportDefaultValues(fileData: StringTracker, foundSetters: DefaultValues[] = []){
+    exportDefaultValues(fileData: StringTracker, foundSetters: DefaultValues[] = []) {
         const indexBasic: ArrayMatch = fileData.match(/@basic[ ]*\(([A-Za-z0-9{}()\[\]_\-$"'`%*&|\/\@ \n]*)\)[ ]*\[([A-Za-z0-9_\-,$ \n]+)\]/);
 
-        if(indexBasic == null)
-            return {fileData, foundSetters};
+        if (indexBasic == null)
+            return { fileData, foundSetters };
 
         const WithoutBasic = fileData.substring(0, indexBasic.index).Plus(fileData.substring(indexBasic.index + indexBasic[0].length));
 
@@ -191,9 +255,9 @@ export default class InsertComponent extends InsertComponentBase {
         return this.exportDefaultValues(WithoutBasic, foundSetters);
     }
 
-    addDefaultValues(arrayValues: DefaultValues[], fileData: StringTracker){
-        for(const i of arrayValues){
-            for(const be of i.elements){
+    addDefaultValues(arrayValues: DefaultValues[], fileData: StringTracker) {
+        for (const i of arrayValues) {
+            for (const be of i.elements) {
                 fileData = fileData.replaceAll('#' + be, i.value);
             }
         }
@@ -201,10 +265,10 @@ export default class InsertComponent extends InsertComponentBase {
         return fileData;
     }
 
-    parseComponentProps(tagData: tagDataObjectArray, component: StringTracker){
+    parseComponentProps(tagData: tagDataObjectArray, component: StringTracker) {
 
         // eslint-disable-next-line
-        let {fileData, foundSetters} = this.exportDefaultValues(component);
+        let { fileData, foundSetters } = this.exportDefaultValues(component);
 
         for (const i of tagData) {
             if (i.n.startsWith('&')) {
@@ -240,7 +304,7 @@ export default class InsertComponent extends InsertComponentBase {
         return this.addDefaultValues(foundSetters, fileData);
     }
 
-    async buildTagBasic(fileData: StringTracker, tagData: tagDataObjectArray, path:string, pathName:string, FullPath:string, SmallPath:string, isDebug:boolean, dependenceObject:StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo, BetweenTagData?: StringTracker){
+    async buildTagBasic(fileData: StringTracker, tagData: tagDataObjectArray, path: string, pathName: string, FullPath: string, SmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo, BetweenTagData?: StringTracker) {
         fileData = await this.PluginBuild.BuildComponent(fileData, path, pathName, sessionInfo);
 
         fileData = this.parseComponentProps(tagData, fileData);
@@ -255,8 +319,8 @@ export default class InsertComponent extends InsertComponentBase {
 
         return fileData;
     }
-    
-    async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo}: { sessionInfo: SessionInfo, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule, dependenceObject: StringNumberMap, isDebug: boolean }) {
+
+    async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }: { sessionInfo: SessionInfo, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule, dependenceObject: StringNumberMap, isDebug: boolean }) {
         const data = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
 
         let fileData: StringTracker, SearchInComment = true, AllPathTypes: PathTypes = {}, addStringInfo: string;
@@ -268,7 +332,7 @@ export default class InsertComponent extends InsertComponentBase {
         } else {
             let folder: boolean | string = data.have('folder');
 
-            if(folder)
+            if (folder)
                 folder = data.remove('folder') || '.';
 
             const tagPath = (folder ? folder + '/' : '') + type.replace(/:/gi, "/").eq;
@@ -290,7 +354,7 @@ export default class InsertComponent extends InsertComponentBase {
 
             dependenceObject[AllPathTypes.SmallPath] = await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs'); // add to dependenceObject
 
-            const {allData, stringInfo} = await AddDebugInfo(pathName, AllPathTypes.FullPath);
+            const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath);
             fileData = allData;
             addStringInfo = stringInfo;
         }
@@ -298,38 +362,38 @@ export default class InsertComponent extends InsertComponentBase {
         if (SearchInComment) {
             const { SmallPath, FullPath } = AllPathTypes;
 
-            fileData = await this.buildTagBasic(fileData, data, path,pathName, BuildIn ? type.eq : FullPath, BuildIn ? type.eq : SmallPath, isDebug, dependenceObject, buildScript, sessionInfo, BetweenTagData);
-        
-            if(addStringInfo)
+            fileData = await this.buildTagBasic(fileData, data, path, pathName, BuildIn ? type.eq : FullPath, BuildIn ? type.eq : SmallPath, isDebug, dependenceObject, buildScript, sessionInfo, BetweenTagData);
+
+            if (addStringInfo)
                 fileData.AddTextBefore(addStringInfo);
         }
 
         return fileData;
     }
 
-    private CheckDoubleSpace(...data: StringTracker[]){
+    private CheckDoubleSpace(...data: StringTracker[]) {
         const mini = this.SomePlugins("MinHTML", "MinAll");
         let startData = data.shift();
 
-        if(mini){
+        if (mini) {
             startData = startData.SpaceOne(' ');
         }
 
-        for(let i of data){
-            if(mini && startData.endsWith(' ') && i.startsWith(' ')){
+        for (let i of data) {
+            if (mini && startData.endsWith(' ') && i.startsWith(' ')) {
                 i = i.trimStart();
             }
 
-            if(typeof startData == 'string'){
+            if (typeof startData == 'string') {
                 1 == 1;
             }
             startData.Plus(i);
         }
 
-        if(mini){
+        if (mini) {
             startData = startData.SpaceOne(' ');
         }
-        
+
         return startData;
     }
 
@@ -338,14 +402,14 @@ export default class InsertComponent extends InsertComponentBase {
 
         const promiseBuild: (StringTracker | Promise<StringTracker>)[] = [];
 
-        
-        while((find = data.search(/<[\p{L}_\-:0-9]/u)) != -1){
+
+        while ((find = data.search(/<[\p{L}_\-:0-9]/u)) != -1) {
 
             //heck if there is special tag - need to skip it
             const locSkip = data.eq;
             const specialSkip = this.FindSpecialTagByStart(locSkip.trim());
 
-            if(specialSkip){
+            if (specialSkip) {
                 const start = locSkip.indexOf(specialSkip[0]) + specialSkip[0].length;
                 const end = locSkip.substring(start).indexOf(specialSkip[1]) + start + specialSkip[1].length;
                 promiseBuild.push(data.substring(0, end));
@@ -357,35 +421,35 @@ export default class InsertComponent extends InsertComponentBase {
             const cutStartData = data.substring(0, find); //<
 
             const startFrom = data.substring(find);
-    
+
             //tag type 
             const tagTypeEnd = startFrom.search("\ |/|\>");
-    
+
             const tagType = startFrom.substring(1, tagTypeEnd);
-    
-            const findEndOfSmallTag = await this.FindCloseChar(startFrom.substring(1), '>')+1;
-    
+
+            const findEndOfSmallTag = await this.FindCloseChar(startFrom.substring(1), '>') + 1;
+
             let inTag = startFrom.substring(tagTypeEnd + 1, findEndOfSmallTag);
-    
+
             const NextTextTag = startFrom.substring(findEndOfSmallTag + 1);
-    
+
             if (inTag.at(inTag.length - 1).eq == '/') {
                 inTag = inTag.substring(0, inTag.length - 1);
             }
-    
+
             if (startFrom.at(findEndOfSmallTag - 1).eq == '/') {//small tag
                 promiseBuild.push(
                     this.CheckMinHTML(cutStartData),
-                    this.insertTagData(path, pathName, smallPath, tagType, inTag, { dependenceObject, buildScript, isDebug, sessionInfo})
+                    this.insertTagData(path, pathName, smallPath, tagType, inTag, { dependenceObject, buildScript, isDebug, sessionInfo })
                 );
 
                 data = NextTextTag;
                 continue;
             }
-    
+
             //big tag with reader
             let BetweenTagDataCloseIndex;
-    
+
             if (this.SimpleSkip.includes(tagType.eq)) {
                 BetweenTagDataCloseIndex = NextTextTag.indexOf('</' + tagType);
             } else {
@@ -398,13 +462,13 @@ export default class InsertComponent extends InsertComponentBase {
                     BetweenTagDataCloseIndex = null;
                 }
             }
-    
+
             const BetweenTagData = NextTextTag.substring(0, BetweenTagDataCloseIndex);
-    
+
             //finding last close 
             const NextDataClose = NextTextTag.substring(BetweenTagDataCloseIndex);
             const NextDataAfterClose = BetweenTagDataCloseIndex != null ? NextDataClose.substring(BaseReader.findEndOfDef(NextDataClose.eq, '>') + 1) : NextDataClose; // search for the close of a big tag just if the tag is valid
-    
+
             promiseBuild.push(
                 this.CheckMinHTML(cutStartData),
                 this.insertTagData(path, pathName, smallPath, tagType, inTag, { BetweenTagData, dependenceObject, buildScript, isDebug, sessionInfo })
@@ -415,8 +479,8 @@ export default class InsertComponent extends InsertComponentBase {
 
 
         let textBuild = new StringTracker(data.DefaultInfoText);
-        
-        for(const i of promiseBuild){
+
+        for (const i of promiseBuild) {
             textBuild = this.CheckDoubleSpace(textBuild, await i);
         }
 
@@ -424,7 +488,7 @@ export default class InsertComponent extends InsertComponentBase {
 
     }
 
-    private RemoveUnnecessarySpace(code: StringTracker){
+    private RemoveUnnecessarySpace(code: StringTracker) {
         code = code.trim();
         code = code.replaceAll(/%>[ ]+<%/, '%><%');
         return code;

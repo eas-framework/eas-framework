@@ -3,7 +3,7 @@ import SourceMapStore from '../../EasyDebug/SourceMapStore';
 
 export interface tagDataObject {
     n: StringTracker, // name
-    v: StringTracker, // value
+    v?: StringTracker, // value
     char?: StringTracker // char type: " ' `
 }
 

@@ -1,7 +1,5 @@
 <script lang="ts">
-    let me: string;
-
-    me = "cool";
+    export let me: string = 'is';
 
     function more() {
         me += ' be more';

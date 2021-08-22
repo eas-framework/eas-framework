@@ -24,5 +24,8 @@ var i = 3;
     async function heyFromServer(){
         alert(await getData(prompt('1-3 chars', '123')));
     }
-</script> 
-<svelte from='add'/>
+</script>
+<div id="div2">
+    <p>next to me</p>    
+</div>
+<svelte from='add' selector="#div2" props={me: 'cool2'}/>

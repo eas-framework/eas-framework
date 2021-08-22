@@ -2,7 +2,7 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import SourceMapStore from '../../EasyDebug/SourceMapStore';
 export interface tagDataObject {
     n: StringTracker;
-    v: StringTracker;
+    v?: StringTracker;
     char?: StringTracker;
 }
 export interface tagDataObjectArray extends Array<tagDataObject> {

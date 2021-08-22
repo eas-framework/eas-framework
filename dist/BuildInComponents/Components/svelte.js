@@ -11,17 +11,18 @@ export default async function BuildCode(path, LastSmallPath, dataTag, sessionInf
     });
     const id = Base64Id(inWebPath);
     const have = (name) => {
-        const value = dataTag.remove(name);
-        return value ? `,${name}:{${value}}` : '';
+        const value = dataTag.remove(name).trim();
+        return value ? `,${name}:${value.charAt(0) == '{' ? value : `{${value}}`}` : '';
     };
+    const selector = dataTag.remove('selector');
     return {
         compiledString: new StringTracker(null, `
-        <div id="${id}"></div>
+        ${selector ? '' : `<div id="${id}"></div>`}
         <script type="module">
             import App_${id} from '/${inWebPath}';
     
             new App_${id}({
-                target: document.getElementById("${id}")
+                target:  ${selector ? `document.querySelector("${selector}")` : `document.getElementById("${id}")`}
                 ${have('props') + have('options')}
             });
         </script>`),
