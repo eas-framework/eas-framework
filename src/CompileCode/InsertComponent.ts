@@ -309,7 +309,7 @@ export default class InsertComponent extends InsertComponentBase {
 
         fileData = this.parseComponentProps(tagData, fileData);
 
-        fileData = fileData.replace(/<\?reader( )*\/>/gi, BetweenTagData ?? '');
+        fileData = fileData.replace(/<\:reader( )*\/>/gi, BetweenTagData ?? '');
 
         pathName = pathName + ' -> ' + SmallPath;
 
@@ -502,7 +502,7 @@ export default class InsertComponent extends InsertComponentBase {
         data = await this.StartReplace(data, pathName, path, smallPath, isDebug, dependenceObject, buildScript, sessionInfo);
 
         //if there is a reader, replacing him with 'codebase'
-        data = data.replace(/<\?reader+( )*\/>/gi, '<%typeof page.codebase == "function" ? page.codebase(): write(page.codebase)%>') // replace for importing pages / components
+        data = data.replace(/<\:reader+( )*\/>/gi, '<%typeof page.codebase == "function" ? page.codebase(): write(page.codebase)%>') // replace for importing pages / components
         return this.RemoveUnnecessarySpace(data);
     }
 }
