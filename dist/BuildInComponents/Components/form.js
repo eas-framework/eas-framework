@@ -9,7 +9,7 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
             compiledString: new StringTracker(type.DefaultInfoText).Plus$ `<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)}</form>`,
             checkComponents: true
         };
-    const name = dataTag.remove('name').trim() || uuid(), validator = dataTag.remove('validate'), notValid = dataTag.remove('notValid');
+    const name = dataTag.remove('name').trim() || uuid(), validator = dataTag.remove('validate'), notValid = dataTag.remove('notValid'), responseSafe = dataTag.have('safe');
     let message = dataTag.have('message'); // show error message
     if (!message)
         message = isDebug && !InsertComponent.SomePlugins("SafeDebug");
@@ -27,7 +27,8 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
         validator: validatorArray,
         order: order.length && order,
         notValid,
-        message
+        message,
+        responseSafe
     });
     if (!dataTag.have('method')) {
         dataTag.push({
@@ -64,6 +65,7 @@ export function addFinalizeBuild(pageData, sessionInfo) {
                             validator:[${i.validator?.map?.(compileValues)?.join(',') ?? ''}],
                             order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}],
                             message:${i.message}
+                            safe:${i.responseSafe}
                         }
                     );
                 }`;
@@ -94,9 +96,12 @@ export async function handelConnector(thisPage, connectorInfo) {
         response = await connectorInfo.sendTo(...values);
     else if (connectorInfo.notValid)
         response = await connectorInfo.notValid(...isValid);
-    else if (connectorInfo.message)
-        response = isValid[0];
     if (response)
-        thisPage.write(response);
+        if (connectorInfo.safe)
+            thisPage.writeSafe(response);
+        else
+            thisPage.write(response);
+    else if (connectorInfo.message)
+        thisPage.writeSafe(isValid[0]);
 }
 //# sourceMappingURL=form.js.map

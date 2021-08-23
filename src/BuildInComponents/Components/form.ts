@@ -2,7 +2,7 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { tagDataObjectArray, StringNumberMap, BuildInComponent, SessionInfo, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
 import { compileValues, makeValidationJSON, parseValues } from './serv-connect/index';
-import {SplitFirst} from '../../StringMethods/Splitting';
+import { SplitFirst } from '../../StringMethods/Splitting';
 
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
 
@@ -10,15 +10,14 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
     if (!sendTo)  // special action not found
         return {
-            compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${
-                await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)
-            }</form>`,
+            compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)
+                }</form>`,
             checkComponents: true
         }
 
 
-    const name = dataTag.remove('name').trim() || uuid(), validator: string = dataTag.remove('validate'), notValid: string = dataTag.remove('notValid');
-    
+    const name = dataTag.remove('name').trim() || uuid(), validator: string = dataTag.remove('validate'), notValid: string = dataTag.remove('notValid'), responseSafe = dataTag.have('safe');
+
     let message: string | boolean = dataTag.have('message'); // show error message
     if (!message)
         message = isDebug && !InsertComponent.SomePlugins("SafeDebug");
@@ -28,7 +27,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
     const validatorArray = validator && validator.split(',').map(x => { // Checking if there is an order information, for example "prop1: string, prop3: num, prop2: bool"
         const split = SplitFirst(':', x.trim());
 
-        if (split.length > 1) 
+        if (split.length > 1)
             order.push(split.shift());
 
         return split.pop();
@@ -41,10 +40,11 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         validator: validatorArray,
         order: order.length && order,
         notValid,
-        message
+        message,
+        responseSafe
     });
 
-    if(!dataTag.have('method')){
+    if (!dataTag.have('method')) {
         dataTag.push({
             n: new StringTracker(null, 'method'),
             v: new StringTracker(null, 'post')
@@ -89,6 +89,7 @@ export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionIn
                             validator:[${i.validator?.map?.(compileValues)?.join(',') ?? ''}],
                             order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}],
                             message:${i.message}
+                            safe:${i.responseSafe}
                         }
                     );
                 }`
@@ -132,9 +133,12 @@ export async function handelConnector(thisPage: any, connectorInfo: any) {
         response = await connectorInfo.sendTo(...values);
     else if (connectorInfo.notValid)
         response = await connectorInfo.notValid(...<any>isValid);
-    else if (connectorInfo.message)
-        response = isValid[0];
 
     if (response)
-        thisPage.write(response);
+        if (connectorInfo.safe)
+            thisPage.writeSafe(response);
+        else
+            thisPage.write(response);
+    else if (connectorInfo.message)
+        thisPage.writeSafe(isValid[0]);
 }

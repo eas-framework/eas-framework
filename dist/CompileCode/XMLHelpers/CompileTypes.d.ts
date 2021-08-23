@@ -33,6 +33,7 @@ export declare type SessionInfo = {
         order?: string[];
         notValid?: string;
         message?: boolean;
+        responseSafe?: boolean;
     }[];
     scriptURLSet: setDataHTMLTag[];
     styleURLSet: setDataHTMLTag[];

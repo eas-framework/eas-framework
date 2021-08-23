@@ -4,6 +4,6 @@
     }
 }
 
-<form sendTo="me" validate='am: text => loop | mo"re'>
+<form sendTo="me">
     <input name="am" value="more"/>
 </form>

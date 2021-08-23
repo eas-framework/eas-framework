@@ -178,7 +178,7 @@ export default class StringTracker {
                 lastValue = value.DefaultInfoText;
             }
             else if (value) {
-                this.AddTextAfter(value, lastValue?.info, lastValue?.line, lastValue?.char);
+                this.AddTextAfter(String(value), lastValue?.info, lastValue?.line, lastValue?.char);
             }
         }
         this.AddTextAfter(texts[texts.length - 1], lastValue?.info, lastValue?.line, lastValue?.char);

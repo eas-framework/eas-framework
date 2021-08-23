@@ -35,7 +35,8 @@ export type SessionInfo = {
         validator: string[],
         order?: string[],
         notValid?: string,
-        message?: boolean
+        message?: boolean,
+        responseSafe?: boolean
     }[],
     scriptURLSet: setDataHTMLTag[]
     styleURLSet: setDataHTMLTag[]

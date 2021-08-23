@@ -38,7 +38,7 @@ export function addFinalizeBuild(pageData, sessionInfo) {
             name:"${i.name}",
             sendTo:${i.sendTo},
             message:${i.message},
-            validator:[${(i.validator && i.validator.map(compileValues).join(',')) ?? ''}]
+            validator:[${(i.validator && i.validator.map(compileValues).join(',')) || ''}]
         }`;
     }
     buildObject = `[${buildObject.substring(1)}]`;
@@ -61,9 +61,9 @@ export async function handelConnector(thisPage, connectorArray) {
     if (!have)
         return false;
     const values = thisPage.Post.connectorCall.values;
-    const isValid = have.validator && await makeValidationJSON(values, have.validator);
+    const isValid = have.validator.length && await makeValidationJSON(values, have.validator);
     thisPage.setResponse('');
-    if (!have.validator || isValid === true) {
+    if (!have.validator.length || isValid === true) {
         const obj = await have.sendTo(...values);
         thisPage.Response.setHeader('Content-Type', 'application/json');
         thisPage.Response.end(JSON.stringify(obj));
