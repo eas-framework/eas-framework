@@ -10,6 +10,9 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
             checkComponents: true
         };
     const name = dataTag.remove('name').trim() || uuid(), validator = dataTag.remove('validate'), notValid = dataTag.remove('notValid');
+    let message = dataTag.have('message'); // show error message
+    if (!message)
+        message = isDebug && !InsertComponent.SomePlugins("SafeDebug");
     const order = [];
     const validatorArray = validator && validator.split(',').map(x => {
         const split = SplitFirst(':', x.trim());
@@ -23,8 +26,15 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
         sendTo,
         validator: validatorArray,
         order: order.length && order,
-        notValid
+        notValid,
+        message
     });
+    if (!dataTag.have('method')) {
+        dataTag.push({
+            n: new StringTracker(null, 'method'),
+            v: new StringTracker(null, 'post')
+        });
+    }
     const compiledString = new StringTracker(type.DefaultInfoText).Plus$ `<%
 @?ConnectHereForm(${sendTo});
 %><form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>
@@ -52,7 +62,8 @@ export function addFinalizeBuild(pageData, sessionInfo) {
                             sendTo:${i.sendTo},
                             notValid: ${i.notValid || 'null'},
                             validator:[${i.validator?.map?.(compileValues)?.join(',') ?? ''}],
-                            order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}]
+                            order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}],
+                            message:${i.message}
                         }
                     );
                 }`;
@@ -83,6 +94,8 @@ export async function handelConnector(thisPage, connectorInfo) {
         response = await connectorInfo.sendTo(...values);
     else if (connectorInfo.notValid)
         response = await connectorInfo.notValid(...isValid);
+    else if (connectorInfo.message)
+        response = isValid[0];
     if (response)
         thisPage.write(response);
 }

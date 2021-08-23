@@ -18,6 +18,10 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
 
     const name = dataTag.remove('name').trim() || uuid(), validator: string = dataTag.remove('validate'), notValid: string = dataTag.remove('notValid');
+    
+    let message: string | boolean = dataTag.have('message'); // show error message
+    if (!message)
+        message = isDebug && !InsertComponent.SomePlugins("SafeDebug");
 
     const order = [];
 
@@ -36,8 +40,16 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         sendTo,
         validator: validatorArray,
         order: order.length && order,
-        notValid
+        notValid,
+        message
     });
+
+    if(!dataTag.have('method')){
+        dataTag.push({
+            n: new StringTracker(null, 'method'),
+            v: new StringTracker(null, 'post')
+        });
+    }
 
     const compiledString = new StringTracker(type.DefaultInfoText).Plus$
         `<%
@@ -75,7 +87,8 @@ export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionIn
                             sendTo:${i.sendTo},
                             notValid: ${i.notValid || 'null'},
                             validator:[${i.validator?.map?.(compileValues)?.join(',') ?? ''}],
-                            order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}]
+                            order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}],
+                            message:${i.message}
                         }
                     );
                 }`
@@ -119,6 +132,8 @@ export async function handelConnector(thisPage: any, connectorInfo: any) {
         response = await connectorInfo.sendTo(...values);
     else if (connectorInfo.notValid)
         response = await connectorInfo.notValid(...<any>isValid);
+    else if (connectorInfo.message)
+        response = isValid[0];
 
     if (response)
         thisPage.write(response);

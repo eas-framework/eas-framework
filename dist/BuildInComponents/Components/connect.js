@@ -6,10 +6,9 @@ function template(name) {
 }
 export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, { SomePlugins }, sessionInfo) {
     const name = dataTag.getValue('name'), sendTo = dataTag.getValue('sendTo'), validator = dataTag.getValue('validate');
-    let message = dataTag.getValue('message');
-    if (message == null) {
+    let message = dataTag.have('message'); // show error message
+    if (!message)
         message = isDebug && !SomePlugins("SafeDebug");
-    }
     sessionInfo.scriptURLSet.push({
         url: serveScript,
         attributes: { async: null }
@@ -34,7 +33,13 @@ export function addFinalizeBuild(pageData, sessionInfo) {
     for (const i of sessionInfo.connectorArray) {
         if (i.type != 'connect')
             continue;
-        buildObject += `,{name:"${i.name}",sendTo:${i.sendTo},message:${Boolean(i.message)},validator:[${(i.validator && i.validator.map(compileValues).join(',')) ?? ''}]}`;
+        buildObject += `,
+        {
+            name:"${i.name}",
+            sendTo:${i.sendTo},
+            message:${i.message},
+            validator:[${(i.validator && i.validator.map(compileValues).join(',')) ?? ''}]
+        }`;
     }
     buildObject = `[${buildObject.substring(1)}]`;
     const addScript = `

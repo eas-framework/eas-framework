@@ -20,13 +20,13 @@ const builtInConnectionRegex = {
     ],
     "multiple-choice-string": [
         /^string|text+[ ]*=>[ ]*(\|?[^|]+)+$/,
-        (validator: string) => validator.split('=>').pop().split('|').map(x => `\`${x.trim()}\``),
+        (validator: string) => validator.split('=>').pop().split('|').map(x => `"${x.trim().replace(/"/gi, '\\"')}"`),
         (options: string[], text: string) => options.includes(text),
         "string"
     ],
     "multiple-choice-number": [
         /^number|num|integer|int+[ ]*=>[ ]*(\|?[^|]+)+$/,
-        (validator: string) => validator.split('=>').pop().split('|').map(x => Number(x)),
+        (validator: string) => validator.split('=>').pop().split('|').map(x => parseFloat(x)),
         (options: number[], num: number) => options.includes(num),
         "number"
     ]

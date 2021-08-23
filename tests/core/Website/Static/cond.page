@@ -1,0 +1,9 @@
+@{
+    function me(i){
+        write('cool -' + i)
+    }
+}
+
+<form sendTo="me" validate='am: text => loop | mo"re'>
+    <input name="am" value="more"/>
+</form>
