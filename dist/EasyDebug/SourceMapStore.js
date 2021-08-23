@@ -54,11 +54,12 @@ export default class SourceMapStore extends SourceMapBasic {
         if (!this.debug)
             return this.addText(text);
         const DataArray = track.getDataArray(), length = DataArray.length;
+        let waitNextLine = false;
         for (let index = 0; index < length; index++) {
             const { text, line, info } = DataArray[index];
-            if (text == '\n' && ++this.lineCount)
+            if (text == '\n' && ++this.lineCount && !(waitNextLine = false) || waitNextLine)
                 continue;
-            if (line && info)
+            if (line && info && (waitNextLine = true))
                 this.map.addMapping({
                     original: { line, column: 0 },
                     generated: { line: this.lineCount + 1, column: 0 },

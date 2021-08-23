@@ -10,8 +10,7 @@ async function ReplaceBefore(code: string, defineData?: { [key: string]: string 
 }
 
 function ReplaceAfter(code: string){
-    code = code.replace('"use strict";Object.defineProperty(exports, "__esModule", {value: true});', '');
-    return code.replace('exports. default =', 'export default');
+    return code.replace('"use strict";Object.defineProperty(exports, "__esModule", {value: true});', '');
 }
 /**
  * 
@@ -44,7 +43,7 @@ export default async function BuildScript(text: StringTracker, pathName: string,
         });
     }
 
-    if (!isDebug) {
+    if (!isDebug && !removeToMoudule) {
         Result.code = (await minify(Result.code, { module: false })).code;
     }
 

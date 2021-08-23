@@ -7,8 +7,7 @@ async function ReplaceBefore(code, defineData) {
     return code;
 }
 function ReplaceAfter(code) {
-    code = code.replace('"use strict";Object.defineProperty(exports, "__esModule", {value: true});', '');
-    return code.replace('exports. default =', 'export default');
+    return code.replace('"use strict";Object.defineProperty(exports, "__esModule", {value: true});', '');
 }
 /**
  *
@@ -37,7 +36,7 @@ export default async function BuildScript(text, pathName, isTypescript, isDebug,
             text: `${err.message}, on file -> ${pathName}:${text.getLine(err?.loc?.line ?? 1).DefaultInfoText.line}:${err?.loc?.column ?? 0}`
         });
     }
-    if (!isDebug) {
+    if (!isDebug && !removeToMoudule) {
         Result.code = (await minify(Result.code, { module: false })).code;
     }
     return Result.code;

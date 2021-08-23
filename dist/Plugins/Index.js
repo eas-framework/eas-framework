@@ -15,7 +15,7 @@ export default class AddPlugin {
         for (const i of OData) {
             const Syntax = await AddSyntax(i);
             if (Syntax) {
-                text = Syntax(text, i, path, pathName, sessionInfo);
+                text = await Syntax(text, i, path, pathName, sessionInfo);
             }
         }
         return text;

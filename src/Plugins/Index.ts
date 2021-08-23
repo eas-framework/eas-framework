@@ -25,7 +25,7 @@ export default class AddPlugin {
             const Syntax = await AddSyntax(i);
 
             if (Syntax) {
-                text = Syntax(text, i, path, pathName, sessionInfo);
+                text = await Syntax(text, i, path, pathName, sessionInfo);
             }
         }
 

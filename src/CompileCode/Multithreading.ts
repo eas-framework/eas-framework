@@ -49,7 +49,7 @@ export default class Multithreading {
                 const result = [];
                 
                 for(const [key, value] of Object.entries(doMethods)){
-                    result.push(await pool.exec(key, value))
+                    result.push(await pool.exec(key, value.map(x => x && typeof x == 'object' ?  JSON.stringify(x): x)))
                 }
 
                 worker.working = false;

@@ -23,12 +23,15 @@ var i = 3;
 <connect name="getData" sendTo="getWord" validate="1:3"/>
 
 <button onclick="heyFromServer()">what</button>
+
 <script>
+    var i = 7;
     async function heyFromServer(){
         alert(await getData(prompt('1-3 chars', '123')));
+        true
     }
 </script>
 <div id="div2">
     <p>next to me</p>    
 </div>
-<svelte ssr from='add' props={me: 'cool2', and: 'grtg'}/>
+<svelte ssr from='add' props={me: 'ferw'}/>

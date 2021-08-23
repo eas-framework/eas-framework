@@ -4,6 +4,8 @@ export default class EasySyntax {
     async load(code) {
         const parseArray = await ParseTextStream(code);
         this.Build = new ReBuildCodeString(parseArray);
+        this.actionStringExport = this.actionStringExport.bind(this);
+        this.actionStringExportAll = this.actionStringExportAll.bind(this);
     }
     actionStringImport(replaceToType, dataObject) {
         return `const ${dataObject} = await ${replaceToType}(<||>)`;

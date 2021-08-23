@@ -13,14 +13,15 @@ class createPageSourceMap extends SourceMapBasic {
 
     addMappingFromTrack(track: StringTracker) {
         const DataArray = track.getDataArray(), length = DataArray.length;
+        let waitNextLine = true;
 
         for (let index = 0; index < length; index++) {
             const { text, line, info } = DataArray[index];
 
-            if (text == '\n' && ++this.lineCount || !this.lineCount)
+            if (text == '\n' && !(waitNextLine = false) && ++this.lineCount || waitNextLine)
                 continue;
 
-            if (line && info)
+            if (line && info && (waitNextLine = true))
                 this.map.addMapping({
                     original: { line, column: 0 },
                     generated: { line: this.lineCount, column: 0 },
