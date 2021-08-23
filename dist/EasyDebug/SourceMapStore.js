@@ -1,50 +1,69 @@
 import { SourceMapGenerator, SourceMapConsumer } from "source-map-js";
 import path from 'path';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem.js';
-export default class SourceMapStore {
+export class SourceMapBasic {
     filePath;
-    debug;
+    httpSource;
     isCss;
-    storeString = '';
     map;
+    fileDirName;
     lineCount = 0;
-    constructor(filePath, debug, isCss = false) {
+    constructor(filePath, httpSource = true, isCss = false) {
         this.filePath = filePath;
-        this.debug = debug;
+        this.httpSource = httpSource;
         this.isCss = isCss;
-        const name = filePath.split(/\/|\\/).pop();
         this.map = new SourceMapGenerator({
-            file: name
+            file: filePath.split(/\/|\\/).pop()
         });
+        if (!httpSource)
+            this.fileDirName = path.dirname(this.filePath);
+    }
+    getSource(source) {
+        source = source.split('<line>').pop().trim();
+        if (this.httpSource) {
+            source = path.relative(BasicSettings.fullWebSitePath, source);
+            if (BasicSettings.pageTypesArray.includes(path.extname(source).substring(1)))
+                source += '.source';
+            else
+                source += '?source=true';
+        }
+        else
+            source = path.relative(this.fileDirName, source);
+        return source.replace(/\\/gi, '/');
+    }
+    mapAsURLComment() {
+        let mapString = `sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(this.map.toString()).toString("base64")}`;
+        if (this.isCss)
+            mapString = `/*# ${mapString}*/`;
+        else
+            mapString = '//# ' + mapString;
+        return '\r\n' + mapString;
+    }
+}
+export default class SourceMapStore extends SourceMapBasic {
+    debug;
+    storeString = '';
+    constructor(filePath, debug = true, isCss = false, httpSource = true) {
+        super(filePath, httpSource, isCss);
+        this.debug = debug;
     }
     notEmpty() {
         return Boolean(this.storeString);
     }
-    getSource(source) {
-        let name = path.relative(BasicSettings.fullWebSitePath, source.split('<line>').pop());
-        if (BasicSettings.pageTypesArray.includes(path.extname(name).substring(1)))
-            name += '.source';
-        else
-            name += '?source=true';
-        return name;
-    }
-    addStringTracker(track, text = track.eq) {
+    addStringTracker(track, { text: text = track.eq } = {}) {
         if (!this.debug)
             return this.addText(text);
         const DataArray = track.getDataArray(), length = DataArray.length;
-        for (let index = 0, element = DataArray[index]; index < length; index++, element = DataArray[index]) {
-            if (element.text == '\n') {
-                this.lineCount++;
+        for (let index = 0; index < length; index++) {
+            const { text, line, info } = DataArray[index];
+            if (text == '\n' && ++this.lineCount)
                 continue;
-            }
-            const { line, info } = element;
-            if (line && info) {
+            if (line && info)
                 this.map.addMapping({
                     original: { line, column: 0 },
                     generated: { line: this.lineCount + 1, column: 0 },
-                    source: this.getSource(element.info)
+                    source: this.getSource(info)
                 });
-            }
         }
         this.storeString += text;
     }
@@ -76,12 +95,7 @@ export default class SourceMapStore {
     createDataWithMap() {
         if (!this.debug)
             return this.storeString;
-        let mapString = `sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(this.map.toString()).toString("base64")}`;
-        if (this.isCss)
-            mapString = `/*# ${mapString}*/`;
-        else
-            mapString = '//# ' + mapString;
-        return this.storeString + '\r\n' + mapString;
+        return this.storeString + this.mapAsURLComment();
     }
 }
 //# sourceMappingURL=SourceMapStore.js.map

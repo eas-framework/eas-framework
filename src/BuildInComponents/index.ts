@@ -41,7 +41,7 @@ export function StartCompiling(path: string, pathName: string, LastSmallPath: st
             reData = head(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo);
             break;
         case "svelte":
-            reData = svelte(path, LastSmallPath, dataTag, sessionInfo);
+            reData = svelte(path, LastSmallPath, isDebug, dataTag, dependenceObject, sessionInfo);
             break;
     }
 

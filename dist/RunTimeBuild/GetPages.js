@@ -98,11 +98,11 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
                     fullPageUrl = null;
                 }
                 else {
-                    fullPageUrl = arrayType[1] + fullPageUrl + '.js';
+                    fullPageUrl = arrayType[1] + fullPageUrl + '.cjs';
                 }
             }
             else {
-                fullPageUrl = arrayType[1] + url + "." + BasicSettings.pageTypes.page + '.js';
+                fullPageUrl = arrayType[1] + url + "." + BasicSettings.pageTypes.page + '.cjs';
             }
         }
         if (Settings.DevMode) {

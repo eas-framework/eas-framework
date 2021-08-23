@@ -34,9 +34,9 @@ export default async function BuildCode(language, tagData, BetweenTagData, pathN
         });
     }
     if (tagData.getValue('type') == 'module')
-        sessionInfo.scriptModule.addStringTracker(BetweenTagData, resultCode);
+        sessionInfo.scriptModule.addStringTracker(BetweenTagData, { text: resultCode });
     else
-        sessionInfo.script.addStringTracker(BetweenTagData, resultCode);
+        sessionInfo.script.addStringTracker(BetweenTagData, { text: resultCode });
     return {
         compiledString: new StringTracker()
     };

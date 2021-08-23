@@ -8,7 +8,8 @@ import {ImportFile, AddExtension} from '../ImportFiles/Script';
 import { Request, Response } from '@tinyhttp/app';
 import {Files} from 'formidable';
 import {handelConnectorService} from '../BuildInComponents/index';
-import ImportWithoutCache from '../ImportFiles/ImportWithoutCache';
+//@ts-ignore-next-line
+import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.cjs';
 import {CutTheLast, SplitFirst} from '../StringMethods/Splitting';
 
 const Export = {
@@ -108,7 +109,7 @@ async function RequirePage(p: string, pathname: string, typeArray: string[], Las
 
     const ForSavePath = typeArray[2] + p.substring(0, p.length - extname.length - 1);
 
-    const re_build = DataObject.isDebug && (!await EasyFs.existsFile(typeArray[1] + p + '.js') || await CheckDependencyChange(ForSavePath));
+    const re_build = DataObject.isDebug && (!await EasyFs.existsFile(typeArray[1] + p + '.cjs') || await CheckDependencyChange(ForSavePath));
 
     if (re_build) {
         await FastCompile(p.substring(1), typeArray);
@@ -141,7 +142,7 @@ function getFullPath(url: string) {
 function getFullPathCompile(url: string) {
     const SplitInfo = SplitFirst('/', url);
     const typeArray = getTypes[SplitInfo[0]];
-    return typeArray[1] + SplitInfo[1] + "." + BasicSettings.pageTypes.page + '.js';
+    return typeArray[1] + SplitInfo[1] + "." + BasicSettings.pageTypes.page + '.cjs';
 }
 
 async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
@@ -165,13 +166,13 @@ async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
         return RequirePage(p, pathname, typeArray, LastRequire, { ...WithObject, ...DataObject });
     }
 
-    const compiledPath = path.join(typeArray[1], SplitInfo[1] + "." + ext + '.js');
+    const compiledPath = path.join(typeArray[1], SplitInfo[1] + "." + ext + '.cjs');
     const private_var = {};
     
     try {
-        const MyModule = await ImportWithoutCache(compiledPath, async compiledPath => await import('file:///' + compiledPath));
+        const MyModule = await ImportWithoutCache(compiledPath);
 
-        return MyModule.default(__dirname, __filename, _require, _include, private_var, handelConnectorService);
+        return MyModule(__dirname, __filename, _require, _include, private_var, handelConnectorService);
     } catch (e) {
         print.log("Error path -> ", Debug__filename, "->", e.message);
         return (DataObject:any) => DataObject.out_run_script.text += `<div style="color:red;text-align:left;font-size:16px;"><p>Error path: ${Debug__filename}</p><p>Error message: ${e.message}</p></div>`;

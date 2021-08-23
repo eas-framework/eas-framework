@@ -3,57 +3,77 @@ import { SourceMapGenerator, RawSourceMap, SourceMapConsumer } from "source-map-
 import path from 'path';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 
-export default class SourceMapStore {
-    private storeString = '';
-    private map: SourceMapGenerator;
-    private lineCount = 0;
+export abstract class SourceMapBasic {
+    protected map: SourceMapGenerator;
+    protected fileDirName: string;
+    protected lineCount = 0;
 
-    constructor(private filePath: string, private debug: boolean, private isCss = false) {
-
-        const name = filePath.split(/\/|\\/).pop();
+    constructor(protected filePath: string, private httpSource = true, private isCss = false) {
         this.map = new SourceMapGenerator({
-            file: name
+            file: filePath.split(/\/|\\/).pop()
         });
+
+        if (!httpSource)
+            this.fileDirName = path.dirname(this.filePath);
+    }
+
+    protected getSource(source: string) {
+        source = source.split('<line>').pop().trim();
+
+        if (this.httpSource) {
+            source = path.relative(BasicSettings.fullWebSitePath, source);
+
+            if (BasicSettings.pageTypesArray.includes(path.extname(source).substring(1)))
+                source += '.source';
+            else
+                source += '?source=true';
+        } else
+            source = path.relative(this.fileDirName, source);
+
+        return source.replace(/\\/gi, '/');
+    }
+
+    mapAsURLComment() {
+        let mapString = `sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(this.map.toString()).toString("base64")}`;
+
+        if (this.isCss)
+            mapString = `/*# ${mapString}*/`
+        else
+            mapString = '//# ' + mapString;
+
+        return '\r\n' + mapString;
+    }
+}
+
+export default class SourceMapStore extends SourceMapBasic {
+    private storeString = '';
+
+    constructor(filePath: string, private debug = true, isCss = false, httpSource = true) {
+        super(filePath, httpSource, isCss);
     }
 
     notEmpty() {
         return Boolean(this.storeString);
     }
 
-    private getSource(source: string) {
-        let name = path.relative(BasicSettings.fullWebSitePath, source.split('<line>').pop());
-
-        if (BasicSettings.pageTypesArray.includes(path.extname(name).substring(1)))
-            name += '.source';
-        else 
-            name += '?source=true';
-        
-
-        return name;
-    }
-
-    addStringTracker(track: StringTracker, text = track.eq) {
+    addStringTracker(track: StringTracker, { text: text = track.eq } = {}) {
         if (!this.debug)
             return this.addText(text);
 
         const DataArray = track.getDataArray(), length = DataArray.length;
 
-        for (let index = 0, element = DataArray[index]; index < length; index++, element = DataArray[index]) {
+        for (let index = 0; index < length; index++) {
+            const {text, line, info} = DataArray[index];
 
-            if (element.text == '\n') {
-                this.lineCount++;
+            if (text == '\n' && ++this.lineCount) 
                 continue;
-            }
 
-            const { line, info } = element;
-
-            if (line && info) {
+            if (line && info)
                 this.map.addMapping({
                     original: { line, column: 0 },
                     generated: { line: this.lineCount + 1, column: 0 },
-                    source: this.getSource(element.info)
+                    source: this.getSource(info)
                 });
-            }
         }
 
         this.storeString += text;
@@ -93,13 +113,6 @@ export default class SourceMapStore {
         if (!this.debug)
             return this.storeString;
 
-        let mapString = `sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(this.map.toString()).toString("base64")}`;
-
-        if (this.isCss)
-            mapString = `/*# ${mapString}*/`
-        else
-            mapString = '//# ' + mapString;
-
-        return this.storeString + '\r\n' + mapString;
+        return this.storeString + this.mapAsURLComment();
     }
 }

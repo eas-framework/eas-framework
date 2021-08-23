@@ -8,13 +8,14 @@ import JSParser from "../CompileCode/JSParser.js";
 import path from "path";
 import { isTs } from "../CompileCode/InsertModels.js";
 import StringTracker from "../EasyDebug/StringTracker.js";
-import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.js';
+//@ts-ignore-next-line
+import ImportWithoutCache from './ImportWithoutCache.cjs';
 async function ReplaceBefore(code, defineData) {
     code = await EasySyntax.BuildAndExportImports(code, defineData);
     return code;
 }
 function template(code, isDebug, dir, file) {
-    return `${isDebug ? "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install();" : ''}var __dirname=\`${JSParser.fixText(dir)}\`,__filename=\`${JSParser.fixText(file)}\`;export default (async (require)=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
+    return `${isDebug ? "require('source-map-support').install();" : ''}var __dirname=\`${JSParser.fixText(dir)}\`,__filename=\`${JSParser.fixText(file)}\`;module.exports = (async (require)=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
 }
 /**
  *
@@ -67,7 +68,7 @@ function CheckTs(FilePath) {
 }
 export async function BuildScriptSmallPath(InStaticPath, typeArray, isDebug = false) {
     await EasyFs.makePathReal(InStaticPath, typeArray[1]);
-    return await BuildScript(typeArray[0] + InStaticPath, typeArray[1] + InStaticPath + ".js", CheckTs(InStaticPath), isDebug);
+    return await BuildScript(typeArray[0] + InStaticPath, typeArray[1] + InStaticPath + ".cjs", CheckTs(InStaticPath), isDebug);
 }
 export function AddExtension(FilePath) {
     if (!BasicSettings.ReqFileTypesArray.find((x) => FilePath.endsWith(x))) {
@@ -104,9 +105,9 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
         p = AddExtension(p);
         return LoadImport(p, typeArray, isDebug);
     }
-    const requirePath = path.join(typeArray[1], InStaticPath + ".js");
-    let MyModule = await ImportWithoutCache(requirePath, async (requirePath) => await import('file:///' + requirePath));
-    MyModule = await MyModule.default(requireMap);
+    const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
+    let MyModule = await ImportWithoutCache(requirePath);
+    MyModule = await MyModule(requireMap);
     SavedModules[SavedModulesPath] = MyModule;
     return MyModule;
 }
@@ -117,9 +118,14 @@ export function ImportFile(InStaticPath, typeArray, isDebug = false) {
     return LoadImport(InStaticPath, typeArray, isDebug);
 }
 export async function RequireOnce(filePath, isDebug) {
-    const tempFile = path.join(SystemData, 'temp.js');
+    const tempFile = path.join(SystemData, 'temp.cjs');
     await BuildScript(filePath, tempFile, CheckTs(filePath), isDebug);
-    const MyModule = await ImportWithoutCache(tempFile, async (requirePath) => await import('file:///' + requirePath));
-    return await MyModule.default((path) => import(path));
+    const MyModule = await ImportWithoutCache(tempFile);
+    return await MyModule((path) => import(path));
+}
+export async function RequireCjsScript(content) {
+    const tempFile = path.join(SystemData, 'temp.cjs');
+    await EasyFs.writeFile(tempFile, content);
+    return await ImportWithoutCache(tempFile);
 }
 //# sourceMappingURL=Script.js.map

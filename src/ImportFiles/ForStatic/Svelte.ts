@@ -1,5 +1,6 @@
 import { PrintIfNew } from '../../OutputInput/PrintNew';
 import { SomePlugins, GetPlugin } from '../../CompileCode/InsertModels';
+import { StringNumberMap } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { transform } from 'sucrase';
 import { minify } from "terser";
 import { getTypes } from '../../RunTimeBuild/SearchFileSystem';
@@ -8,12 +9,10 @@ import * as svelte from 'svelte/compiler';
 import { dirname } from 'path';
 import sass from 'sass';
 
-export default async function BuildScript(inputPath: string, isDebug: boolean) {
-
-    const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
+export async function preprocess(fullPath: string, smallPath: string, dependenceObject:StringNumberMap = {}){
     const content = await EasyFs.readFile(fullPath);
 
-    const { code, dependencies, map } = await svelte.preprocess(content, {
+    const { code, dependencies, map } =  await svelte.preprocess(content, {
         async style({ content, attributes, filename }) {
             const outputStyle = (['sass', 'scss'].includes(<string>attributes.lang) ? SomePlugins("MinSass", "MinAll") : SomePlugins("MinCss", "MinAll")) ? 'compressed' : 'expanded';
 
@@ -28,7 +27,7 @@ export default async function BuildScript(inputPath: string, isDebug: boolean) {
             }, (err, result) => {
                 if (err) {
                     PrintIfNew({
-                        text: `${err.message}, on file -> ${inputPath}${err.line ? ':' + err.line : ''}`,
+                        text: `${err.message}, on file -> ${smallPath}${err.line ? ':' + err.line : ''}`,
                         errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
                         type: err?.status == 5 ? 'warn' : 'error'
                     });
@@ -58,17 +57,25 @@ export default async function BuildScript(inputPath: string, isDebug: boolean) {
         }
     });
 
-    const dependenceObject = {};
-
     for (const i of dependencies) {
         dependenceObject[i.substring(getTypes.Static[0].length)] = await EasyFs.stat(i, 'mtimeMs');
     }
+
+    return {code, dependenceObject, map};
+}
+
+
+export default async function BuildScript(inputPath: string, isDebug: boolean) {
+    const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
+
+    const { code, dependenceObject, map } = await preprocess(fullPath, inputPath);
 
     const { js, css } = svelte.compile(code, {
         filename: fullPath,
         dev: isDebug,
         sourcemap: map,
         css: false,
+        hydratable: true,
         sveltePath: '/serv/svelte'
     });
 
@@ -76,8 +83,8 @@ export default async function BuildScript(inputPath: string, isDebug: boolean) {
 
     if (minCode)
         js.code = (await minify(js.code, { module: false })).code;
-        
-    if(isDebug){
+
+    if (isDebug) {
         js.map.sources[0] = fullPath.split(/\/|\//).pop() + '?source=true';
         css.map.sources[0] = js.map.sources[0];
 

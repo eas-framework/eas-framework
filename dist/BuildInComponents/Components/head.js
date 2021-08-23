@@ -27,7 +27,7 @@ function addHTMLTags(sessionInfo) {
         buildBundleString += `<link rel="stylesheet" href="${i.url}"${makeAttributes(i)}/>`;
     for (const i of sessionInfo.scriptURLSet)
         buildBundleString += `<script src="${i.url}"${makeAttributes(i)}></script>`;
-    return buildBundleString;
+    return buildBundleString + sessionInfo.headHTML;
 }
 function addScript(sessionInfo, compilePath, name) {
     if (sessionInfo.script.notEmpty()) { // add default script

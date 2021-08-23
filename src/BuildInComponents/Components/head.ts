@@ -37,7 +37,7 @@ function addHTMLTags(sessionInfo: SessionInfo) {
     for (const i of sessionInfo.scriptURLSet)
         buildBundleString += `<script src="${i.url}"${makeAttributes(i)}></script>`;
 
-    return buildBundleString;
+    return buildBundleString + sessionInfo.headHTML;
 }
 
 function addScript(sessionInfo: SessionInfo, compilePath: string, name: string) {

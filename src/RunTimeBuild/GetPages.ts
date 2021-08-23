@@ -134,10 +134,10 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
                 if (!await EasyFs.existsFile(arrayType[0] + fullPageUrl)) {
                     fullPageUrl = null;
                 } else {
-                    fullPageUrl = arrayType[1] + fullPageUrl + '.js';
+                    fullPageUrl = arrayType[1] + fullPageUrl + '.cjs';
                 }
             } else {
-                fullPageUrl = arrayType[1] + url + "." + BasicSettings.pageTypes.page + '.js';
+                fullPageUrl = arrayType[1] + url + "." + BasicSettings.pageTypes.page + '.cjs';
             }
         }
 

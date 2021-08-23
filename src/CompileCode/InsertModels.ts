@@ -120,7 +120,8 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
         connectorArray: [], scriptURLSet: [], styleURLSet: [],
         style: new SourceMapStore(smallPath, debugInPage, true),
         script: new SourceMapStore(smallPath, debugInPage, false),
-        scriptModule: new SourceMapStore(smallPath, debugInPage, false)
+        scriptModule: new SourceMapStore(smallPath, debugInPage, false),
+        headHTML: ''
     };
 
     let DebugString = new StringTracker(pagePath, data);

@@ -87,13 +87,13 @@ export default class EasySyntax {
     }
     Define(data) {
         for (const [key, value] of Object.entries(data)) {
-            this.replaceWithSpace(text => text.replace(new RegExp(`([^\\p{L}])${key}([^\\p{L}])`, 'gi'), (...match) => {
+            this.replaceWithSpace(text => text.replace(new RegExp(`([^\\p{L}])${key}([^\\p{L}])`, 'gui'), (...match) => {
                 return match[1] + value + match[2];
             }));
         }
     }
     BuildInAsFunction(word, toWord) {
-        this.replaceWithSpace(text => text.replace(new RegExp(`([^\\p{L}])${word}([ \\n]*\\()`, 'gi'), (...match) => {
+        this.replaceWithSpace(text => text.replace(new RegExp(`([^\\p{L}])${word}([ \\n]*\\()`, 'gui'), (...match) => {
             return match[1] + toWord + match[2];
         }));
     }

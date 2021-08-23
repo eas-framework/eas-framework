@@ -7,8 +7,7 @@ import EasyFs from '../../OutputInput/EasyFs.js';
 import * as svelte from 'svelte/compiler';
 import { dirname } from 'path';
 import sass from 'sass';
-export default async function BuildScript(inputPath, isDebug) {
-    const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
+export async function preprocess(fullPath, smallPath, dependenceObject = {}) {
     const content = await EasyFs.readFile(fullPath);
     const { code, dependencies, map } = await svelte.preprocess(content, {
         async style({ content, attributes, filename }) {
@@ -24,7 +23,7 @@ export default async function BuildScript(inputPath, isDebug) {
             }, (err, result) => {
                 if (err) {
                     PrintIfNew({
-                        text: `${err.message}, on file -> ${inputPath}${err.line ? ':' + err.line : ''}`,
+                        text: `${err.message}, on file -> ${smallPath}${err.line ? ':' + err.line : ''}`,
                         errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
                         type: err?.status == 5 ? 'warn' : 'error'
                     });
@@ -54,15 +53,20 @@ export default async function BuildScript(inputPath, isDebug) {
             }
         }
     });
-    const dependenceObject = {};
     for (const i of dependencies) {
         dependenceObject[i.substring(getTypes.Static[0].length)] = await EasyFs.stat(i, 'mtimeMs');
     }
+    return { code, dependenceObject, map };
+}
+export default async function BuildScript(inputPath, isDebug) {
+    const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
+    const { code, dependenceObject, map } = await preprocess(fullPath, inputPath);
     const { js, css } = svelte.compile(code, {
         filename: fullPath,
         dev: isDebug,
         sourcemap: map,
         css: false,
+        hydratable: true,
         sveltePath: '/serv/svelte'
     });
     const minCode = SomePlugins("MinJS") || SomePlugins("MinAll");

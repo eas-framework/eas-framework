@@ -10,7 +10,7 @@ export function RemoveEndType(string) {
 }
 Components.RemoveEndType = RemoveEndType;
 async function compileFile(filePath, arrayType, isDebug, debugFromPage, sessionInfo) {
-    const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.js';
+    const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
     const dependenceObject = {
         thisPage: await EasyFs.stat(FullFilePath, 'mtimeMs')
     };

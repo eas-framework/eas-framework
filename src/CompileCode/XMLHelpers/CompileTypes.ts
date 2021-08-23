@@ -41,7 +41,8 @@ export type SessionInfo = {
     styleURLSet: setDataHTMLTag[]
     style: SourceMapStore
     script: SourceMapStore
-    scriptModule: SourceMapStore
+    scriptModule: SourceMapStore,
+    headHTML: string
 }
 
 

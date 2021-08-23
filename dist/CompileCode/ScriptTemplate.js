@@ -1,33 +1,30 @@
-import { SourceMapGenerator } from "source-map-js";
-import path from 'path';
 import { finalizeBuild } from '../BuildInComponents/index.js';
 import JSParser from './JSParser.js';
+import { SourceMapBasic } from '../EasyDebug/SourceMapStore.js';
+class createPageSourceMap extends SourceMapBasic {
+    constructor(filePath) {
+        super(filePath, false);
+    }
+    addMappingFromTrack(track) {
+        const DataArray = track.getDataArray(), length = DataArray.length;
+        for (let index = 0; index < length; index++) {
+            const { text, line, info } = DataArray[index];
+            if (text == '\n' && ++this.lineCount || !this.lineCount)
+                continue;
+            if (line && info)
+                this.map.addMapping({
+                    original: { line, column: 0 },
+                    generated: { line: this.lineCount, column: 0 },
+                    source: this.getSource(info)
+                });
+        }
+    }
+}
 export class PageTemplate extends JSParser {
     static CreateSourceMap(text, filePath) {
-        const map = new SourceMapGenerator({
-            file: filePath.split(/\/|\\/).pop()
-        });
-        const thisDirFile = path.dirname(filePath);
-        const DataArray = text.getDataArray(), length = DataArray.length;
-        let lineCount = 0;
-        for (let index = 1, element = DataArray[index]; index < length; index++, element = DataArray[index]) {
-            if (element.text == '\n') {
-                lineCount++;
-                continue;
-            }
-            if (!lineCount) {
-                continue;
-            }
-            const { line, info } = element;
-            if (line && info) {
-                map.addMapping({
-                    original: { line, column: 0 },
-                    generated: { line: lineCount, column: 0 },
-                    source: path.relative(thisDirFile, info.split('<line>').pop().trim()).replace(/\\/gi, '/')
-                });
-            }
-        }
-        return "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(map.toString()).toString("base64");
+        const storeMap = new createPageSourceMap(filePath);
+        storeMap.addMappingFromTrack(text);
+        return storeMap.mapAsURLComment();
     }
     static async AddPageTemplate(text, isDebug, fullPathCompile, sessionInfo) {
         text = await finalizeBuild(text, sessionInfo, fullPathCompile);
@@ -35,7 +32,7 @@ export class PageTemplate extends JSParser {
             text.AddTextBefore(`try {\n`);
         }
         text.AddTextBefore(`
-        export default (__dirname, __filename, _require, _include, private_var, handelConnector) => {
+        module.exports = (__dirname, __filename, _require, _include, private_var, handelConnector) => {
             return (async function (page) {
                 const require = (p) => _require(page, p);
                 const include = (p, WithObject) => _include(page, p, WithObject);
@@ -71,7 +68,7 @@ export class PageTemplate extends JSParser {
     }
     static AddAfterBuild(text, isDebug) {
         if (isDebug) {
-            text = "import sourceMapSupport from 'source-map-support'; sourceMapSupport.install({hookRequire: true});" + text;
+            text = "require('source-map-support').install();" + text;
         }
         return text;
     }

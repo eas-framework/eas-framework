@@ -5,7 +5,8 @@ import { FastCompile } from './SearchPages.js';
 import { print } from '../OutputInput/Console.js';
 import { ImportFile, AddExtension } from '../ImportFiles/Script.js';
 import { handelConnectorService } from '../BuildInComponents/index.js';
-import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.js';
+//@ts-ignore-next-line
+import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.cjs';
 import { CutTheLast, SplitFirst } from '../StringMethods/Splitting.js';
 const Export = {
     PageLoadRam: {},
@@ -95,7 +96,7 @@ async function RequirePage(p, pathname, typeArray, LastRequire, DataObject) {
         return LastRequire[copy].model;
     }
     const ForSavePath = typeArray[2] + p.substring(0, p.length - extname.length - 1);
-    const re_build = DataObject.isDebug && (!await EasyFs.existsFile(typeArray[1] + p + '.js') || await CheckDependencyChange(ForSavePath));
+    const re_build = DataObject.isDebug && (!await EasyFs.existsFile(typeArray[1] + p + '.cjs') || await CheckDependencyChange(ForSavePath));
     if (re_build) {
         await FastCompile(p.substring(1), typeArray);
     }
@@ -120,7 +121,7 @@ function getFullPath(url) {
 function getFullPathCompile(url) {
     const SplitInfo = SplitFirst('/', url);
     const typeArray = getTypes[SplitInfo[0]];
-    return typeArray[1] + SplitInfo[1] + "." + BasicSettings.pageTypes.page + '.js';
+    return typeArray[1] + SplitInfo[1] + "." + BasicSettings.pageTypes.page + '.cjs';
 }
 async function LoadPage(url, ext = BasicSettings.pageTypes.page) {
     const SplitInfo = SplitFirst('/', url);
@@ -137,11 +138,11 @@ async function LoadPage(url, ext = BasicSettings.pageTypes.page) {
     function _include(DataObject, p, WithObject = {}) {
         return RequirePage(p, pathname, typeArray, LastRequire, { ...WithObject, ...DataObject });
     }
-    const compiledPath = path.join(typeArray[1], SplitInfo[1] + "." + ext + '.js');
+    const compiledPath = path.join(typeArray[1], SplitInfo[1] + "." + ext + '.cjs');
     const private_var = {};
     try {
-        const MyModule = await ImportWithoutCache(compiledPath, async (compiledPath) => await import('file:///' + compiledPath));
-        return MyModule.default(__dirname, __filename, _require, _include, private_var, handelConnectorService);
+        const MyModule = await ImportWithoutCache(compiledPath);
+        return MyModule(__dirname, __filename, _require, _include, private_var, handelConnectorService);
     }
     catch (e) {
         print.log("Error path -> ", Debug__filename, "->", e.message);

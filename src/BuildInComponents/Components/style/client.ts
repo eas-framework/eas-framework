@@ -61,7 +61,7 @@ export default async function BuildCode(language: string, path: string, pathName
     if (result?.map)
         sessionInfo.style.addSourceMapWithStringTracker(JSON.parse(result.map.toString()), BetweenTagData, outStyle);
     else
-        sessionInfo.style.addStringTracker(BetweenTagData, outStyle);
+        sessionInfo.style.addStringTracker(BetweenTagData, {text: outStyle});
 
 
     return {

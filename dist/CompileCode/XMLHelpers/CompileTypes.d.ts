@@ -39,6 +39,7 @@ export declare type SessionInfo = {
     style: SourceMapStore;
     script: SourceMapStore;
     scriptModule: SourceMapStore;
+    headHTML: string;
 };
 export interface BuildInComponent {
     compiledString: StringTracker;

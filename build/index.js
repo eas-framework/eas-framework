@@ -22,6 +22,7 @@ stream.on('exit', nextBuild);
 
 async function nextBuild() {
     await import('./copyWasm.js');
+    await import('./copyFiles.js');
     await import('./addExt.js');
     await import('./minifyClient.js');
 
