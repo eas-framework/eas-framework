@@ -35,7 +35,7 @@ async function registerExtension(filePath, smallPath, dependenceObject, isDebug)
 }
 async function ssrHTML(dataTag, FullPath, smallPath, dependenceObject, sessionInfo, isDebug) {
     const getV = (name) => {
-        const value = dataTag.getValue(name).trim();
+        const gv = (name) => dataTag.getValue(name).trim(), value = gv('ssr' + capitalise(name)) || gv(name);
         return value ? eval(`(${value.charAt(0) == '{' ? value : `{${value}}`})`) : {};
     };
     const mode = (await registerExtension(FullPath, smallPath, dependenceObject, isDebug));

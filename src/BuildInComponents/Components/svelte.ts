@@ -44,7 +44,9 @@ async function registerExtension(filePath: string, smallPath: string, dependence
 
 async function ssrHTML(dataTag: tagDataObjectArray, FullPath: string, smallPath: string, dependenceObject: StringNumberMap, sessionInfo: SessionInfo, isDebug: boolean) {
     const getV = (name: string) => {
-        const value = dataTag.getValue(name).trim();
+        const gv = (name: string) => dataTag.getValue(name).trim(),
+        value = gv('ssr' + capitalise(name)) || gv(name);
+        
         return value ? eval(`(${value.charAt(0) == '{' ? value : `{${value}}`})`) : {};
     };
     
