@@ -79,31 +79,32 @@ export function AddExtension(FilePath) {
     return FilePath;
 }
 const SavedModules = {};
-export default async function LoadImport(InStaticPath, typeArray, isDebug = false) {
+export default async function LoadImport(InStaticPath, typeArray, isDebug = false, useDeps, withoutCache) {
     let TimeCheck;
     const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = typeArray[0] + InStaticPath;
-    if (!PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs"))) {
+    const reBuild = !PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs"));
+    if (reBuild) {
         await BuildScriptSmallPath(InStaticPath, typeArray, isDebug);
-        UpdatePageDependency(SavedModulesPath, TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs"));
+        TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs");
+        UpdatePageDependency(SavedModulesPath, TimeCheck);
     }
-    else if (SavedModules[SavedModulesPath]) {
+    if (useDeps)
+        useDeps[filePath] = TimeCheck;
+    if (!withoutCache && !reBuild && SavedModules[SavedModulesPath])
         return SavedModules[SavedModulesPath];
-    }
     function requireMap(p) {
-        if (path.isAbsolute(p)) {
+        if (path.isAbsolute(p))
             p = path.normalize(p).substring(path.normalize(typeArray[0]).length);
-        }
         else {
             if (p[0] == ".") {
                 const dirPath = path.dirname(InStaticPath);
                 p = (dirPath != "/" ? dirPath + "/" : "") + p;
             }
-            else if (p[0] != "/") {
+            else if (p[0] != "/")
                 return import(p);
-            }
         }
         p = AddExtension(p);
-        return LoadImport(p, typeArray, isDebug);
+        return LoadImport(p, typeArray, isDebug, useDeps, withoutCache ? --withoutCache : 0);
     }
     const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
     let MyModule = await ImportWithoutCache(requirePath);
@@ -111,11 +112,10 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
     SavedModules[SavedModulesPath] = MyModule;
     return MyModule;
 }
-export function ImportFile(InStaticPath, typeArray, isDebug = false) {
-    if (!isDebug) {
+export function ImportFile(InStaticPath, typeArray, isDebug = false, useDeps, withoutCache) {
+    if (!isDebug)
         return SavedModules[typeArray[2] + "\\" + InStaticPath];
-    }
-    return LoadImport(InStaticPath, typeArray, isDebug);
+    return LoadImport(InStaticPath, typeArray, isDebug, useDeps, withoutCache);
 }
 export async function RequireOnce(filePath, isDebug) {
     const tempFile = path.join(SystemData, 'temp.cjs');

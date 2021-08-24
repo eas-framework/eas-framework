@@ -12,97 +12,127 @@ const Export = {
     PageLoadRam: {},
     PageRam: true
 };
-const LastRequire = {};
-/*
-'url': [LoadPage, BuildPage];
-*/
-const LastRequireFiles = {};
-async function RequireFile(p, pathname, typeArray, LastRequire, isDebug) {
-    const ReqFile = LastRequire[p];
-    const fullPath = ReqFile && typeArray[0] + ReqFile;
-    let Exists, Stat;
-    if (ReqFile && (!isDebug || (isDebug && (LastRequireFiles[ReqFile].date == -1 || (!(Exists = await EasyFs.existsFile(fullPath)) && LastRequireFiles[ReqFile].date == 0) || Exists && LastRequireFiles[ReqFile].date == (Stat = await EasyFs.stat(fullPath, 'mtimeMs')))))) {
-        return LastRequireFiles[ReqFile].model;
+const CacheRequireFiles = {};
+async function makeDependencies(dependencies) {
+    const dependenciesMap = {};
+    for (const filePath of dependencies)
+        dependenciesMap[filePath] = await EasyFs.stat(filePath, 'mtimeMs', true);
+    return dependenciesMap;
+}
+function compareDependenciesSame(oldDeps, newDeps) {
+    for (const name in oldDeps)
+        if (newDeps[name] != oldDeps[name])
+            return false;
+    return true;
+}
+function countTillLastChange(oldDeps, newDeps) {
+    let counter = 0, change = 0;
+    for (const name in oldDeps) {
+        counter++;
+        if (newDeps[name] != oldDeps[name])
+            change = counter;
     }
-    const copy = p;
+    return change > 1 ? change : 0; // if there is one, that mean only the file changed without any dependencies
+}
+async function RequireFile(filePath, pathname, typeArray, LastRequire, isDebug) {
+    const ReqFile = LastRequire[filePath];
+    let fileExists, newDeps;
+    if (ReqFile) {
+        if (!isDebug || isDebug && (ReqFile.status == -1))
+            return ReqFile.model;
+        fileExists = await EasyFs.stat(typeArray[0] + ReqFile.path, 'mtimeMs', true, 0);
+        if (fileExists) {
+            newDeps = await makeDependencies(Object.keys(ReqFile.dependencies));
+            if (compareDependenciesSame(ReqFile.dependencies, newDeps))
+                return ReqFile.model;
+        }
+        else if (ReqFile.status == 0)
+            return ReqFile.model;
+    }
+    const copyPath = filePath;
     let static_modules = false;
     if (!ReqFile) {
-        if (p[0] == '.') {
-            if (p[1] == '/') {
-                p = p.substring(2);
-            }
-            p = pathname && (pathname + '/' + p) || p;
+        if (filePath[0] == '.') {
+            if (filePath[1] == '/')
+                filePath = filePath.substring(2);
+            filePath = pathname && (pathname + '/' + filePath) || filePath;
         }
-        else if (p[0] != '/') {
+        else if (filePath[0] != '/')
             static_modules = true;
-        }
-        else {
-            p = p.substring(1);
-        }
+        else
+            filePath = filePath.substring(1);
     }
     else {
-        p = ReqFile;
-        static_modules = LastRequireFiles[ReqFile].static;
+        filePath = ReqFile.path;
+        static_modules = ReqFile.static;
     }
-    if (static_modules) {
-        LastRequireFiles[p] = { model: await import(p), date: -1, static: true };
-        LastRequire[copy] = p;
-        return LastRequireFiles[copy].model;
-    }
+    if (static_modules)
+        LastRequire[copyPath] = { model: await import(filePath), status: -1, static: true, path: filePath };
     else {
         // add serv.js or serv.ts if needed
-        p = AddExtension(p);
-        if (Exists || (Exists === undefined && await EasyFs.existsFile(typeArray[0] + p))) {
-            if (!Stat) {
-                Stat = await EasyFs.stat(typeArray[0] + p, 'mtimeMs');
+        filePath = AddExtension(filePath);
+        const fullPath = typeArray[0] + filePath;
+        fileExists = fileExists ?? await EasyFs.stat(fullPath, 'mtimeMs', true, 0);
+        if (fileExists) {
+            const haveModel = CacheRequireFiles[filePath];
+            if (haveModel && compareDependenciesSame(haveModel.dependencies, newDeps ?? await makeDependencies(Object.keys(haveModel.dependencies))))
+                LastRequire[copyPath] = haveModel;
+            else {
+                newDeps = newDeps ?? {};
+                LastRequire[copyPath] = { model: await ImportFile(filePath, typeArray, isDebug, newDeps, haveModel && countTillLastChange(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath };
             }
-            const ReModel = isDebug && LastRequireFiles[p] && LastRequireFiles[p].date != Stat;
-            if (!LastRequireFiles[p] || ReModel) {
-                LastRequireFiles[p] = { model: await ImportFile(p, typeArray, isDebug), date: Stat };
-            }
-            LastRequire[copy] = p;
-            return LastRequireFiles[p].model;
         }
+        else
+            LastRequire[copyPath] = { model: {}, status: 0, path: filePath };
     }
-    LastRequireFiles[p] = { model: {}, date: 0 };
-    LastRequire[copy] = p;
-    return LastRequireFiles[p].model;
+    const builtModel = LastRequire[copyPath];
+    CacheRequireFiles[builtModel.path] = builtModel;
+    return builtModel.model;
 }
-async function RequirePage(p, pathname, typeArray, LastRequire, DataObject) {
-    if (LastRequire[p] && (DataObject.isDebug || LastRequire[p].date == -1 && !await EasyFs.existsFile(LastRequire[p].path))) {
-        return await LastRequire[p].model(DataObject);
-    }
-    const copy = p;
-    const extname = path.extname(p).substring(1);
-    if (p[0] == '.') {
-        if (p[1] == '/') {
-            p = p.substring(2);
+async function RequirePage(filePath, pathname, typeArray, LastRequire, DataObject) {
+    const ReqFilePath = LastRequire[filePath];
+    const resModel = () => ReqFilePath.model(DataObject);
+    let fileExists;
+    if (ReqFilePath) {
+        if (!DataObject.isDebug)
+            return resModel();
+        if (ReqFilePath.date == -1) {
+            fileExists = await EasyFs.existsFile(ReqFilePath.path);
+            if (!fileExists)
+                return resModel();
         }
-        else {
-            p = p.substring(1);
-        }
-        p = pathname && (pathname + '/' + p) || p;
     }
+    const copyPath = filePath;
+    let extname = path.extname(filePath).substring(1);
+    if (!extname) {
+        extname = BasicSettings.pageTypes.page;
+        filePath += '.' + extname;
+    }
+    if (filePath[0] == '.') {
+        if (filePath[1] == '/')
+            filePath = filePath.substring(2);
+        else
+            filePath = filePath.substring(1);
+        filePath = pathname && (pathname + '/' + filePath) || filePath;
+    }
+    const fullPath = typeArray[0] + filePath;
     if (![BasicSettings.pageTypes.page, BasicSettings.pageTypes.component].includes(extname)) {
-        const importText = await EasyFs.readFile(typeArray[0] + p);
+        const importText = await EasyFs.readFile(fullPath);
         DataObject.write(importText);
         return importText;
     }
-    if (!extname) {
-        p += '.' + BasicSettings.pageTypes.page;
+    fileExists = fileExists ?? await EasyFs.existsFile(fullPath);
+    if (!fileExists) {
+        LastRequire[copyPath] = { model: () => { }, date: -1, path: fullPath };
+        return LastRequire[copyPath].model;
     }
-    if (!await EasyFs.existsFile(typeArray[0] + p)) {
-        LastRequire[copy] = { model: () => { }, date: -1, path: typeArray[0] + p };
-        return LastRequire[copy].model;
-    }
-    const ForSavePath = typeArray[2] + p.substring(0, p.length - extname.length - 1);
-    const re_build = DataObject.isDebug && (!await EasyFs.existsFile(typeArray[1] + p + '.cjs') || await CheckDependencyChange(ForSavePath));
-    if (re_build) {
-        await FastCompile(p.substring(1), typeArray);
-    }
-    if (Export.PageLoadRam[ForSavePath] && !re_build) {
-        LastRequire[copy] = { model: Export.PageLoadRam[ForSavePath][0] };
-        return await LastRequire[copy].model(DataObject);
+    const ForSavePath = typeArray[2] + '/' + filePath.substring(0, filePath.length - extname.length - 1);
+    const reBuild = DataObject.isDebug && (!await EasyFs.existsFile(typeArray[1] + filePath + '.cjs') || await CheckDependencyChange(ForSavePath));
+    if (reBuild)
+        await FastCompile(filePath, typeArray);
+    if (Export.PageLoadRam[ForSavePath] && !reBuild) {
+        LastRequire[copyPath] = { model: Export.PageLoadRam[ForSavePath][0] };
+        return await LastRequire[copyPath].model(DataObject);
     }
     const func = await LoadPage(ForSavePath, extname);
     if (Export.PageRam) {
@@ -111,7 +141,7 @@ async function RequirePage(p, pathname, typeArray, LastRequire, DataObject) {
         }
         Export.PageLoadRam[ForSavePath][0] = func;
     }
-    LastRequire[copy] = { model: func };
+    LastRequire[copyPath] = { model: func };
     return await func(DataObject);
 }
 const GlobalVar = {};
@@ -131,7 +161,6 @@ async function LoadPage(url, ext = BasicSettings.pageTypes.page) {
     const pathname = CutTheLast('/', '/' + SplitInfo[1]);
     const typeArray = getTypes[SplitInfo[0]];
     const LastRequire = {};
-    // eslint-disable-next-line prefer-const
     function _require(DataObject, p) {
         return RequireFile(p, pathname, typeArray, LastRequire, DataObject.isDebug);
     }

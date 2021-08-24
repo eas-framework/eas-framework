@@ -3,3 +3,7 @@
 }
 <h1>Try it</h1>
 <p>@func()</p>
+
+@{
+    include 'cond'
+}

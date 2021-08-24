@@ -18,6 +18,7 @@ import { isTs } from "../CompileCode/InsertModels";
 import StringTracker from "../EasyDebug/StringTracker";
 //@ts-ignore-next-line
 import ImportWithoutCache from './ImportWithoutCache.cjs';
+import { StringNumberMap } from '../CompileCode/XMLHelpers/CompileTypes';
 
 async function ReplaceBefore(
   code: string,
@@ -39,12 +40,7 @@ function template(code: string, isDebug: boolean, dir: string, file: string) {
  * @param type
  * @returns
  */
-async function BuildScript(
-  filePath: string,
-  savePath: string | null,
-  isTypescript: boolean,
-  isDebug: boolean,
-): Promise<string> {
+async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean,): Promise<string> {
 
   const sourceMapFile = savePath.split(/\/|\\/).pop();
 
@@ -54,7 +50,7 @@ async function BuildScript(
       compiledFilename: sourceMapFile,
     },
     filePath: path.relative(path.dirname(savePath), filePath),
-    
+
   },
     define = {
       debug: "" + isDebug,
@@ -106,11 +102,7 @@ function CheckTs(FilePath: string) {
   return FilePath.endsWith(".ts");
 }
 
-export async function BuildScriptSmallPath(
-  InStaticPath: string,
-  typeArray: string[],
-  isDebug = false,
-) {
+export async function BuildScriptSmallPath(InStaticPath: string, typeArray: string[], isDebug = false,) {
   await EasyFs.makePathReal(InStaticPath, typeArray[1]);
 
   return await BuildScript(
@@ -133,42 +125,42 @@ export function AddExtension(FilePath: string) {
 
 const SavedModules = {};
 
-export default async function LoadImport(
-  InStaticPath: string,
-  typeArray: string[],
-  isDebug = false,
-) {
+export default async function LoadImport(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringNumberMap, withoutCache?: number) {
   let TimeCheck: any;
 
   const SavedModulesPath = path.join(typeArray[2], InStaticPath),
     filePath = typeArray[0] + InStaticPath;
 
-  if (!PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs"))) {
+  const reBuild = !PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs"));
+  if (reBuild) {
     await BuildScriptSmallPath(InStaticPath, typeArray, isDebug);
-    UpdatePageDependency(
-      SavedModulesPath,
-      TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs"),
-    );
-  } else if (SavedModules[SavedModulesPath]) {
-    return SavedModules[SavedModulesPath];
+    TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs");
+
+    UpdatePageDependency(SavedModulesPath, TimeCheck);
   }
 
+  if (useDeps)
+    useDeps[filePath] = TimeCheck;
+
+  if (!withoutCache && !reBuild && SavedModules[SavedModulesPath])
+    return SavedModules[SavedModulesPath];
+
+
   function requireMap(p: string) {
-    if(path.isAbsolute(p)){
+    if (path.isAbsolute(p))
       p = path.normalize(p).substring(path.normalize(typeArray[0]).length);
-  } else {
+    else {
       if (p[0] == ".") {
-          const dirPath = path.dirname(InStaticPath);
-          p = (dirPath != "/" ? dirPath + "/" : "") + p;
+        const dirPath = path.dirname(InStaticPath);
+        p = (dirPath != "/" ? dirPath + "/" : "") + p;
       }
-      else if (p[0] != "/") {
-          return import(p);
-      }
-  }
+      else if (p[0] != "/")
+        return import(p);
+    }
 
     p = AddExtension(p);
 
-    return LoadImport(p, typeArray, isDebug);
+    return LoadImport(p, typeArray, isDebug, useDeps, withoutCache ? --withoutCache: 0);
   }
 
   const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
@@ -181,21 +173,17 @@ export default async function LoadImport(
   return MyModule;
 }
 
-export function ImportFile(
-  InStaticPath: string,
-  typeArray: string[],
-  isDebug = false,
-) {
-  if (!isDebug) {
+export function ImportFile(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringNumberMap, withoutCache?:number) {
+  if (!isDebug)
     return SavedModules[typeArray[2] + "\\" + InStaticPath];
-  }
-  return LoadImport(InStaticPath, typeArray, isDebug);
+
+  return LoadImport(InStaticPath, typeArray, isDebug, useDeps, withoutCache);
 }
 
 export async function RequireOnce(filePath: string, isDebug: boolean) {
 
   const tempFile = path.join(SystemData, 'temp.cjs');
-  
+
   await BuildScript(
     filePath,
     tempFile,
@@ -204,7 +192,7 @@ export async function RequireOnce(filePath: string, isDebug: boolean) {
   );
 
   const MyModule = await ImportWithoutCache(tempFile);
-  
+
   return await MyModule((path: string) => import(path));
 }
 
@@ -212,6 +200,6 @@ export async function RequireCjsScript(content: string) {
 
   const tempFile = path.join(SystemData, 'temp.cjs');
   await EasyFs.writeFile(tempFile, content);
-  
+
   return await ImportWithoutCache(tempFile);
 }

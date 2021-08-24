@@ -16,13 +16,13 @@ function exists(path: string): Promise<boolean>{
  * @param {filed to get from the stat object} filed 
  * @returns the filed
  */
-function stat(path: string, filed?: string, ignoreError?: boolean): Promise<Stats | any>{
+function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue:any = {}): Promise<Stats | any>{
     return new Promise(res => {
         fs.stat(path, (err, stat) => {
             if(err && !ignoreError){
                 print.error(err);
             }
-            res(filed && stat? stat[filed]: stat || {});
+            res(filed && stat? stat[filed]: stat || defaultValue);
         });
     });
 }

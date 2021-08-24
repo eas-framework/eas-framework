@@ -14,13 +14,13 @@ function exists(path) {
  * @param {filed to get from the stat object} filed
  * @returns the filed
  */
-function stat(path, filed, ignoreError) {
+function stat(path, filed, ignoreError, defaultValue = {}) {
     return new Promise(res => {
         fs.stat(path, (err, stat) => {
             if (err && !ignoreError) {
                 print.error(err);
             }
-            res(filed && stat ? stat[filed] : stat || {});
+            res(filed && stat ? stat[filed] : stat || defaultValue);
         });
     });
 }

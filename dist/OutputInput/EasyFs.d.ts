@@ -7,7 +7,7 @@ declare function exists(path: string): Promise<boolean>;
  * @param {filed to get from the stat object} filed
  * @returns the filed
  */
-declare function stat(path: string, filed?: string, ignoreError?: boolean): Promise<Stats | any>;
+declare function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue?: any): Promise<Stats | any>;
 declare function existsFile(path: string): Promise<boolean>;
 declare function mkdir(path: string): Promise<boolean>;
 declare function rmdir(path: string): Promise<boolean>;
