@@ -64,7 +64,7 @@ export function addFinalizeBuild(pageData, sessionInfo) {
                             notValid: ${i.notValid || 'null'},
                             validator:[${i.validator?.map?.(compileValues)?.join(',') ?? ''}],
                             order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}],
-                            message:${i.message}
+                            message:${i.message},
                             safe:${i.responseSafe}
                         }
                     );
