@@ -1,0 +1,5 @@
+@{
+    import {func} from './change'
+}
+<h1>Try it</h1>
+<p>@func()</p>

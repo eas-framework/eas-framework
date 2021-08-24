@@ -46,14 +46,15 @@ async function BuildScript(
   isDebug: boolean,
 ): Promise<string> {
 
-  const sourceMapFile = filePath.split(/\/|\\/).pop();
+  const sourceMapFile = savePath.split(/\/|\\/).pop();
 
   const Options: TransformOptions = {
     transforms: ["imports"],
     sourceMapOptions: {
       compiledFilename: sourceMapFile,
     },
-    filePath: path.relative(path.dirname(savePath), filePath)
+    filePath: path.relative(path.dirname(savePath), filePath),
+    
   },
     define = {
       debug: "" + isDebug,

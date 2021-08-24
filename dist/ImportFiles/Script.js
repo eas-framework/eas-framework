@@ -24,13 +24,13 @@ function template(code, isDebug, dir, file) {
  * @returns
  */
 async function BuildScript(filePath, savePath, isTypescript, isDebug) {
-    const sourceMapFile = filePath.split(/\/|\\/).pop();
+    const sourceMapFile = savePath.split(/\/|\\/).pop();
     const Options = {
         transforms: ["imports"],
         sourceMapOptions: {
             compiledFilename: sourceMapFile,
         },
-        filePath: path.relative(path.dirname(savePath), filePath)
+        filePath: path.relative(path.dirname(savePath), filePath),
     }, define = {
         debug: "" + isDebug,
     };
