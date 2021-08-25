@@ -5,10 +5,11 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "node build",
+    "writeGitLabCi": "node build/writeGitLabCi.js",
     "build:ts": "tsc --project tsconfig.json",
     "build:ts:production": "tsc --project production.tsconfig.json",
     "push": "node build/gitPush.js",
-    "buildAndPush": "npm run build production & npm run push & npm run build",
+    "buildAndPush": "npm run writeGitLabCi & npm run build production & npm run push & npm run build",
     "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
     "test": "npm run build & npm run test:dist"
   },
