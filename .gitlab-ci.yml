@@ -4,7 +4,7 @@ build:
   stage: build
   script:
   - npm install
-  - npm run build production "text"
+  - npm run build production "Bundels files on log pages - auto build"
   artifacts:
     paths:
       - dist
