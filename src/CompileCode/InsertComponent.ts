@@ -433,7 +433,7 @@ export default class InsertComponent extends InsertComponentBase {
 
     private RemoveUnnecessarySpace(code: StringTracker) {
         code = code.trim();
-        code = code.replaceAll(/%>[ ]+<%/, '%><%');
+        code = code.replaceAll(/%>[ ]+<%(?![=:])/, '%><%');
         return code;
     }
 

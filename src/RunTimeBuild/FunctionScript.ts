@@ -238,7 +238,8 @@ async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
 
         return MyModule(__dirname, __filename, _require, _include, private_var, handelConnectorService);
     } catch (e) {
-        print.log("Error path -> ", Debug__filename, "->", e.message);
+        print.error("Error path -> ", Debug__filename, "->", e.message);
+        print.error(e.stack);
         return (DataObject: any) => DataObject.out_run_script.text += `<div style="color:red;text-align:left;font-size:16px;"><p>Error path: ${Debug__filename}</p><p>Error message: ${e.message}</p></div>`;
     }
 }
@@ -250,11 +251,11 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
         const out_run_script = { text: '' };
 
         function ToStringInfo(str) {
-            if (typeof str == 'object') {
+            const asString = String(str);
+            if (asString == '[object Object]') {
                 return JSON.stringify(str);
-            } else {
-                return String(str);
             }
+            return asString;
         }
 
         function setResponse(text) {

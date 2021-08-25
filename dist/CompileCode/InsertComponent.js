@@ -321,7 +321,7 @@ export default class InsertComponent extends InsertComponentBase {
     }
     RemoveUnnecessarySpace(code) {
         code = code.trim();
-        code = code.replaceAll(/%>[ ]+<%/, '%><%');
+        code = code.replaceAll(/%>[ ]+<%(?![=:])/, '%><%');
         return code;
     }
     async Insert(data, path, pathName, smallPath, isDebug, dependenceObject, buildScript, sessionInfo) {
