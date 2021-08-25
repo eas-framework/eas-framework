@@ -1,9 +1,11 @@
 /build
 /src
-/__test__
+/tests
 /.vscode
 /examples
 tsconfig.json
+production.tsconfig.json
+problems.js
 .eslintrc
 .eslintignore
 /projects
