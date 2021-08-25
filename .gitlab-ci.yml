@@ -4,7 +4,7 @@ build:
   stage: build
   script:
   - npm install
-  - npm run build production "Fix toString Object - FunctionScript - auto build"
+  - npm run build production "Option to import script with tag - auto build"
   artifacts:
     paths:
       - dist
