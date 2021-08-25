@@ -128,4 +128,3 @@ export async function RequireCjsScript(content) {
     await EasyFs.writeFile(tempFile, content);
     return await ImportWithoutCache(tempFile);
 }
-//# sourceMappingURL=Script.js.map

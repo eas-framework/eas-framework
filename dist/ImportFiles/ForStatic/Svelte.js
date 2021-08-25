@@ -86,4 +86,3 @@ export default async function BuildScript(inputPath, isDebug) {
         thisFile: await EasyFs.stat(fullPath, 'mtimeMs')
     };
 }
-//# sourceMappingURL=Svelte.js.map

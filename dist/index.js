@@ -5,4 +5,3 @@ import { getTypes } from './RunTimeBuild/SearchFileSystem.js';
 export const AsyncRequire = (path) => asyncRequire(path, getTypes.Static, Settings.DevMode);
 export const Server = server;
 export { Settings, FastSqlite, req_get };
-//# sourceMappingURL=index.js.map

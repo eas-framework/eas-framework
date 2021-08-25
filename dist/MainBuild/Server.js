@@ -224,4 +224,3 @@ export default async function StartServer({ SitePath = 'Website', HttpServer = U
     StartApp(HttpServer);
 }
 export { Settings };
-//# sourceMappingURL=Server.js.map

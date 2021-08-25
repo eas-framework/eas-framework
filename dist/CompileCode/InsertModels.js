@@ -78,7 +78,7 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
     modelBuild.Plus(modelData);
     return await outPage(modelBuild, FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
-export async function Insert(data, fullPathCompile, pagePath, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
+export async function Insert(data, fullPathCompile, pagePath, typeName, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
     const BuildScriptWithPrams = (code, pathName, RemoveToModule = true) => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
     const debugInPage = isDebug && !GetPlugin("SafeDebug");
     const sessionInfo = hasSessionInfo ??
@@ -87,7 +87,8 @@ export async function Insert(data, fullPathCompile, pagePath, smallPath, isDebug
             style: new SourceMapStore(smallPath, debugInPage, true),
             script: new SourceMapStore(smallPath, debugInPage, false),
             scriptModule: new SourceMapStore(smallPath, debugInPage, false),
-            headHTML: ''
+            headHTML: '',
+            typeName
         };
     let DebugString = new StringTracker(pagePath, data);
     DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject);
@@ -102,4 +103,3 @@ export async function Insert(data, fullPathCompile, pagePath, smallPath, isDebug
     }
     return DebugStringAsBuild;
 }
-//# sourceMappingURL=InsertModels.js.map

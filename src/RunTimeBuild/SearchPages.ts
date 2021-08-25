@@ -22,7 +22,7 @@ async function compileFile(filePath: string, arrayType: string[], isDebug?: bool
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
     const ExcluUrl = (debugFromPage ? debugFromPage + ' -> ' : '') + arrayType[2] + '/' + filePath;
 
-    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(debugFromPage), sessionInfo);
+    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, arrayType[2], ExcluUrl, isDebug, dependenceObject, Boolean(debugFromPage), sessionInfo);
 
     if (!debugFromPage) {
         await EasyFs.writeFile(FullPathCompile, CompiledData);

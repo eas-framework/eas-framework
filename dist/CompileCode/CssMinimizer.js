@@ -10,4 +10,3 @@ export default function MinCss(code) {
     code = code.replace(/; /gi, ';');
     return code.trim();
 }
-//# sourceMappingURL=CssMinimizer.js.map

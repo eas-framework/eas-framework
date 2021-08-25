@@ -64,7 +64,7 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
     if (code == 200) {
         fullPageUrl = getTypes.Static[0] + url;
         //check that is not server file
-        if (await serverBuild(Settings.DevMode, url) || !isServerFile(url) && await EasyFs.existsFile(fullPageUrl)) {
+        if (await serverBuild(Request, Settings.DevMode, url) || !isServerFile(url) && await EasyFs.existsFile(fullPageUrl)) {
             file = true;
         }
         else { // then it a server page or error page
@@ -234,4 +234,3 @@ function urlFix(url) {
     return decodeURIComponent(url);
 }
 export { Settings, DynamicPage, LoadAllPagesToRam, ClearAllPagesFromRam, urlFix, GetErrorPage };
-//# sourceMappingURL=GetPages.js.map

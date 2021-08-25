@@ -13,11 +13,11 @@ export default {
     "stop-url-check": [
         "/User/Files"
     ],
-    "error-pages": {
-        NotFound: {
-            path: "errors/e404"
-        }
-    },
+    // "error-pages": {
+    //     NotFound: {
+    //         path: "errors/e404"
+    //     }
+    // },
     "request-limit-mb": 4,
     "upload-files-size-limit-mb": 100,
     "session-time-minutes": 0,

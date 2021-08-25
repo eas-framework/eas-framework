@@ -120,4 +120,3 @@ export default class EasySyntax {
         return code.substring(1, code.length - 1);
     }
 }
-//# sourceMappingURL=EasySyntax.js.map

@@ -99,4 +99,3 @@ export default class SourceMapStore extends SourceMapBasic {
         return this.storeString + this.mapAsURLComment();
     }
 }
-//# sourceMappingURL=SourceMapStore.js.map

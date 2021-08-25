@@ -149,4 +149,3 @@ export default {
     readdir,
     makePathReal
 };
-//# sourceMappingURL=EasyFs.js.map

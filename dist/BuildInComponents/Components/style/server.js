@@ -54,4 +54,3 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
         compiledString: new StringTracker(type.DefaultInfoText).Plus$ `<style${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${reStoreData}</style>`
     };
 }
-//# sourceMappingURL=server.js.map

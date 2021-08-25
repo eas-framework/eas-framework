@@ -60,4 +60,3 @@ class FastSqlite extends DBFastActions {
 }
 global.FastSqlite = FastSqlite;
 export { FastSqlite, req_get };
-//# sourceMappingURL=Index.js.map

@@ -8,4 +8,3 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
     }
     return styleWithClient(language, path, pathName, LastSmallPath, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo);
 }
-//# sourceMappingURL=index.js.map

@@ -1,7 +1,7 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs.js';
-import { BasicSettings } from '../../RunTimeBuild/SearchFileSystem.js';
+import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem.js';
 import Base64Id from '../../StringMethods/Id.js';
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, buildScript, sessionInfo) {
     return {
@@ -22,11 +22,12 @@ function addStyle(sessionInfo, compilePath, name) {
 }
 function addHTMLTags(sessionInfo) {
     const makeAttributes = (i) => i.attributes ? ' ' + Object.keys(i.attributes).map(x => i.attributes[x] ? x + `="${i.attributes[x]}"` : x).join(' ') : '';
+    const addTypeInfo = sessionInfo.typeName == getTypes.Logs[2] ? '?t=l' : '';
     let buildBundleString = ''; // add scripts add css
     for (const i of sessionInfo.styleURLSet)
-        buildBundleString += `<link rel="stylesheet" href="${i.url}"${makeAttributes(i)}/>`;
+        buildBundleString += `<link rel="stylesheet" href="${i.url + addTypeInfo}"${makeAttributes(i)}/>`;
     for (const i of sessionInfo.scriptURLSet)
-        buildBundleString += `<script src="${i.url}"${makeAttributes(i)}></script>`;
+        buildBundleString += `<script src="${i.url + addTypeInfo}"${makeAttributes(i)}></script>`;
     return buildBundleString + sessionInfo.headHTML;
 }
 function addScript(sessionInfo, compilePath, name) {
@@ -56,4 +57,3 @@ export async function addFinalizeBuild(pageData, sessionInfo, fullCompilePath) {
         return removeBundle();
     return pageData.Plus(replaceWith);
 }
-//# sourceMappingURL=head.js.map

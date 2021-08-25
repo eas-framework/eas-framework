@@ -19,4 +19,3 @@ export class print {
         }
     }
 }
-//# sourceMappingURL=Console.js.map

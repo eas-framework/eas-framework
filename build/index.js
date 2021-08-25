@@ -11,8 +11,9 @@ console.log('building...');
 await remove(dist);
 await mkdir(dist);
 
+const actionType = process.argv[2];
 //building the project
-const stream = exec('npm run build:ts');
+const stream = exec('npm run build:ts' + (actionType ? ':' + actionType: ''));
 
 stream.stdout.pipe(process.stdout);
 

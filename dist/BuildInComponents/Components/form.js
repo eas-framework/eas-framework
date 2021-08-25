@@ -104,4 +104,3 @@ export async function handelConnector(thisPage, connectorInfo) {
     else if (connectorInfo.message)
         thisPage.safeWrite(isValid[0]);
 }
-//# sourceMappingURL=form.js.map

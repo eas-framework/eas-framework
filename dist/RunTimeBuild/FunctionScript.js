@@ -240,4 +240,3 @@ function BuildPage(LoadPageFunc, run_script_name) {
     });
 }
 export { LoadPage, BuildPage, getFullPathCompile, Export, SplitFirst };
-//# sourceMappingURL=FunctionScript.js.map

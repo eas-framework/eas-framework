@@ -2,7 +2,7 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { tagDataObjectArray, StringNumberMap, setDataHTMLTag, BuildInComponent, SessionInfo, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs';
-import { BasicSettings } from '../../RunTimeBuild/SearchFileSystem';
+import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem';
 import Base64Id from '../../StringMethods/Id';
 
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
@@ -31,11 +31,12 @@ function addHTMLTags(sessionInfo: SessionInfo) {
 
     const makeAttributes = (i: setDataHTMLTag) => i.attributes ? ' ' + Object.keys(i.attributes).map(x => i.attributes[x] ? x + `="${i.attributes[x]}"` : x).join(' ') : '';
 
+    const addTypeInfo = sessionInfo.typeName == getTypes.Logs[2] ? '?t=l': '';
     let buildBundleString = ''; // add scripts add css
     for (const i of sessionInfo.styleURLSet)
-        buildBundleString += `<link rel="stylesheet" href="${i.url}"${makeAttributes(i)}/>`;
+        buildBundleString += `<link rel="stylesheet" href="${i.url+addTypeInfo}"${makeAttributes(i)}/>`;
     for (const i of sessionInfo.scriptURLSet)
-        buildBundleString += `<script src="${i.url}"${makeAttributes(i)}></script>`;
+        buildBundleString += `<script src="${i.url+addTypeInfo}"${makeAttributes(i)}></script>`;
 
     return buildBundleString + sessionInfo.headHTML;
 }

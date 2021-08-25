@@ -7,4 +7,3 @@ export function SplitFirst(type, string) {
 export function CutTheLast(type, string) {
     return string.substring(0, string.lastIndexOf(type));
 }
-//# sourceMappingURL=Splitting.js.map

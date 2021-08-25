@@ -68,4 +68,3 @@ export default async function BuildCode(path, LastSmallPath, isDebug, dataTag, d
         checkComponents: true
     };
 }
-//# sourceMappingURL=svelte.js.map

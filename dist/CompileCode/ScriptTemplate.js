@@ -74,4 +74,3 @@ export class PageTemplate extends JSParser {
         return text;
     }
 }
-//# sourceMappingURL=ScriptTemplate.js.map

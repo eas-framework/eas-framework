@@ -658,4 +658,3 @@ class SimpleTable {
     }
 }
 export default DBFastActions;
-//# sourceMappingURL=IndexActionsSQL.js.map

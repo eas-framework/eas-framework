@@ -43,4 +43,3 @@ export default class AddPlugin {
         return text;
     }
 }
-//# sourceMappingURL=Index.js.map

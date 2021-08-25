@@ -8,4 +8,3 @@ export default function extricateToTags(code, { types = ["style"] }) {
     }
     return code;
 }
-//# sourceMappingURL=JsonTags.js.map

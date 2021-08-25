@@ -76,4 +76,3 @@ export async function handelConnector(thisPage, connectorArray) {
         thisPage.Response.status(400);
     return true;
 }
-//# sourceMappingURL=connect.js.map

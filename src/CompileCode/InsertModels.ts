@@ -111,7 +111,7 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
     return await outPage(modelBuild, FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
 
-export async function Insert(data: string, fullPathCompile: string, pagePath: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: SessionInfo) {
+export async function Insert(data: string, fullPathCompile: string, pagePath: string, typeName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: SessionInfo) {
     const BuildScriptWithPrams = (code: StringTracker, pathName: string, RemoveToModule = true): Promise<string> => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
 
     const debugInPage = isDebug && !GetPlugin("SafeDebug");  
@@ -121,7 +121,8 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
         style: new SourceMapStore(smallPath, debugInPage, true),
         script: new SourceMapStore(smallPath, debugInPage, false),
         scriptModule: new SourceMapStore(smallPath, debugInPage, false),
-        headHTML: ''
+        headHTML: '',
+        typeName
     };
 
     let DebugString = new StringTracker(pagePath, data);

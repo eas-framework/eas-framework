@@ -100,4 +100,3 @@ function findEnd(types, data) {
     }
 }
 export { searchForReplace as replaceTages, searchForCutMain as getDataTages };
-//# sourceMappingURL=Extricate.js.map

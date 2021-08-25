@@ -53,4 +53,3 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
         compiledString: new StringTracker()
     };
 }
-//# sourceMappingURL=client.js.map

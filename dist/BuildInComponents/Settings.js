@@ -2,4 +2,3 @@
 export const Settings = {
     plugins: []
 };
-//# sourceMappingURL=Settings.js.map

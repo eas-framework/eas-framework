@@ -119,4 +119,3 @@ async function CheckDependencyChange(path) {
     return !o;
 }
 export { getDirname, SystemData, workingDirectory, filesInDirectory, DeleteInDirectory, getTypes, BasicSettings, PagesInfo, ClearPagesDependency, UpdatePageDependency, CheckDependencyChange };
-//# sourceMappingURL=SearchFileSystem.js.map

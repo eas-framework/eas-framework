@@ -30,4 +30,3 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
         compiledString: new StringTracker()
     };
 }
-//# sourceMappingURL=client.js.map

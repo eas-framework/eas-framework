@@ -538,4 +538,3 @@ export default class StringTracker {
         return this.OneString;
     }
 }
-//# sourceMappingURL=StringTracker.js.map

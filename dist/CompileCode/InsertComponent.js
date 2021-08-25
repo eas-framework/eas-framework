@@ -333,4 +333,3 @@ export default class InsertComponent extends InsertComponentBase {
         return this.RemoveUnnecessarySpace(data);
     }
 }
-//# sourceMappingURL=InsertComponent.js.map

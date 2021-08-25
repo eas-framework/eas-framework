@@ -58,4 +58,3 @@ export default class Multithreading {
         return wait;
     }
 }
-//# sourceMappingURL=Multithreading.js.map

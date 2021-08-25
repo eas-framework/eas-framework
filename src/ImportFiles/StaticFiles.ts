@@ -107,13 +107,15 @@ const getStaticFilesType: buildIn[] = [{
     type: 'css'
 }];
 
-async function serverBuildByType(filePath: string, checked: boolean) {
+async function serverBuildByType(Request: Request, filePath: string, checked: boolean) {
     const found = getStaticFilesType.find(x => filePath.endsWith(x.ext));
 
     if (!found)
         return;
 
-    const inServer = path.join(getTypes.Static[1], filePath);
+
+        const basePath = Request.query.t == 'l' ? getTypes.Logs[1]: getTypes.Static[1];
+        const inServer = path.join(basePath, filePath);
 
     if (checked || await EasyFs.existsFile(inServer))
         return { ...found, inServer };
@@ -182,17 +184,17 @@ async function svelteStatic(filePath: string, checked: boolean) {
         }
 }
 
-export async function serverBuild(isDebug: boolean, path: string, checked = false): Promise<null | buildIn> {
+export async function serverBuild(Request: Request, isDebug: boolean, path: string, checked = false): Promise<null | buildIn> {
     return await svelteStatic(path, checked) ||
         await svelteStyle(path, checked, isDebug) ||
         await unsafeDebug(isDebug, path, checked) ||
-        await serverBuildByType(path, checked) ||
+        await serverBuildByType(Request, path, checked) ||
         getStatic.find(x => x.path == path);
 }
 
 export async function GetFile(SmallPath: string, isDebug: boolean, Request: Request, Response: Response) {
     //file built in
-    const isBuildIn = await serverBuild(isDebug, SmallPath, true);
+    const isBuildIn = await serverBuild(Request, isDebug, SmallPath, true);
 
     if (isBuildIn) {
         Response.type(isBuildIn.type);

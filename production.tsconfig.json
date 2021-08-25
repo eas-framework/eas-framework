@@ -15,7 +15,7 @@
         "preserveConstEnums": true,
         "skipLibCheck": true,
         "moduleResolution": "Node",
-        "sourceMap": true,
+        "sourceMap": false,
         "allowUnusedLabels": true,
         "allowUmdGlobalAccess": false,
         "forceConsistentCasingInFileNames": true,

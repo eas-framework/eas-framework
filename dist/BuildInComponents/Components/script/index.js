@@ -8,4 +8,3 @@ export default function BuildCode(path, pathName, LastSmallPath, type, dataTag, 
     }
     return scriptWithClient(language, dataTag, BetweenTagData, pathName, InsertComponent, sessionInfo);
 }
-//# sourceMappingURL=index.js.map

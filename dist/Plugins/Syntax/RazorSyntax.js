@@ -241,4 +241,3 @@ class Razor {
 export default function ConvertSyntax(text, options) {
     return new Razor(options?.char).BuildAll(text);
 }
-//# sourceMappingURL=RazorSyntax.js.map

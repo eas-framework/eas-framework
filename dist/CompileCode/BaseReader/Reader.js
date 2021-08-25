@@ -53,4 +53,3 @@ export class InsertComponentBase {
         return point;
     }
 }
-//# sourceMappingURL=Reader.js.map
