@@ -189,7 +189,7 @@ export default class InsertComponent extends InsertComponentBase {
             }
             else {
                 const re = new RegExp("\\#" + i.n.eq, "gi");
-                fileData = fileData.replace(re, i.v ?? i.n.eq);
+                fileData = fileData.replace(re, i.v ?? i.n);
             }
         }
         return this.addDefaultValues(foundSetters, fileData);
