@@ -58,12 +58,13 @@ export default async function BuildCode(path, LastSmallPath, isDebug, dataTag, d
         compiledString: new StringTracker(null, `
         ${selector ? '' : `<div id="${id}">${ssr}</div>`}
         <script type="module">
-            import App_${id} from '/${inWebPath}';
-    
-            new App_${id}({
-                target:  ${selector ? `document.querySelector("${selector}")` : `document.getElementById("${id}")`}
-                ${have('props') + have('options')}${ssr ? ', hydrate: true' : ''}
-            });
+            import App${id} from '/${inWebPath}';
+            const target${id} = document.querySelector("${selector ? selector : '#' + id}");
+            if(target${id})
+                new App${id}({
+                    target: target${id}
+                    ${have('props') + have('options')}${ssr ? ', hydrate: true' : ''}
+                });
         </script>`),
         checkComponents: true
     };
