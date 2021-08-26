@@ -44,7 +44,12 @@ export type SessionInfo = {
     script: SourceMapStore
     scriptModule: SourceMapStore,
     headHTML: string,
-    typeName: string
+    typeName: string,
+    cache: {
+        style: string[]
+        script: string[]
+        scriptModule: string[]
+    }
 }
 
 

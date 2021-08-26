@@ -74,13 +74,15 @@ export default async function BuildScript(inputPath, isDebug) {
         js.code = (await minify(js.code, { module: false })).code;
     if (isDebug) {
         js.map.sources[0] = fullPath.split(/\/|\//).pop() + '?source=true';
-        css.map.sources[0] = js.map.sources[0];
         js.code += '\n//# sourceMappingURL=' + js.map.toUrl();
-        css.code += '\n/*# sourceMappingURL=' + css.map.toUrl() + '*/';
+        if (css.code) {
+            css.map.sources[0] = js.map.sources[0];
+            css.code += '\n/*# sourceMappingURL=' + css.map.toUrl() + '*/';
+        }
     }
     await EasyFs.makePathReal(inputPath, getTypes.Static[1]);
     await EasyFs.writeFile(fullCompilePath, js.code);
-    await EasyFs.writeFile(fullCompilePath + '.css', css.code);
+    await EasyFs.writeFile(fullCompilePath + '.css', css.code ?? '');
     return {
         ...dependenceObject,
         thisFile: await EasyFs.stat(fullPath, 'mtimeMs')

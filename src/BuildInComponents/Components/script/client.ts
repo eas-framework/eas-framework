@@ -6,6 +6,13 @@ import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import { SessionInfo } from '../../../CompileCode/XMLHelpers/CompileTypes';
 
 export default async function BuildCode(language: string, tagData: tagDataObjectArray, BetweenTagData: StringTracker, pathName: string, InsertComponent: any, sessionInfo: SessionInfo): Promise<BuildInComponent> {
+    const BetweenTagDataEq = BetweenTagData.eq, BetweenTagDataEqAsTrim = BetweenTagDataEq.trim(), isModel = tagData.getValue('type') == 'module', isModelStringCache = isModel ? 'scriptModule': 'script';
+
+    if (sessionInfo.cache[isModelStringCache].includes(BetweenTagDataEqAsTrim))
+        return {
+            compiledString: new StringTracker()
+        };
+    sessionInfo.cache[isModelStringCache].push(BetweenTagDataEqAsTrim);
 
     let resultCode = '';
 
@@ -44,7 +51,8 @@ export default async function BuildCode(language: string, tagData: tagDataObject
         });
     }
 
-    if (tagData.getValue('type') == 'module')
+
+    if (isModel)
         sessionInfo.scriptModule.addStringTracker(BetweenTagData, {text: resultCode});
     else
         sessionInfo.script.addStringTracker(BetweenTagData, {text: resultCode});

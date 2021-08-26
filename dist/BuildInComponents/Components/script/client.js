@@ -3,6 +3,12 @@ import { transform } from 'sucrase';
 import { minify } from "terser";
 import { PrintIfNew } from '../../../OutputInput/PrintNew.js';
 export default async function BuildCode(language, tagData, BetweenTagData, pathName, InsertComponent, sessionInfo) {
+    const BetweenTagDataEq = BetweenTagData.eq, BetweenTagDataEqAsTrim = BetweenTagDataEq.trim(), isModel = tagData.getValue('type') == 'module', isModelStringCache = isModel ? 'scriptModule' : 'script';
+    if (sessionInfo.cache[isModelStringCache].includes(BetweenTagDataEqAsTrim))
+        return {
+            compiledString: new StringTracker()
+        };
+    sessionInfo.cache[isModelStringCache].push(BetweenTagDataEqAsTrim);
     let resultCode = '';
     const AddOptions = {
         transforms: [],
@@ -33,7 +39,7 @@ export default async function BuildCode(language, tagData, BetweenTagData, pathN
             text: `${err.message}, on file -> ${pathName}:${BetweenTagData.getLine(err?.loc?.line ?? 0).DefaultInfoText.line}:${err.loc.column}`
         });
     }
-    if (tagData.getValue('type') == 'module')
+    if (isModel)
         sessionInfo.scriptModule.addStringTracker(BetweenTagData, { text: resultCode });
     else
         sessionInfo.script.addStringTracker(BetweenTagData, { text: resultCode });

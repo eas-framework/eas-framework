@@ -7,6 +7,12 @@ import MinCss from '../../../CompileCode/CssMinimizer.js';
 import { getTypes } from '../../../RunTimeBuild/SearchFileSystem.js';
 export default async function BuildCode(language, path, pathName, LastSmallPath, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo) {
     let outStyle = BetweenTagData.eq;
+    const outStyleAsTrim = outStyle.trim();
+    if (sessionInfo.cache.style.includes(outStyleAsTrim))
+        return {
+            compiledString: new StringTracker()
+        };
+    sessionInfo.cache.style.push(outStyleAsTrim);
     async function importSass(url, res) {
         const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, getTypes.Static[2], 'sass');
         if (!await EasyFs.existsFile(FullPath)) {

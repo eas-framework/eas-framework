@@ -44,7 +44,7 @@ export default class InsertComponent extends InsertComponentBase {
             return data[1].Plus(data[3]);
         });
 
-        const unToken = (text: StringTracker) => text.replacer(/<%%>/, () => tokenArray.shift())
+        const unToken = (text: StringTracker) => text.replacer(/(<%)(%>)/, (data) => data[1].Plus(tokenArray.shift()).Plus(data[2]))
 
         let fastText = text.eq;
         const SkipTypes = ['"', "'", '`'], BlockTypes = [

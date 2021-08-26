@@ -122,7 +122,12 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
         script: new SourceMapStore(smallPath, debugInPage, false),
         scriptModule: new SourceMapStore(smallPath, debugInPage, false),
         headHTML: '',
-        typeName
+        typeName,
+        cache: {
+            style:  [],
+            script: [],
+            scriptModule: []
+        }
     };
 
     let DebugString = new StringTracker(pagePath, data);

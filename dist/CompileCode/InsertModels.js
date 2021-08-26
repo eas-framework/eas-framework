@@ -88,7 +88,12 @@ export async function Insert(data, fullPathCompile, pagePath, typeName, smallPat
             script: new SourceMapStore(smallPath, debugInPage, false),
             scriptModule: new SourceMapStore(smallPath, debugInPage, false),
             headHTML: '',
-            typeName
+            typeName,
+            cache: {
+                style: [],
+                script: [],
+                scriptModule: []
+            }
         };
     let DebugString = new StringTracker(pagePath, data);
     DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject);

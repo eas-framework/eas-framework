@@ -59,7 +59,7 @@ async function ssrHTML(dataTag: tagDataObjectArray, FullPath: string, smallPath:
 
 export default async function BuildCode(path: string, LastSmallPath: string, isDebug: boolean, dataTag: tagDataObjectArray, dependenceObject: StringNumberMap, sessionInfo: SessionInfo): Promise<BuildInComponent> {
     const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, dataTag.remove('from'), getTypes.Static[2], 'svelte');
-    const inWebPath = relative(getTypes.Static[2], SmallPath);
+    const inWebPath = relative(getTypes.Static[2], SmallPath).replace(/\\/gi, '/');
 
     sessionInfo.styleURLSet.push({
         url: '/' + inWebPath + '.css'

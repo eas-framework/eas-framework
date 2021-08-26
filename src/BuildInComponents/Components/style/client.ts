@@ -12,6 +12,13 @@ export default async function BuildCode(language: string, path: string, pathName
 
     let outStyle = BetweenTagData.eq;
 
+    const outStyleAsTrim = outStyle.trim();
+    if (sessionInfo.cache.style.includes(outStyleAsTrim))
+        return {
+            compiledString: new StringTracker()
+        };
+    sessionInfo.cache.style.push(outStyleAsTrim);
+
     async function importSass(url: string, res: any) {
         const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, getTypes.Static[2], 'sass');
         if (!await EasyFs.existsFile(FullPath)) {
@@ -61,8 +68,7 @@ export default async function BuildCode(language: string, path: string, pathName
     if (result?.map)
         sessionInfo.style.addSourceMapWithStringTracker(JSON.parse(result.map.toString()), BetweenTagData, outStyle);
     else
-        sessionInfo.style.addStringTracker(BetweenTagData, {text: outStyle});
-
+        sessionInfo.style.addStringTracker(BetweenTagData, { text: outStyle });
 
     return {
         compiledString: new StringTracker()

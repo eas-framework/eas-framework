@@ -45,7 +45,7 @@ async function ssrHTML(dataTag, FullPath, smallPath, dependenceObject, sessionIn
 }
 export default async function BuildCode(path, LastSmallPath, isDebug, dataTag, dependenceObject, sessionInfo) {
     const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, dataTag.remove('from'), getTypes.Static[2], 'svelte');
-    const inWebPath = relative(getTypes.Static[2], SmallPath);
+    const inWebPath = relative(getTypes.Static[2], SmallPath).replace(/\\/gi, '/');
     sessionInfo.styleURLSet.push({
         url: '/' + inWebPath + '.css'
     });

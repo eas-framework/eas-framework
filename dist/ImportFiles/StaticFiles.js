@@ -132,7 +132,7 @@ async function svelteStyle(filePath, checked, isDebug) {
 async function svelteStatic(filePath, checked) {
     if (!filePath.startsWith('serv/svelte/'))
         return;
-    const fullPath = workingDirectory + 'node_modules' + filePath.substring(4) + '/index.mjs';
+    const fullPath = workingDirectory + 'node_modules' + filePath.substring(4) + (path.extname(filePath) ? '' : '/index.mjs');
     if (checked || await EasyFs.existsFile(fullPath))
         return {
             type: 'js',
