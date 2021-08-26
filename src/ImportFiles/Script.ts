@@ -19,6 +19,7 @@ import StringTracker from "../EasyDebug/StringTracker";
 //@ts-ignore-next-line
 import ImportWithoutCache from './ImportWithoutCache.cjs';
 import { StringNumberMap } from '../CompileCode/XMLHelpers/CompileTypes';
+import {v4 as uuid} from 'uuid';
 
 async function ReplaceBefore(
   code: string,
@@ -182,7 +183,7 @@ export function ImportFile(InStaticPath: string, typeArray: string[], isDebug = 
 
 export async function RequireOnce(filePath: string, isDebug: boolean) {
 
-  const tempFile = path.join(SystemData, 'temp.cjs');
+  const tempFile = path.join(SystemData, `temp-${uuid()}.cjs`);
 
   await BuildScript(
     filePath,
@@ -192,14 +193,18 @@ export async function RequireOnce(filePath: string, isDebug: boolean) {
   );
 
   const MyModule = await ImportWithoutCache(tempFile);
+  EasyFs.unlink(tempFile);
 
   return await MyModule((path: string) => import(path));
 }
 
 export async function RequireCjsScript(content: string) {
 
-  const tempFile = path.join(SystemData, 'temp.cjs');
+  const tempFile = path.join(SystemData, `temp-${uuid()}.cjs`);
   await EasyFs.writeFile(tempFile, content);
 
-  return await ImportWithoutCache(tempFile);
+  const model = await ImportWithoutCache(tempFile);
+  EasyFs.unlink(tempFile);
+
+  return model;
 }

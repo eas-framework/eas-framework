@@ -10,6 +10,7 @@ import { isTs } from "../CompileCode/InsertModels.js";
 import StringTracker from "../EasyDebug/StringTracker.js";
 //@ts-ignore-next-line
 import ImportWithoutCache from './ImportWithoutCache.cjs';
+import { v4 as uuid } from 'uuid';
 async function ReplaceBefore(code, defineData) {
     code = await EasySyntax.BuildAndExportImports(code, defineData);
     return code;
@@ -118,13 +119,16 @@ export function ImportFile(InStaticPath, typeArray, isDebug = false, useDeps, wi
     return LoadImport(InStaticPath, typeArray, isDebug, useDeps, withoutCache);
 }
 export async function RequireOnce(filePath, isDebug) {
-    const tempFile = path.join(SystemData, 'temp.cjs');
+    const tempFile = path.join(SystemData, `temp-${uuid()}.cjs`);
     await BuildScript(filePath, tempFile, CheckTs(filePath), isDebug);
     const MyModule = await ImportWithoutCache(tempFile);
+    EasyFs.unlink(tempFile);
     return await MyModule((path) => import(path));
 }
 export async function RequireCjsScript(content) {
-    const tempFile = path.join(SystemData, 'temp.cjs');
+    const tempFile = path.join(SystemData, `temp-${uuid()}.cjs`);
     await EasyFs.writeFile(tempFile, content);
-    return await ImportWithoutCache(tempFile);
+    const model = await ImportWithoutCache(tempFile);
+    EasyFs.unlink(tempFile);
+    return model;
 }
