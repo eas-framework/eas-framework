@@ -284,16 +284,16 @@ async function MakePageResponse(DynamicResponse: any, Response: Response | any) 
     }
 }
 
-async function ActivatePage(Request: Request | any, Response: Response, arrayType: string[], url: string, FileInfo:any, code: number, nextPrase: () => Promise<any>, finalStep: {func?: () => void}){
+async function ActivatePage(Request: Request | any, Response: Response, arrayType: string[], url: string, FileInfo:any, code: number, nextPrase: () => Promise<any>){
     const { DynamicFunc, fullPageUrl, code: newCode } = await GetDynamicPage(arrayType, url, FileInfo.fullPageUrl, FileInfo.fullPageUrl + '/' + url, code);
 
     if (!fullPageUrl)
         return Response.sendStatus(newCode);
 
     try {
-        await nextPrase();
+        const finalStep = await nextPrase(); // parse data from methods - post, get... + cookies, session...
         const pageData = await DynamicFunc(Response, Request, Request.body, Request.query, Request.cookies, Request.session, Request.files, Settings.DevMode);
-        finalStep.func();
+        finalStep(); // save cookies + code
 
         await MakePageResponse(
             pageData,
@@ -323,11 +323,10 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
         return;
     }
 
-    const frameworkStep: {func?: () => void} = {}; // save cookies + code
-    const nextPrase = async () => !frameworkStep.func && (frameworkStep.func = await ParseBasicInfo(Request, Response, code)); // parse data from methods - post, get... + cookies, session...
+    const nextPrase = () => ParseBasicInfo(Request, Response, code); // parse data from methods - post, get... + cookies, session...
 
-    const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase, frameworkStep);
-    if(!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase, frameworkStep))
+    const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase);
+    if(!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase))
         return;
 
     deleteRequestFiles(Request); // delete files

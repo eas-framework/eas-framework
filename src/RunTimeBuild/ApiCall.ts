@@ -47,7 +47,7 @@ async function findApiPath(url: string) {
     return url;
 }
 
-export default async function (Request: any, Response: any, url: string, isDebug: boolean, nextPrase: () => Promise<any>, finalStep: {func?: () => void}): Promise<boolean> {
+export default async function (Request: any, Response: any, url: string, isDebug: boolean, nextPrase: () => Promise<any>): Promise<boolean> {
     const pathSplit = url.split('/').length;
     let { staticPath, dataInfo } = getApiFromMap(url, pathSplit);
 
@@ -65,16 +65,13 @@ export default async function (Request: any, Response: any, url: string, isDebug
     }
 
     if (dataInfo) {
-        await nextPrase();
-
-
         return await MakeCall(
             await RequireFile('/' + staticPath, '', getTypes.Static, dataInfo.depsMap, isDebug),
             Request,
             Response,
             url.substring(staticPath.length - 6),
             isDebug,
-            finalStep
+            nextPrase
         );
     }
 }
@@ -94,7 +91,7 @@ function findBestUrlObject(obj: any, urlFrom: string) {
     return url;
 }
 
-async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: string, isDebug: boolean, finalStep: {func?: () => void}) {
+async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: string, isDebug: boolean, nextPrase: () => Promise<any>) {
     const method = Request.method.toLowerCase();
     let methodObj = fileModule[method] || fileModule.default[method];
     let nestedURL = findBestUrlObject(methodObj, urlFrom);
@@ -179,6 +176,8 @@ async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: s
     if (error)
         return Response.json({ error });
 
+    const finalStep = await nextPrase(); // parse data from methods - post, get... + cookies, session...
+
     let apiResponse: any;
     let newResponse: any = {};
     try {
@@ -197,6 +196,6 @@ async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: s
             newResponse = { text: apiResponse };
     }
 
-    finalStep.func();
+    finalStep();  // save cookies + code
     return Response.json(newResponse);
 }

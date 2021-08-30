@@ -212,14 +212,14 @@ async function MakePageResponse(DynamicResponse, Response) {
         await EasyFs.unlinkIfExists(Response.redirectPath.file);
     }
 }
-async function ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase, finalStep) {
+async function ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase) {
     const { DynamicFunc, fullPageUrl, code: newCode } = await GetDynamicPage(arrayType, url, FileInfo.fullPageUrl, FileInfo.fullPageUrl + '/' + url, code);
     if (!fullPageUrl)
         return Response.sendStatus(newCode);
     try {
-        await nextPrase();
+        const finalStep = await nextPrase(); // parse data from methods - post, get... + cookies, session...
         const pageData = await DynamicFunc(Response, Request, Request.body, Request.query, Request.cookies, Request.session, Request.files, Settings.DevMode);
-        finalStep.func();
+        finalStep(); // save cookies + code
         await MakePageResponse(pageData, Response);
     }
     catch (e) {
@@ -239,10 +239,9 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
         deleteRequestFiles(Request);
         return;
     }
-    const frameworkStep = {}; // save cookies + code
-    const nextPrase = async () => !frameworkStep.func && (frameworkStep.func = await ParseBasicInfo(Request, Response, code)); // parse data from methods - post, get... + cookies, session...
-    const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase, frameworkStep);
-    if (!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase, frameworkStep))
+    const nextPrase = () => ParseBasicInfo(Request, Response, code); // parse data from methods - post, get... + cookies, session...
+    const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase);
+    if (!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase))
         return;
     deleteRequestFiles(Request); // delete files
 }

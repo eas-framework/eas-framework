@@ -32,7 +32,7 @@ async function findApiPath(url) {
     }
     return url;
 }
-export default async function (Request, Response, url, isDebug, nextPrase, finalStep) {
+export default async function (Request, Response, url, isDebug, nextPrase) {
     const pathSplit = url.split('/').length;
     let { staticPath, dataInfo } = getApiFromMap(url, pathSplit);
     if (!dataInfo) {
@@ -46,8 +46,7 @@ export default async function (Request, Response, url, isDebug, nextPrase, final
         }
     }
     if (dataInfo) {
-        await nextPrase();
-        return await MakeCall(await RequireFile('/' + staticPath, '', getTypes.Static, dataInfo.depsMap, isDebug), Request, Response, url.substring(staticPath.length - 6), isDebug, finalStep);
+        return await MakeCall(await RequireFile('/' + staticPath, '', getTypes.Static, dataInfo.depsMap, isDebug), Request, Response, url.substring(staticPath.length - 6), isDebug, nextPrase);
     }
 }
 const banWords = ['validateURL', 'validateFunc', 'func'];
@@ -62,7 +61,7 @@ function findBestUrlObject(obj, urlFrom) {
     }
     return url;
 }
-async function MakeCall(fileModule, Request, Response, urlFrom, isDebug, finalStep) {
+async function MakeCall(fileModule, Request, Response, urlFrom, isDebug, nextPrase) {
     const method = Request.method.toLowerCase();
     let methodObj = fileModule[method] || fileModule.default[method];
     let nestedURL = findBestUrlObject(methodObj, urlFrom);
@@ -136,6 +135,7 @@ async function MakeCall(fileModule, Request, Response, urlFrom, isDebug, finalSt
     }
     if (error)
         return Response.json({ error });
+    const finalStep = await nextPrase(); // parse data from methods - post, get... + cookies, session...
     let apiResponse;
     let newResponse = {};
     try {
@@ -153,6 +153,6 @@ async function MakeCall(fileModule, Request, Response, urlFrom, isDebug, finalSt
         else if (typeof apiResponse == 'string')
             newResponse = { text: apiResponse };
     }
-    finalStep.func();
+    finalStep(); // save cookies + code
     return Response.json(newResponse);
 }
