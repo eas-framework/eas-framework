@@ -219,7 +219,7 @@ async function ActivatePage(Request, Response, arrayType, url, FileInfo, code, n
     try {
         await nextPrase();
         const pageData = await DynamicFunc(Response, Request, Request.body, Request.query, Request.cookies, Request.session, Request.files, Settings.DevMode);
-        finalStep();
+        finalStep.func();
         await MakePageResponse(pageData, Response);
     }
     catch (e) {
@@ -239,8 +239,8 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
         deleteRequestFiles(Request);
         return;
     }
-    let frameworkStep; // save cookies + code
-    const nextPrase = async () => !frameworkStep && (frameworkStep = await ParseBasicInfo(Request, Response, code)); // parse data from methods - post, get... + cookies, session...
+    const frameworkStep = {}; // save cookies + code
+    const nextPrase = async () => !frameworkStep.func && (frameworkStep.func = await ParseBasicInfo(Request, Response, code)); // parse data from methods - post, get... + cookies, session...
     const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase, frameworkStep);
     if (!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase, frameworkStep))
         return;

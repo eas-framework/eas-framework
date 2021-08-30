@@ -153,6 +153,6 @@ async function MakeCall(fileModule, Request, Response, urlFrom, isDebug, finalSt
         else if (typeof apiResponse == 'string')
             newResponse = { text: apiResponse };
     }
-    finalStep();
+    finalStep.func();
     return Response.json(newResponse);
 }

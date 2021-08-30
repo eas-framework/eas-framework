@@ -47,7 +47,7 @@ async function findApiPath(url: string) {
     return url;
 }
 
-export default async function (Request: any, Response: any, url: string, isDebug: boolean, nextPrase: () => Promise<any>, finalStep: () => void): Promise<boolean> {
+export default async function (Request: any, Response: any, url: string, isDebug: boolean, nextPrase: () => Promise<any>, finalStep: {func?: () => void}): Promise<boolean> {
     const pathSplit = url.split('/').length;
     let { staticPath, dataInfo } = getApiFromMap(url, pathSplit);
 
@@ -94,7 +94,7 @@ function findBestUrlObject(obj: any, urlFrom: string) {
     return url;
 }
 
-async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: string, isDebug: boolean, finalStep: () => void) {
+async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: string, isDebug: boolean, finalStep: {func?: () => void}) {
     const method = Request.method.toLowerCase();
     let methodObj = fileModule[method] || fileModule.default[method];
     let nestedURL = findBestUrlObject(methodObj, urlFrom);
@@ -197,6 +197,6 @@ async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: s
             newResponse = { text: apiResponse };
     }
 
-    finalStep();
+    finalStep.func();
     return Response.json(newResponse);
 }
