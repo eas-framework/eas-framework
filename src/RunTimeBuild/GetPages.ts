@@ -108,6 +108,7 @@ async function ParseBasicInfo(Request: Request | any, Response: Response | any, 
     await new Promise(next => Settings.SessionStore(Request, Response, next));
 
     Request.signedCookies = Request.signedCookies || {};
+    Request.files = Request.files || {};
 
     const CopyCookies = JSON.parse(JSON.stringify(Request.signedCookies));
     Request.cookies =  Request.signedCookies;
@@ -292,7 +293,7 @@ async function ActivatePage(Request: Request | any, Response: Response, arrayTyp
     try {
         await nextPrase();
         await MakePageResponse(
-            await DynamicFunc(Response, Request, Request.body, Request.query, Request.signedCookies, Request.session, Request.files || {}, Settings.DevMode),
+            await DynamicFunc(Response, Request, Request.body, Request.query, Request.signedCookies, Request.session, Request.files, Settings.DevMode),
             Response
         );
     } catch (e) {

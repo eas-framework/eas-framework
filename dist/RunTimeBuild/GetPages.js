@@ -71,6 +71,7 @@ async function ParseBasicInfo(Request, Response, code) {
     await new Promise(next => Settings.CookieEncrypter(Request, Response, next));
     await new Promise(next => Settings.SessionStore(Request, Response, next));
     Request.signedCookies = Request.signedCookies || {};
+    Request.files = Request.files || {};
     const CopyCookies = JSON.parse(JSON.stringify(Request.signedCookies));
     Request.cookies = Request.signedCookies;
     Response.statusCode = 201;
@@ -217,7 +218,7 @@ async function ActivatePage(Request, Response, arrayType, url, FileInfo, code, n
         return Response.sendStatus(newCode);
     try {
         await nextPrase();
-        await MakePageResponse(await DynamicFunc(Response, Request, Request.body, Request.query, Request.signedCookies, Request.session, Request.files || {}, Settings.DevMode), Response);
+        await MakePageResponse(await DynamicFunc(Response, Request, Request.body, Request.query, Request.signedCookies, Request.session, Request.files, Settings.DevMode), Response);
     }
     catch (e) {
         print.error(e);

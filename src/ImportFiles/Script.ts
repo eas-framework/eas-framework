@@ -18,8 +18,8 @@ import { isTs } from "../CompileCode/InsertModels";
 import StringTracker from "../EasyDebug/StringTracker";
 //@ts-ignore-next-line
 import ImportWithoutCache from './ImportWithoutCache.cjs';
-import { StringNumberMap } from '../CompileCode/XMLHelpers/CompileTypes';
-import {v4 as uuid} from 'uuid';
+import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
+import { v4 as uuid } from 'uuid';
 
 async function ReplaceBefore(
   code: string,
@@ -126,7 +126,7 @@ export function AddExtension(FilePath: string) {
 
 const SavedModules = {};
 
-export default async function LoadImport(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringNumberMap, withoutCache?: number) {
+export default async function LoadImport(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache: string[] = []) {
   let TimeCheck: any;
 
   const SavedModulesPath = path.join(typeArray[2], InStaticPath),
@@ -140,12 +140,16 @@ export default async function LoadImport(InStaticPath: string, typeArray: string
     UpdatePageDependency(SavedModulesPath, TimeCheck);
   }
 
-  if (useDeps)
-    useDeps[filePath] = TimeCheck;
+  if (useDeps) {
+    useDeps[InStaticPath] = { thisFile: TimeCheck };
+    useDeps = useDeps[InStaticPath];
+  }
 
-  if (!withoutCache && !reBuild && SavedModules[SavedModulesPath])
+  const inheritanceCache = withoutCache[0] == InStaticPath;
+  if (inheritanceCache)
+    withoutCache.shift()
+  else if (!reBuild && SavedModules[SavedModulesPath])
     return SavedModules[SavedModulesPath];
-
 
   function requireMap(p: string) {
     if (path.isAbsolute(p))
@@ -161,7 +165,7 @@ export default async function LoadImport(InStaticPath: string, typeArray: string
 
     p = AddExtension(p);
 
-    return LoadImport(p, typeArray, isDebug, useDeps, withoutCache ? --withoutCache: 0);
+    return LoadImport(p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
   }
 
   const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
@@ -174,7 +178,7 @@ export default async function LoadImport(InStaticPath: string, typeArray: string
   return MyModule;
 }
 
-export function ImportFile(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringNumberMap, withoutCache?:number) {
+export function ImportFile(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache?: string[]) {
   if (!isDebug)
     return SavedModules[typeArray[2] + "\\" + InStaticPath];
 

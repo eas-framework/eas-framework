@@ -80,7 +80,7 @@ export function AddExtension(FilePath) {
     return FilePath;
 }
 const SavedModules = {};
-export default async function LoadImport(InStaticPath, typeArray, isDebug = false, useDeps, withoutCache) {
+export default async function LoadImport(InStaticPath, typeArray, isDebug = false, useDeps, withoutCache = []) {
     let TimeCheck;
     const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = typeArray[0] + InStaticPath;
     const reBuild = !PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs"));
@@ -89,9 +89,14 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
         TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs");
         UpdatePageDependency(SavedModulesPath, TimeCheck);
     }
-    if (useDeps)
-        useDeps[filePath] = TimeCheck;
-    if (!withoutCache && !reBuild && SavedModules[SavedModulesPath])
+    if (useDeps) {
+        useDeps[InStaticPath] = { thisFile: TimeCheck };
+        useDeps = useDeps[InStaticPath];
+    }
+    const inheritanceCache = withoutCache[0] == InStaticPath;
+    if (inheritanceCache)
+        withoutCache.shift();
+    else if (!reBuild && SavedModules[SavedModulesPath])
         return SavedModules[SavedModulesPath];
     function requireMap(p) {
         if (path.isAbsolute(p))
@@ -105,7 +110,7 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
                 return import(p);
         }
         p = AddExtension(p);
-        return LoadImport(p, typeArray, isDebug, useDeps, withoutCache ? --withoutCache : 0);
+        return LoadImport(p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
     }
     const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
     let MyModule = await ImportWithoutCache(requirePath);

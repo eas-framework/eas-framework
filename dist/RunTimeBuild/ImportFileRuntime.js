@@ -1,26 +1,59 @@
 import EasyFs from '../OutputInput/EasyFs.js';
 import { ImportFile, AddExtension } from '../ImportFiles/Script.js';
 const CacheRequireFiles = {};
-async function makeDependencies(dependencies) {
+async function makeDependencies(dependencies, typeArray, basePath = '', cache = {}) {
     const dependenciesMap = {};
-    for (const filePath of dependencies)
-        dependenciesMap[filePath] = await EasyFs.stat(filePath, 'mtimeMs', true);
+    const promiseAll = [];
+    for (const [filePath, value] of Object.entries(dependencies)) {
+        promiseAll.push((async () => {
+            if (filePath == 'thisFile') {
+                if (!cache[basePath])
+                    cache[basePath] = await EasyFs.stat(typeArray[0] + basePath, 'mtimeMs', true);
+                dependenciesMap['thisFile'] = cache[basePath];
+            }
+            else {
+                dependenciesMap[filePath] = await makeDependencies(value, typeArray, filePath, cache);
+            }
+        })());
+    }
+    await Promise.all(promiseAll);
     return dependenciesMap;
 }
 function compareDependenciesSame(oldDeps, newDeps) {
-    for (const name in oldDeps)
-        if (newDeps[name] != oldDeps[name])
+    for (const name in oldDeps) {
+        if (name == 'thisFile') {
+            if (newDeps[name] != oldDeps[name])
+                return false;
+        }
+        else if (!compareDependenciesSame(oldDeps[name], newDeps[name]))
             return false;
+    }
     return true;
 }
-function countTillLastChange(oldDeps, newDeps) {
-    let counter = 0, change = 0;
+function getChangeArray(oldDeps, newDeps, parent = '') {
+    const changeArray = [];
     for (const name in oldDeps) {
-        counter++;
-        if (newDeps[name] != oldDeps[name])
-            change = counter;
+        if (name == 'thisFile') {
+            if (newDeps[name] != oldDeps[name]) {
+                changeArray.push(parent);
+                break;
+            }
+        }
+        else if (!newDeps[name]) {
+            changeArray.push(name);
+            break;
+        }
+        else {
+            const change = getChangeArray(oldDeps[name], newDeps[name], name);
+            if (change.length) {
+                if (parent)
+                    changeArray.push(parent);
+                changeArray.push(...change);
+                break;
+            }
+        }
     }
-    return change > 1 ? change : 0; // if there is one, that mean only the file changed without any dependencies
+    return changeArray;
 }
 export default async function RequireFile(filePath, pathname, typeArray, LastRequire, isDebug) {
     const ReqFile = LastRequire[filePath];
@@ -30,7 +63,7 @@ export default async function RequireFile(filePath, pathname, typeArray, LastReq
             return ReqFile.model;
         fileExists = await EasyFs.stat(typeArray[0] + ReqFile.path, 'mtimeMs', true, 0);
         if (fileExists) {
-            newDeps = await makeDependencies(Object.keys(ReqFile.dependencies));
+            newDeps = await makeDependencies(ReqFile.dependencies, typeArray);
             if (compareDependenciesSame(ReqFile.dependencies, newDeps))
                 return ReqFile.model;
         }
@@ -63,11 +96,11 @@ export default async function RequireFile(filePath, pathname, typeArray, LastReq
         fileExists = fileExists ?? await EasyFs.stat(fullPath, 'mtimeMs', true, 0);
         if (fileExists) {
             const haveModel = CacheRequireFiles[filePath];
-            if (haveModel && compareDependenciesSame(haveModel.dependencies, newDeps ?? await makeDependencies(Object.keys(haveModel.dependencies))))
+            if (haveModel && compareDependenciesSame(haveModel.dependencies, newDeps ?? await makeDependencies(haveModel.dependencies, typeArray)))
                 LastRequire[copyPath] = haveModel;
             else {
                 newDeps = newDeps ?? {};
-                LastRequire[copyPath] = { model: await ImportFile(filePath, typeArray, isDebug, newDeps, haveModel && countTillLastChange(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath };
+                LastRequire[copyPath] = { model: await ImportFile(filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath };
             }
         }
         else

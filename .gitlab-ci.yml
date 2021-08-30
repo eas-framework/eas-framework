@@ -4,7 +4,7 @@ build:
   stage: build
   script:
   - npm install
-  - npm run build production "Api support - auto build"
+  - npm run build production "Better files importer - auto build"
   artifacts:
     paths:
       - dist
