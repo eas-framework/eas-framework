@@ -2,6 +2,7 @@ import fs from 'fs';
 import EasyFs from '../OutputInput/EasyFs.js';
 import { cwd } from 'process';
 import path from 'path';
+import { URL } from 'url';
 function getDirname(url) {
     return path.dirname(new URL(url).pathname).substring(1);
 }
@@ -40,7 +41,9 @@ const BasicSettings = {
     pageTypesArray: [],
     ReqFileTypes: {
         js: "serv.js",
-        ts: "serv.ts"
+        ts: "serv.ts",
+        'api-ts': "api.js",
+        'api-js': "api.ts"
     },
     ReqFileTypesArray: [],
     get WebSiteFolder() {

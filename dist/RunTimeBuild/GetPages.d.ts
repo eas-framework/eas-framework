@@ -27,6 +27,6 @@ declare function GetErrorPage(code: number, LocSettings: 'NotFound' | 'ServerErr
     arrayType: string[];
     code: number;
 };
-declare function DynamicPage(Request: Request | any, Response: Response | any, url: string, arrayType?: string[], code?: number): any;
+declare function DynamicPage(Request: Request | any, Response: Response | any, url: string, arrayType?: string[], code?: number): Promise<void>;
 declare function urlFix(url: string): string;
 export { Settings, DynamicPage, LoadAllPagesToRam, ClearAllPagesFromRam, urlFix, GetErrorPage };

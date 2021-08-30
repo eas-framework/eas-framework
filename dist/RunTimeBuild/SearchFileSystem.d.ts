@@ -15,6 +15,8 @@ declare const BasicSettings: {
     ReqFileTypes: {
         js: string;
         ts: string;
+        'api-ts': string;
+        'api-js': string;
     };
     ReqFileTypesArray: any[];
     WebSiteFolder: string;

@@ -91,25 +91,18 @@ export default class JSParser {
                 const index = this.findEndOfDefGlobal(script);
                 const stringCopy = new StringTracker(script.StartInfo);
 
-                script = script.substring(1, index);
-                if (script.endsWith(';'))
-                    script = script.substring(0, script.length - 1);
-
+                const writeScript = script.substring(1, index);
 
                 if (t == ':')
-                    stringCopy.Plus$`safeWrite(${script});`;
+                    stringCopy.Plus$`safeWrite(${writeScript});`;
                 else
-                    stringCopy.Plus$`write(${script});`;
+                    stringCopy.Plus$`write(${writeScript});`;
 
 
-                script = new StringTracker(script.StartInfo).Plus$`${stringCopy};${script.substring(index)}`;
+                script = new StringTracker(script.StartInfo).Plus$`${stringCopy};${script.substring(index+1)}`;
             }
 
             if (t != '#') {
-                if (!script.endsWith(';')) {
-                    script.Plus(';');
-                }
-
                 if (script.startsWith('{?debug_file?}')) {
                     const info = script.substring(14);
 
@@ -248,7 +241,7 @@ export class EnableGlobalReplace {
     private replacer: RegExp;
 
     constructor(private addText = "") {
-        this.replacer = new RegExp(`system--<\\|ejs\\|([0-9])\\|>|\\/${addText}\\*!system--<\\|ejs\\|([0-9])\\|>\\*\\/`);
+        this.replacer = RegExp(`${addText}\\/\\*!system--<\\|ejs\\|([0-9])\\|>\\*\\/|system--<\\|ejs\\|([0-9])\\|>`);
     }
 
     async load(code: StringTracker, path: string) {

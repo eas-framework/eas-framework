@@ -1,7 +1,8 @@
 import fs, {Dirent} from 'fs';
 import EasyFs from '../OutputInput/EasyFs';
 import {cwd} from 'process';
-import path from 'path'; 
+import path from 'path';
+import {URL} from 'url'
 
 function getDirname(url: string){
     return path.dirname(new URL(url).pathname).substring(1);
@@ -52,7 +53,9 @@ const BasicSettings = {
 
     ReqFileTypes: {
         js: "serv.js",
-        ts: "serv.ts"
+        ts: "serv.ts",
+        'api-ts': "api.js",
+        'api-js': "api.ts"
     },
     ReqFileTypesArray: [],
 

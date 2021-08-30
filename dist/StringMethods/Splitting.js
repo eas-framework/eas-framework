@@ -7,3 +7,10 @@ export function SplitFirst(type, string) {
 export function CutTheLast(type, string) {
     return string.substring(0, string.lastIndexOf(type));
 }
+export function trimType(type, string) {
+    while (string.startsWith(type))
+        string = string.substring(type.length);
+    while (string.endsWith(type))
+        string = string.substring(0, string.length - type.length);
+    return string;
+}

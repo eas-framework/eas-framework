@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "outDir": "dist",
-        "target": "ESNEXT",
+        "target": "es2020",
         "declarationDir": "dist",
         "module": "esnext",
         "declaration": true,
@@ -20,7 +20,10 @@
         "allowUmdGlobalAccess": false,
         "forceConsistentCasingInFileNames": true,
         "allowSyntheticDefaultImports": true,
-        "emitDeclarationOnly": false
+        "emitDeclarationOnly": false,
+        "lib": [
+            "ESNext"
+        ]
     },
     "include": [
         "src"
