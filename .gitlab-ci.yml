@@ -4,7 +4,7 @@ build:
   stage: build
   script:
   - npm install
-  - npm run build production "Fixing importer - async - auto build"
+  - npm run build production "Response Error - auto build"
   artifacts:
     paths:
       - dist

@@ -321,7 +321,7 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
     }
 
     let frameworkStep: () => void;
-    const nextPrase = async () => !frameworkStep && (frameworkStep = await ParseBasicInfo(Request, Request, code)); // parse data from methods - post, get... + cookies, session...
+    const nextPrase = async () => !frameworkStep && (frameworkStep = await ParseBasicInfo(Request, Response, code)); // parse data from methods - post, get... + cookies, session...
 
     const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase);
     if(!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase))
