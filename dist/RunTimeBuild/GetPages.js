@@ -212,13 +212,15 @@ async function MakePageResponse(DynamicResponse, Response) {
         await EasyFs.unlinkIfExists(Response.redirectPath.file);
     }
 }
-async function ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase) {
+async function ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase, finalStep) {
     const { DynamicFunc, fullPageUrl, code: newCode } = await GetDynamicPage(arrayType, url, FileInfo.fullPageUrl, FileInfo.fullPageUrl + '/' + url, code);
     if (!fullPageUrl)
         return Response.sendStatus(newCode);
     try {
         await nextPrase();
-        await MakePageResponse(await DynamicFunc(Response, Request, Request.body, Request.query, Request.signedCookies, Request.session, Request.files, Settings.DevMode), Response);
+        const pageData = await DynamicFunc(Response, Request, Request.body, Request.query, Request.cookies, Request.session, Request.files, Settings.DevMode);
+        finalStep();
+        await MakePageResponse(pageData, Response);
     }
     catch (e) {
         print.error(e);
@@ -237,12 +239,11 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
         deleteRequestFiles(Request);
         return;
     }
-    let frameworkStep;
+    let frameworkStep; // save cookies + code
     const nextPrase = async () => !frameworkStep && (frameworkStep = await ParseBasicInfo(Request, Response, code)); // parse data from methods - post, get... + cookies, session...
-    const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase);
-    if (!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase))
+    const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase, frameworkStep);
+    if (!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase, frameworkStep))
         return;
-    frameworkStep(); // save cookies + code
     deleteRequestFiles(Request); // delete files
 }
 function urlFix(url) {

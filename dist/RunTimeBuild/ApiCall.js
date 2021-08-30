@@ -32,7 +32,7 @@ async function findApiPath(url) {
     }
     return url;
 }
-export default async function (Request, Response, url, isDebug, nextPrase) {
+export default async function (Request, Response, url, isDebug, nextPrase, finalStep) {
     const pathSplit = url.split('/').length;
     let { staticPath, dataInfo } = getApiFromMap(url, pathSplit);
     if (!dataInfo) {
@@ -47,7 +47,7 @@ export default async function (Request, Response, url, isDebug, nextPrase) {
     }
     if (dataInfo) {
         await nextPrase();
-        return await MakeCall(await RequireFile('/' + staticPath, '', getTypes.Static, dataInfo.depsMap, isDebug), Request, Response, url.substring(staticPath.length - 6), isDebug);
+        return await MakeCall(await RequireFile('/' + staticPath, '', getTypes.Static, dataInfo.depsMap, isDebug), Request, Response, url.substring(staticPath.length - 6), isDebug, finalStep);
     }
 }
 const banWords = ['validateURL', 'validateFunc', 'func'];
@@ -62,7 +62,7 @@ function findBestUrlObject(obj, urlFrom) {
     }
     return url;
 }
-async function MakeCall(fileModule, Request, Response, urlFrom, isDebug) {
+async function MakeCall(fileModule, Request, Response, urlFrom, isDebug, finalStep) {
     const method = Request.method.toLowerCase();
     let methodObj = fileModule[method] || fileModule.default[method];
     let nestedURL = findBestUrlObject(methodObj, urlFrom);
@@ -153,5 +153,6 @@ async function MakeCall(fileModule, Request, Response, urlFrom, isDebug) {
         else if (typeof apiResponse == 'string')
             newResponse = { text: apiResponse };
     }
+    finalStep();
     return Response.json(newResponse);
 }

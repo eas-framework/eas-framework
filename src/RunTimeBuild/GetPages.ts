@@ -89,7 +89,7 @@ function GetErrorPage(code: number, LocSettings: 'NotFound' | 'ServerError') {
     return { url, arrayType, code }
 }
 
-async function ParseBasicInfo(Request: Request | any, Response: Response | any, code: number) {
+async function ParseBasicInfo(Request: Request | any, Response: Response, code: number) {
     //first step - parse info
     if (Request.method == "POST") {
         if (!Request.body || !Object.keys(Request.body).length)
@@ -284,7 +284,7 @@ async function MakePageResponse(DynamicResponse: any, Response: Response | any) 
     }
 }
 
-async function ActivatePage(Request: Request | any, Response: Response, arrayType: string[], url: string, FileInfo:any, code: number, nextPrase: () => Promise<any>){
+async function ActivatePage(Request: Request | any, Response: Response, arrayType: string[], url: string, FileInfo:any, code: number, nextPrase: () => Promise<any>, finalStep: () => void){
     const { DynamicFunc, fullPageUrl, code: newCode } = await GetDynamicPage(arrayType, url, FileInfo.fullPageUrl, FileInfo.fullPageUrl + '/' + url, code);
 
     if (!fullPageUrl)
@@ -292,9 +292,12 @@ async function ActivatePage(Request: Request | any, Response: Response, arrayTyp
 
     try {
         await nextPrase();
+        const pageData = await DynamicFunc(Response, Request, Request.body, Request.query, Request.cookies, Request.session, Request.files, Settings.DevMode);
+        finalStep();
+
         await MakePageResponse(
-            await DynamicFunc(Response, Request, Request.body, Request.query, Request.signedCookies, Request.session, Request.files, Settings.DevMode),
-            Response
+            pageData,
+            Response,
         );
     } catch (e) {
 
@@ -320,14 +323,13 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
         return;
     }
 
-    let frameworkStep: () => void;
+    let frameworkStep: () => void; // save cookies + code
     const nextPrase = async () => !frameworkStep && (frameworkStep = await ParseBasicInfo(Request, Response, code)); // parse data from methods - post, get... + cookies, session...
 
-    const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase);
-    if(!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase))
+    const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase, frameworkStep);
+    if(!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase, frameworkStep))
         return;
 
-    frameworkStep(); // save cookies + code
     deleteRequestFiles(Request); // delete files
 }
 
