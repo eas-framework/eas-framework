@@ -87,7 +87,7 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
     if (reBuild) {
         await BuildScriptSmallPath(InStaticPath, typeArray, isDebug);
         TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs");
-        UpdatePageDependency(SavedModulesPath, TimeCheck);
+        await UpdatePageDependency(SavedModulesPath, TimeCheck);
     }
     if (useDeps) {
         useDeps[InStaticPath] = { thisFile: TimeCheck };
