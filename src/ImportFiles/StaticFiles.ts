@@ -27,10 +27,10 @@ async function CheckDependencyChange(path: string) {
         let p = i;
 
         if (i == 'thisFile') {
-            p = path;
+            p = getTypes.Static[2] + '/' + path;
         }
 
-        const FilePath = BasicSettings.fullWebSitePath + getTypes.Static[2] + '/' + p;
+        const FilePath = BasicSettings.fullWebSitePath + p;
         if (await EasyFs.stat(FilePath, 'mtimeMs', true) != o[i]) {
             return true;
         }
@@ -64,6 +64,7 @@ export default async function BuildFile(SmallPath: string, isDebug: boolean, ful
             break;
         case 'svelte':
             dependencies = await BuildSvelte(SmallPath, isDebug);
+            fullCompilePath += '.js';
     }
 
     if (isDebug && await EasyFs.existsFile(fullCompilePath)) {
@@ -114,8 +115,8 @@ async function serverBuildByType(Request: Request, filePath: string, checked: bo
         return;
 
 
-        const basePath = Request.query.t == 'l' ? getTypes.Logs[1]: getTypes.Static[1];
-        const inServer = path.join(basePath, filePath);
+    const basePath = Request.query.t == 'l' ? getTypes.Logs[1] : getTypes.Static[1];
+    const inServer = path.join(basePath, filePath);
 
     if (checked || await EasyFs.existsFile(inServer))
         return { ...found, inServer };
@@ -175,7 +176,7 @@ async function svelteStatic(filePath: string, checked: boolean) {
     if (!filePath.startsWith('serv/svelte/'))
         return;
 
-    const fullPath = workingDirectory + 'node_modules' + filePath.substring(4) + (path.extname(filePath) ? '':'/index.mjs');
+    const fullPath = workingDirectory + 'node_modules' + filePath.substring(4) + (path.extname(filePath) ? '' : '/index.mjs');
 
     if (checked || await EasyFs.existsFile(fullPath))
         return {
@@ -190,6 +191,10 @@ export async function serverBuild(Request: Request, isDebug: boolean, path: stri
         await unsafeDebug(isDebug, path, checked) ||
         await serverBuildByType(Request, path, checked) ||
         getStatic.find(x => x.path == path);
+}
+
+export async function rebuildFile(SmallPath: string, fullCompilePath: string, isDebug: boolean) {
+    return await CheckDependencyChange(SmallPath) && await BuildFile(SmallPath, isDebug, fullCompilePath);
 }
 
 export async function GetFile(SmallPath: string, isDebug: boolean, Request: Request, Response: Response) {
@@ -221,16 +226,11 @@ export async function GetFile(SmallPath: string, isDebug: boolean, Request: Requ
 
     let resPath = fullCompilePath;
 
-    if (isDebug) { // re-compiling if necessary on debug mode
-        if (Request.query.source == 'true') {
-            resPath = fullPath;
-        } else if (await CheckDependencyChange(SmallPath)) {
-
-            if (!await BuildFile(SmallPath, isDebug, fullCompilePath)) {
-                resPath = fullPath;
-            }
-        }
-    }
+    // re-compiling if necessary on debug mode
+    if (isDebug && (Request.query.source == 'true' || await CheckDependencyChange(SmallPath) && !await BuildFile(SmallPath, isDebug, fullCompilePath))) {
+        resPath = fullPath;
+    } else if(ext == 'svelte')
+        resPath += '.js';
 
     Response.end(await fs.promises.readFile(resPath, 'utf8')); // sending the file
 }

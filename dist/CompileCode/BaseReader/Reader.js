@@ -2,6 +2,7 @@ import { find_end_of_def, find_end_of_q, find_end_block } from './RustBind/index
 import * as Settings from './Settings.js';
 import { getDirname } from '../../RunTimeBuild/SearchFileSystem.js';
 import Multithreading from '../Multithreading.js';
+import { cpus } from 'os';
 const __dirname = getDirname(import.meta.url);
 export class BaseReader {
     static findEntOfQ(text, qType) {
@@ -17,6 +18,7 @@ export class BaseReader {
         return find_end_block(text, open + end);
     }
 }
+const cpuLength = cpus().length;
 export class InsertComponentBase {
     printNew;
     asyncMethod;
@@ -24,7 +26,7 @@ export class InsertComponentBase {
     SkipSpecialTag = Settings.SkipSpecialTag;
     constructor(printNew) {
         this.printNew = printNew;
-        this.asyncMethod = new Multithreading(8, __dirname + '/RustBind/workerInsertComponent.js');
+        this.asyncMethod = new Multithreading(cpuLength, __dirname + '/RustBind/workerInsertComponent.js');
     }
     printErrors(text, errors) {
         if (this.printNew) {

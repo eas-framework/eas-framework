@@ -11,3 +11,6 @@ module.exports = function (filePath) {
 
     return module;
 }
+
+module.exports.clearModule = clearModule;
+module.exports.resolve = (path) => require.resolve(path);

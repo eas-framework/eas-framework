@@ -3,42 +3,21 @@ import { CreateFilePath } from '../../CompileCode/XMLHelpers/CodeInfoAndDebug.js
 import { getTypes } from '../../RunTimeBuild/SearchFileSystem.js';
 import { relative } from 'path';
 import Base64Id from '../../StringMethods/Id.js';
-import * as svelte from 'svelte/compiler';
-import path from 'path';
-import { preprocess } from '../../ImportFiles/ForStatic/Svelte.js';
+import { registerExtension, capitalize } from '../../ImportFiles/ForStatic/Svelte.js';
 //@ts-ignore-next-line
-import { RequireCjsScript } from '../../ImportFiles/Script.js';
-function capitalise(name) {
-    return name[0].toUpperCase() + name.slice(1);
-}
-async function registerExtension(filePath, smallPath, dependenceObject, isDebug) {
-    const name = path.parse(filePath).name
-        .replace(/^\d/, '_$&')
-        .replace(/[^a-zA-Z0-9_$]/g, '');
-    const options = {
-        filename: filePath,
-        name: capitalise(name),
-        generate: 'ssr',
-        dev: isDebug,
-        format: 'cjs'
-    };
-    const context = await preprocess(filePath, smallPath, dependenceObject);
-    const { js, warnings } = svelte.compile(context.code, options);
-    if (isDebug) {
-        warnings.forEach(warning => {
-            console.warn(`\nSvelte Warning in ${warning.filename}:`);
-            console.warn(warning.message);
-            console.warn(warning.frame);
-        });
-    }
-    return await RequireCjsScript(js.code);
-}
+import ImportWithoutCache, { resolve, clearModule } from '../../ImportFiles/ImportWithoutCache.cjs';
 async function ssrHTML(dataTag, FullPath, smallPath, dependenceObject, sessionInfo, isDebug) {
     const getV = (name) => {
-        const gv = (name) => dataTag.getValue(name).trim(), value = gv('ssr' + capitalise(name)) || gv(name);
+        const gv = (name) => dataTag.getValue(name).trim(), value = gv('ssr' + capitalize(name)) || gv(name);
         return value ? eval(`(${value.charAt(0) == '{' ? value : `{${value}}`})`) : {};
     };
-    const mode = (await registerExtension(FullPath, smallPath, dependenceObject, isDebug));
+    const newDeps = {};
+    const buildPath = await registerExtension(FullPath, smallPath, newDeps, isDebug);
+    Object.assign(dependenceObject, newDeps);
+    const mode = await ImportWithoutCache(buildPath, isDebug);
+    for (const i in newDeps) {
+        clearModule(resolve(getTypes.Static[1] + i.substring(getTypes.Static[2].length + 1) + '.ssr.cjs'));
+    }
     const { html, head } = mode.default.render(getV('props'), getV('options'));
     sessionInfo.headHTML += head;
     return html;

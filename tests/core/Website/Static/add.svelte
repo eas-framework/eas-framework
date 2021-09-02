@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Copy from './copy.svelte'
     export let me: string = 'is';
 
     function more() {
@@ -10,6 +11,7 @@
 <main>
     <div class="cool">
         <p>{me}</p>
+        <Copy word={me}/>
     </div>
     <button on:click={more}>more</button>
 </main>

@@ -2,55 +2,33 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { tagDataObjectArray, BuildInComponent, StringNumberMap } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { CreateFilePath } from '../../CompileCode/XMLHelpers/CodeInfoAndDebug';
-import { getTypes } from '../../RunTimeBuild/SearchFileSystem';
+import { getTypes, SystemData } from '../../RunTimeBuild/SearchFileSystem';
 import { relative } from 'path';
 import Base64Id from '../../StringMethods/Id';
 import * as svelte from 'svelte/compiler';
 import path from 'path';
-import {preprocess} from '../../ImportFiles/ForStatic/Svelte';
+import {registerExtension, capitalize} from '../../ImportFiles/ForStatic/Svelte';
+import {rebuildFile} from '../../ImportFiles/StaticFiles';
 //@ts-ignore-next-line
-import {RequireCjsScript} from '../../ImportFiles/Script';
-
-function capitalise(name: string) {
-    return name[0].toUpperCase() + name.slice(1);
-}
-
-async function registerExtension(filePath: string, smallPath: string, dependenceObject: StringNumberMap, isDebug: boolean) {
-    const name = path.parse(filePath).name
-        .replace(/^\d/, '_$&')
-        .replace(/[^a-zA-Z0-9_$]/g, '');
-
-    const options = {
-        filename: filePath,
-        name: capitalise(name),
-        generate: 'ssr',
-        dev: isDebug,
-        format: 'cjs'
-    };
-
-    const context = await preprocess(filePath, smallPath, dependenceObject);
-    const { js, warnings } = svelte.compile(context.code, <any>options);
-
-    if (isDebug) {
-        warnings.forEach(warning => {
-            console.warn(`\nSvelte Warning in ${warning.filename}:`);
-            console.warn(warning.message);
-            console.warn(warning.frame);
-        });
-    }
-
-    return await RequireCjsScript(js.code);
-}
+import ImportWithoutCache, {resolve, clearModule} from '../../ImportFiles/ImportWithoutCache.cjs';
 
 async function ssrHTML(dataTag: tagDataObjectArray, FullPath: string, smallPath: string, dependenceObject: StringNumberMap, sessionInfo: SessionInfo, isDebug: boolean) {
     const getV = (name: string) => {
         const gv = (name: string) => dataTag.getValue(name).trim(),
-        value = gv('ssr' + capitalise(name)) || gv(name);
+        value = gv('ssr' + capitalize(name)) || gv(name);
         
         return value ? eval(`(${value.charAt(0) == '{' ? value : `{${value}}`})`) : {};
     };
-    
-    const mode = (await registerExtension(FullPath, smallPath, dependenceObject, isDebug));
+    const newDeps = {};
+    const buildPath = await registerExtension(FullPath, smallPath, newDeps, isDebug);
+    Object.assign(dependenceObject, newDeps);
+
+    const mode = await ImportWithoutCache(buildPath, isDebug);
+
+    for(const i in newDeps){
+        clearModule(resolve(getTypes.Static[1] + i.substring(getTypes.Static[2].length+1) + '.ssr.cjs'));
+    }
+
     const { html, head } = mode.default.render(getV('props'), getV('options'));
     sessionInfo.headHTML += head;
     return html;

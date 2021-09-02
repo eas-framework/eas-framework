@@ -3,6 +3,7 @@ import { find_end_of_def, find_end_of_q, find_end_block } from './RustBind/index
 import * as Settings from './Settings';
 import { getDirname } from '../../RunTimeBuild/SearchFileSystem';
 import Multithreading from '../Multithreading';
+import {cpus} from 'os';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -24,6 +25,7 @@ export class BaseReader {
     }
 }
 
+const cpuLength = cpus().length;
 export class InsertComponentBase {
     private asyncMethod: Multithreading;
 
@@ -32,7 +34,7 @@ export class InsertComponentBase {
 
     constructor(private printNew?: any) {
 
-        this.asyncMethod = new Multithreading(8, __dirname + '/RustBind/workerInsertComponent.js');
+        this.asyncMethod = new Multithreading(cpuLength, __dirname + '/RustBind/workerInsertComponent.js');
     }
 
     private printErrors(text: StringTracker, errors: any[]) {

@@ -19,9 +19,9 @@ async function CheckDependencyChange(path) {
     for (const i in o) {
         let p = i;
         if (i == 'thisFile') {
-            p = path;
+            p = getTypes.Static[2] + '/' + path;
         }
-        const FilePath = BasicSettings.fullWebSitePath + getTypes.Static[2] + '/' + p;
+        const FilePath = BasicSettings.fullWebSitePath + p;
         if (await EasyFs.stat(FilePath, 'mtimeMs', true) != o[i]) {
             return true;
         }
@@ -51,6 +51,7 @@ export default async function BuildFile(SmallPath, isDebug, fullCompilePath) {
             break;
         case 'svelte':
             dependencies = await BuildSvelte(SmallPath, isDebug);
+            fullCompilePath += '.js';
     }
     if (isDebug && await EasyFs.existsFile(fullCompilePath)) {
         updateDep(SmallPath, dependencies);
@@ -146,6 +147,9 @@ export async function serverBuild(Request, isDebug, path, checked = false) {
         await serverBuildByType(Request, path, checked) ||
         getStatic.find(x => x.path == path);
 }
+export async function rebuildFile(SmallPath, fullCompilePath, isDebug) {
+    return await CheckDependencyChange(SmallPath) && await BuildFile(SmallPath, isDebug, fullCompilePath);
+}
 export async function GetFile(SmallPath, isDebug, Request, Response) {
     //file built in
     const isBuildIn = await serverBuild(Request, isDebug, SmallPath, true);
@@ -169,15 +173,11 @@ export async function GetFile(SmallPath, isDebug, Request, Response) {
         Response.type('js');
     }
     let resPath = fullCompilePath;
-    if (isDebug) { // re-compiling if necessary on debug mode
-        if (Request.query.source == 'true') {
-            resPath = fullPath;
-        }
-        else if (await CheckDependencyChange(SmallPath)) {
-            if (!await BuildFile(SmallPath, isDebug, fullCompilePath)) {
-                resPath = fullPath;
-            }
-        }
+    // re-compiling if necessary on debug mode
+    if (isDebug && (Request.query.source == 'true' || await CheckDependencyChange(SmallPath) && !await BuildFile(SmallPath, isDebug, fullCompilePath))) {
+        resPath = fullPath;
     }
+    else if (ext == 'svelte')
+        resPath += '.js';
     Response.end(await fs.promises.readFile(resPath, 'utf8')); // sending the file
 }

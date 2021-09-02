@@ -4,7 +4,7 @@ build:
   stage: build
   script:
   - npm install
-  - npm run build production "Response Error - auto build"
+  - npm run build production "Svelte ssr - auto build"
   artifacts:
     paths:
       - dist

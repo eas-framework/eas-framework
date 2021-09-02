@@ -1,6 +1,7 @@
 
 import Multithreading from '../Multithreading';
 import {getDirname} from '../../RunTimeBuild/SearchFileSystem';
+import {cpus} from 'os';
 
 interface SplitText {
     text: string,
@@ -8,7 +9,8 @@ interface SplitText {
     is_skip: boolean
 }
 
-const parse_stream = new Multithreading(2, getDirname(import.meta.url) + '/RustBind/worker.js');
+const cpuLength = cpus().length;
+const parse_stream = new Multithreading(cpuLength, getDirname(import.meta.url) + '/RustBind/worker.js');
 
 export async function ParseTextStream(text: string): Promise<SplitText[]> {
     return JSON.parse(await parse_stream.getMethod({build_stream: [text]}));

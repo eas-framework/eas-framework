@@ -3,7 +3,7 @@ import { PrintIfNew } from '../../OutputInput/PrintNew';
 import EasyFs from '../../OutputInput/EasyFs';
 import { SomePlugins } from '../../CompileCode/InsertModels';
 import path from 'path';
-import { getTypes } from '../../RunTimeBuild/SearchFileSystem';
+import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem';
 
 export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | "css", isDebug: boolean): Promise<{ [key: string]: number }> {
     const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
@@ -32,7 +32,7 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
             done(null);
             return;
         }
-        dependenceObject[url] = await EasyFs.stat(connectUrl, 'mtimeMs');
+        dependenceObject[path.relative(BasicSettings.fullWebSitePath, connectUrl)] = await EasyFs.stat(connectUrl, 'mtimeMs');
 
         done({
             file: connectUrl
