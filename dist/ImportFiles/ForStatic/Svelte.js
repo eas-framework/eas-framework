@@ -55,7 +55,7 @@ export async function preprocess(fullPath, smallPath, dependenceObject = {}, mak
                     return newData;
                 const id = uuid();
                 mapToken[id] = newData;
-                return `/*uuid-${id}*/`;
+                return newData + `/*uuid-${id}*/`;
             });
             if (attributes.lang !== 'ts')
                 return {
@@ -73,6 +73,9 @@ export async function preprocess(fullPath, smallPath, dependenceObject = {}, mak
                 });
             }
             tokenCode = tokenCode.replace(/\/\*uuid-([\w\W]+?)\*\//gmi, (substring, ...args) => {
+                const data = args[0];
+                if (data.substr(args.index - data.length, data.length) == data)
+                    return '';
                 return mapToken[args[0]];
             });
             return {

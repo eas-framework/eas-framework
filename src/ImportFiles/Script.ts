@@ -129,6 +129,7 @@ const SavedModules = {};
 export default async function LoadImport(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache: string[] = []) {
   let TimeCheck: any;
 
+  InStaticPath = AddExtension(InStaticPath);
   const SavedModulesPath = path.join(typeArray[2], InStaticPath),
     filePath = typeArray[0] + InStaticPath;
 
@@ -161,8 +162,6 @@ export default async function LoadImport(InStaticPath: string, typeArray: string
       else if (p[0] != "/")
         return import(p);
     }
-
-    p = AddExtension(p);
 
     return LoadImport(p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
   }

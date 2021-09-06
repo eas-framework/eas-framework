@@ -82,6 +82,7 @@ export function AddExtension(FilePath) {
 const SavedModules = {};
 export default async function LoadImport(InStaticPath, typeArray, isDebug = false, useDeps, withoutCache = []) {
     let TimeCheck;
+    InStaticPath = AddExtension(InStaticPath);
     const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = typeArray[0] + InStaticPath;
     const reBuild = !PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs"));
     if (reBuild) {
@@ -109,7 +110,6 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
             else if (p[0] != "/")
                 return import(p);
         }
-        p = AddExtension(p);
         return LoadImport(p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
     }
     const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
