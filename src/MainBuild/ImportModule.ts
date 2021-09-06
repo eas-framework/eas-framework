@@ -1,10 +1,12 @@
 import { getTypes } from '../RunTimeBuild/SearchFileSystem';
-import {ImportFile, RequireOnce} from '../ImportFiles/Script';
+import {ImportFile, AddExtension, RequireOnce} from '../ImportFiles/Script';
 import EasyFs from '../OutputInput/EasyFs';
 
 export async function StartRequire(array: string[], isDebug: boolean) {
     const arrayFuncServer = [];
-    for (const i of array) {
+    for (let i of array) {
+        i = AddExtension(i);
+
         const b = await ImportFile(i, getTypes.Static, isDebug);
         if (typeof b.StartServer == 'function') {
             arrayFuncServer.push(b.StartServer);
