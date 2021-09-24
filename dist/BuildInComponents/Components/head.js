@@ -14,12 +14,6 @@ function makeName(fullCompilePath) {
     name += '-' + Base64Id(name, 5) + '.pub';
     return [name, path.join(fullCompilePath, '../' + name)];
 }
-function addStyle(sessionInfo, compilePath, name) {
-    if (sessionInfo.style.notEmpty()) { // add style
-        sessionInfo.styleURLSet.push({ url: `./${name}.css` });
-        EasyFs.writeFile(compilePath + '.css', sessionInfo.style.createDataWithMap());
-    }
-}
 function addHTMLTags(sessionInfo) {
     const makeAttributes = (i) => i.attributes ? ' ' + Object.keys(i.attributes).map(x => i.attributes[x] ? x + `="${i.attributes[x]}"` : x).join(' ') : '';
     const addTypeInfo = sessionInfo.typeName == getTypes.Logs[2] ? '?t=l' : '';
@@ -30,20 +24,26 @@ function addHTMLTags(sessionInfo) {
         buildBundleString += `<script src="${i.url + addTypeInfo}"${makeAttributes(i)}></script>`;
     return buildBundleString + sessionInfo.headHTML;
 }
-function addScript(sessionInfo, compilePath, name) {
+function addScriptAndStyle(sessionInfo, compilePath, name) {
+    const inSitePath = sessionInfo.typeName == getTypes.Logs[2] ? path.relative(getTypes.Logs[1], compilePath + '/../' + name) : path.relative(getTypes.Static[1], compilePath + '/../' + name);
+    //add script
     if (sessionInfo.script.notEmpty()) { // add default script
-        sessionInfo.scriptURLSet.push({ url: `./${name}.js`, attributes: { defer: null } });
+        sessionInfo.scriptURLSet.push({ url: `/${inSitePath}.js`, attributes: { defer: null } });
         EasyFs.writeFile(compilePath + '.js', sessionInfo.script.createDataWithMap());
     }
     if (sessionInfo.scriptModule.notEmpty()) {
-        sessionInfo.scriptURLSet.push({ url: `./${name}.module.js`, attributes: { type: 'module' } });
+        sessionInfo.scriptURLSet.push({ url: `/${inSitePath}.module.js`, attributes: { type: 'module' } });
         EasyFs.writeFile(compilePath + '.module.js', sessionInfo.scriptModule.createDataWithMap());
+    }
+    //add style
+    if (sessionInfo.style.notEmpty()) { // add default style
+        sessionInfo.styleURLSet.push({ url: `/${inSitePath}.css` });
+        EasyFs.writeFile(compilePath + '.css', sessionInfo.style.createDataWithMap());
     }
 }
 export async function addFinalizeBuild(pageData, sessionInfo, fullCompilePath) {
     const [name, compilePath] = makeName(fullCompilePath);
-    addStyle(sessionInfo, compilePath, name);
-    addScript(sessionInfo, compilePath, name);
+    addScriptAndStyle(sessionInfo, compilePath, name);
     const buildBundleString = addHTMLTags(sessionInfo);
     const bundlePlaceholder = [/@InsertBundle(;?)/, /@DefaultInsertBundle(;?)/];
     const removeBundle = () => { bundlePlaceholder.forEach(x => pageData = pageData.replace(x, '')); return pageData; };
