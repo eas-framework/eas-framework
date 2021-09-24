@@ -35,7 +35,7 @@ function addHTMLTags(sessionInfo: SessionInfo) {
 }
 
 function addScriptAndStyle(sessionInfo: SessionInfo, compilePath: string, name: string) {
-    const inSitePath = sessionInfo.typeName == getTypes.Logs[2] ? path.relative(getTypes.Logs[1], compilePath + '/../' + name): path.relative(getTypes.Static[1], compilePath + '/../' + name);
+    const inSitePath = (sessionInfo.typeName == getTypes.Logs[2] ? path.relative(getTypes.Logs[1], compilePath + '/../' + name) : path.relative(getTypes.Static[1], compilePath + '/../' + name)).replace(/\\/gi, '/');
 
     //add script
     if (sessionInfo.script.notEmpty()) { // add default script

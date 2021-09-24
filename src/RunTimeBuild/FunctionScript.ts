@@ -143,7 +143,7 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
 
         function ToStringInfo(str) {
             const asString = String(str);
-            if (asString == '[object Object]') {
+            if (asString.startsWith('[object Object]')) {
                 return JSON.stringify(str);
             }
             return asString;

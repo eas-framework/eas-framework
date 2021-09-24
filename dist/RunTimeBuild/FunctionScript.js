@@ -108,7 +108,7 @@ function BuildPage(LoadPageFunc, run_script_name) {
         const out_run_script = { text: '' };
         function ToStringInfo(str) {
             const asString = String(str);
-            if (asString == '[object Object]') {
+            if (asString.startsWith('[object Object]')) {
                 return JSON.stringify(str);
             }
             return asString;

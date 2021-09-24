@@ -4,7 +4,7 @@ build:
   stage: build
   script:
   - npm install
-  - npm run build production "fill path bundled urls - auto build"
+  - npm run build production "Function script - print - auto build"
   artifacts:
     paths:
       - dist
