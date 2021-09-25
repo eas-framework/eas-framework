@@ -84,13 +84,13 @@ impl InsertComponent {
                 i += base_reader::find_end_of_q(&cut_start(text, i + 1), this_char);
             } else if cut(&text, i, i + search_len) == search {
                 return i as i32;
-            } else if this_char == '<' && length > i+1 && HTML_TAG.is_match(&chars[i+1].to_string()) {
+            } else if this_char == '<' {
                 let copy_start_index = i + 1;
                 let sub_text = cut_start(text, copy_start_index);
                 let found_tag = self.find_special_tag(&sub_text);
     
                 if found_tag.is_none() {
-                    if as_big_tag && at(&sub_text, 0) == '/'
+                    if as_big_tag && at(&sub_text, 0) == '/' || length > i+1 && !HTML_TAG.is_match(&chars[i+1].to_string())
                     {
                         i += 1;
                         continue;
