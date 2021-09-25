@@ -2,6 +2,12 @@ use super::actions::base_actions::*;
 use super::actions::base_reader;
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use regex::Regex;
+use lazy_static::lazy_static;
+
+lazy_static!{
+    static ref HTML_TAG: Regex = Regex::new(r"[\pL]").unwrap();
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct ErrorInfo {
@@ -48,7 +54,7 @@ impl InsertComponent {
             return found.unwrap().result_index;
         }
 
-        let get_index = self.find_close_char_html_element(text, search, search_len, as_big_tag, add_index);
+        let get_index = self.find_close_char_html_element(text, search, search_len, as_big_tag, add_index, false);
 
         self.cache.push(ResultInsertComponent {
             search: search.to_owned(),
@@ -59,7 +65,7 @@ impl InsertComponent {
         get_index
     }
 
-    fn find_close_char_html_element(&mut self, text: &str, search: &str, search_len: usize, as_big_tag: bool,add_index: usize) -> i32 {
+    fn find_close_char_html_element(&mut self, text: &str, search: &str, search_len: usize, as_big_tag: bool,add_index: usize, in_tag: bool) -> i32 {
         let chars: Vec<char> = text.chars().collect();
         let chars_len = chars.len();
     
@@ -73,12 +79,12 @@ impl InsertComponent {
 
             let this_char = chars[i];
             
-            if find_char_arr(base_reader::TEXT_BLOCK, &&this_char) && get_from_vec(&chars, i, 1) != '\\'
+            if in_tag && find_char_arr(base_reader::TEXT_BLOCK, &&this_char) && get_from_vec(&chars, i, 1) != '\\'
             {
                 i += base_reader::find_end_of_q(&cut_start(text, i + 1), this_char);
             } else if cut(&text, i, i + search_len) == search {
                 return i as i32;
-            } else if this_char == '<' {
+            } else if this_char == '<' && length > i+1 && HTML_TAG.is_match(&chars[i+1].to_string()) {
                 let copy_start_index = i + 1;
                 let sub_text = cut_start(text, copy_start_index);
                 let found_tag = self.find_special_tag(&sub_text);
@@ -90,7 +96,7 @@ impl InsertComponent {
                         continue;
                     }
     
-                     let found = self.find_close_char_html_element(&sub_text, &">", 1, false, 0) as usize;
+                     let found = self.find_close_char_html_element(&sub_text, &">", 1, false, 0, true) as usize;
     
                     i += found;
     
@@ -160,13 +166,13 @@ impl InsertComponent {
     }
 
     pub fn find_close_char(&mut self, text: &str, search: &str)  -> i32 {
-        self.find_close_char_html_element(text, search, len(search), false, 0)
+        self.find_close_char_html_element(text, search, len(search), false, 0, true)
 
     }
 
     pub fn public_html_element(&mut self, text: &str, search: &str) -> i32 {
         let be_search = "</".to_owned() + search;
-        self.find_close_char_html_element(text, &be_search, 2 + len(search), false, 0)
+        self.find_close_char_html_element(text, &be_search, 2 + len(search), false, 0, false)
     }
 
     pub fn clear(&mut self) {
