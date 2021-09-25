@@ -4,7 +4,7 @@ build:
   stage: build
   script:
   - npm install
-  - npm run build production "HTML tag with text content includes special characters - < '  - auto build"
+  - npm run build production "Better JSON stringify - auto build"
   artifacts:
     paths:
       - dist
