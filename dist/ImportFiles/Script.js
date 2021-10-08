@@ -84,6 +84,13 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
     let TimeCheck;
     InStaticPath = path.join(AddExtension(InStaticPath));
     const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = typeArray[0] + InStaticPath;
+    //wait if this module is on process, if not declare this as on process module
+    let processEnd;
+    if (!SavedModules[SavedModulesPath])
+        SavedModules[SavedModulesPath] = new Promise(r => processEnd = r);
+    else if (SavedModules[SavedModulesPath] instanceof Promise)
+        await SavedModules[SavedModulesPath];
+    //build paths
     const reBuild = !PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs"));
     if (reBuild) {
         await BuildScriptSmallPath(InStaticPath, typeArray, isDebug);
@@ -116,6 +123,7 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
     let MyModule = await ImportWithoutCache(requirePath);
     MyModule = await MyModule(requireMap);
     SavedModules[SavedModulesPath] = MyModule;
+    processEnd?.();
     return MyModule;
 }
 export function ImportFile(InStaticPath, typeArray, isDebug = false, useDeps, withoutCache) {

@@ -220,6 +220,8 @@ export async function requireSettings() {
             Export.Routing.IgnorePaths = Settings['ignore-start-paths'];
         if (Settings['require-on-start'])
             Export.Routing.arrayFuncServer = await StartRequire(Settings['require-on-start'], DevMode_);
+        else
+            Export.Routing.arrayFuncServer = [];
         Export.Routing.arrayFuncServer.push(async () => {
             await makeCompile?.();
             if (Settings["save-page-ram"] != null) {

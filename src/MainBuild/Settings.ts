@@ -355,6 +355,8 @@ export async function requireSettings() {
 
         if (Settings['require-on-start'])
             Export.Routing.arrayFuncServer = <any>await StartRequire(Settings['require-on-start'], DevMode_);
+        else
+            Export.Routing.arrayFuncServer = [];
 
         Export.Routing.arrayFuncServer.push(async () => {
             await makeCompile?.();
