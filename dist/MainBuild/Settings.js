@@ -16,14 +16,14 @@ const CookiesSecret = uuidv4().substring(0, 32), SessionSecret = uuidv4(), Seque
 fileByUrl.Settings.Cookies = CookiesMiddleware;
 fileByUrl.Settings.CookieEncrypter = CookieEncrypterMiddleware;
 fileByUrl.Settings.CookieSettings = CookieSettings;
-let DevMode_ = true, ComilationEnded, SessionStore;
+let DevMode_ = true, CompilationEnded, SessionStore;
 let formidableServer, bodyParserServer;
 ;
 export const Export = {
     set DevMode(value) {
         DevMode_ = value;
         if (!value) {
-            ComilationEnded = BuildServer.compileAll();
+            CompilationEnded = BuildServer.compileAll();
             process.env.NODE_ENV = "production";
         }
         fileByUrl.Settings.DevMode = value;
@@ -175,20 +175,20 @@ const ReserverChange = {
 export async function requireSettings() {
     if (await SettingsExsit(Export.SettingsPath)) {
         const Settings = await GetSettings(Export.SettingsPath, DevMode_);
-        if (Settings.development) {
+        if (Settings.development)
             Object.assign(Settings, Settings.OnDev);
-        }
-        else {
+        else
             Object.assign(Settings, Settings.OnProduction);
-        }
-        if (Settings['add-compile-syntax']) {
+        if (Settings['add-compile-syntax'])
             Export.AddCompileSyntax = Settings['add-compile-syntax'];
-        }
-        if (Settings['plugins']) {
+        if (Settings['plugins'])
             Export.plugins = Settings['plugins'];
-        }
-        if (Settings["prevent-compilation-error"]) {
+        if (Settings["prevent-compilation-error"])
             Export.preventCompilationError = Settings["prevent-compilation-error"];
+        let makeCompile;
+        if (firstLoad || Settings.development != null && Settings.development !== DevMode_) {
+            Export.DevMode = Settings.development;
+            makeCompile = await CompilationEnded;
         }
         if (Settings["save-page-ram"] != null) {
             if (!Export.PageRam && Settings["save-page-ram"]) {
@@ -199,30 +199,24 @@ export async function requireSettings() {
                 fileByUrl.ClearAllPagesFromRam();
             }
         }
-        if (Settings["error-pages"]) {
+        if (Settings["error-pages"])
             Export.ErrorPages = Settings["error-pages"];
-        }
-        if (Settings["cache-days"]) {
+        if (Settings["cache-days"])
             Export.CacheDays = Settings["cache-days"];
-        }
-        if (Settings.rules) {
+        if (Settings.rules)
             Export.Routing.RuleObject = Settings.rules;
-        }
-        if (Settings["stop-url-check"]) {
+        if (Settings["stop-url-check"])
             Export.Routing.StopCheckUrls = Settings["stop-url-check"];
-        }
-        if (Settings["cookies-expires-days"]) {
+        if (Settings["cookies-expires-days"])
             Export.CookiesExpiresDays = Settings["cookies-expires-days"];
-        }
         if (Settings['request-limit-mb'] && Settings['request-limit-mb'] != Export.RequestLimitMB) {
             Export.RequestLimitMB = Settings['request-limit-mb'];
             if (!firstLoad) {
                 RebodyParserServer();
             }
         }
-        if (firstLoad) {
+        if (firstLoad)
             firstLoad = false;
-        }
         if (Settings['session-time-minutes'] !== undefined && Settings['session-time-minutes'] != Export.SessionTimeMinutes) {
             Export.SessionTimeMinutes = Settings['session-time-minutes'];
             await ReSessionStore();
@@ -231,19 +225,13 @@ export async function requireSettings() {
             Export.Routing.IgnoreTypes = Settings['ignore-types'];
             Export.Routing.IgnoreTypes.push(...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray);
         }
-        if (Settings['ignore-start-paths']) {
+        if (Settings['ignore-start-paths'])
             Export.Routing.IgnorePaths = Settings['ignore-start-paths'];
-        }
-        if (Settings['require-on-start']) {
+        if (Settings['require-on-start'])
             Export.Routing.arrayFuncServer = await StartRequire(Settings['require-on-start'], DevMode_);
-        }
-        if (firstLoad || Settings.development != null && Settings.development !== DevMode_) {
-            Export.DevMode = Settings.development;
-            await ComilationEnded;
-        }
-        if (CheckChange(ReserverChange, Settings)) {
+        makeCompile?.();
+        if (CheckChange(ReserverChange, Settings))
             ReformidableServer();
-        }
         if (Settings.serve) {
             if (Settings.serve.port) {
                 Export.Serve.AppPort = Settings.serve.port;
@@ -258,6 +246,6 @@ export async function requireSettings() {
     }
     else {
         Export.DevMode = DevMode_;
-        await ComilationEnded;
+        await (await CompilationEnded)();
     }
 }

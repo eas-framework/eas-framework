@@ -129,7 +129,7 @@ const SavedModules = {};
 export default async function LoadImport(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache: string[] = []) {
   let TimeCheck: any;
 
-  InStaticPath = AddExtension(InStaticPath);
+  InStaticPath = path.join(AddExtension(InStaticPath));
   const SavedModulesPath = path.join(typeArray[2], InStaticPath),
     filePath = typeArray[0] + InStaticPath;
 

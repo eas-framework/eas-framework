@@ -28,7 +28,7 @@ fileByUrl.Settings.Cookies = <any>CookiesMiddleware;
 fileByUrl.Settings.CookieEncrypter = <any>CookieEncrypterMiddleware;
 fileByUrl.Settings.CookieSettings = CookieSettings;
 
-let DevMode_ = true, ComilationEnded: Promise<void>, SessionStore;
+let DevMode_ = true, CompilationEnded: Promise<() => Promise<void>>, SessionStore;
 
 let formidableServer, bodyParserServer;
 
@@ -56,15 +56,15 @@ interface SiteSettings {
     altnames: string[]
 }
 
-interface JSXOptions extends TransformOptions{
+interface JSXOptions extends TransformOptions {
     name: "JSXOptions"
 }
 
-interface TSXOptions extends TransformOptions{
+interface TSXOptions extends TransformOptions {
     name: "TSXOptions"
 }
 
-interface transformOptions extends TransformOptions{
+interface transformOptions extends TransformOptions {
     name: "transformOptions"
 }
 
@@ -95,10 +95,10 @@ interface GlobalSettings {
         StopCheckUrls?: string[],
         IgnoreTypes?: string[],
         IgnorePaths?: string[],
-        arrayFuncServer?: ((...data:any) => any)[]
+        arrayFuncServer?: ((...data: any) => any)[]
     },
     preventCompilationError?: ("close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" |
-    'css-warning' | 'compilation-error' | 'jsx-warning' | 'tsx-warning')[],
+        'css-warning' | 'compilation-error' | 'jsx-warning' | 'tsx-warning')[],
     AddCompileSyntax?: ("JTags" | "Razor" | "TypeScript" | string | { [key: string]: any })[]
     plugins?: pluginsOptions[],
     ErrorPages?: fileByUrl.ErrorPages
@@ -122,7 +122,7 @@ export const Export: ExportSettings = {
     set DevMode(value) {
         DevMode_ = value;
         if (!value) {
-            ComilationEnded = BuildServer.compileAll();
+            CompilationEnded = BuildServer.compileAll();
             process.env.NODE_ENV = "production";
         }
         fileByUrl.Settings.DevMode = value;
@@ -192,10 +192,10 @@ export const Export: ExportSettings = {
     get preventCompilationError() {
         return (<any>PrintIfNewSettings).PreventErrors;
     },
-    get ErrorPages(){
+    get ErrorPages() {
         return fileByUrl.Settings.ErrorPages;
-    }, 
-    set ErrorPages(value){
+    },
+    set ErrorPages(value) {
         fileByUrl.Settings.ErrorPages = value;
     },
     RequestLimitMB: 5,
@@ -288,22 +288,29 @@ export async function requireSettings() {
     if (await SettingsExsit(Export.SettingsPath)) {
         const Settings = await GetSettings(Export.SettingsPath, DevMode_);
 
-        if (Settings.development) {
+        if (Settings.development)
             Object.assign(Settings, Settings.OnDev);
-        } else {
+
+        else
             Object.assign(Settings, Settings.OnProduction);
-        }
 
-        if (Settings['add-compile-syntax']) {
+
+        if (Settings['add-compile-syntax'])
             Export.AddCompileSyntax = Settings['add-compile-syntax'];
-        }
 
-        if (Settings['plugins']) {
+
+        if (Settings['plugins'])
             Export.plugins = Settings['plugins'];
-        }
 
-        if (Settings["prevent-compilation-error"]) {
+
+        if (Settings["prevent-compilation-error"])
             Export.preventCompilationError = Settings["prevent-compilation-error"];
+
+
+        let makeCompile: () => Promise<void>;
+        if (firstLoad || Settings.development != null && Settings.development !== DevMode_) {
+            Export.DevMode = Settings.development;
+            makeCompile = await CompilationEnded;
         }
 
         if (Settings["save-page-ram"] != null) {
@@ -316,25 +323,22 @@ export async function requireSettings() {
             }
         }
 
-        if (Settings["error-pages"]) {
+        if (Settings["error-pages"])
             Export.ErrorPages = Settings["error-pages"];
-        }
 
-        if (Settings["cache-days"]) {
+
+        if (Settings["cache-days"])
             Export.CacheDays = Settings["cache-days"];
-        }
 
-        if (Settings.rules) {
+
+        if (Settings.rules)
             Export.Routing.RuleObject = Settings.rules;
-        }
 
-        if (Settings["stop-url-check"]) {
+        if (Settings["stop-url-check"])
             Export.Routing.StopCheckUrls = Settings["stop-url-check"];
-        }
 
-        if (Settings["cookies-expires-days"]) {
+        if (Settings["cookies-expires-days"])
             Export.CookiesExpiresDays = Settings["cookies-expires-days"];
-        }
 
         if (Settings['request-limit-mb'] && Settings['request-limit-mb'] != Export.RequestLimitMB) {
             Export.RequestLimitMB = Settings['request-limit-mb'];
@@ -343,9 +347,8 @@ export async function requireSettings() {
             }
         }
 
-        if (firstLoad) {
+        if (firstLoad)
             firstLoad = false;
-        }
 
         if (Settings['session-time-minutes'] !== undefined && Settings['session-time-minutes'] != Export.SessionTimeMinutes) {
             Export.SessionTimeMinutes = Settings['session-time-minutes'];
@@ -357,22 +360,15 @@ export async function requireSettings() {
             Export.Routing.IgnoreTypes.push(...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray);
         }
 
-        if (Settings['ignore-start-paths']) {
+        if (Settings['ignore-start-paths'])
             Export.Routing.IgnorePaths = Settings['ignore-start-paths'];
-        }
 
-        if (Settings['require-on-start']) {
+        if (Settings['require-on-start'])
             Export.Routing.arrayFuncServer = <any>await StartRequire(Settings['require-on-start'], DevMode_);
-        }
+        makeCompile?.();
 
-        if (firstLoad || Settings.development != null && Settings.development !== DevMode_) {
-            Export.DevMode = Settings.development;
-            await ComilationEnded;
-        }
-
-        if (CheckChange(ReserverChange, Settings)) {
+        if (CheckChange(ReserverChange, Settings))
             ReformidableServer();
-        }
 
         if (Settings.serve) {
             if (Settings.serve.port) {
@@ -390,6 +386,6 @@ export async function requireSettings() {
 
     } else {
         Export.DevMode = DevMode_;
-        await ComilationEnded;
+        await (await CompilationEnded)();
     }
 }

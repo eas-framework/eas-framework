@@ -67,7 +67,7 @@ async function FilesInFolder(arrayType: string[], path = "") {
 async function CreateCompile(t:string) {
     const types = SearchFileSystem.getTypes[t];
     await SearchFileSystem.DeleteInDirectory(types[1]);
-    await FilesInFolder(types);
+    return () => FilesInFolder(types);
 }
 
 
@@ -93,7 +93,11 @@ export async function compileAll() {
     SearchFileSystem.ClearPagesDependency();
     // await CheckPath(path,  SearchFileSystem.getTypes.Logs[1]);
     // await CheckPath(path, SearchFileSystem.getTypes.Static[1]);
-    await CreateCompile(SearchFileSystem.getTypes.Static[2]);
-    await CreateCompile(SearchFileSystem.getTypes.Logs[2]);
-    ClearWarning();
+    const activateArray = [await CreateCompile(SearchFileSystem.getTypes.Static[2]), await CreateCompile(SearchFileSystem.getTypes.Logs[2]), ClearWarning];
+
+    return async () => {
+        for(const i of activateArray){
+            await i();
+        }
+    }
 }

@@ -82,7 +82,7 @@ export function AddExtension(FilePath) {
 const SavedModules = {};
 export default async function LoadImport(InStaticPath, typeArray, isDebug = false, useDeps, withoutCache = []) {
     let TimeCheck;
-    InStaticPath = AddExtension(InStaticPath);
+    InStaticPath = path.join(AddExtension(InStaticPath));
     const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = typeArray[0] + InStaticPath;
     const reBuild = !PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs"));
     if (reBuild) {
