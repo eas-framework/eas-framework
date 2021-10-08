@@ -220,16 +220,18 @@ export async function requireSettings() {
             Export.Routing.IgnorePaths = Settings['ignore-start-paths'];
         if (Settings['require-on-start'])
             Export.Routing.arrayFuncServer = await StartRequire(Settings['require-on-start'], DevMode_);
-        await makeCompile?.();
-        if (Settings["save-page-ram"] != null) {
-            if (!Export.PageRam && Settings["save-page-ram"]) {
-                await fileByUrl.LoadAllPagesToRam();
+        Export.Routing.arrayFuncServer.push(async () => {
+            await makeCompile?.();
+            if (Settings["save-page-ram"] != null) {
+                if (!Export.PageRam && Settings["save-page-ram"]) {
+                    await fileByUrl.LoadAllPagesToRam();
+                }
+                Export.PageRam = Settings["save-page-ram"];
+                if (!Export.PageRam) {
+                    fileByUrl.ClearAllPagesFromRam();
+                }
             }
-            Export.PageRam = Settings["save-page-ram"];
-            if (!Export.PageRam) {
-                fileByUrl.ClearAllPagesFromRam();
-            }
-        }
+        });
         if (CheckChange(ReserverChange, Settings))
             ReformidableServer();
         if (Settings.serve) {
