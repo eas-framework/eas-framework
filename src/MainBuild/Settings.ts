@@ -306,11 +306,6 @@ export async function requireSettings() {
             Export.preventCompilationError = Settings["prevent-compilation-error"];
         }
 
-        if (firstLoad || Settings.development != null && Settings.development !== DevMode_) {
-            Export.DevMode = Settings.development;
-            await ComilationEnded;
-        }
-
         if (Settings["save-page-ram"] != null) {
             if (!Export.PageRam && Settings["save-page-ram"]) {
                 await fileByUrl.LoadAllPagesToRam();
@@ -368,6 +363,11 @@ export async function requireSettings() {
 
         if (Settings['require-on-start']) {
             Export.Routing.arrayFuncServer = <any>await StartRequire(Settings['require-on-start'], DevMode_);
+        }
+
+        if (firstLoad || Settings.development != null && Settings.development !== DevMode_) {
+            Export.DevMode = Settings.development;
+            await ComilationEnded;
         }
 
         if (CheckChange(ReserverChange, Settings)) {

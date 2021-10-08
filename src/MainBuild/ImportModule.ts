@@ -1,5 +1,5 @@
 import { getTypes } from '../RunTimeBuild/SearchFileSystem';
-import {ImportFile, AddExtension, RequireOnce} from '../ImportFiles/Script';
+import ImportFile, {AddExtension, RequireOnce} from '../ImportFiles/Script';
 import EasyFs from '../OutputInput/EasyFs';
 import {print} from '../OutputInput/Console'
 

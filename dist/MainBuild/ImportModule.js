@@ -1,5 +1,5 @@
 import { getTypes } from '../RunTimeBuild/SearchFileSystem.js';
-import { ImportFile, AddExtension, RequireOnce } from '../ImportFiles/Script.js';
+import ImportFile, { AddExtension, RequireOnce } from '../ImportFiles/Script.js';
 import EasyFs from '../OutputInput/EasyFs.js';
 import { print } from '../OutputInput/Console.js';
 export async function StartRequire(array, isDebug) {
