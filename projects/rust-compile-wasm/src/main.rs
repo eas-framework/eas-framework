@@ -8,26 +8,14 @@ fn main() {
     let mut parser = InsertComponent::new(vec![vec!["%".to_owned(), "%".to_owned()], vec!["#{debug}".to_owned(), "{debug}#".to_owned()]], vec!["textarea".to_owned(),"script".to_owned(), "style".to_owned()]);
 
     let text = r#"
-    <head>
-        <meta charset=\"UTF-8\"/>
-        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>
-        <title>Home Page</title>
-        <link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css\" rel=\"stylesheet\" integrity=\"sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC\" crossorigin=\"anonymous\"/>
-        <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM\" crossorigin=\"anonymous\"></script>
-        < ' 
-        <div AddTag='<div id="Setting">'>up</div>
-    </head>
 
-    <label class="self-checkbox">
-    <input type="checkbox" <%
-        const v = "\#v-model"
-        if(v != "\u002Av-model"){
-            print(`v-model="$${v}"`)
-        }%> class="radio-input d-none"/>
-        <span class="slider btn btn-outline-success">#name</span>
-    </label>
-
-    </html>"#;
+    <title>Mixed HTML Example</title>
+    
+  <%!@DefaultInsertBundle%></head>
+  <body>
+    <h1>Mixed HTML Example</h1>
+    
+  </body>"#;
 
     // let index = parser.find_close_char(text, ">");
 
@@ -49,7 +37,7 @@ fn main() {
 
     // parser.clear();
 
-    let index = parser.public_html_element(text, "html");
+    let index = parser.public_html_element(text, "head");
 
 
     println!("index {:?}, array:  {:?}", index, parser.error_vec);

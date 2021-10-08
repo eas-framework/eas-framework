@@ -120,7 +120,7 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
 }
 export function ImportFile(InStaticPath, typeArray, isDebug = false, useDeps, withoutCache) {
     if (!isDebug)
-        return SavedModules[typeArray[2] + "\\" + InStaticPath];
+        return SavedModules[path.join(typeArray[2], InStaticPath)];
     return LoadImport(InStaticPath, typeArray, isDebug, useDeps, withoutCache);
 }
 export async function RequireOnce(filePath, isDebug) {

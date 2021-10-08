@@ -178,7 +178,7 @@ export default async function LoadImport(InStaticPath: string, typeArray: string
 
 export function ImportFile(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache?: string[]) {
   if (!isDebug)
-    return SavedModules[typeArray[2] + "\\" + InStaticPath];
+    return SavedModules[path.join(typeArray[2],InStaticPath)];
 
   return LoadImport(InStaticPath, typeArray, isDebug, useDeps, withoutCache);
 }

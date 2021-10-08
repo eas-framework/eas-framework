@@ -56,7 +56,7 @@ async function FilesInFolder(arrayType: string[], path = "") {
             if (isFileType(SearchFileSystem.BasicSettings.pageTypesArray, n)) {
                 await compileFile(path + n, arrayType);
             } else if(arrayType == SearchFileSystem.getTypes.Static && isFileType(SearchFileSystem.BasicSettings.ReqFileTypesArray, n)){
-                await ReqScript(n, arrayType);
+                await ReqScript(path + n, arrayType);
             } else {
                 await StaticFiles(n, false);
             }

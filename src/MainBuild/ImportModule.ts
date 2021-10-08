@@ -1,6 +1,7 @@
 import { getTypes } from '../RunTimeBuild/SearchFileSystem';
 import {ImportFile, AddExtension, RequireOnce} from '../ImportFiles/Script';
 import EasyFs from '../OutputInput/EasyFs';
+import {print} from '../OutputInput/Console'
 
 export async function StartRequire(array: string[], isDebug: boolean) {
     const arrayFuncServer = [];
@@ -8,8 +9,10 @@ export async function StartRequire(array: string[], isDebug: boolean) {
         i = AddExtension(i);
 
         const b = await ImportFile(i, getTypes.Static, isDebug);
-        if (typeof b.StartServer == 'function') {
+        if (b && typeof b.StartServer == 'function') {
             arrayFuncServer.push(b.StartServer);
+        } else {
+            print.log("Can't find StartServer function at module - " + i);
         }
     }
 

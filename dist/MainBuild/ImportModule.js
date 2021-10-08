@@ -1,13 +1,17 @@
 import { getTypes } from '../RunTimeBuild/SearchFileSystem.js';
 import { ImportFile, AddExtension, RequireOnce } from '../ImportFiles/Script.js';
 import EasyFs from '../OutputInput/EasyFs.js';
+import { print } from '../OutputInput/Console.js';
 export async function StartRequire(array, isDebug) {
     const arrayFuncServer = [];
     for (let i of array) {
         i = AddExtension(i);
         const b = await ImportFile(i, getTypes.Static, isDebug);
-        if (typeof b.StartServer == 'function') {
+        if (b && typeof b.StartServer == 'function') {
             arrayFuncServer.push(b.StartServer);
+        }
+        else {
+            print.log("Can't find StartServer function at module - " + i);
         }
     }
     return arrayFuncServer;
