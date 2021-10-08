@@ -119,7 +119,7 @@ async function readJsonFile(path, encoding) {
 async function makePathReal(p, basic = '') {
     p = path.dirname(p);
     if (!await exists(basic + p)) {
-        const all = p.split('/');
+        const all = p.split(/\\|\//);
         let pString = '';
         for (const i of all) {
             if (pString.length) {

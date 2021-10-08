@@ -134,7 +134,7 @@ async function makePathReal(p:string, basic = '') {
     p = path.dirname(p);
 
     if (!await exists(basic + p)) {
-        const all = p.split('/');
+        const all = p.split(/\\|\//);
 
         let pString = '';
         for (const i of all) {
