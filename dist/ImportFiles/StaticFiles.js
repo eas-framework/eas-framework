@@ -7,6 +7,7 @@ import EasyFs from '../OutputInput/EasyFs.js';
 import { GetPlugin } from '../CompileCode/InsertModels.js';
 import fs from 'fs';
 import promptly from 'promptly';
+import { argv } from 'process';
 const SupportedTypes = ['js', 'svelte', 'ts', 'jsx', 'tsx', 'css', 'sass', 'scss'];
 const locStaticFiles = SystemData + '/StaticFiles.json';
 const StaticFiles = JSON.parse(fs.readFileSync(locStaticFiles, 'utf8') || '{}');
@@ -93,17 +94,23 @@ async function serverBuildByType(Request, filePath, checked) {
         return { ...found, inServer };
 }
 let debuggingWithSource = null;
+if (argv.includes('allowSourceDebug'))
+    debuggingWithSource = true;
 async function askDebuggingWithSource() {
     if (typeof debuggingWithSource == 'boolean')
         return debuggingWithSource;
-    debuggingWithSource = (await promptly.prompt('Allow debugging JavaScript/CSS in source page? - exposing your source code (no)', {
-        validator(v) {
-            if (['yes', 'no'].includes(v.trim().toLowerCase()))
-                return v;
-            throw new Error('yes or no');
-        },
-        timeout: 1000 * 30
-    })).trim().toLowerCase() == 'yes';
+    try {
+        debuggingWithSource = (await promptly.prompt('Allow debugging JavaScript/CSS in source page? - exposing your source code (no)', {
+            validator(v) {
+                if (['yes', 'no'].includes(v.trim().toLowerCase()))
+                    return v;
+                throw new Error('yes or no');
+            },
+            timeout: 1000 * 30
+        })).trim().toLowerCase() == 'yes';
+        // eslint-disable-next-line
+    }
+    catch { }
     return debuggingWithSource;
 }
 const safeFolders = [getTypes.Static[2], getTypes.Logs[2], 'Models', 'Components'];
