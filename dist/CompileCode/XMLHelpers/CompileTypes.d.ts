@@ -47,6 +47,12 @@ export declare type SessionInfo = {
         script: string[];
         scriptModule: string[];
     };
+    cacheComponent: {
+        [key: string]: null | {
+            mtimeMs?: number;
+            value?: string;
+        };
+    };
 };
 export interface BuildInComponent {
     compiledString: StringTracker;

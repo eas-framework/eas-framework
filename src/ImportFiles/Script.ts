@@ -129,7 +129,7 @@ const SavedModules = {};
 export default async function LoadImport(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache: string[] = []) {
   let TimeCheck: any;
 
-  InStaticPath = path.join(AddExtension(InStaticPath));
+  InStaticPath = path.join(AddExtension(InStaticPath).toLowerCase());
   const SavedModulesPath = path.join(typeArray[2], InStaticPath),
     filePath = typeArray[0] + InStaticPath;
 
@@ -156,7 +156,7 @@ export default async function LoadImport(InStaticPath: string, typeArray: string
   const inheritanceCache = withoutCache[0] == InStaticPath;
   if (inheritanceCache)
     withoutCache.shift()
-  else if (!reBuild && SavedModules[SavedModulesPath])
+  else if (!reBuild && SavedModules[SavedModulesPath] && !(SavedModules[SavedModulesPath] instanceof Promise))
     return SavedModules[SavedModulesPath];
 
   function requireMap(p: string) {
@@ -188,7 +188,7 @@ export default async function LoadImport(InStaticPath: string, typeArray: string
 
 export function ImportFile(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache?: string[]) {
   if (!isDebug)
-    return SavedModules[path.join(typeArray[2],InStaticPath)];
+    return SavedModules[path.join(typeArray[2],InStaticPath.toLowerCase())];
 
   return LoadImport(InStaticPath, typeArray, isDebug, useDeps, withoutCache);
 }

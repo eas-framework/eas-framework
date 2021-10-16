@@ -127,7 +127,8 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
             style:  [],
             script: [],
             scriptModule: []
-        }
+        },
+        cacheComponent: {}
     };
 
     let DebugString = new StringTracker(pagePath, data);

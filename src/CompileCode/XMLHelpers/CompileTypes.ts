@@ -49,6 +49,12 @@ export type SessionInfo = {
         style: string[]
         script: string[]
         scriptModule: string[]
+    },
+    cacheComponent: {
+        [key: string]: null | {
+            mtimeMs?: number,
+            value?: string
+        }
     }
 }
 

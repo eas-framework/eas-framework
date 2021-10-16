@@ -54,11 +54,11 @@ async function FilesInFolder(arrayType: string[], path = "") {
         }
         else {
             if (isFileType(SearchFileSystem.BasicSettings.pageTypesArray, n)) {
-                await compileFile(path + n, arrayType);
+                await compileFile(path + n, arrayType, false);
             } else if(arrayType == SearchFileSystem.getTypes.Static && isFileType(SearchFileSystem.BasicSettings.ReqFileTypesArray, n)){
-                await ReqScript(path + n, arrayType);
+                await ReqScript(path + n, arrayType, false);
             } else {
-                await StaticFiles(n, false);
+                await StaticFiles(path + n, false);
             }
         }
     }

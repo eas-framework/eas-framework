@@ -93,7 +93,8 @@ export async function Insert(data, fullPathCompile, pagePath, typeName, smallPat
                 style: [],
                 script: [],
                 scriptModule: []
-            }
+            },
+            cacheComponent: {}
         };
     let DebugString = new StringTracker(pagePath, data);
     DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject);

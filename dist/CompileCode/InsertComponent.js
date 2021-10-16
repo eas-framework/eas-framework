@@ -217,7 +217,8 @@ export default class InsertComponent extends InsertComponentBase {
                 folder = data.remove('folder') || '.';
             const tagPath = (folder ? folder + '/' : '') + type.replace(/:/gi, "/").eq;
             AllPathTypes = CreateFilePath(path, LastSmallPath, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
-            if (!await EasyFs.existsFile(AllPathTypes.FullPath)) {
+            if (sessionInfo.cacheComponent[AllPathTypes.SmallPath] === null || sessionInfo.cacheComponent[AllPathTypes.SmallPath] === undefined && !await EasyFs.existsFile(AllPathTypes.FullPath)) {
+                sessionInfo.cacheComponent[AllPathTypes.SmallPath] = null;
                 if (folder) {
                     PrintIfNew({
                         text: `Component ${type.eq} not found! -> ${pathName}\n-> ${type.lineInfo}`,
@@ -227,8 +228,10 @@ export default class InsertComponent extends InsertComponentBase {
                 }
                 return this.ReBuildTag(type, dataTag, data, BetweenTagData, BetweenTagData => this.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo));
             }
-            dependenceObject[AllPathTypes.SmallPath] = await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs'); // add to dependenceObject
-            const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath);
+            if (!sessionInfo.cacheComponent[AllPathTypes.SmallPath]?.mtimeMs)
+                sessionInfo.cacheComponent[AllPathTypes.SmallPath] = { mtimeMs: await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs') }; // add to dependenceObject
+            dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs;
+            const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
             fileData = allData;
             addStringInfo = stringInfo;
         }

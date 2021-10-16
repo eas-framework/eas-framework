@@ -82,7 +82,7 @@ export function AddExtension(FilePath) {
 const SavedModules = {};
 export default async function LoadImport(InStaticPath, typeArray, isDebug = false, useDeps, withoutCache = []) {
     let TimeCheck;
-    InStaticPath = path.join(AddExtension(InStaticPath));
+    InStaticPath = path.join(AddExtension(InStaticPath).toLowerCase());
     const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = typeArray[0] + InStaticPath;
     //wait if this module is on process, if not declare this as on process module
     let processEnd;
@@ -104,7 +104,7 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
     const inheritanceCache = withoutCache[0] == InStaticPath;
     if (inheritanceCache)
         withoutCache.shift();
-    else if (!reBuild && SavedModules[SavedModulesPath])
+    else if (!reBuild && SavedModules[SavedModulesPath] && !(SavedModules[SavedModulesPath] instanceof Promise))
         return SavedModules[SavedModulesPath];
     function requireMap(p) {
         if (path.isAbsolute(p))
@@ -128,7 +128,7 @@ export default async function LoadImport(InStaticPath, typeArray, isDebug = fals
 }
 export function ImportFile(InStaticPath, typeArray, isDebug = false, useDeps, withoutCache) {
     if (!isDebug)
-        return SavedModules[path.join(typeArray[2], InStaticPath)];
+        return SavedModules[path.join(typeArray[2], InStaticPath.toLowerCase())];
     return LoadImport(InStaticPath, typeArray, isDebug, useDeps, withoutCache);
 }
 export async function RequireOnce(filePath, isDebug) {
