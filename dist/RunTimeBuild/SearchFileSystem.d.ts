@@ -22,7 +22,7 @@ declare const BasicSettings: {
     WebSiteFolder: string;
     readonly fullWebSitePath: string;
     readonly tsConfig: string;
-    tsConfigFile(): Promise<string>;
+    tsConfigFile(): Promise<any>;
 };
 declare function filesInDirectory(path: any, output: any, pathMore?: string): Promise<void>;
 declare function DeleteInDirectory(path: any): Promise<void>;

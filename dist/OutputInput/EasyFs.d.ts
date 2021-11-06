@@ -17,7 +17,7 @@ declare function readdir(path: string, options?: {}): Promise<string[] | Buffer[
 declare function mkdirIfNotExists(path: string): Promise<boolean>;
 declare function writeFile(path: string, content: string): Promise<boolean>;
 declare function writeJsonFile(path: string, content: any): Promise<boolean>;
-declare function readFile(path: string, encoding?: string): Promise<string>;
+declare function readFile(path: string, encoding?: string): Promise<string | any>;
 declare function readJsonFile(path: string, encoding?: string): Promise<any>;
 declare function makePathReal(p: string, basic?: string): Promise<void>;
 export { Dirent };
@@ -37,7 +37,7 @@ declare const _default: {
     readdir: typeof readdir;
     makePathReal: typeof makePathReal;
     access(path: fs.PathLike, mode?: number): Promise<void>;
-    copyFile(src: fs.PathLike, dest: fs.PathLike, flags?: number): Promise<void>;
+    copyFile(src: fs.PathLike, dest: fs.PathLike, mode?: number): Promise<void>;
     open(path: fs.PathLike, flags: string | number, mode?: fs.Mode): Promise<fs.promises.FileHandle>;
     rename(oldPath: fs.PathLike, newPath: fs.PathLike): Promise<void>;
     truncate(path: fs.PathLike, len?: number): Promise<void>;
@@ -67,11 +67,12 @@ declare const _default: {
     mkdtemp(prefix: string, options: fs.BufferEncodingOption): Promise<Buffer>;
     mkdtemp(prefix: string, options?: BufferEncoding | fs.ObjectEncodingOptions): Promise<string | Buffer>;
     appendFile(path: fs.PathLike | fs.promises.FileHandle, data: string | Uint8Array, options?: BufferEncoding | (fs.ObjectEncodingOptions & fs.promises.FlagAndOpenMode)): Promise<void>;
-    opendir(path: string, options?: fs.OpenDirOptions): Promise<fs.Dir>;
+    opendir(path: fs.PathLike, options?: fs.OpenDirOptions): Promise<fs.Dir>;
     watch(filename: fs.PathLike, options: "buffer" | (fs.WatchOptions & {
         encoding: "buffer";
-    })): AsyncIterable<Buffer>;
-    watch(filename: fs.PathLike, options?: BufferEncoding | fs.WatchOptions): AsyncIterable<string>;
-    watch(filename: fs.PathLike, options: string | fs.WatchOptions): AsyncIterable<Buffer> | AsyncIterable<string>;
+    })): AsyncIterable<fs.promises.FileChangeInfo<Buffer>>;
+    watch(filename: fs.PathLike, options?: BufferEncoding | fs.WatchOptions): AsyncIterable<fs.promises.FileChangeInfo<string>>;
+    watch(filename: fs.PathLike, options: string | fs.WatchOptions): AsyncIterable<fs.promises.FileChangeInfo<Buffer>> | AsyncIterable<fs.promises.FileChangeInfo<string>>;
+    cp(source: string, destination: string, opts?: fs.CopyOptions): Promise<void>;
 };
 export default _default;

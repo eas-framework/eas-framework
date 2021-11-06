@@ -109,9 +109,9 @@ async function writeJsonFile(path: string, content: any): Promise<boolean> {
     return false;
 }
 
-function readFile(path:string, encoding = 'utf8'): Promise<string>{
+function readFile(path:string, encoding = 'utf8'): Promise<string|any>{
     return new Promise(res => {
-        fs.readFile(path, encoding, (err, data) => {
+        fs.readFile(path, <any>encoding, (err, data) => {
             if(err){
                 print.error(err);
             }
