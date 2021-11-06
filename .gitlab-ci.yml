@@ -4,7 +4,7 @@ build:
   stage: build
   script:
   - npm install
-  - npm run build production "update packages - auto build"
+  - npm run build production "downgrade source-map-js package - auto build"
   artifacts:
     paths:
       - dist

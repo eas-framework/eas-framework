@@ -48,7 +48,7 @@
     "sass": "^1.43.4",
     "selfsigned": "^1.10.11",
     "source-map": "^0.7.3",
-    "source-map-js": "^1.0.0",
+    "source-map-js": "^0.6.2",
     "source-map-support": "^0.5.20",
     "sucrase": "^3.20.3",
     "svelte": "^3.44.1",
