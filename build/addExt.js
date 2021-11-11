@@ -30,7 +30,7 @@ async function searchDir(path){
 async function fixImports(filepath){
     let content = await promises.readFile(filepath, 'utf8');
 
-    const mathRegex = /(import|export)[ ]+[\*]{0,1}[\p{L}0-9_,\{\} ]+[ ]+(from[ ]+)?(['|`|"])([A-Za-z0-9_\-@\$\./\\]+)\3/gu;
+    const mathRegex = /(import|export)[ ]+([\*]{0,1}[\p{L}0-9_,\{\} ]+[ ]+from[ ]+)?(['|`|"])([A-Za-z0-9_\-@\$\./\\]+)\3/gu;
 
     content = content.replace(mathRegex, (...match) => {
         const filePath = match[4];
