@@ -1,5 +1,5 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, BuildInComponent, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
+import type { tagDataObjectArray, BuildInComponent, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
 export default function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, isDebug: boolean, { SomePlugins }: {
     SomePlugins: any;
 }, sessionInfo: SessionInfo): Promise<BuildInComponent>;

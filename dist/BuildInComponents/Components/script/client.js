@@ -47,3 +47,4 @@ export default async function BuildCode(language, tagData, BetweenTagData, pathN
         compiledString: new StringTracker()
     };
 }
+//# sourceMappingURL=client.js.map

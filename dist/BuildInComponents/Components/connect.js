@@ -1,13 +1,13 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
-import { compileValues, makeValidationJSON } from './serv-connect/index.js';
+import { compileValues, makeValidationJSON, parseTagDataStringBoolean } from './serv-connect/index.js';
 const serveScript = '/serv/connect.js';
 function template(name) {
     return `function ${name}(...args){return connector("${name}", args)}`;
 }
 export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, { SomePlugins }, sessionInfo) {
-    const name = dataTag.getValue('name'), sendTo = dataTag.getValue('sendTo'), validator = dataTag.getValue('validate');
-    let message = dataTag.have('message'); // show error message
-    if (!message)
+    const name = dataTag.getValue('name'), sendTo = dataTag.getValue('sendTo'), validator = dataTag.getValue('validate'), notValid = dataTag.remove('notValid');
+    let message = parseTagDataStringBoolean(dataTag, 'message'); // show error message
+    if (message === null)
         message = isDebug && !SomePlugins("SafeDebug");
     sessionInfo.scriptURLSet.push({
         url: serveScript,
@@ -18,7 +18,8 @@ export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, 
         type: 'connect',
         name,
         sendTo,
-        message: message != null,
+        message,
+        notValid,
         validator: validator && validator.split(',').map(x => x.trim())
     });
     return {
@@ -37,7 +38,8 @@ export function addFinalizeBuild(pageData, sessionInfo) {
         {
             name:"${i.name}",
             sendTo:${i.sendTo},
-            message:${i.message},
+            notValid: ${i.notValid || 'null'},
+            message:${typeof i.message == 'string' ? `"${i.message}"` : i.message},
             validator:[${(i.validator && i.validator.map(compileValues).join(',')) || ''}]
         }`;
     }
@@ -63,16 +65,20 @@ export async function handelConnector(thisPage, connectorArray) {
     const values = thisPage.Post.connectorCall.values;
     const isValid = have.validator.length && await makeValidationJSON(values, have.validator);
     thisPage.setResponse('');
-    if (!have.validator.length || isValid === true) {
-        const obj = await have.sendTo(...values);
+    const betterJSON = (obj) => {
         thisPage.Response.setHeader('Content-Type', 'application/json');
         thisPage.Response.end(JSON.stringify(obj));
-    }
+    };
+    if (!have.validator.length || isValid === true)
+        betterJSON(await have.sendTo(...values));
+    else if (have.notValid)
+        betterJSON(await have.notValid(...isValid));
     else if (have.message)
-        thisPage.Response.json({
-            error: isValid.shift()
+        betterJSON({
+            error: typeof have.message == 'string' ? have.message : isValid.shift()
         });
     else
         thisPage.Response.status(400);
     return true;
 }
+//# sourceMappingURL=connect.js.map

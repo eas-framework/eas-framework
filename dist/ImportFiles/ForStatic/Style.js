@@ -62,3 +62,4 @@ export async function BuildStyleSass(inputPath, type, isDebug) {
         });
     });
 }
+//# sourceMappingURL=Style.js.map

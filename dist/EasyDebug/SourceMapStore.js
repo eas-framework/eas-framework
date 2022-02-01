@@ -2,16 +2,11 @@ import { SourceMapGenerator, SourceMapConsumer } from "source-map-js";
 import path from 'path';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem.js';
 export class SourceMapBasic {
-    filePath;
-    httpSource;
-    isCss;
-    map;
-    fileDirName;
-    lineCount = 0;
     constructor(filePath, httpSource = true, isCss = false) {
         this.filePath = filePath;
         this.httpSource = httpSource;
         this.isCss = isCss;
+        this.lineCount = 0;
         this.map = new SourceMapGenerator({
             file: filePath.split(/\/|\\/).pop()
         });
@@ -41,11 +36,10 @@ export class SourceMapBasic {
     }
 }
 export default class SourceMapStore extends SourceMapBasic {
-    debug;
-    storeString = '';
     constructor(filePath, debug = true, isCss = false, httpSource = true) {
         super(filePath, httpSource, isCss);
         this.debug = debug;
+        this.storeString = '';
     }
     notEmpty() {
         return Boolean(this.storeString);
@@ -99,3 +93,4 @@ export default class SourceMapStore extends SourceMapBasic {
         return this.storeString + this.mapAsURLComment();
     }
 }
+//# sourceMappingURL=SourceMapStore.js.map

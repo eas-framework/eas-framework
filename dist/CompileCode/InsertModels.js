@@ -109,3 +109,4 @@ export async function Insert(data, fullPathCompile, pagePath, typeName, smallPat
     }
     return DebugStringAsBuild;
 }
+//# sourceMappingURL=InsertModels.js.map

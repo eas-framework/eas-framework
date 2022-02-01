@@ -57,3 +57,4 @@ export function handelConnectorService(type, thisPage, connectorArray) {
     else
         return handelConnectorForm(thisPage, connectorArray);
 }
+//# sourceMappingURL=index.js.map

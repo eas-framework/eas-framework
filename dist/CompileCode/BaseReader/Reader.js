@@ -20,12 +20,10 @@ export class BaseReader {
 }
 const cpuLength = cpus().length;
 export class InsertComponentBase {
-    printNew;
-    asyncMethod;
-    SimpleSkip = Settings.SimpleSkip;
-    SkipSpecialTag = Settings.SkipSpecialTag;
     constructor(printNew) {
         this.printNew = printNew;
+        this.SimpleSkip = Settings.SimpleSkip;
+        this.SkipSpecialTag = Settings.SkipSpecialTag;
         this.asyncMethod = new Multithreading(cpuLength, __dirname + '/RustBind/workerInsertComponent.js');
     }
     printErrors(text, errors) {
@@ -55,3 +53,4 @@ export class InsertComponentBase {
         return point;
     }
 }
+//# sourceMappingURL=Reader.js.map

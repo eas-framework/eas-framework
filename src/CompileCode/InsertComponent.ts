@@ -239,7 +239,7 @@ export default class InsertComponent extends InsertComponentBase {
 
                 fileData = fileDataNext;
             } else {
-                const re = new RegExp("\\#" + i.n.eq, "gi");
+                const re = new RegExp("\\~" + i.n.eq, "gi");
                 fileData = fileData.replace(re, i.v ?? i.n);
             }
         }
@@ -410,7 +410,7 @@ export default class InsertComponent extends InsertComponentBase {
                 }
             }
 
-            const BetweenTagData = NextTextTag.substring(0, BetweenTagDataCloseIndex);
+            const BetweenTagData = BetweenTagDataCloseIndex != null && NextTextTag.substring(0, BetweenTagDataCloseIndex);
 
             //finding last close 
             const NextDataClose = NextTextTag.substring(BetweenTagDataCloseIndex);

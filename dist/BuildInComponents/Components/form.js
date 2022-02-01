@@ -1,25 +1,27 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
 import { v4 as uuid } from 'uuid';
-import { compileValues, makeValidationJSON, parseValues } from './serv-connect/index.js';
+import { compileValues, makeValidationJSON, parseValues, parseTagDataStringBoolean } from './serv-connect/index.js';
 import { SplitFirst } from '../../StringMethods/Splitting.js';
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, buildScript, sessionInfo) {
     const sendTo = dataTag.remove('sendTo').trim();
     if (!sendTo) // special action not found
         return {
             compiledString: new StringTracker(type.DefaultInfoText).Plus$ `<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)}</form>`,
-            checkComponents: true
+            checkComponents: false
         };
-    const name = dataTag.remove('name').trim() || uuid(), validator = dataTag.remove('validate'), notValid = dataTag.remove('notValid'), responseSafe = dataTag.have('safe');
-    let message = dataTag.have('message'); // show error message
-    if (!message)
+    const name = dataTag.remove('name').trim() || uuid(), validator = dataTag.remove('validate'), orderDefault = dataTag.remove('order'), notValid = dataTag.remove('notValid'), responseSafe = dataTag.have('safe');
+    let message = parseTagDataStringBoolean(dataTag, 'message'); // show error message
+    if (message === null)
         message = isDebug && !InsertComponent.SomePlugins("SafeDebug");
-    const order = [];
+    let order = [];
     const validatorArray = validator && validator.split(',').map(x => {
         const split = SplitFirst(':', x.trim());
         if (split.length > 1)
             order.push(split.shift());
         return split.pop();
     });
+    if (orderDefault)
+        order = orderDefault.split(',').map(x => x.trim());
     sessionInfo.connectorArray.push({
         type: "form",
         name,
@@ -64,7 +66,7 @@ export function addFinalizeBuild(pageData, sessionInfo) {
                             notValid: ${i.notValid || 'null'},
                             validator:[${i.validator?.map?.(compileValues)?.join(',') ?? ''}],
                             order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}],
-                            message:${i.message},
+                            message:${typeof i.message == 'string' ? `"${i.message}"` : i.message},
                             safe:${i.responseSafe}
                         }
                     );
@@ -96,11 +98,15 @@ export async function handelConnector(thisPage, connectorInfo) {
         response = await connectorInfo.sendTo(...values);
     else if (connectorInfo.notValid)
         response = await connectorInfo.notValid(...isValid);
+    if (!isValid && !response)
+        if (connectorInfo.message === true)
+            thisPage.safeWrite(connectorInfo.message);
+        else
+            response = connectorInfo.message;
     if (response)
         if (connectorInfo.safe)
             thisPage.safeWrite(response);
         else
             thisPage.write(response);
-    else if (connectorInfo.message)
-        thisPage.safeWrite(isValid[0]);
 }
+//# sourceMappingURL=form.js.map

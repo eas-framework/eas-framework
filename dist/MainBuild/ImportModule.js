@@ -29,3 +29,4 @@ export async function GetSettings(filePath, isDebug) {
     const data = await RequireOnce(filePath, isDebug);
     return data.default;
 }
+//# sourceMappingURL=ImportModule.js.map

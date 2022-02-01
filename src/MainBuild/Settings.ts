@@ -98,7 +98,7 @@ interface GlobalSettings {
         arrayFuncServer?: ((...data: any) => any)[]
     },
     preventCompilationError?: ("close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" |
-        'css-warning' | 'compilation-error' | 'jsx-warning' | 'tsx-warning')[],
+        "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning")[],
     AddCompileSyntax?: ("JTags" | "Razor" | "TypeScript" | string | { [key: string]: any })[]
     plugins?: pluginsOptions[],
     ErrorPages?: fileByUrl.ErrorPages
@@ -262,6 +262,8 @@ export async function ReSessionStore() {
     }
 
     const sequelize = new BetterSqlite3(SystemData + '/RuntimeBuild/Session.db');
+    sequelize.pragma('journal_mode = WAL');
+    console.log(sequelize.prepare('PRAGMA journal_mode').get());
 
     SessionStore = session({
         cookie: { maxAge: Export.SessionTimeMinutes * 60 * 1000, sameSite: true },
@@ -289,10 +291,10 @@ export async function requireSettings() {
         const Settings = await GetSettings(Export.SettingsPath, DevMode_);
 
         if (Settings.development)
-            Object.assign(Settings, Settings.OnDev);
+            Object.assign(Settings, Settings["on-dev"]);
 
         else
-            Object.assign(Settings, Settings.OnProduction);
+            Object.assign(Settings, Settings["on-production"]);
 
 
         if (Settings['add-compile-syntax'])
@@ -391,6 +393,6 @@ export async function requireSettings() {
 
     } else {
         Export.DevMode = DevMode_;
-        await (await CompilationEnded)();
+        await (await CompilationEnded)?.();
     }
 }

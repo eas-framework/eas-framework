@@ -1,10 +1,9 @@
 import workerPool from 'workerpool';
 export default class Multithreading {
-    workerPath;
-    finderArray = [];
-    queue = [];
     constructor(threadCount, workerPath) {
         this.workerPath = workerPath;
+        this.finderArray = [];
+        this.queue = [];
         for (let i = 0; i < threadCount; i++) {
             this.addThread();
         }
@@ -58,3 +57,4 @@ export default class Multithreading {
         return wait;
     }
 }
+//# sourceMappingURL=Multithreading.js.map

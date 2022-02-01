@@ -4,6 +4,7 @@ declare const workingDirectory: string;
 declare const getTypes: {
     Static: string[];
     Logs: string[];
+    readonly WWW: string[];
 };
 declare const BasicSettings: {
     pageTypes: {

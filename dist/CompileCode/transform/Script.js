@@ -41,3 +41,4 @@ export default async function BuildScript(text, pathName, isTypescript, isDebug,
     }
     return Result.code;
 }
+//# sourceMappingURL=Script.js.map

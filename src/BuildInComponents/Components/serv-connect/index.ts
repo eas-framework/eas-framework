@@ -1,3 +1,6 @@
+import type { tagDataObjectArray} from '../../../CompileCode/XMLHelpers/CompileTypes';
+
+
 const numbers = ['number', 'num', 'integer', 'int'], booleans = ['boolean', 'bool'];
 const builtInConnection = ['email', 'string', 'text', ...numbers, ...booleans];
 
@@ -133,4 +136,15 @@ export function parseValues(args: any[], validatorArray: any[]): any[] {
     }
 
     return parsed;
+}
+
+export function parseTagDataStringBoolean(data: tagDataObjectArray, find: string): string | null | boolean{
+    const have = data.remove(find);
+
+    if(have === 'true' || !have && data.have(find)) return true;
+    if(have === 'false') return false;
+
+    if(!have) return null;
+
+    return have;
 }

@@ -52,3 +52,4 @@ export function BuildJSX(inStaticPath, isDebug) {
 export function BuildTSX(inStaticPath, isDebug) {
     return BuildScript(inStaticPath, 'tsx', isDebug, { transforms: ['typescript', 'jsx'], ...(GetPlugin("TSXOptions") ?? {}) });
 }
+//# sourceMappingURL=Script.js.map

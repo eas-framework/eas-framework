@@ -1,20 +1,16 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
 import { BaseReader } from '../../CompileCode/BaseReader/Reader.js';
 class Razor {
-    typeLoad;
-    comment;
-    skipWords;
-    notPrint;
-    values;
-    typeQ = [
-        ["(", "["],
-        [")", "]"]
-    ];
-    constructor(typeLoad = '@', comment = '*', skipWords = ["basic"], notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }) {
+    constructor(typeLoad = '@', comment = '*', skipWords = ["basic"], notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }, preventWordWrite = { "include": "await ", "debugger": "" }) {
         this.typeLoad = typeLoad;
         this.comment = comment;
         this.skipWords = skipWords;
         this.notPrint = notPrint;
+        this.preventWordWrite = preventWordWrite;
+        this.typeQ = [
+            ["(", "["],
+            [")", "]"]
+        ];
     }
     CheckWithoutSpace(text, ArrayCheck) {
         for (const i of ArrayCheck) {
@@ -34,7 +30,7 @@ class Razor {
         }
         return counter;
     }
-    ParseScriptSmall(text) {
+    ParseScriptSmall(text, actionType = 'script-print') {
         const simpleText = text.eq;
         const removeOneStartEnd = Number(simpleText.charAt(0) == '('); // remove double parenthesis @(123) => write((123))
         const stop = /(((?![\p{L}_\$0-9.]).)|[\r\n])+/u;
@@ -48,7 +44,7 @@ class Razor {
             //skip '?.'
             if (!(char == '?' && simpleText.charAt(i + 1) == '.') && stop.test(char)) {
                 this.values.push({
-                    type: 'script-print',
+                    type: actionType,
                     data: text.substring(removeOneStartEnd, i - removeOneStartEnd)
                 });
                 this.Builder(text.substring(i + (char == ';' ? 1 : 0))); // text
@@ -210,6 +206,10 @@ class Razor {
             this.FunctionParser(text);
         else if (this.notPrint[firstWord])
             this.ParseScriptBig(text, this.notPrint[firstWord]);
+        else if (this.preventWordWrite[firstWord] != null) {
+            text.AddTextBefore(this.preventWordWrite[firstWord]);
+            this.ParseScriptSmall(text, 'script');
+        }
         else if (text.at(0).eq == '{')
             this.simpleBigScript(text);
         else
@@ -241,3 +241,4 @@ class Razor {
 export default function ConvertSyntax(text, options) {
     return new Razor(options?.char).BuildAll(text);
 }
+//# sourceMappingURL=RazorSyntax.js.map

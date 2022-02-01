@@ -73,10 +73,8 @@ export async function preprocess(fullPath, smallPath, dependenceObject = {}, mak
                 });
             }
             tokenCode = tokenCode.replace(/\/\*uuid-([\w\W]+?)\*\//gmi, (substring, ...args) => {
-                const data = args[0];
-                if (data.substr(args.index - data.length, data.length) == data)
-                    return '';
-                return mapToken[args[0]];
+                const data = mapToken[args[0]] ?? '';
+                return tokenCode.includes(data) ? '' : data;
             });
             return {
                 code: tokenCode,
@@ -179,3 +177,4 @@ export default async function BuildScript(inputPath, isDebug) {
         thisFile: await EasyFs.stat(fullPath, 'mtimeMs')
     };
 }
+//# sourceMappingURL=Svelte.js.map

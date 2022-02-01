@@ -103,7 +103,7 @@ async function LoadPage(url, ext = BasicSettings.pageTypes.page) {
     }
 }
 function BuildPage(LoadPageFunc, run_script_name) {
-    const RequireVar = {};
+    const RequestVar = {};
     return (async function (Response, Request, Post, Query, Cookies, Session, Files, isDebug) {
         const out_run_script = { text: '' };
         function ToStringInfo(str) {
@@ -120,7 +120,7 @@ function BuildPage(LoadPageFunc, run_script_name) {
             out_run_script.text += ToStringInfo(text);
         }
         ;
-        function safeWrite(str = '') {
+        function writeSafe(str = '') {
             str = ToStringInfo(str);
             for (const i of str) {
                 out_run_script.text += '&#' + i.charCodeAt(0) + ';';
@@ -142,7 +142,7 @@ function BuildPage(LoadPageFunc, run_script_name) {
         }
         const DataSend = {
             sendFile,
-            safeWrite,
+            writeSafe,
             write,
             setResponse,
             out_run_script,
@@ -155,7 +155,7 @@ function BuildPage(LoadPageFunc, run_script_name) {
             Files,
             Cookies,
             isDebug,
-            RequireVar,
+            RequestVar,
             codebase: ''
         };
         await LoadPageFunc(DataSend);
@@ -163,3 +163,4 @@ function BuildPage(LoadPageFunc, run_script_name) {
     });
 }
 export { LoadPage, BuildPage, getFullPathCompile, Export, SplitFirst };
+//# sourceMappingURL=FunctionScript.js.map

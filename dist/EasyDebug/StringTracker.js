@@ -1,12 +1,12 @@
 export default class StringTracker {
-    DataArray = [];
-    InfoText = null;
-    OnLine = 1;
-    OnChar = 1;
     /**
      * @param InfoText text info for all new string that are created in this object
      */
     constructor(Info, text) {
+        this.DataArray = [];
+        this.InfoText = null;
+        this.OnLine = 1;
+        this.OnChar = 1;
         if (typeof Info == 'string') {
             this.InfoText = Info;
         }
@@ -538,3 +538,4 @@ export default class StringTracker {
         return this.OneString;
     }
 }
+//# sourceMappingURL=StringTracker.js.map

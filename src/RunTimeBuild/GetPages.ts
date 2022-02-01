@@ -111,7 +111,7 @@ async function ParseBasicInfo(Request: Request | any, Response: Response, code: 
     Request.files = Request.files || {};
 
     const CopyCookies = JSON.parse(JSON.stringify(Request.signedCookies));
-    Request.cookies =  Request.signedCookies;
+    Request.cookies = Request.signedCookies;
 
     Response.statusCode = 201;
 
@@ -135,23 +135,32 @@ async function ParseBasicInfo(Request: Request | any, Response: Response, code: 
     }
 }
 
-//final step
-async function deleteRequestFiles(Request: Request | any) {
+//for final step
+function makeDeleteRequestFilesArray(Request: Request | any) {
     if (!Request.files) //delete files
-        return
+        return []
+
+    const arrPath = []
 
     for (const i in Request.files) {
 
         const e = Request.files[i];
         if (Array.isArray(e)) {
             for (const a in e) {
-                await EasyFs.unlinkIfExists(e[a].path);
+                arrPath.push(e[a].filepath);
             }
         } else
-            await EasyFs.unlinkIfExists(e.path);
+            arrPath.push(e.filepath);
 
     }
 
+    return arrPath;
+}
+
+//final step
+async function deleteRequestFiles(array: string[]) {
+    for(const e in array)
+        await EasyFs.unlinkIfExists(e);
 }
 
 async function isURLPathAFile(Request: Request | any, url: string, arrayType: string[], code: number) {
@@ -284,7 +293,7 @@ async function MakePageResponse(DynamicResponse: any, Response: Response | any) 
     }
 }
 
-async function ActivatePage(Request: Request | any, Response: Response, arrayType: string[], url: string, FileInfo:any, code: number, nextPrase: () => Promise<any>){
+async function ActivatePage(Request: Request | any, Response: Response, arrayType: string[], url: string, FileInfo: any, code: number, nextPrase: () => Promise<any>) {
     const { DynamicFunc, fullPageUrl, code: newCode } = await GetDynamicPage(arrayType, url, FileInfo.fullPageUrl, FileInfo.fullPageUrl + '/' + url, code);
 
     if (!fullPageUrl)
@@ -316,20 +325,22 @@ async function ActivatePage(Request: Request | any, Response: Response, arrayTyp
 async function DynamicPage(Request: Request | any, Response: Response | any, url: string, arrayType = getTypes.Static, code = 200) {
     const FileInfo = await isURLPathAFile(Request, url, arrayType, code);
 
+    const makeDeleteArray = makeDeleteRequestFilesArray(Request)
+
     if (FileInfo.file) {
         Response.setHeader("Cache-Control", "max-age=" + (Settings.CacheDays * 24 * 60 * 60));
         await GetStaticFile(url, Settings.DevMode, Request, Response);
-        deleteRequestFiles(Request);
+        deleteRequestFiles(makeDeleteArray);
         return;
     }
 
     const nextPrase = () => ParseBasicInfo(Request, Response, code); // parse data from methods - post, get... + cookies, session...
 
     const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase);
-    if(!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase))
+    if (!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase))
         return;
 
-    deleteRequestFiles(Request); // delete files
+    deleteRequestFiles(makeDeleteArray); // delete files
 }
 
 function urlFix(url: string) {

@@ -13,3 +13,4 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
     }
     return scriptWithClient(language, dataTag, BetweenTagData, pathName, InsertComponent, sessionInfo);
 }
+//# sourceMappingURL=index.js.map

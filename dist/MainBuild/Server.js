@@ -57,7 +57,7 @@ async function StartApp(Server) {
 }
 async function ParseRequest(req, res) {
     if (req.method == 'POST') {
-        if (req.headers['content-type'].startsWith('application/json')) {
+        if (req.headers['content-type']?.startsWith?.('application/json')) {
             Settings.bodyParser(req, res, () => getPageData(req, res));
         }
         else {
@@ -224,3 +224,4 @@ export default async function StartServer({ SitePath = 'Website', HttpServer = U
     StartApp(HttpServer);
 }
 export { Settings };
+//# sourceMappingURL=Server.js.map

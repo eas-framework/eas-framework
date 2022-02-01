@@ -57,3 +57,4 @@ export async function addFinalizeBuild(pageData, sessionInfo, fullCompilePath) {
         return removeBundle();
     return pageData.Plus(replaceWith);
 }
+//# sourceMappingURL=head.js.map

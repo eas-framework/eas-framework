@@ -2,12 +2,6 @@ import StringTracker from '../EasyDebug/StringTracker.js';
 import { BaseReader } from './BaseReader/Reader.js';
 import { ParseTextStream, ReBuildCodeString } from './ScriptReader/EasyScript.js';
 export default class JSParser {
-    start;
-    text;
-    end;
-    type;
-    path;
-    values;
     constructor(text, path, start = "<%", end = "%>", type = 'script') {
         this.start = start;
         this.text = text;
@@ -171,13 +165,9 @@ export default class JSParser {
     }
 }
 export class EnableGlobalReplace {
-    addText;
-    savedBuildData = [];
-    buildCode;
-    path;
-    replacer;
     constructor(addText = "") {
         this.addText = addText;
+        this.savedBuildData = [];
         this.replacer = RegExp(`${addText}\\/\\*!system--<\\|ejs\\|([0-9])\\|>\\*\\/|system--<\\|ejs\\|([0-9])\\|>`);
     }
     async load(code, path) {
@@ -230,3 +220,4 @@ export class EnableGlobalReplace {
         });
     }
 }
+//# sourceMappingURL=JSParser.js.map

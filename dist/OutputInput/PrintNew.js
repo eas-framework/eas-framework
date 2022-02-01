@@ -10,3 +10,4 @@ export function PrintIfNew({ id, text, type = "warn", errorName }) {
         PreventDoubleLog.push(id ?? text);
     }
 }
+//# sourceMappingURL=PrintNew.js.map

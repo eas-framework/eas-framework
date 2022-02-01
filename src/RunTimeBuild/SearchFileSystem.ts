@@ -5,7 +5,7 @@ import path from 'path';
 import {URL} from 'url'
 
 function getDirname(url: string){
-    return path.dirname(new URL(url).pathname).substring(1);
+    return path.dirname(new URL(url).pathname);
 }
 
 const SystemData = getDirname(import.meta.url) + '/../SystemData';
@@ -14,7 +14,7 @@ const PagesInfoPath = SystemData + '/PagesInfo.json';
 
 let WebSiteFolder_ = "WebSite";
 
-const StaticName = 'Static', LogsName = 'Logs';
+const StaticName = 'WWW', LogsName = 'Logs';
 
 const StaticCompile = SystemData + `/${StaticName}Compile/`;
 const CompileLogs = SystemData + `/${LogsName}Compile/`;
@@ -40,7 +40,10 @@ const getTypes = {
         GetSource(LogsName),
         CompileLogs,
         LogsName
-    ]
+    ],
+    get [StaticName](){
+        return getTypes.Static;
+    }
 }
 
 const BasicSettings = {

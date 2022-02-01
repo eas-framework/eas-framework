@@ -40,7 +40,7 @@ export class PageTemplate extends JSParser {
         
                 var module = { exports: {} },
                     exports = module.exports,
-                    { sendFile, safeWrite, write, setResponse, out_run_script, run_script_name, Response, Request, Post, Query, Session, Files, Cookies, RequireVar} = page,
+                    { sendFile, writeSafe, write, setResponse, out_run_script, run_script_name, Response, Request, Post, Query, Session, Files, Cookies, RequestVar} = page,
                     
                     run_script_code = run_script_name; 
 
@@ -74,3 +74,4 @@ export class PageTemplate extends JSParser {
         return text;
     }
 }
+//# sourceMappingURL=ScriptTemplate.js.map

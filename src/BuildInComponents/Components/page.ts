@@ -36,7 +36,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
     const SmallPathWithoutFolder = InFolderPagePath(filepath, path);
 
-    const FullPath = getTypes.Static[0] + SmallPathWithoutFolder, FullPathCompile =  getTypes.Static[1] + SmallPathWithoutFolder + '.js', SmallPath = getTypes.Static[2] + '/' + SmallPathWithoutFolder;
+    const FullPath = getTypes.Static[0] + SmallPathWithoutFolder, FullPathCompile =  getTypes.Static[1] + SmallPathWithoutFolder + '.cjs', SmallPath = getTypes.Static[2] + '/' + SmallPathWithoutFolder;
 
     if (!(await EasyFs.stat(FullPath, null, true)).isFile?.()) {
         PrintIfNew({

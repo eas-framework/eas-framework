@@ -1,6 +1,6 @@
 import {promises} from 'fs';
 import path from 'path';
-const wasmModule = new WebAssembly.Module(await promises.readFile(path.dirname(new URL(import.meta.url).pathname).substring(1)+'/build.wasm'));
+const wasmModule = new WebAssembly.Module(await promises.readFile(path.dirname(new URL(import.meta.url).pathname)+'/build.wasm'));
 const wasmInstance = new WebAssembly.Instance(wasmModule, {});
 const wasm = wasmInstance.exports;
 

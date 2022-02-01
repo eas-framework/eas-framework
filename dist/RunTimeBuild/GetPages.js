@@ -89,20 +89,27 @@ async function ParseBasicInfo(Request, Response, code) {
         }
     };
 }
-//final step
-async function deleteRequestFiles(Request) {
+//for final step
+function makeDeleteRequestFilesArray(Request) {
     if (!Request.files) //delete files
-        return;
+        return [];
+    const arrPath = [];
     for (const i in Request.files) {
         const e = Request.files[i];
         if (Array.isArray(e)) {
             for (const a in e) {
-                await EasyFs.unlinkIfExists(e[a].path);
+                arrPath.push(e[a].filepath);
             }
         }
         else
-            await EasyFs.unlinkIfExists(e.path);
+            arrPath.push(e.filepath);
     }
+    return arrPath;
+}
+//final step
+async function deleteRequestFiles(array) {
+    for (const e in array)
+        await EasyFs.unlinkIfExists(e);
 }
 async function isURLPathAFile(Request, url, arrayType, code) {
     let fullPageUrl = arrayType[2];
@@ -233,17 +240,18 @@ async function ActivatePage(Request, Response, arrayType, url, FileInfo, code, n
 }
 async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, code = 200) {
     const FileInfo = await isURLPathAFile(Request, url, arrayType, code);
+    const makeDeleteArray = makeDeleteRequestFilesArray(Request);
     if (FileInfo.file) {
         Response.setHeader("Cache-Control", "max-age=" + (Settings.CacheDays * 24 * 60 * 60));
         await GetStaticFile(url, Settings.DevMode, Request, Response);
-        deleteRequestFiles(Request);
+        deleteRequestFiles(makeDeleteArray);
         return;
     }
     const nextPrase = () => ParseBasicInfo(Request, Response, code); // parse data from methods - post, get... + cookies, session...
     const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase);
     if (!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase))
         return;
-    deleteRequestFiles(Request); // delete files
+    deleteRequestFiles(makeDeleteArray); // delete files
 }
 function urlFix(url) {
     url = url.substring(0, url.lastIndexOf('?')) || url;
@@ -253,3 +261,4 @@ function urlFix(url) {
     return decodeURIComponent(url);
 }
 export { Settings, DynamicPage, LoadAllPagesToRam, ClearAllPagesFromRam, urlFix, GetErrorPage };
+//# sourceMappingURL=GetPages.js.map

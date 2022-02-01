@@ -6,15 +6,9 @@ import StringTracker from '../EasyDebug/StringTracker.js';
 import { PrintIfNew } from '../OutputInput/PrintNew.js';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader.js';
 export default class InsertComponent extends InsertComponentBase {
-    dirFolder;
-    PluginBuild;
-    CompileInFile;
-    RemoveEndType = (text) => text;
-    MicroPlugins;
-    GetPlugin;
-    SomePlugins;
     constructor(PluginBuild) {
         super(PrintIfNew);
+        this.RemoveEndType = (text) => text;
         this.dirFolder = 'Components/';
         this.PluginBuild = PluginBuild;
     }
@@ -188,7 +182,7 @@ export default class InsertComponent extends InsertComponentBase {
                 fileData = fileDataNext;
             }
             else {
-                const re = new RegExp("\\#" + i.n.eq, "gi");
+                const re = new RegExp("\\~" + i.n.eq, "gi");
                 fileData = fileData.replace(re, i.v ?? i.n);
             }
         }
@@ -309,7 +303,7 @@ export default class InsertComponent extends InsertComponentBase {
                     BetweenTagDataCloseIndex = null;
                 }
             }
-            const BetweenTagData = NextTextTag.substring(0, BetweenTagDataCloseIndex);
+            const BetweenTagData = BetweenTagDataCloseIndex != null && NextTextTag.substring(0, BetweenTagDataCloseIndex);
             //finding last close 
             const NextDataClose = NextTextTag.substring(BetweenTagDataCloseIndex);
             const NextDataAfterClose = BetweenTagDataCloseIndex != null ? NextDataClose.substring(BaseReader.findEndOfDef(NextDataClose.eq, '>') + 1) : NextDataClose; // search for the close of a big tag just if the tag is valid
@@ -336,3 +330,4 @@ export default class InsertComponent extends InsertComponentBase {
         return this.RemoveUnnecessarySpace(data);
     }
 }
+//# sourceMappingURL=InsertComponent.js.map

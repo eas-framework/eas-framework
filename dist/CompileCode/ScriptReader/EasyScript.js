@@ -16,7 +16,6 @@ class BaseEntityCode {
     }
 }
 class ReBuildCodeBasic extends BaseEntityCode {
-    ParseArray;
     constructor(ParseArray) {
         super();
         this.ParseArray = ParseArray;
@@ -30,7 +29,6 @@ class ReBuildCodeBasic extends BaseEntityCode {
     }
 }
 export class ReBuildCodeString extends ReBuildCodeBasic {
-    DataCode;
     constructor(ParseArray) {
         super(ParseArray);
         this.DataCode = { text: "", inputs: [] };
@@ -86,3 +84,4 @@ export class ReBuildCodeString extends ReBuildCodeBasic {
         return super.ReplaceAll(newString, '<|-|>', '<||>');
     }
 }
+//# sourceMappingURL=EasyScript.js.map

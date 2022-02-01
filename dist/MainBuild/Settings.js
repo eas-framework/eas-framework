@@ -153,6 +153,8 @@ export async function ReSessionStore() {
         return;
     }
     const sequelize = new BetterSqlite3(SystemData + '/RuntimeBuild/Session.db');
+    sequelize.pragma('journal_mode = WAL');
+    console.log(sequelize.prepare('PRAGMA journal_mode').get());
     SessionStore = session({
         cookie: { maxAge: Export.SessionTimeMinutes * 60 * 1000, sameSite: true },
         secret: SessionSecret,
@@ -176,9 +178,9 @@ export async function requireSettings() {
     if (await SettingsExsit(Export.SettingsPath)) {
         const Settings = await GetSettings(Export.SettingsPath, DevMode_);
         if (Settings.development)
-            Object.assign(Settings, Settings.OnDev);
+            Object.assign(Settings, Settings["on-dev"]);
         else
-            Object.assign(Settings, Settings.OnProduction);
+            Object.assign(Settings, Settings["on-production"]);
         if (Settings['add-compile-syntax'])
             Export.AddCompileSyntax = Settings['add-compile-syntax'];
         if (Settings['plugins'])
@@ -250,6 +252,7 @@ export async function requireSettings() {
     }
     else {
         Export.DevMode = DevMode_;
-        await (await CompilationEnded)();
+        await (await CompilationEnded)?.();
     }
 }
+//# sourceMappingURL=Settings.js.map

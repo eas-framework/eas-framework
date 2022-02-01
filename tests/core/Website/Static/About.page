@@ -1,5 +1,0 @@
-<@model>Website</@model>
-<@title>This is about page</@title>
-<@body/>
-<p>Welcome to the new Beyond Website!</p>
-<p>Today date: @(new Date().toString())</p>

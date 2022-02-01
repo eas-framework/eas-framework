@@ -7,3 +7,4 @@ export default async function isolate(BetweenTagData) {
         checkComponents: true
     };
 }
+//# sourceMappingURL=isolate.js.map

@@ -15,7 +15,7 @@ class Razor {
     ];
 
 
-    constructor(public typeLoad = '@', public comment = '*', public skipWords = ["basic"], public notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }) 
+    constructor(public typeLoad = '@', public comment = '*', public skipWords = ["basic"], public notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }, public preventWordWrite = {"include": "await ", "debugger": ""}) 
     {}
 
     CheckWithoutSpace(text: string, ArrayCheck: string[]) {
@@ -40,7 +40,7 @@ class Razor {
         return counter;
     }
 
-    ParseScriptSmall(text: StringTracker) {
+    ParseScriptSmall(text: StringTracker, actionType= 'script-print') {
         const simpleText = text.eq;
         const removeOneStartEnd = Number(simpleText.charAt(0) == '(') // remove double parenthesis @(123) => write((123))
 
@@ -58,7 +58,7 @@ class Razor {
             //skip '?.'
             if (!(char == '?' && simpleText.charAt(i+1) == '.') && stop.test(char)) {
                 this.values.push({ // script
-                    type: 'script-print',
+                    type: actionType,
                     data: text.substring(removeOneStartEnd, i - removeOneStartEnd)
                 });
 
@@ -267,6 +267,11 @@ class Razor {
 
         else if (this.notPrint[firstWord])
             this.ParseScriptBig(text, this.notPrint[firstWord]);
+
+        else if(this.preventWordWrite[firstWord] != null){
+            text.AddTextBefore(this.preventWordWrite[firstWord]);
+            this.ParseScriptSmall(text, 'script');
+        }
 
         else if (text.at(0).eq == '{')
             this.simpleBigScript(text);

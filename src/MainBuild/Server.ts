@@ -75,7 +75,7 @@ async function StartApp(Server?) {
 
 async function ParseRequest(req, res) {
     if (req.method == 'POST') {
-        if (req.headers['content-type'].startsWith('application/json')) {
+        if (req.headers['content-type']?.startsWith?.('application/json')) {
             Settings.bodyParser(req, res, () => getPageData(req, res));
         } else {
             new formidable.IncomingForm(Settings.formidable).parse(req, (err, fields, files) => {

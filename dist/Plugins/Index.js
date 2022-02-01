@@ -1,6 +1,5 @@
 import AddSyntax from './Syntax/Index.js';
 export default class AddPlugin {
-    SettingsObject;
     constructor(SettingsObject) {
         this.SettingsObject = SettingsObject;
     }
@@ -43,3 +42,4 @@ export default class AddPlugin {
         return text;
     }
 }
+//# sourceMappingURL=Index.js.map

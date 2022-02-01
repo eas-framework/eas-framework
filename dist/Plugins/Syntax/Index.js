@@ -12,3 +12,4 @@ export default async function GetSyntax(CompileType) {
     }
     return func;
 }
+//# sourceMappingURL=Index.js.map

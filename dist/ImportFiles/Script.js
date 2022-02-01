@@ -145,3 +145,4 @@ export async function RequireCjsScript(content) {
     EasyFs.unlink(tempFile);
     return model;
 }
+//# sourceMappingURL=Script.js.map

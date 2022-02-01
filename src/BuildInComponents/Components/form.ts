@@ -1,7 +1,7 @@
 import StringTracker from '../../EasyDebug/StringTracker';
 import { tagDataObjectArray, StringNumberMap, BuildInComponent, SessionInfo, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
-import { compileValues, makeValidationJSON, parseValues } from './serv-connect/index';
+import { compileValues, makeValidationJSON, parseValues, parseTagDataStringBoolean } from './serv-connect/index';
 import { SplitFirst } from '../../StringMethods/Splitting';
 
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
@@ -12,17 +12,17 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         return {
             compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)
                 }</form>`,
-            checkComponents: true
+            checkComponents: false
         }
 
 
-    const name = dataTag.remove('name').trim() || uuid(), validator: string = dataTag.remove('validate'), notValid: string = dataTag.remove('notValid'), responseSafe = dataTag.have('safe');
+    const name = dataTag.remove('name').trim() || uuid(), validator: string = dataTag.remove('validate'), orderDefault: string = dataTag.remove('order'), notValid: string = dataTag.remove('notValid'), responseSafe = dataTag.have('safe');
 
-    let message: string | boolean = dataTag.have('message'); // show error message
-    if (!message)
+    let message = parseTagDataStringBoolean(dataTag, 'message'); // show error message
+    if (message === null)
         message = isDebug && !InsertComponent.SomePlugins("SafeDebug");
 
-    const order = [];
+    let order = [];
 
     const validatorArray = validator && validator.split(',').map(x => { // Checking if there is an order information, for example "prop1: string, prop3: num, prop2: bool"
         const split = SplitFirst(':', x.trim());
@@ -32,6 +32,9 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
         return split.pop();
     });
+
+    if (orderDefault)
+        order = orderDefault.split(',').map(x => x.trim());
 
     sessionInfo.connectorArray.push({
         type: "form",
@@ -88,7 +91,7 @@ export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionIn
                             notValid: ${i.notValid || 'null'},
                             validator:[${i.validator?.map?.(compileValues)?.join(',') ?? ''}],
                             order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}],
-                            message:${i.message},
+                            message:${typeof i.message == 'string' ? `"${i.message}"` : i.message},
                             safe:${i.responseSafe}
                         }
                     );
@@ -134,11 +137,15 @@ export async function handelConnector(thisPage: any, connectorInfo: any) {
     else if (connectorInfo.notValid)
         response = await connectorInfo.notValid(...<any>isValid);
 
+    if (!isValid && !response)
+        if (connectorInfo.message === true)
+            thisPage.safeWrite(connectorInfo.message);
+        else
+            response = connectorInfo.message;
+
     if (response)
         if (connectorInfo.safe)
             thisPage.safeWrite(response);
         else
             thisPage.write(response);
-    else if (connectorInfo.message)
-        thisPage.safeWrite(isValid[0]);
 }

@@ -188,3 +188,4 @@ export async function GetFile(SmallPath, isDebug, Request, Response) {
         resPath += '.js';
     Response.end(await fs.promises.readFile(resPath, 'utf8')); // sending the file
 }
+//# sourceMappingURL=StaticFiles.js.map

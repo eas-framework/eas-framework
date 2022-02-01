@@ -1,6 +1,5 @@
 import { ParseTextStream, ReBuildCodeString } from '../ScriptReader/EasyScript.js';
 export default class EasySyntax {
-    Build;
     async load(code) {
         const parseArray = await ParseTextStream(code);
         this.Build = new ReBuildCodeString(parseArray);
@@ -120,3 +119,4 @@ export default class EasySyntax {
         return code.substring(1, code.length - 1);
     }
 }
+//# sourceMappingURL=EasySyntax.js.map

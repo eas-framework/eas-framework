@@ -1,6 +1,6 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, BuildInComponent, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
-import { compileValues, makeValidationJSON } from './serv-connect/index';
+import type { tagDataObjectArray, BuildInComponent, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { compileValues, makeValidationJSON, parseTagDataStringBoolean } from './serv-connect/index';
 
 const serveScript = '/serv/connect.js';
 
@@ -11,10 +11,11 @@ function template(name: string) {
 export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, isDebug: boolean, { SomePlugins }, sessionInfo: SessionInfo): Promise<BuildInComponent> {
     const name = dataTag.getValue('name'),
         sendTo = dataTag.getValue('sendTo'),
-        validator: string = dataTag.getValue('validate');
+        validator: string = dataTag.getValue('validate'),
+        notValid: string = dataTag.remove('notValid');
 
-    let message: string | boolean = dataTag.have('message'); // show error message
-    if (!message)
+    let message = parseTagDataStringBoolean(dataTag, 'message'); // show error message
+    if (message === null)
         message = isDebug && !SomePlugins("SafeDebug");
 
     sessionInfo.scriptURLSet.push({
@@ -28,7 +29,8 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
         type: 'connect',
         name,
         sendTo,
-        message: message != null,
+        message,
+        notValid,
         validator: validator && validator.split(',').map(x => x.trim())
     });
 
@@ -52,7 +54,8 @@ export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionIn
         {
             name:"${i.name}",
             sendTo:${i.sendTo},
-            message:${i.message},
+            notValid: ${i.notValid || 'null'},
+            message:${typeof i.message == 'string' ? `"${i.message}"` : i.message},
             validator:[${(i.validator && i.validator.map(compileValues).join(',')) || ''}]
         }`;
     }
@@ -90,15 +93,20 @@ export async function handelConnector(thisPage: any, connectorArray: any[]) {
 
     thisPage.setResponse('');
 
-    if (!have.validator.length || isValid === true) {
-        const obj = await have.sendTo(...values);
-
+    const betterJSON = (obj: any) => {
         thisPage.Response.setHeader('Content-Type', 'application/json');
         thisPage.Response.end(JSON.stringify(obj));
+    }
 
-    } else if (have.message)
-        thisPage.Response.json({
-            error: (<any>isValid).shift()
+    if (!have.validator.length || isValid === true) 
+        betterJSON(await have.sendTo(...values));
+
+     else if (have.notValid) 
+        betterJSON(await have.notValid(...<any>isValid));
+    
+    else if (have.message)
+        betterJSON({
+            error: typeof have.message == 'string' ? have.message : (<any>isValid).shift()
         });
     else
         thisPage.Response.status(400);

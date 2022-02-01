@@ -136,7 +136,7 @@ async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
 }
 
 function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: string) {
-    const RequireVar = {};
+    const RequestVar = {};
 
     return (async function (Response: Response, Request: Request, Post: { [key: string]: any } | null, Query: { [key: string]: any }, Cookies: { [key: string]: any }, Session: { [key: string]: any }, Files: Files, isDebug: boolean) {
         const out_run_script = { text: '' };
@@ -157,7 +157,7 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
             out_run_script.text += ToStringInfo(text);
         };
 
-        function safeWrite(str = '') {
+        function writeSafe(str = '') {
             str = ToStringInfo(str);
 
             for (const i of str) {
@@ -186,7 +186,7 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
 
         const DataSend = {
             sendFile,
-            safeWrite,
+            writeSafe,
             write,
             setResponse,
             out_run_script,
@@ -199,7 +199,7 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
             Files,
             Cookies,
             isDebug,
-            RequireVar,
+            RequestVar,
             codebase: ''
         }
 

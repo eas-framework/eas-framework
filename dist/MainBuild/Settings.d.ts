@@ -59,7 +59,7 @@ interface GlobalSettings {
         IgnorePaths?: string[];
         arrayFuncServer?: ((...data: any) => any)[];
     };
-    preventCompilationError?: ("close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" | 'css-warning' | 'compilation-error' | 'jsx-warning' | 'tsx-warning')[];
+    preventCompilationError?: ("close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" | "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning")[];
     AddCompileSyntax?: ("JTags" | "Razor" | "TypeScript" | string | {
         [key: string]: any;
     })[];
