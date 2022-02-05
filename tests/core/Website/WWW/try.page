@@ -1,0 +1,60 @@
+
+@*
+@{
+    function sendRes(myNum: string){
+        return '\nCool! ' + myNum
+    }
+
+    function not(err){
+        return 'info not valid - ' + err;
+    }
+}
+<form method="POST" sendTo="sendRes" validate="num: int => 5 | 6" notValid="not">
+    <input type="text" name="num" value="6"/> 
+    <button type="submit">Submit</button>
+</form>
+*@
+@* @{
+
+
+    let i = 0;
+    async function servInfo(text) {
+        return '123 ' + text + i;
+    }
+
+    @ConnectHere;
+}
+<connect name="getInfo" sendTo="servInfo" validate="text"/>
+
+*@
+@*
+@{
+    const me = 4;
+
+    function log(){
+        return (x) => {return {f:x + 1}};
+    }
+}
+
+@for(const {a} of [{a:1999}]){
+    @a 9
+}
+
+@(true) next
+
+@me;
+
+@log()(8)?.f;
+
+
+@{
+    const me = 9;
+}
+
+@style {
+    :root {
+        --back: url(123_@me;_4)
+    }
+}
+*@
+<p>Session count: @(Session?.count)</p>

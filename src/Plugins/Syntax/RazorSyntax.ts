@@ -15,7 +15,7 @@ class Razor {
     ];
 
 
-    constructor(public typeLoad = '@', public comment = '*', public skipWords = ["basic"], public notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }, public preventWordWrite = {"include": "await ", "debugger": ""}) 
+    constructor(public typeLoad = '@', public comment = '*', public skipWords = ["basic"], public notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }, public preventWordWrite = {"include": "await ", "debugger": "", "import": "await "}) 
     {}
 
     CheckWithoutSpace(text: string, ArrayCheck: string[]) {

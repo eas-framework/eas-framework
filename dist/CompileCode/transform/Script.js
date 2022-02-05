@@ -6,6 +6,9 @@ async function ReplaceBefore(code, defineData) {
     code = await EasySyntax.BuildAndExportImports(code, defineData);
     return code;
 }
+function ErrorTemplate(info) {
+    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += '<p style="color:red;text-align:left;font-size:16px;">Syntax Error: ${info}</p>'`;
+}
 function ReplaceAfter(code) {
     return code.replace('"use strict";Object.defineProperty(exports, "__esModule", {value: true});', '');
 }
@@ -31,10 +34,13 @@ export default async function BuildScript(text, pathName, isTypescript, isDebug,
         Result.code = ReplaceAfter(Result.code);
     }
     catch (err) {
+        const errorMessage = `${err.message}, on file -> ${pathName}:${text.getLine(err?.loc?.line ?? 1).DefaultInfoText.line}:${err?.loc?.column ?? 0}`;
         PrintIfNew({
             errorName: 'compilation-error',
-            text: `${err.message}, on file -> ${pathName}:${text.getLine(err?.loc?.line ?? 1).DefaultInfoText.line}:${err?.loc?.column ?? 0}`
+            text: errorMessage
         });
+        if (isDebug)
+            Result.code = ErrorTemplate(errorMessage);
     }
     if (!isDebug && !removeToMoudule) {
         Result.code = (await minify(Result.code, { module: false })).code;

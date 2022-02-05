@@ -10,6 +10,7 @@ import StringTracker from '../EasyDebug/StringTracker.js';
 import SourceMapStore from '../EasyDebug/SourceMapStore.js';
 import BuildScript from './transform/Script.js';
 import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings.js';
+import ParseBasePage from './XMLHelpers/PageBase.js';
 export const Settings = { AddCompileSyntax: ["JTags", "Razor"], plugins: [] };
 const PluginBuild = new AddPlugin(Settings);
 export const Components = new InsertComponent(PluginBuild);
@@ -27,17 +28,14 @@ Components.GetPlugin = GetPlugin;
 Components.SomePlugins = SomePlugins;
 BuildScriptSettings.plugins = Settings.plugins;
 async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, dependenceObject) {
-    const values = extricate.getDataTages(data, ['model'], '@');
-    const model = values.found[0];
-    let modelName;
-    data = values.data;
-    if (model == undefined) {
-        return data;
-    }
-    else {
-        modelName = model.data.trim();
-    }
-    const { SmallPath, FullPath } = CreateFilePath(pagePath, LastSmallPath, modelName.eq, 'Models', BasicSettings.pageTypes.model); // find location of the file
+    const baseData = new ParseBasePage(data);
+    await baseData.loadCodeFile(pagePath, isTs(), dependenceObject, pageName);
+    const modelName = baseData.popAny('model')?.eq;
+    if (!modelName)
+        return baseData.scriptFile.Plus(baseData.clearData);
+    data = baseData.clearData;
+    //import model
+    const { SmallPath, FullPath } = CreateFilePath(pagePath, LastSmallPath, modelName, 'Models', BasicSettings.pageTypes.model); // find location of the file
     if (!await EasyFs.existsFile(FullPath)) {
         const ErrorMessage = `Error model not found -> ${modelName} at page ${pageName}`;
         print.error(ErrorMessage);
@@ -48,35 +46,36 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
     let modelData = baseModelData.allData;
     modelData.AddTextBefore(baseModelData.stringInfo);
     pageName += " -> " + SmallPath;
+    //Get placeholders
     const allData = extricate.getDataTages(modelData, [''], ':', false, true);
     if (allData.error) {
         print.error("Error within model ->", modelName, "at page: ", pageName);
         return data;
     }
     modelData = allData.data;
-    const arrayTypes = [];
-    for (const i of allData.found) {
-        const tag = i.tag.substring(1);
-        i.tag = '@' + tag;
-        arrayTypes.push(tag);
-    }
-    const outData = extricate.getDataTages(data, arrayTypes, '@');
+    const tagArray = allData.found.map(x => x.tag.substring(1));
+    const outData = extricate.getDataTages(data, tagArray, '@');
     if (outData.error) {
         print.error("Error With model ->", modelName, "at page: ", pageName);
         return data;
     }
+    //Build With placeholders
     const modelBuild = new StringTracker();
     for (const i of allData.found) {
-        const t = i.tag;
-        const d = outData.found.find((e) => e.tag == t);
+        i.tag = i.tag.substring(1); // removing the ':'
+        const holderData = outData.found.find((e) => e.tag == '@' + i.tag);
         modelBuild.Plus(modelData.substring(0, i.loc));
         modelData = modelData.substring(i.loc);
-        if (d != undefined) {
-            modelBuild.Plus(d.data);
+        if (holderData) {
+            modelBuild.Plus(holderData.data);
+        }
+        else { // Try loading data from page base
+            const loadFromBase = baseData.pop(i.tag);
+            loadFromBase && modelBuild.Plus(loadFromBase);
         }
     }
     modelBuild.Plus(modelData);
-    return await outPage(modelBuild, FullPath, pageName, SmallPath, isDebug, dependenceObject);
+    return await outPage(baseData.scriptFile.Plus(modelBuild), FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
 export async function Insert(data, fullPathCompile, pagePath, typeName, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
     const BuildScriptWithPrams = (code, pathName, RemoveToModule = true) => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);

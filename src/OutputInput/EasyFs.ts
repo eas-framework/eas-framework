@@ -27,8 +27,8 @@ function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue:
     });
 }
 
-async function existsFile(path: string): Promise<boolean>{
-    return (await stat(path, null, true)).isFile?.();
+async function existsFile(path: string, ifTrueReturn: any = true): Promise<boolean>{
+    return (await stat(path, null, true)).isFile?.() && ifTrueReturn;
 }
 
 function mkdir(path: string): Promise<boolean>{

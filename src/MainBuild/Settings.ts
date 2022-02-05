@@ -263,7 +263,6 @@ export async function ReSessionStore() {
 
     const sequelize = new BetterSqlite3(SystemData + '/RuntimeBuild/Session.db');
     sequelize.pragma('journal_mode = WAL');
-    console.log(sequelize.prepare('PRAGMA journal_mode').get());
 
     SessionStore = session({
         cookie: { maxAge: Export.SessionTimeMinutes * 60 * 1000, sameSite: true },

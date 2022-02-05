@@ -24,8 +24,8 @@ function stat(path, filed, ignoreError, defaultValue = {}) {
         });
     });
 }
-async function existsFile(path) {
-    return (await stat(path, null, true)).isFile?.();
+async function existsFile(path, ifTrueReturn = true) {
+    return (await stat(path, null, true)).isFile?.() && ifTrueReturn;
 }
 function mkdir(path) {
     return new Promise(res => {

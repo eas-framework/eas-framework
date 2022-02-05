@@ -11,11 +11,12 @@
     "push": "node build/gitPush.js",
     "buildAndPush": "node build/buildProduction.js",
     "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
-    "test": "npm run build & npm run test:dist"
+    "test:compile": "node --trace-warnings --inspect=127.0.0.1:9229 tests/compile.js",
+    "test": "npm run build && npm run test:dist"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/ido.very.much/beyond-easy.git"
+    "url": "git+https://gitlab.com/ido.pluto/eas-framework/beyond-easy.git"
   },
   "keywords": [
     "router",
@@ -29,7 +30,7 @@
   "author": "Ido S.",
   "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/ido.very.much/beyond-easy/issues"
+    "url": "https://gitlab.com/ido.pluto/eas-framework/issues"
   },
   "dependencies": {
     "@tinyhttp/app": "^2.0.12",
@@ -43,7 +44,6 @@
     "express-session": "^1.17.2",
     "formidable": "^2.0.1",
     "greenlock-express": "^4.0.3",
-    "node-fetch": "^3.0.0",
     "promptly": "^3.2.0",
     "sass": "^1.43.4",
     "selfsigned": "^1.10.11",
@@ -63,7 +63,6 @@
     "@types/express-session": "^1.17.4",
     "@types/formidable": "^2.0.0",
     "@types/node": "^16.11.6",
-    "@types/node-fetch": "^3.0.3",
     "@types/sass": "^1.43.0",
     "@types/uuid": "^8.3.1",
     "@types/workerpool": "^6.1.0",
@@ -77,5 +76,5 @@
     "prettier": "2.4.1",
     "typescript": "^4.4.4"
   },
-  "homepage": "https://gitlab.com/ido.very.much/beyond-easy#readme"
+  "homepage": "https://gitlab.com/ido.pluto/eas-framework#readme"
 }

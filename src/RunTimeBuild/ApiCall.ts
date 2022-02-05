@@ -5,6 +5,7 @@ import path from 'path';
 import EasyFs from '../OutputInput/EasyFs';
 import { GetPlugin } from '../CompileCode/InsertModels';
 import { print } from '../OutputInput/Console';
+import http from 'http';
 
 // -- start of fetch file + cache --
 
@@ -78,9 +79,7 @@ export default async function (Request: any, Response: any, url: string, isDebug
     }
 }
 // -- end of fetch file --
-
-const banWords = ['validateURL', 'validateFunc', 'func', 'define'];
-
+const banWords = ['validateURL', 'validateFunc', 'func', 'define', ...http.METHODS];
 /**
  * Find the Best Path
  */
@@ -180,17 +179,18 @@ async function makeDefinition(obj: any, urlFrom: string, defineObject: any, Requ
 
     return urlFrom;
 }
-
 async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: string, isDebug: boolean, nextPrase: () => Promise<any>) {
     const allowErrorInfo = !GetPlugin("SafeDebug") && isDebug, makeMassage = (e: any) => (isDebug ? print.error(e) : null) + (allowErrorInfo ? `, message: ${e.message}` : '');
-    const method = Request.method.toLowerCase();
-    let methodObj = fileModule[method + 'Method'] || fileModule.default[method]; //Loading the module by method
+    const method = Request.method;
+    let methodObj = fileModule[method] || fileModule.default[method]; //Loading the module by method
     let haveMethod = true;
 
     if(!methodObj){
         haveMethod = false;
         methodObj = fileModule.default || fileModule;
     }
+
+    const baseMethod = methodObj;
 
     const defineObject = {};
 
@@ -216,6 +216,8 @@ async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: s
             methodObj = methodObj[method];
         }
     }
+
+    methodObj = methodObj?.func && methodObj || baseMethod; // if there is an 'any' method
 
 
     if (!methodObj?.func)
@@ -259,8 +261,7 @@ async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: s
 
     const finalStep = await nextPrase(); // parse data from methods - post, get... + cookies, session...
 
-    let apiResponse: any;
-    let newResponse: any = {};
+    let apiResponse: any, newResponse: any;
     try {
         apiResponse = await methodObj.func(Request, Response, urlData, defineObject, leftData);
     } catch (e) {
@@ -270,12 +271,10 @@ async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: s
             newResponse = { error: '500 - Internal Server Error' };
     }
 
-    if (apiResponse) {
-        if (typeof apiResponse == 'object')
-            newResponse = apiResponse;
-        else if (typeof apiResponse == 'string')
+    if (typeof apiResponse == 'string')
             newResponse = { text: apiResponse };
-    }
+        else 
+            newResponse = apiResponse;
 
     finalStep();  // save cookies + code
 

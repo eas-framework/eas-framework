@@ -5,15 +5,31 @@ import Multithreading from '../Multithreading.js';
 import { cpus } from 'os';
 const __dirname = getDirname(import.meta.url);
 export class BaseReader {
+    /**
+     * Find the end of quotation marks, skipping things like escaping: "\\""
+     * @return the index of end
+     */
     static findEntOfQ(text, qType) {
         return find_end_of_q(text, qType);
     }
+    /**
+     * Find char skipping data inside quotation marks
+     * @return the index of end
+     */
     static findEndOfDef(text, EndType) {
         if (!Array.isArray(EndType)) {
             EndType = [EndType];
         }
         return find_end_of_def(text, JSON.stringify(EndType));
     }
+    /**
+     * Same as 'findEndOfDef' only with option to custom 'open' and 'close'
+     * ```js
+     * FindEndOfBlock(`cool "}" { data } } next`, '{', '}')
+     * ```
+     * it will return the 18 -> "} next"
+     *  @return the index of end
+     */
     static FindEndOfBlock(text, open, end) {
         return find_end_block(text, open + end);
     }

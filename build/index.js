@@ -12,6 +12,7 @@ await remove(dist);
 await mkdir(dist);
 
 const actionType = process.argv[2];
+
 //building the project
 const stream = exec('npm run build:ts' + (actionType ? ':' + actionType: ''));
 
@@ -19,16 +20,14 @@ stream.stdout.pipe(process.stdout);
 
 stream.stderr.pipe(process.stdout);
 
-stream.on('exit', nextBuild);
+await new Promise(r => stream.on('exit',r));
 
-async function nextBuild() {
-    await import('./copyWasm.js');
-    await import('./copyFiles.js');
-    await import('./addExt.js');
-    await import('./minifyClient.js');
+await import('./copyWasm.js');
+await import('./copyFiles.js');
+await import('./addExt.js');
+await import('./minifyClient.js');
 
-    //coping the 'SystemData' directory
-    await copy(__dirname + '/src/SystemData', dist + 'SystemData');
+//coping the 'SystemData' directory
+await copy(__dirname + '/src/SystemData', dist + 'SystemData');
 
-    console.log('Done!');
-}
+console.log('Done!');

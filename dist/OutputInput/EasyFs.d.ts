@@ -8,7 +8,7 @@ declare function exists(path: string): Promise<boolean>;
  * @returns the filed
  */
 declare function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue?: any): Promise<Stats | any>;
-declare function existsFile(path: string): Promise<boolean>;
+declare function existsFile(path: string, ifTrueReturn?: any): Promise<boolean>;
 declare function mkdir(path: string): Promise<boolean>;
 declare function rmdir(path: string): Promise<boolean>;
 declare function unlink(path: string): Promise<boolean>;

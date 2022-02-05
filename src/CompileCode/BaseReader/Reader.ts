@@ -8,10 +8,18 @@ import {cpus} from 'os';
 const __dirname = getDirname(import.meta.url);
 
 export class BaseReader {
+    /**
+     * Find the end of quotation marks, skipping things like escaping: "\\""
+     * @return the index of end
+     */
     static findEntOfQ(text: string, qType: string) {
         return find_end_of_q(text, qType);
     }
 
+    /**
+     * Find char skipping data inside quotation marks
+     * @return the index of end
+     */
     static findEndOfDef(text: string, EndType: string[] | string) {
         if (!Array.isArray(EndType)) {
             EndType = [EndType];
@@ -20,6 +28,14 @@ export class BaseReader {
         return find_end_of_def(text, JSON.stringify(EndType));
     }
 
+    /**
+     * Same as 'findEndOfDef' only with option to custom 'open' and 'close'
+     * ```js
+     * FindEndOfBlock(`cool "}" { data } } next`, '{', '}')
+     * ```
+     * it will return the 18 -> "} next"
+     *  @return the index of end
+     */
     static FindEndOfBlock(text: string, open: string, end: string) {
         return find_end_block(text, open + end);
     }

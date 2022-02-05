@@ -11,6 +11,7 @@ import SourceMapStore from '../EasyDebug/SourceMapStore';
 import { StringNumberMap, SessionInfo } from './XMLHelpers/CompileTypes';
 import BuildScript from './transform/Script';
 import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings';
+import ParseBasePage from './XMLHelpers/PageBase';
 
 export const Settings = { AddCompileSyntax: ["JTags", "Razor"], plugins: [] };
 const PluginBuild = new AddPlugin(Settings);
@@ -36,21 +37,16 @@ BuildScriptSettings.plugins = Settings.plugins;
 
 async function outPage(data: StringTracker, pagePath: string, pageName: string, LastSmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap): Promise<StringTracker> {
 
-    const values = extricate.getDataTages(data, ['model'], '@');
+    const baseData = new ParseBasePage(data);
+    await baseData.loadCodeFile(pagePath, isTs(), dependenceObject, pageName);
 
-    const model = values.found[0];
-    let modelName: StringTracker;
+    const modelName = baseData.popAny('model')?.eq;
 
-    data = values.data;
+    if (!modelName) return baseData.scriptFile.Plus(baseData.clearData);
+    data = baseData.clearData;
 
-    if (model == undefined) {
-        return data;
-    }
-    else {
-        modelName = model.data.trim();
-    }
-
-    const { SmallPath, FullPath } = CreateFilePath(pagePath, LastSmallPath, modelName.eq, 'Models', BasicSettings.pageTypes.model); // find location of the file
+    //import model
+    const { SmallPath, FullPath } = CreateFilePath(pagePath, LastSmallPath, modelName, 'Models', BasicSettings.pageTypes.model); // find location of the file
 
     if (!await EasyFs.existsFile(FullPath)) {
         const ErrorMessage = `Error model not found -> ${modelName} at page ${pageName}`;
@@ -68,6 +64,7 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
 
     pageName += " -> " + SmallPath;
 
+    //Get placeholders
     const allData = extricate.getDataTages(modelData, [''], ':', false, true);
 
     if (allData.error) {
@@ -76,39 +73,35 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
     }
 
     modelData = allData.data;
-
-    const arrayTypes = [];
-
-    for (const i of allData.found) {
-        const tag = i.tag.substring(1);
-        i.tag = '@' + tag;
-        arrayTypes.push(tag);
-    }
-
-    const outData = extricate.getDataTages(data, arrayTypes, '@');
+    const tagArray = allData.found.map(x => x.tag.substring(1));
+    const outData = extricate.getDataTages(data, tagArray, '@');
 
     if (outData.error) {
         print.error("Error With model ->", modelName, "at page: ", pageName);
         return data;
     }
 
+    //Build With placeholders
     const modelBuild = new StringTracker();
 
     for (const i of allData.found) {
-        const t = i.tag;
-
-        const d = outData.found.find((e) => e.tag == t);
+        i.tag = i.tag.substring(1); // removing the ':'
+        const holderData = outData.found.find((e) => e.tag == '@' + i.tag);
 
         modelBuild.Plus(modelData.substring(0, i.loc));
         modelData = modelData.substring(i.loc);
-        if (d != undefined) {
-            modelBuild.Plus(d.data);
+
+        if (holderData) {
+            modelBuild.Plus(holderData.data);
+        } else { // Try loading data from page base
+            const loadFromBase = baseData.pop(i.tag);
+            loadFromBase && modelBuild.Plus(loadFromBase);
         }
     }
 
     modelBuild.Plus(modelData);
 
-    return await outPage(modelBuild, FullPath, pageName, SmallPath, isDebug, dependenceObject);
+    return await outPage(baseData.scriptFile.Plus(modelBuild), FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
 
 export async function Insert(data: string, fullPathCompile: string, pagePath: string, typeName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: SessionInfo) {

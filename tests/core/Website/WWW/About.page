@@ -1,0 +1,5 @@
+@[model=Website title="This is about page" codeFile="./About.page.js"]
+<@body/>
+<p>Welcome to the new Beyond Website!</p>
+<p>Today date: @(new Date().toString())</p>
+@me
