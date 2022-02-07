@@ -13,6 +13,12 @@ declare const BasicSettings: {
         component: string;
     };
     pageTypesArray: any[];
+    pageCodeFile: {
+        page: string[];
+        model: string[];
+        component: string[];
+    };
+    pageCodeFileArray: any[];
     ReqFileTypes: {
         js: string;
         ts: string;

@@ -1,28 +1,5 @@
 import StringTracker from '../../EasyDebug/StringTracker';
 
-function searchForReplace(data: StringTracker, find: string, tag: string, output = new StringTracker()) {
-    const be = data.indexOf(find);
-    if (be == -1) {
-        return output.Plus(data);
-    }
-
-    output.Plus(data.substring(0, be));
-
-    data = data.substring(be);
-
-    const start = findStart("{", data);
-
-    const end = start + findEnd("{}", data.substring(start))
-
-    const intag = data.substring(start, end);
-
-    output.Plus$ `<${tag}>${intag}</${tag}>`;
-
-    data = data.substring(end + 1);
-
-    return searchForReplace(data, find, tag, output);
-}
-
 function unicodeMe(value: string) {
     let a = "";
     for (const v of value) {
@@ -120,7 +97,7 @@ function findStart(type:string, data:StringTracker) {
     return data.indexOf(type) + type.length;
 }
 
-function findEnd(types, data:StringTracker) {
+function findEnd(types: string[], data:StringTracker) {
 
     let _0 = data.indexOf(types[0]);
 
@@ -142,6 +119,5 @@ function findEnd(types, data:StringTracker) {
 
 
 export {
-    searchForReplace as replaceTages,
     searchForCutMain as getDataTages
 }

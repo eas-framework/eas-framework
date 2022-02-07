@@ -42,7 +42,7 @@ function ExtensionInArray(filePath, ...arrays) {
     return false;
 }
 function isServerFile(filePath) {
-    return ExtensionInArray(filePath, BasicSettings.pageTypesArray, BasicSettings.ReqFileTypesArray);
+    return ExtensionInArray(filePath, BasicSettings.pageTypesArray, BasicSettings.ReqFileTypesArray, BasicSettings.pageCodeFileArray);
 }
 function GetErrorPage(code, LocSettings) {
     let arrayType, url;

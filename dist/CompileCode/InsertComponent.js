@@ -5,6 +5,7 @@ import { IsInclude, StartCompiling } from '../BuildInComponents/index.js';
 import StringTracker from '../EasyDebug/StringTracker.js';
 import { PrintIfNew } from '../OutputInput/PrintNew.js';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader.js';
+import ParseBasePage from './XMLHelpers/PageBase.js';
 export default class InsertComponent extends InsertComponentBase {
     constructor(PluginBuild) {
         super(PrintIfNew);
@@ -226,7 +227,9 @@ export default class InsertComponent extends InsertComponentBase {
                 sessionInfo.cacheComponent[AllPathTypes.SmallPath] = { mtimeMs: await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs') }; // add to dependenceObject
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs;
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            fileData = allData;
+            const baseData = new ParseBasePage(allData);
+            await baseData.loadCodeFile(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName);
+            fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;
         }
         if (SearchInComment) {

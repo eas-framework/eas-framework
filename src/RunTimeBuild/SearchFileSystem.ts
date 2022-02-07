@@ -52,7 +52,16 @@ const BasicSettings = {
         model: "mode",
         component: "inte"
     },
+
     pageTypesArray: [],
+
+    pageCodeFile: {
+        page: ["page.js", "page.ts"],
+        model: ["mode.js", "mode.ts"],
+        component: ["inte.js", "inte.ts"]
+    },
+
+    pageCodeFileArray: [],
 
     ReqFileTypes: {
         js: "serv.js",
@@ -86,6 +95,7 @@ const BasicSettings = {
 }
 
 BasicSettings.pageTypesArray = Object.values(BasicSettings.pageTypes);
+BasicSettings.pageCodeFileArray = Object.values(BasicSettings.pageCodeFile).flat();
 BasicSettings.ReqFileTypesArray = Object.values(BasicSettings.ReqFileTypes);
 
 async function filesInDirectory(path, output, pathMore = "") {

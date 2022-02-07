@@ -42,6 +42,12 @@ const BasicSettings = {
         component: "inte"
     },
     pageTypesArray: [],
+    pageCodeFile: {
+        page: ["page.js", "page.ts"],
+        model: ["mode.js", "mode.ts"],
+        component: ["inte.js", "inte.ts"]
+    },
+    pageCodeFileArray: [],
     ReqFileTypes: {
         js: "serv.js",
         ts: "serv.ts",
@@ -71,6 +77,7 @@ const BasicSettings = {
     }
 };
 BasicSettings.pageTypesArray = Object.values(BasicSettings.pageTypes);
+BasicSettings.pageCodeFileArray = Object.values(BasicSettings.pageCodeFile).flat();
 BasicSettings.ReqFileTypesArray = Object.values(BasicSettings.ReqFileTypes);
 async function filesInDirectory(path, output, pathMore = "") {
     const allInFolder = await EasyFs.readdir(path + pathMore, { withFileTypes: true });

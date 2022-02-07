@@ -13,7 +13,7 @@ import BuildScript from './transform/Script';
 import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings';
 import ParseBasePage from './XMLHelpers/PageBase';
 
-export const Settings = { AddCompileSyntax: ["JTags", "Razor"], plugins: [] };
+export const Settings = { AddCompileSyntax: ['Razor'], plugins: [] };
 const PluginBuild = new AddPlugin(Settings);
 export const Components = new InsertComponent(PluginBuild);
 
@@ -32,6 +32,7 @@ export function isTs() {
 Components.MicroPlugins = Settings.plugins;
 Components.GetPlugin = GetPlugin;
 Components.SomePlugins = SomePlugins;
+Components.isTs = isTs;
 
 BuildScriptSettings.plugins = Settings.plugins;
 
@@ -95,7 +96,12 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
             modelBuild.Plus(holderData.data);
         } else { // Try loading data from page base
             const loadFromBase = baseData.pop(i.tag);
-            loadFromBase && modelBuild.Plus(loadFromBase);
+
+            if (loadFromBase)
+                if (loadFromBase.eq.toLowerCase() == 'inherit') // Save the placeholder for next model
+                    modelBuild.Plus(`<:${i.tag}/>`);
+                else
+                    modelBuild.Plus(loadFromBase);
         }
     }
 
@@ -107,7 +113,7 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
 export async function Insert(data: string, fullPathCompile: string, pagePath: string, typeName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: SessionInfo) {
     const BuildScriptWithPrams = (code: StringTracker, pathName: string, RemoveToModule = true): Promise<string> => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
 
-    const debugInPage = isDebug && !GetPlugin("SafeDebug");  
+    const debugInPage = isDebug && !GetPlugin("SafeDebug");
     const sessionInfo: SessionInfo = hasSessionInfo ??
     {
         connectorArray: [], scriptURLSet: [], styleURLSet: [],
@@ -117,7 +123,7 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
         headHTML: '',
         typeName,
         cache: {
-            style:  [],
+            style: [],
             script: [],
             scriptModule: []
         },

@@ -3,3 +3,5 @@
 <p>Welcome to the new Beyond Website!</p>
 <p>Today date: @(new Date().toString())</p>
 @me
+
+<ButtonLink>Cool</ButtonLink>

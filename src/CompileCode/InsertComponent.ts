@@ -7,6 +7,7 @@ import AddPlugin from '../Plugins/Index';
 import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, SessionInfo } from './XMLHelpers/CompileTypes';
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
+import ParseBasePage from './XMLHelpers/PageBase';
 
 interface DefaultValues {
     value: StringTracker,
@@ -21,6 +22,7 @@ export default class InsertComponent extends InsertComponentBase {
     public MicroPlugins: StringArrayOrObject;
     public GetPlugin: (name: string) => any;
     public SomePlugins: (...names: string[]) => boolean;
+    public isTs: () => boolean;
 
     constructor(PluginBuild: AddPlugin) {
         super(PrintIfNew);
@@ -302,7 +304,10 @@ export default class InsertComponent extends InsertComponentBase {
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
 
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath,  sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            fileData = allData;
+            const baseData = new ParseBasePage(allData);
+            await baseData.loadCodeFile(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName);
+
+            fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;
         }
 

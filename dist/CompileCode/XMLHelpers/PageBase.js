@@ -65,13 +65,16 @@ export default class ParseBasePage {
         let haveCode = this.popAny('codefile')?.eq;
         if (!haveCode)
             return;
+        const lang = this.popAny('lang')?.eq;
         if (haveCode.toLowerCase() == 'inherit')
             haveCode = pagePath;
         const haveExt = path.extname(haveCode).substring(1);
         if (!['js', 'ts'].includes(haveExt)) {
-            if (!BasicSettings.pageTypesArray.includes(haveExt))
+            if (/(\\|\/)$/.test(haveCode))
+                haveCode += pagePath.split('/').pop();
+            else if (!BasicSettings.pageTypesArray.includes(haveExt))
                 haveCode += path.extname(pagePath);
-            haveCode += isTs ? '.ts' : '.js';
+            haveCode += '.' + (lang ? lang : isTs ? 'ts' : 'js');
         }
         if (haveCode[0] == '.')
             haveCode = path.join(path.dirname(pagePath), haveCode);

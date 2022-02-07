@@ -26,6 +26,7 @@ export function isTs() {
 Components.MicroPlugins = Settings.plugins;
 Components.GetPlugin = GetPlugin;
 Components.SomePlugins = SomePlugins;
+Components.isTs = isTs;
 BuildScriptSettings.plugins = Settings.plugins;
 async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, dependenceObject) {
     const baseData = new ParseBasePage(data);
@@ -71,7 +72,11 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
         }
         else { // Try loading data from page base
             const loadFromBase = baseData.pop(i.tag);
-            loadFromBase && modelBuild.Plus(loadFromBase);
+            if (loadFromBase)
+                if (loadFromBase.eq.toLowerCase() == 'inherit') // Save the placeholder for next model
+                    modelBuild.Plus(`<:${i.tag}/>`);
+                else
+                    modelBuild.Plus(loadFromBase);
         }
     }
     modelBuild.Plus(modelData);

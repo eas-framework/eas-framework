@@ -73,7 +73,7 @@ function ExtensionInArray(filePath: string, ...arrays: string[]) {
 }
 
 function isServerFile(filePath: string) {
-    return ExtensionInArray(filePath, <any>BasicSettings.pageTypesArray, <any>BasicSettings.ReqFileTypesArray);
+    return ExtensionInArray(filePath, <any>BasicSettings.pageTypesArray, <any>BasicSettings.ReqFileTypesArray, <any>BasicSettings.pageCodeFileArray);
 }
 
 function GetErrorPage(code: number, LocSettings: 'NotFound' | 'ServerError') {
