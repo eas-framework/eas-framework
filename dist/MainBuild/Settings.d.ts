@@ -31,7 +31,14 @@ interface TSXOptions extends TransformOptions {
 interface transformOptions extends TransformOptions {
     name: "transformOptions";
 }
-declare type pluginsOptions = "MinAll" | "MinHTML" | "MinCss" | "MinSass" | "MinJS" | "MinTS" | "MinJSX" | JSXOptions | "MinTSX" | TSXOptions | transformOptions | "SafeDebug";
+interface Markdown {
+    name: "markdown";
+    theme: string;
+    linkify: boolean;
+    breaks: boolean;
+    typographer: boolean;
+}
+declare type pluginsOptions = "MinAll" | "MinHTML" | "MinCss" | "MinSass" | "MinJS" | "MinTS" | "MinJSX" | JSXOptions | "MinTSX" | TSXOptions | transformOptions | "SafeDebug" | Markdown;
 interface GlobalSettings {
     RequestLimitMB?: number;
     MaxFileUploadMB?: number;
@@ -60,7 +67,7 @@ interface GlobalSettings {
         arrayFuncServer?: ((...data: any) => any)[];
     };
     preventCompilationError?: ("close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" | "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning")[];
-    AddCompileSyntax?: ("JTags" | "Razor" | "TypeScript" | string | {
+    AddCompileSyntax?: ("Razor" | "TypeScript" | string | {
         [key: string]: any;
     })[];
     plugins?: pluginsOptions[];

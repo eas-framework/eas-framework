@@ -147,11 +147,22 @@ async function svelteStatic(filePath, checked) {
             inServer: fullPath
         };
 }
+async function markdownTheme(filePath, checked) {
+    if (!filePath.startsWith('serv/markdown-theme/'))
+        return;
+    const fullPath = workingDirectory + 'node_modules/highlight.js/styles' + filePath.substring(19);
+    if (checked || await EasyFs.existsFile(fullPath))
+        return {
+            type: 'css',
+            inServer: fullPath
+        };
+}
 export async function serverBuild(Request, isDebug, path, checked = false) {
     return await svelteStatic(path, checked) ||
         await svelteStyle(path, checked, isDebug) ||
         await unsafeDebug(isDebug, path, checked) ||
         await serverBuildByType(Request, path, checked) ||
+        await markdownTheme(path, checked) ||
         getStatic.find(x => x.path == path);
 }
 export async function rebuildFile(SmallPath, fullCompilePath, isDebug) {

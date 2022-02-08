@@ -11,7 +11,7 @@ import SourceMapStore from '../EasyDebug/SourceMapStore.js';
 import BuildScript from './transform/Script.js';
 import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings.js';
 import ParseBasePage from './XMLHelpers/PageBase.js';
-export const Settings = { AddCompileSyntax: ["JTags", "Razor"], plugins: [] };
+export const Settings = { AddCompileSyntax: ['Razor'], plugins: [] };
 const PluginBuild = new AddPlugin(Settings);
 export const Components = new InsertComponent(PluginBuild);
 export function GetPlugin(name) {
@@ -28,9 +28,9 @@ Components.GetPlugin = GetPlugin;
 Components.SomePlugins = SomePlugins;
 Components.isTs = isTs;
 BuildScriptSettings.plugins = Settings.plugins;
-async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, dependenceObject) {
-    const baseData = new ParseBasePage(data);
-    await baseData.loadCodeFile(pagePath, isTs(), dependenceObject, pageName);
+async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, dependenceObject, sessionInfo) {
+    const baseData = new ParseBasePage(data, sessionInfo);
+    await baseData.loadSettings(pagePath, isTs(), dependenceObject, pageName);
     const modelName = baseData.popAny('model')?.eq;
     if (!modelName)
         return baseData.scriptFile.Plus(baseData.clearData);
@@ -80,7 +80,7 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
         }
     }
     modelBuild.Plus(modelData);
-    return await outPage(baseData.scriptFile.Plus(modelBuild), FullPath, pageName, SmallPath, isDebug, dependenceObject);
+    return await outPage(baseData.scriptFile.Plus(modelBuild), FullPath, pageName, SmallPath, isDebug, dependenceObject, sessionInfo);
 }
 export async function Insert(data, fullPathCompile, pagePath, typeName, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
     const BuildScriptWithPrams = (code, pathName, RemoveToModule = true) => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
@@ -91,6 +91,7 @@ export async function Insert(data, fullPathCompile, pagePath, typeName, smallPat
             style: new SourceMapStore(smallPath, debugInPage, true),
             script: new SourceMapStore(smallPath, debugInPage, false),
             scriptModule: new SourceMapStore(smallPath, debugInPage, false),
+            defineArray: [],
             headHTML: '',
             typeName,
             cache: {
@@ -101,7 +102,7 @@ export async function Insert(data, fullPathCompile, pagePath, typeName, smallPat
             cacheComponent: {}
         };
     let DebugString = new StringTracker(pagePath, data);
-    DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject);
+    DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, sessionInfo);
     DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);
     DebugString = await Components.Insert(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, BuildScriptWithPrams, sessionInfo); // add components
     DebugString = ParseDebugLine(DebugString, smallPath);

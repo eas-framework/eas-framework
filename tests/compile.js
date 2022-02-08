@@ -1,12 +1,23 @@
-import {parseBase} from '../dist/CompileCode/XMLHelpers/PageBase.js';
+import ParseBasePage from '../dist/CompileCode/XMLHelpers/PageBase.js';
 import StringTracker from '../dist/EasyDebug/StringTracker.js';
 
 const text = new StringTracker(null, `
 @[Title=Page, model="website", start='ok', me=a]
+@define('name', 'this::so::cool')
+@define('age', '58')
+@define('code', 'amazing')
+
+<p>my name is: :name:</p>
+<p>my age is: :age:</p>
+<p>my code is: :code:</p>
 `);
 
-const data = parseBase(text);
+const data = new ParseBasePage(text);
+data.loadDefine();
 
-for(const i of data) {
-    console.log(i.key.eq + '="'+ i.value.eq + '"');
+console.log(data.clearData.eq);
+
+
+for(const i of data.valueArray) {
+    console.log(i.key + '="'+ i.value.eq + '"');
 }

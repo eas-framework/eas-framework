@@ -143,7 +143,7 @@ export default class InsertComponent extends InsertComponentBase {
         return tagData;
     }
     exportDefaultValues(fileData, foundSetters = []) {
-        const indexBasic = fileData.match(/@basic[ ]*\(([A-Za-z0-9{}()\[\]_\-$"'`%*&|\/\@ \n]*)\)[ ]*\[([A-Za-z0-9_\-,$ \n]+)\]/);
+        const indexBasic = fileData.match(/@default[ ]*\(([A-Za-z0-9{}()\[\]_\-$"'`%*&|\/\@ \n]*)\)[ ]*\[([A-Za-z0-9_\-,$ \n]+)\]/);
         if (indexBasic == null)
             return { fileData, foundSetters };
         const WithoutBasic = fileData.substring(0, indexBasic.index).Plus(fileData.substring(indexBasic.index + indexBasic[0].length));
@@ -227,8 +227,8 @@ export default class InsertComponent extends InsertComponentBase {
                 sessionInfo.cacheComponent[AllPathTypes.SmallPath] = { mtimeMs: await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs') }; // add to dependenceObject
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs;
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            const baseData = new ParseBasePage(allData);
-            await baseData.loadCodeFile(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName);
+            const baseData = new ParseBasePage(allData, sessionInfo, true);
+            await baseData.loadSettings(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName);
             fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;
         }

@@ -183,7 +183,7 @@ export default class InsertComponent extends InsertComponentBase {
     }
 
     exportDefaultValues(fileData: StringTracker, foundSetters: DefaultValues[] = []) {
-        const indexBasic: ArrayMatch = fileData.match(/@basic[ ]*\(([A-Za-z0-9{}()\[\]_\-$"'`%*&|\/\@ \n]*)\)[ ]*\[([A-Za-z0-9_\-,$ \n]+)\]/);
+        const indexBasic: ArrayMatch = fileData.match(/@default[ ]*\(([A-Za-z0-9{}()\[\]_\-$"'`%*&|\/\@ \n]*)\)[ ]*\[([A-Za-z0-9_\-,$ \n]+)\]/);
 
         if (indexBasic == null)
             return { fileData, foundSetters };
@@ -304,8 +304,8 @@ export default class InsertComponent extends InsertComponentBase {
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
 
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath,  sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            const baseData = new ParseBasePage(allData);
-            await baseData.loadCodeFile(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName);
+            const baseData = new ParseBasePage(allData, sessionInfo, true);
+            await baseData.loadSettings(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName);
 
             fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;

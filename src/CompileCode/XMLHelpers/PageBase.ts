@@ -14,11 +14,16 @@ export default class ParseBasePage {
     public scriptFile = new StringTracker();
 
     private valueArray: { key: string, value: StringTracker }[] = []
-    constructor(code: StringTracker) {
+    constructor(code: StringTracker, private sessionInfo: SessionInfo, private loadFromSession = false) {
         this.parseBase(code);
     }
 
-    parseBase(code: StringTracker) {
+    async loadSettings(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string){
+        await this.loadCodeFile(pagePath, isTs, dependenceObject, pageName);
+        this.loadDefine();
+    }
+
+    private parseBase(code: StringTracker) {
         let dataSplit: StringTracker;
 
         code = code.replacer(/@\[[ ]*(([A-Za-z_][A-Za-z_0-9]*=(("[^"]*")|(`[^`]*`)|('[^']*')|[A-Za-z0-9_]+)([ ]*,?[ ]*)?)*)\]/, data => {
@@ -61,7 +66,7 @@ export default class ParseBasePage {
             this.valueArray.push({ key: thisWord, value: thisValue });
         }
 
-        this.clearData = code;
+        this.clearData = code.trimStart();
     }
 
     pop(name: string) {
@@ -83,7 +88,7 @@ export default class ParseBasePage {
         return asTag.found[0].data.trim();
     }
 
-    async loadCodeFile(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string) {
+    private async loadCodeFile(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string) {
         let haveCode = this.popAny('codefile')?.eq;
         if (!haveCode) return;
 
@@ -96,7 +101,7 @@ export default class ParseBasePage {
         if (!['js', 'ts'].includes(haveExt)) {
             if (/(\\|\/)$/.test(haveCode))
                 haveCode += pagePath.split('/').pop();
-           else if (!BasicSettings.pageTypesArray.includes(haveExt))
+            else if (!BasicSettings.pageTypesArray.includes(haveExt))
                 haveCode += path.extname(pagePath);
             haveCode += '.' + (lang ? lang : isTs ? 'ts' : 'js');
         }
@@ -127,6 +132,60 @@ export default class ParseBasePage {
             });
 
             this.scriptFile = new StringTracker(pageName, `<%='<p style="color:red;text-align:left;font-size:16px;">Code File Not Found: ${SmallPath}</p>'%>`);
+        }
+    }
+
+    private loadSetting(name = 'define', limitArguments = 2) {
+        const have = this.clearData.indexOf(`@${name}(`);
+        if (have == -1) return false;
+
+        const argumentArray: StringTracker[] = [];
+
+        const before = this.clearData.substring(0, have);
+        let workData = this.clearData.substring(have + 8).trimStart();
+
+        for(let i = 0; i < limitArguments; i++) { // arguments reader loop
+            const quotationSign = workData.at(0).eq;
+
+            const endQuote = BaseReader.findEntOfQ(workData.eq.substring(1), quotationSign);
+
+            argumentArray.push(workData.substring(1, endQuote));
+
+            const afterArgument = workData.substring(endQuote + 1).trimStart();
+            if (afterArgument.at(0).eq != ',') {
+                workData = afterArgument;
+                break;
+            }
+
+            workData = afterArgument.substring(1).trimStart();
+        }
+
+        workData = workData.substring(workData.indexOf(')')+1);
+        this.clearData = before.trimEnd().Plus(workData.trimStart());
+
+        return argumentArray;
+    }
+
+    private loadDefine(){
+        let lastValue = this.loadSetting();
+
+        const values: StringTracker[][] = [];
+        while(lastValue){
+            values.unshift(lastValue);
+            lastValue = this.loadSetting();
+        }
+
+        for(const [name, value] of values){
+            const nameText = name.eq;
+            if(!this.loadFromSession && !this.sessionInfo.defineArray.find(x => x.name == nameText))
+                this.sessionInfo.defineArray.push({ name: nameText, value});
+            this.clearData = this.clearData.replace(`:${nameText}:`, value);
+        }
+
+        if(!this.loadFromSession) return;
+
+        for(const {name, value} of this.sessionInfo.defineArray){
+            this.clearData = this.clearData.replace(`:${name}:`, value);
         }
     }
 }

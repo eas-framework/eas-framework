@@ -5,7 +5,7 @@ require('source-map-support').install();"use strict";module.exports = (__dirname
         
                 var module = { exports: {} },
                     exports = module.exports,
-                    { sendFile, writeSafe, write, setResponse, out_run_script, run_script_name, Response, Request, Post, Query, Session, Files, Cookies, RequestVar} = page,
+                    { sendFile, writeSafe, write, echo, setResponse, out_run_script, run_script_name, Response, Request, Post, Query, Session, Files, Cookies, RequestVar} = page,
                     
                     run_script_code = run_script_name; 
 

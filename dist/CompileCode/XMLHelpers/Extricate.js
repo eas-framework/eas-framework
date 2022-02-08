@@ -1,18 +1,4 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
-function searchForReplace(data, find, tag, output = new StringTracker()) {
-    const be = data.indexOf(find);
-    if (be == -1) {
-        return output.Plus(data);
-    }
-    output.Plus(data.substring(0, be));
-    data = data.substring(be);
-    const start = findStart("{", data);
-    const end = start + findEnd("{}", data.substring(start));
-    const intag = data.substring(start, end);
-    output.Plus$ `<${tag}>${intag}</${tag}>`;
-    data = data.substring(end + 1);
-    return searchForReplace(data, find, tag, output);
-}
 function unicodeMe(value) {
     let a = "";
     for (const v of value) {
@@ -99,5 +85,5 @@ function findEnd(types, data) {
         return _1;
     }
 }
-export { searchForReplace as replaceTages, searchForCutMain as getDataTages };
+export { searchForCutMain as getDataTages };
 //# sourceMappingURL=Extricate.js.map

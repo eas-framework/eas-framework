@@ -1,7 +1,24 @@
 @[model=Website title="This is about page" codeFile="./About.page.js"]
+@{
+    {}
+
+
+    var cool = 9;
+}
+ 
 <@body/>
-<p>Welcome to the new Beyond Website!</p>
+<p>Welcome to the new B@@eyond Website!</p>
 <p>Today date: @(new Date().toString())</p>
 @me
 
 <ButtonLink>Cool</ButtonLink>
+<Page from="wdqwdwdqd.page"/>
+@define('name', 'goto')
+
+<markdown name="4" div>
+# MR
+:name:
+```ts
+var i = 9;
+```
+</markdown>

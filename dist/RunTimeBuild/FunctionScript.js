@@ -126,6 +126,13 @@ function BuildPage(LoadPageFunc, run_script_name) {
                 out_run_script.text += '&#' + i.charCodeAt(0) + ';';
             }
         }
+        function echo(arr, params) {
+            for (const i in params) {
+                out_run_script.text += arr[i];
+                writeSafe(params[i]);
+            }
+            out_run_script.text += arr.at(-1);
+        }
         let redirectPath = false;
         Response.redirect = (path, status) => {
             redirectPath = String(path);
@@ -144,6 +151,7 @@ function BuildPage(LoadPageFunc, run_script_name) {
             sendFile,
             writeSafe,
             write,
+            echo,
             setResponse,
             out_run_script,
             run_script_name,

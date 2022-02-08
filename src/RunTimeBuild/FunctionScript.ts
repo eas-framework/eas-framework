@@ -141,7 +141,7 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
     return (async function (Response: Response, Request: Request, Post: { [key: string]: any } | null, Query: { [key: string]: any }, Cookies: { [key: string]: any }, Session: { [key: string]: any }, Files: Files, isDebug: boolean) {
         const out_run_script = { text: '' };
 
-        function ToStringInfo(str) {
+        function ToStringInfo(str: any) {
             const asString = String(str);
             if (asString.startsWith('[object Object]')) {
                 return JSON.stringify(str, null, 2);
@@ -149,7 +149,7 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
             return asString;
         }
 
-        function setResponse(text) {
+        function setResponse(text: any) {
             out_run_script.text = ToStringInfo(text);
         }
 
@@ -163,6 +163,15 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
             for (const i of str) {
                 out_run_script.text += '&#' + i.charCodeAt(0) + ';';
             }
+        }
+
+        function echo(arr: string[], params: any[]) {
+            for (const i in params) {
+                out_run_script.text += arr[i];
+                writeSafe(params[i]);
+            }
+
+            out_run_script.text += arr.at(-1);
         }
 
         let redirectPath: any = false;
@@ -188,6 +197,7 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
             sendFile,
             writeSafe,
             write,
+            echo,
             setResponse,
             out_run_script,
             run_script_name,

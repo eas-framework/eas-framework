@@ -18,8 +18,7 @@ run_script_name=`WWW/index.page -> Components/ButtonLink.inte.js`;
 run_script_code=`console.log('ButtonLink2')`;
 //!WWW/index.page -> Components/ButtonLink.inte.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/Components/ButtonLink.inte.js:1:26
 console.log('ButtonLink2')
-out_run_script.text+=`
-<a>`;
+out_run_script.text+=`<a>`;
 run_script_code=`write(i);;`;
 //!/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/index.page:19:23
 write(i);;

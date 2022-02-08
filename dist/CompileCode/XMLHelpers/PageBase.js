@@ -8,10 +8,16 @@ import { BasicSettings } from "../../RunTimeBuild/SearchFileSystem.js";
 import JSParser from "../JSParser.js";
 import { PrintIfNew } from "../../OutputInput/PrintNew.js";
 export default class ParseBasePage {
-    constructor(code) {
+    constructor(code, sessionInfo, loadFromSession = false) {
+        this.sessionInfo = sessionInfo;
+        this.loadFromSession = loadFromSession;
         this.scriptFile = new StringTracker();
         this.valueArray = [];
         this.parseBase(code);
+    }
+    async loadSettings(pagePath, isTs, dependenceObject, pageName) {
+        await this.loadCodeFile(pagePath, isTs, dependenceObject, pageName);
+        this.loadDefine();
     }
     parseBase(code) {
         let dataSplit;
@@ -46,7 +52,7 @@ export default class ParseBasePage {
             dataSplit = nextValue;
             this.valueArray.push({ key: thisWord, value: thisValue });
         }
-        this.clearData = code;
+        this.clearData = code.trimStart();
     }
     pop(name) {
         return this.valueArray.splice(this.valueArray.findIndex(x => x.key === name), 1)[0]?.value;
@@ -97,6 +103,47 @@ export default class ParseBasePage {
                 text: 'Code file not found: ' + SmallPath
             });
             this.scriptFile = new StringTracker(pageName, `<%='<p style="color:red;text-align:left;font-size:16px;">Code File Not Found: ${SmallPath}</p>'%>`);
+        }
+    }
+    loadSetting(name = 'define', limitArguments = 2) {
+        const have = this.clearData.indexOf(`@${name}(`);
+        if (have == -1)
+            return false;
+        const argumentArray = [];
+        const before = this.clearData.substring(0, have);
+        let workData = this.clearData.substring(have + 8).trimStart();
+        for (let i = 0; i < limitArguments; i++) { // arguments reader loop
+            const quotationSign = workData.at(0).eq;
+            const endQuote = BaseReader.findEntOfQ(workData.eq.substring(1), quotationSign);
+            argumentArray.push(workData.substring(1, endQuote));
+            const afterArgument = workData.substring(endQuote + 1).trimStart();
+            if (afterArgument.at(0).eq != ',') {
+                workData = afterArgument;
+                break;
+            }
+            workData = afterArgument.substring(1).trimStart();
+        }
+        workData = workData.substring(workData.indexOf(')') + 1);
+        this.clearData = before.trimEnd().Plus(workData.trimStart());
+        return argumentArray;
+    }
+    loadDefine() {
+        let lastValue = this.loadSetting();
+        const values = [];
+        while (lastValue) {
+            values.unshift(lastValue);
+            lastValue = this.loadSetting();
+        }
+        for (const [name, value] of values) {
+            const nameText = name.eq;
+            if (!this.loadFromSession && !this.sessionInfo.defineArray.find(x => x.name == nameText))
+                this.sessionInfo.defineArray.push({ name: nameText, value });
+            this.clearData = this.clearData.replace(`:${nameText}:`, value);
+        }
+        if (!this.loadFromSession)
+            return;
+        for (const { name, value } of this.sessionInfo.defineArray) {
+            this.clearData = this.clearData.replace(`:${name}:`, value);
         }
     }
 }

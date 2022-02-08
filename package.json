@@ -1,5 +1,5 @@
 {
-  "name": "beyond-easy",
+  "name": "eas-framework",
   "version": "1.0.0",
   "description": "Node.js framework, with a lot of built in features",
   "main": "dist/index.js",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/ido.pluto/eas-framework/beyond-easy.git"
+    "url": "git+https://gitlab.com/ido.pluto/eas-framework.git"
   },
   "keywords": [
     "router",
@@ -44,6 +44,8 @@
     "express-session": "^1.17.2",
     "formidable": "^2.0.1",
     "greenlock-express": "^4.0.3",
+    "highlight.js": "^11.4.0",
+    "markdown-it": "^12.3.2",
     "promptly": "^3.2.0",
     "sass": "^1.43.4",
     "selfsigned": "^1.10.11",
@@ -62,6 +64,7 @@
     "@types/compression": "^1.7.2",
     "@types/express-session": "^1.17.4",
     "@types/formidable": "^2.0.0",
+    "@types/markdown-it": "^12.2.3",
     "@types/node": "^16.11.6",
     "@types/sass": "^1.43.0",
     "@types/uuid": "^8.3.1",

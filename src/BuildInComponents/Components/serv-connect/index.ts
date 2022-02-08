@@ -138,13 +138,13 @@ export function parseValues(args: any[], validatorArray: any[]): any[] {
     return parsed;
 }
 
-export function parseTagDataStringBoolean(data: tagDataObjectArray, find: string): string | null | boolean{
+export function parseTagDataStringBoolean(data: tagDataObjectArray, find: string, defaultData: any = null): string | null | boolean{
     const have = data.remove(find);
 
     if(have === 'true' || !have && data.have(find)) return true;
     if(have === 'false') return false;
 
-    if(!have) return null;
+    if(!have) return defaultData;
 
     return have;
 }

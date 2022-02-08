@@ -103,14 +103,14 @@ export function parseValues(args, validatorArray) {
     }
     return parsed;
 }
-export function parseTagDataStringBoolean(data, find) {
+export function parseTagDataStringBoolean(data, find, defaultData = null) {
     const have = data.remove(find);
     if (have === 'true' || !have && data.have(find))
         return true;
     if (have === 'false')
         return false;
     if (!have)
-        return null;
+        return defaultData;
     return have;
 }
 //# sourceMappingURL=index.js.map

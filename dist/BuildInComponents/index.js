@@ -4,13 +4,14 @@ import style from './Components/style/index.js';
 import page from './Components/page.js';
 import isolate from './Components/isolate.js';
 import svelte from './Components/svelte.js';
+import markdown from './Components/markdown.js';
 import head, { addFinalizeBuild as addFinalizeBuildHead } from './Components/head.js';
 import connect, { addFinalizeBuild as addFinalizeBuildConnect, handelConnector as handelConnectorConnect } from './Components/connect.js';
 import form, { addFinalizeBuild as addFinalizeBuildForm, handelConnector as handelConnectorForm } from './Components/form.js';
-const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte"];
+const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown"];
 export function StartCompiling(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo) {
     let reData;
-    switch (type.eq) {
+    switch (type.eq.toLowerCase()) {
         case "client":
             reData = client(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo);
             break;
@@ -38,6 +39,11 @@ export function StartCompiling(path, pathName, LastSmallPath, type, dataTag, Bet
         case "svelte":
             reData = svelte(path, LastSmallPath, isDebug, dataTag, dependenceObject, sessionInfo);
             break;
+        case "markdown":
+            reData = markdown(type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            break;
+        default:
+            console.error("Component is not build yet");
     }
     return reData;
 }
