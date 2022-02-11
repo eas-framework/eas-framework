@@ -182,7 +182,7 @@ async function GetDynamicPage(arrayType, url, fullPageUrl, smallPath, code) {
     else if (Export.PageLoadRam[smallPath])
         DynamicFunc = Export.PageLoadRam[smallPath][1];
     else if (!Settings.PageRam && await SetNewURL() && fullPageUrl)
-        await BuildLoadPage(smallPath);
+        DynamicFunc = await BuildLoadPage(smallPath);
     else {
         code = Settings.ErrorPages.NotFound?.code ?? 404;
         const ErrorPage = Settings.ErrorPages.NotFound && Export.PageLoadRam[getTypes.Static[2] + '/' + Settings.ErrorPages.NotFound.path] || Export.PageLoadRam[getTypes.Logs[2] + '/e404'];
@@ -221,7 +221,7 @@ async function MakePageResponse(DynamicResponse, Response) {
 }
 async function ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase) {
     const { DynamicFunc, fullPageUrl, code: newCode } = await GetDynamicPage(arrayType, url, FileInfo.fullPageUrl, FileInfo.fullPageUrl + '/' + url, code);
-    if (!fullPageUrl)
+    if (!fullPageUrl || !DynamicFunc && code == 500)
         return Response.sendStatus(newCode);
     try {
         const finalStep = await nextPrase(); // parse data from methods - post, get... + cookies, session...

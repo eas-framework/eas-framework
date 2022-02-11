@@ -1,7 +1,7 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
 import { BaseReader } from '../../CompileCode/BaseReader/Reader.js';
 class Razor {
-    constructor(typeLoad = '@', comment = '*', skipWords = ["basic"], notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }, preventWordWrite = { "include": "await ", "debugger": "", "import": "await " }) {
+    constructor(typeLoad = '@', comment = '*', skipWords = ["default"], notPrint = { "for": [], "if": ["else if", "else"], "while": ["do"], "do": [] }, preventWordWrite = { "include": "await ", "debugger": "", "import": "await " }) {
         this.typeLoad = typeLoad;
         this.comment = comment;
         this.skipWords = skipWords;

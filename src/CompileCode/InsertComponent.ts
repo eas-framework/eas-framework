@@ -216,7 +216,7 @@ export default class InsertComponent extends InsertComponentBase {
         let { fileData, foundSetters } = this.exportDefaultValues(component);
 
         for (const i of tagData) {
-            if (i.n.startsWith('&')) {
+            if (i.n.eq == '&') {
                 let re = i.n.substring(1);
 
                 let FoundIndex: number;

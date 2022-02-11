@@ -253,7 +253,7 @@ async function GetDynamicPage(arrayType: string[], url: string, fullPageUrl: str
         DynamicFunc = Export.PageLoadRam[smallPath][1];
 
     else if (!Settings.PageRam && await SetNewURL() && fullPageUrl)
-        await BuildLoadPage(smallPath);
+        DynamicFunc = await BuildLoadPage(smallPath);
 
     else {
         code = Settings.ErrorPages.NotFound?.code ?? 404;
@@ -296,7 +296,7 @@ async function MakePageResponse(DynamicResponse: any, Response: Response | any) 
 async function ActivatePage(Request: Request | any, Response: Response, arrayType: string[], url: string, FileInfo: any, code: number, nextPrase: () => Promise<any>) {
     const { DynamicFunc, fullPageUrl, code: newCode } = await GetDynamicPage(arrayType, url, FileInfo.fullPageUrl, FileInfo.fullPageUrl + '/' + url, code);
 
-    if (!fullPageUrl)
+    if (!fullPageUrl || !DynamicFunc && code == 500)
         return Response.sendStatus(newCode);
 
     try {
