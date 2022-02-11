@@ -14,7 +14,7 @@ export default class ParseBasePage {
     public scriptFile = new StringTracker();
 
     private valueArray: { key: string, value: StringTracker }[] = []
-    constructor(code: StringTracker, private sessionInfo: SessionInfo, private loadFromSession = false) {
+    constructor(code: StringTracker) {
         this.parseBase(code);
     }
 
@@ -176,16 +176,7 @@ export default class ParseBasePage {
         }
 
         for(const [name, value] of values){
-            const nameText = name.eq;
-            if(!this.loadFromSession && !this.sessionInfo.defineArray.find(x => x.name == nameText))
-                this.sessionInfo.defineArray.push({ name: nameText, value});
-            this.clearData = this.clearData.replace(`:${nameText}:`, value);
-        }
-
-        if(!this.loadFromSession) return;
-
-        for(const {name, value} of this.sessionInfo.defineArray){
-            this.clearData = this.clearData.replace(`:${name}:`, value);
+            this.clearData = this.clearData.replace(`:${name.eq}:`, value);
         }
     }
 }

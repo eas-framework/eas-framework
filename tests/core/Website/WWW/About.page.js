@@ -19,14 +19,14 @@ async function readFolder(dir, ext){
 
     return stringMap;
 }
-// const data = await readFolder("/Users/idoio/Documents/beyond-easy/node_modules/highlight.js/styles/", ".css");
+const data = await readFolder("/Users/idoio/Documents/beyond-easy/node_modules/highlight.js/styles/", ".css");
 
-// let buildText = '';
+let buildText = '';
 
-// for(const i of data){
-//     buildText += "'" + i + "' | ";
-// }
+for(const i of data){
+    buildText += `'${i}' | `;
+}
 
-// buildText = buildText.substring(0, buildText.length-3);
+buildText = buildText.substring(0, buildText.length-3);
 
-// write(buildText);
+write(buildText);

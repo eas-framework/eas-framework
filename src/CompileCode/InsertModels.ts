@@ -36,9 +36,9 @@ Components.isTs = isTs;
 
 BuildScriptSettings.plugins = Settings.plugins;
 
-async function outPage(data: StringTracker, pagePath: string, pageName: string, LastSmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, sessionInfo: SessionInfo): Promise<StringTracker> {
+async function outPage(data: StringTracker, pagePath: string, pageName: string, LastSmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap): Promise<StringTracker> {
 
-    const baseData = new ParseBasePage(data, sessionInfo);
+    const baseData = new ParseBasePage(data);
     await baseData.loadSettings(pagePath, isTs(), dependenceObject, pageName);
 
     const modelName = baseData.popAny('model')?.eq;
@@ -107,7 +107,7 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
 
     modelBuild.Plus(modelData);
 
-    return await outPage(baseData.scriptFile.Plus(modelBuild), FullPath, pageName, SmallPath, isDebug, dependenceObject, sessionInfo);
+    return await outPage(baseData.scriptFile.Plus(modelBuild), FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
 
 export async function Insert(data: string, fullPathCompile: string, pagePath: string, typeName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: SessionInfo) {
@@ -120,7 +120,6 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
         style: new SourceMapStore(smallPath, debugInPage, true),
         script: new SourceMapStore(smallPath, debugInPage, false),
         scriptModule: new SourceMapStore(smallPath, debugInPage, false),
-        defineArray: [],
         headHTML: '',
         typeName,
         cache: {
@@ -133,7 +132,7 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
 
     let DebugString = new StringTracker(pagePath, data);
 
-    DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, sessionInfo);
+    DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject);
 
     DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);
 

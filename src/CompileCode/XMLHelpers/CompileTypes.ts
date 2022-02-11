@@ -43,7 +43,6 @@ export type SessionInfo = {
     style: SourceMapStore
     script: SourceMapStore
     scriptModule: SourceMapStore,
-    defineArray: {name: string, value: StringTracker}[]
     headHTML: string,
     typeName: string,
     cache: {

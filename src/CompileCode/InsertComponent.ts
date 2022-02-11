@@ -7,7 +7,6 @@ import AddPlugin from '../Plugins/Index';
 import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, SessionInfo } from './XMLHelpers/CompileTypes';
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
-import ParseBasePage from './XMLHelpers/PageBase';
 
 interface DefaultValues {
     value: StringTracker,
@@ -298,16 +297,14 @@ export default class InsertComponent extends InsertComponentBase {
                 return this.ReBuildTag(type, dataTag, data, BetweenTagData, BetweenTagData => this.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo));
             }
 
-            if(!sessionInfo.cacheComponent[AllPathTypes.SmallPath]?.mtimeMs)
-                sessionInfo.cacheComponent[AllPathTypes.SmallPath] = {mtimeMs: await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs')}; // add to dependenceObject
+            if (!sessionInfo.cacheComponent[AllPathTypes.SmallPath]?.mtimeMs)
+                sessionInfo.cacheComponent[AllPathTypes.SmallPath] = { mtimeMs: await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs') }; // add to dependenceObject
 
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
 
-            const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath,  sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            const baseData = new ParseBasePage(allData, sessionInfo, true);
-            await baseData.loadSettings(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName);
+            const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
 
-            fileData = baseData.scriptFile.Plus(baseData.clearData);
+            fileData = allData;
             addStringInfo = stringInfo;
         }
 

@@ -2,8 +2,10 @@ import StringTracker from '../../EasyDebug/StringTracker.js';
 import markdown from 'markdown-it';
 import hljs from 'highlight.js';
 import { parseTagDataStringBoolean } from './serv-connect/index.js';
+import { PrintIfNew } from '../../OutputInput/PrintNew.js';
 export default async function BuildCode(type, dataTag, BetweenTagData, InsertComponent, session) {
     const markDownPlugin = InsertComponent.GetPlugin('markdown');
+    const hljsClass = parseTagDataStringBoolean(dataTag, 'hljsClass', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
     let haveHighlight = false;
     const md = markdown({
         html: true,
@@ -15,11 +17,17 @@ export default async function BuildCode(type, dataTag, BetweenTagData, InsertCom
             if (lang && hljs.getLanguage(lang)) {
                 haveHighlight = true;
                 try {
-                    return hljs.highlight(str, { language: lang, ignoreIllegals: true }).value; //eslint-disable-next-line
+                    return `<pre${hljsClass}><code>${hljs.highlight(str, { language: lang, ignoreIllegals: true }).value}</code></pre>`;
                 }
-                catch { }
+                catch (err) {
+                    PrintIfNew({
+                        text: err,
+                        type: 'error',
+                        errorName: 'markdown-parser'
+                    });
+                }
             }
-            return ''; // use external default escaping
+            return `<pre${hljsClass}><code>${md.utils.escapeHtml(str)}</code></pre>`;
         }
     });
     const renderHTML = md.render(BetweenTagData.eq), buildHTML = new StringTracker(type.DefaultInfoText);

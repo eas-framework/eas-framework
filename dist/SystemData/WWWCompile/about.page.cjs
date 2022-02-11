@@ -35,17 +35,17 @@ async function readFolder(dir, ext){
 
     return stringMap;
 }
-const data = await readFolder("/Users/idoio/Documents/beyond-easy/node_modules/highlight.js/styles/", ".css");
+// const data = await readFolder("/Users/idoio/Documents/beyond-easy/node_modules/highlight.js/styles/", ".css");
 
-let buildText = '';
+// let buildText = '';
 
-for(const i of data){
-    buildText += "'" + i + "' | ";
-}
+// for(const i of data){
+//     buildText += "'" + i + "' | ";
+// }
 
-buildText = buildText.substring(0, buildText.length-3);
+// buildText = buildText.substring(0, buildText.length-3);
 
-write(buildText);`;
+// write(buildText);`;
 //!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:1:39
 const me = Math.random() + Request.url;
 //!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:1:1
@@ -88,28 +88,28 @@ async function readFolder(dir, ext){
     return stringMap;
 //!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:21:1
 }
-//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:22:110
-const data = await readFolder("/Users/idoio/Documents/beyond-easy/node_modules/highlight.js/styles/", ".css");
+//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:22:113
+// const data = await readFolder("/Users/idoio/Documents/beyond-easy/node_modules/highlight.js/styles/", ".css");
 //!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:1:1
 
-//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:24:19
-let buildText = '';
+//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:24:22
+// let buildText = '';
 //!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:1:1
 
-//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:26:21
-for(const i of data){
-//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:27:34
-    buildText += "'" + i + "' | ";
-//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:28:1
-}
+//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:26:24
+// for(const i of data){
+//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:27:37
+//     buildText += "'" + i + "' | ";
+//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:28:4
+// }
 //!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:1:1
 
-//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:30:55
-buildText = buildText.substring(0, buildText.length-3);
+//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:30:58
+// buildText = buildText.substring(0, buildText.length-3);
 //!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:1:1
 
-//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:32:17
-write(buildText);
+//!WWW/about.page -> WWW/About.page.js -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/About.page.js:32:20
+// write(buildText);
 run_script_code=`run_script_name=\`WWW/about.page\`;`;
 //!WWW/about.page -><line>/Users/idoio/Documents/beyond-easy/tests/core/Website/Models/Website.mode:0:35
 run_script_name=`WWW/about.page`;
@@ -186,9 +186,14 @@ out_run_script.text+=`<a>Cool</a>`;}
 out_run_script.text+=`
 <div name="4" div><h1>MR</h1>
 <p>goto</p>
-<pre><code class="language-ts"><span class="hljs-keyword">var</span> i = <span class="hljs-number">9</span>;
+<pre class="hljs"><code><span class="hljs-keyword">var</span> i = <span class="hljs-number">9</span>;
 </code></pre>
 </div>
+`;
+run_script_code=`write(__filename);;`;
+//!/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/about.page:25:12
+write(__filename);;
+out_run_script.text+=`
             </div>
         </main>
     </body>
@@ -203,4 +208,4 @@ out_run_script.text+=`
                     console.error("Error runing this code: '" + run_script_code + "'");
                     console.error("Error stack: " + e.stack);
                 }}});}
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3Rlc3RzL2NvcmUvV2Vic2l0ZS9Nb2RlbHMvV2Vic2l0ZS5tb2RlIiwiLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL1dXVy9BYm91dC5wYWdlLmpzIiwiLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL1dXVy9hYm91dC5wYWdlIiwiLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL0NvbXBvbmVudHMvQnV0dG9uTGluay5pbnRlIiwiLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL0NvbXBvbmVudHMvQnV0dG9uTGluay5pbnRlLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQ1hBOzs7Ozs7QUFHQTs7Ozs7O0FBR0E7Ozs7QUFFQTs7QUFDQTs7OztBQUVBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOzs7O0FBRUE7O0FBQ0E7O0FBQ0E7Ozs7QUFFQTs7OztBQUVBOztBQUNBOztBQUNBOzs7O0FBRUE7Ozs7QUFFQTs7Ozs7Ozs7QUQ1QkE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBR0E7QUFDQTtBQUNBO0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FFdENBO0FBQ0E7OztBQUFBO0FBQ0E7QUFEQTs7O0FBQUE7QUFFQTs7QUFBQTs7O0FDWEE7OztBQ0RBOztBQUFBO0FBQ0E7QUFEQTtBRmlCQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FGK0JBO0FBQ0E7QUFDQTtBQUFBO0FBbERBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBIiwiZmlsZSI6ImFib3V0LnBhZ2UuY2pzIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3Rlc3RzL2NvcmUvV2Vic2l0ZS9Nb2RlbHMvV2Vic2l0ZS5tb2RlIiwiLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL1dXVy9BYm91dC5wYWdlLmpzIiwiLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL1dXVy9hYm91dC5wYWdlIiwiLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL0NvbXBvbmVudHMvQnV0dG9uTGluay5pbnRlIiwiLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL0NvbXBvbmVudHMvQnV0dG9uTGluay5pbnRlLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQ1hBOzs7Ozs7QUFHQTs7Ozs7O0FBR0E7Ozs7QUFFQTs7QUFDQTs7OztBQUVBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOzs7O0FBRUE7O0FBQ0E7O0FBQ0E7Ozs7QUFFQTs7OztBQUVBOztBQUNBOztBQUNBOzs7O0FBRUE7Ozs7QUFFQTs7Ozs7Ozs7QUQ1QkE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBR0E7QUFDQTtBQUNBO0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBO0FBQ0E7QUFDQTtBQUNBO0FFdENBO0FBQ0E7OztBQUFBO0FBQ0E7QUFEQTs7O0FBQUE7QUFFQTs7QUFBQTs7O0FDWEE7OztBQ0RBOztBQUFBO0FBQ0E7QUFEQTtBRmlCQTtBQUNBO0FBQ0E7QUFDQTtBQUhBO0FBTUE7OztBQUFBO0FBRUE7QUZ1QkE7QUFDQTtBQUNBO0FBQUE7QUFsREE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EiLCJmaWxlIjoiYWJvdXQucGFnZS5janMifQ==
