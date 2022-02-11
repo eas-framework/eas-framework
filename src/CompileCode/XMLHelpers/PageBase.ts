@@ -9,6 +9,7 @@ import { BasicSettings, getTypes } from "../../RunTimeBuild/SearchFileSystem";
 import JSParser from "../JSParser";
 import { PrintIfNew } from "../../OutputInput/PrintNew";
 
+const stringAttributes = ['\'', '"', '`'];
 export default class ParseBasePage {
     public clearData: StringTracker
     public scriptFile = new StringTracker();
@@ -176,8 +177,7 @@ export default class ParseBasePage {
         }
 
         for(const [name, value] of values){
-            this.clearData = this.clearData.replace(`:${name.eq}:`, value);
+            this.clearData = this.clearData.replaceAll(`:${name.eq}:`, value);
         }
     }
 }
-const stringAttributes = ['\'', '"', '`'];

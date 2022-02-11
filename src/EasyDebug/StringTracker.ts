@@ -673,4 +673,8 @@ export default class StringTracker {
     public toString() {
         return this.OneString;
     }
+
+    public extractInfo(type: string): string {
+        return this.DefaultInfoText.info.split(type).pop().trim()
+    }
 }

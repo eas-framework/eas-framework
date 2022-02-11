@@ -7,6 +7,7 @@ import AddPlugin from '../Plugins/Index';
 import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, SessionInfo } from './XMLHelpers/CompileTypes';
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
+import pathNode from 'path';
 
 interface DefaultValues {
     value: StringTracker,
@@ -281,14 +282,15 @@ export default class InsertComponent extends InsertComponentBase {
 
             const tagPath = (folder ? folder + '/' : '') + type.replace(/:/gi, "/").eq;
 
-            AllPathTypes = CreateFilePath(path, LastSmallPath, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
+            const relativesFilePath = type.extractInfo('<line>'), relativesFilePathSmall = pathNode.relative(BasicSettings.fullWebSitePath, relativesFilePath);
+            AllPathTypes = CreateFilePath(relativesFilePath, relativesFilePathSmall, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
 
             if (sessionInfo.cacheComponent[AllPathTypes.SmallPath] === null || sessionInfo.cacheComponent[AllPathTypes.SmallPath] === undefined && !await EasyFs.existsFile(AllPathTypes.FullPath)) {
                 sessionInfo.cacheComponent[AllPathTypes.SmallPath] = null;
 
                 if (folder) {
                     PrintIfNew({
-                        text: `Component ${type.eq} not found! -> ${pathName}\n-> ${type.lineInfo}`,
+                        text: `Component ${type.eq} not found! -> ${pathName}\n-> ${type.lineInfo}\n${AllPathTypes.SmallPath}`,
                         errorName: "component-not-found",
                         type: 'error'
                     });
