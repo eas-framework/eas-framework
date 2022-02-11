@@ -168,4 +168,5 @@ export default class StringTracker {
     matchAll(searchValue: string | RegExp): StringTracker[];
     match(searchValue: string | RegExp): ArrayMatch | StringTracker[];
     toString(): string;
+    extractInfo(type: string): string;
 }

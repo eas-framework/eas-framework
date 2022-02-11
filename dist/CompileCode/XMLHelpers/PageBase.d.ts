@@ -1,12 +1,10 @@
 import StringTracker from "../../EasyDebug/StringTracker";
-import { StringNumberMap, SessionInfo } from './CompileTypes';
+import { StringNumberMap } from './CompileTypes';
 export default class ParseBasePage {
-    private sessionInfo;
-    private loadFromSession;
     clearData: StringTracker;
     scriptFile: StringTracker;
     private valueArray;
-    constructor(code: StringTracker, sessionInfo: SessionInfo, loadFromSession?: boolean);
+    constructor(code: StringTracker);
     loadSettings(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string): Promise<void>;
     private parseBase;
     pop(name: string): StringTracker;

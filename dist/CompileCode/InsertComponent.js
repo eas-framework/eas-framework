@@ -5,7 +5,7 @@ import { IsInclude, StartCompiling } from '../BuildInComponents/index.js';
 import StringTracker from '../EasyDebug/StringTracker.js';
 import { PrintIfNew } from '../OutputInput/PrintNew.js';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader.js';
-import ParseBasePage from './XMLHelpers/PageBase.js';
+import pathNode from 'path';
 export default class InsertComponent extends InsertComponentBase {
     constructor(PluginBuild) {
         super(PrintIfNew);
@@ -211,12 +211,13 @@ export default class InsertComponent extends InsertComponentBase {
             if (folder)
                 folder = data.remove('folder') || '.';
             const tagPath = (folder ? folder + '/' : '') + type.replace(/:/gi, "/").eq;
-            AllPathTypes = CreateFilePath(path, LastSmallPath, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
+            const relativesFilePath = type.extractInfo('<line>'), relativesFilePathSmall = pathNode.relative(BasicSettings.fullWebSitePath, relativesFilePath);
+            AllPathTypes = CreateFilePath(relativesFilePath, relativesFilePathSmall, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
             if (sessionInfo.cacheComponent[AllPathTypes.SmallPath] === null || sessionInfo.cacheComponent[AllPathTypes.SmallPath] === undefined && !await EasyFs.existsFile(AllPathTypes.FullPath)) {
                 sessionInfo.cacheComponent[AllPathTypes.SmallPath] = null;
                 if (folder) {
                     PrintIfNew({
-                        text: `Component ${type.eq} not found! -> ${pathName}\n-> ${type.lineInfo}`,
+                        text: `Component ${type.eq} not found! -> ${pathName}\n-> ${type.lineInfo}\n${AllPathTypes.SmallPath}`,
                         errorName: "component-not-found",
                         type: 'error'
                     });
@@ -227,9 +228,7 @@ export default class InsertComponent extends InsertComponentBase {
                 sessionInfo.cacheComponent[AllPathTypes.SmallPath] = { mtimeMs: await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs') }; // add to dependenceObject
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs;
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            const baseData = new ParseBasePage(allData, sessionInfo, true);
-            await baseData.loadSettings(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName);
-            fileData = baseData.scriptFile.Plus(baseData.clearData);
+            fileData = allData;
             addStringInfo = stringInfo;
         }
         if (SearchInComment) {

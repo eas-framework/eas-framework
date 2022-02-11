@@ -24,7 +24,10 @@ export default class Multithreading {
         have.method(doMethods.shift()).then(res);
     }
     addThread() {
-        const pool = workerPool.pool(this.workerPath);
+        const pool = workerPool.pool(this.workerPath, {
+            minWorkers: 1,
+            maxWorkers: 1
+        });
         //eslint-disable-next-line
         const ThisInstance = this;
         const worker = {

@@ -537,5 +537,8 @@ export default class StringTracker {
     toString() {
         return this.OneString;
     }
+    extractInfo(type) {
+        return this.DefaultInfoText.info.split(type).pop().trim();
+    }
 }
 //# sourceMappingURL=StringTracker.js.map

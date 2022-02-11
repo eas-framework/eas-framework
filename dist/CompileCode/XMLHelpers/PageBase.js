@@ -7,10 +7,9 @@ import path from 'path';
 import { BasicSettings } from "../../RunTimeBuild/SearchFileSystem.js";
 import JSParser from "../JSParser.js";
 import { PrintIfNew } from "../../OutputInput/PrintNew.js";
+const stringAttributes = ['\'', '"', '`'];
 export default class ParseBasePage {
-    constructor(code, sessionInfo, loadFromSession = false) {
-        this.sessionInfo = sessionInfo;
-        this.loadFromSession = loadFromSession;
+    constructor(code) {
         this.scriptFile = new StringTracker();
         this.valueArray = [];
         this.parseBase(code);
@@ -135,17 +134,8 @@ export default class ParseBasePage {
             lastValue = this.loadSetting();
         }
         for (const [name, value] of values) {
-            const nameText = name.eq;
-            if (!this.loadFromSession && !this.sessionInfo.defineArray.find(x => x.name == nameText))
-                this.sessionInfo.defineArray.push({ name: nameText, value });
-            this.clearData = this.clearData.replace(`:${nameText}:`, value);
-        }
-        if (!this.loadFromSession)
-            return;
-        for (const { name, value } of this.sessionInfo.defineArray) {
-            this.clearData = this.clearData.replace(`:${name}:`, value);
+            this.clearData = this.clearData.replaceAll(`:${name.eq}:`, value);
         }
     }
 }
-const stringAttributes = ['\'', '"', '`'];
 //# sourceMappingURL=PageBase.js.map
