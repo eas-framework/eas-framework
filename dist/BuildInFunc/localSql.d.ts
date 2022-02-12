@@ -1,15 +1,14 @@
-import { Database } from 'better-sqlite3';
+import { Database } from 'sql.js';
 export default class LocalSql {
-    folder?: string;
-    private logs;
     db: Database;
-    constructor(folder?: string, logs?: boolean);
+    savePath: string;
+    hadChange: boolean;
+    constructor(savePath?: string, checkIntervalMinutes?: number);
     load(): Promise<void>;
-    loadSkipCheck(): void;
-    private prepareSql;
+    private updateLocalFile;
     private buildQueryTemplate;
-    insert(queryArray: string[], ...valuesArray: any[]): number | bigint;
+    insert(queryArray: string[], ...valuesArray: any[]): import("sql.js").SqlValue;
     affected(queryArray: string[], ...valuesArray: any[]): number;
-    select(queryArray: string[], ...valuesArray: any[]): any[];
-    selectOne(queryArray: string[], ...valuesArray: any[]): any;
+    select(queryArray: string[], ...valuesArray: any[]): import("sql.js").QueryExecResult[];
+    selectOne(queryArray: string[], ...valuesArray: any[]): import("sql.js").ParamsObject;
 }

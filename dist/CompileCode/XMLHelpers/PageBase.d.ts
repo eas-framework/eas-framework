@@ -5,7 +5,7 @@ export default class ParseBasePage {
     scriptFile: StringTracker;
     private valueArray;
     constructor(code: StringTracker);
-    loadSettings(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string): Promise<void>;
+    loadSettings(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent?: boolean): Promise<void>;
     private parseBase;
     pop(name: string): StringTracker;
     popAny(name: string): StringTracker;

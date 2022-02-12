@@ -12,13 +12,12 @@ import { StartRequire, GetSettings, SettingsExsit } from './ImportModule';
 import { Request, Response, NextFunction } from '@tinyhttp/app';
 import { Settings as PrintIfNewSettings } from '../OutputInput/PrintNew';
 import { Options as TransformOptions } from 'sucrase';
-import BetterSqlite3 from 'better-sqlite3';
-import ConnectSession from 'better-sqlite3-session-store';
+import MemorySession from 'memorystore';
 
 const
     CookiesSecret = uuidv4().substring(0, 32),
     SessionSecret = uuidv4(),
-    SequelizeStore = ConnectSession(session),
+    MemoryStore = MemorySession(session),
 
     CookiesMiddleware = cookieParser(CookiesSecret),
     CookieEncrypterMiddleware = cookieEncrypter(CookiesSecret, {}),
@@ -28,7 +27,7 @@ fileByUrl.Settings.Cookies = <any>CookiesMiddleware;
 fileByUrl.Settings.CookieEncrypter = <any>CookieEncrypterMiddleware;
 fileByUrl.Settings.CookieSettings = CookieSettings;
 
-let DevMode_ = true, CompilationEnded: Promise<() => Promise<void>>, SessionStore;
+let DevMode_ = true, compilationScan: Promise<() => Promise<void>>, SessionStore;
 
 let formidableServer, bodyParserServer;
 
@@ -79,18 +78,47 @@ interface Markdown {
 
 type pluginsOptions = "MinAll" | "MinHTML" | "MinCss" | "MinSass" | "MinJS" | "MinTS" | "MinJSX" | JSXOptions | "MinTSX" | TSXOptions | transformOptions | "SafeDebug" | Markdown;
 
+interface serveLimits {
+    cacheDays?: number,
+    fileLimitMB?: number,
+    requestLimitMB?: number,
+    cookiesExpiresDays?: number,
+    sessionTotalRamMB?: number,
+    sessionTimeMinutes?: number,
+    sessionCheckPeriodMinutes?: number
+}
+
+const serveLimits = {
+    sessionTotalRamMB: 150,
+    sessionTimeMinutes: 40,
+    sessionCheckPeriodMinutes: 30,
+    fileLimitMB: 10,
+    requestLimitMB: 4
+}
+
 interface GlobalSettings {
-    RequestLimitMB?: number,
-    MaxFileUploadMB?: number,
-    SessionTimeMinutes?: number,
-    ReapIntervalSessionMinutes?: number,
-    CacheDays?: number,
-    PageRam?: boolean,
-    CookiesExpiresDays?: number,
-    Serve?: {
-        AppPort?: number,
+    general?: {
+        pageInRam?: boolean,
+        importOnLoad?: ((...data: any) => any)[]
+    },
+    compile?: {
+        compileSyntax?: ("Razor" | "TypeScript" | string | { [key: string]: any })[]
+        ignoreError?: ("close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" |
+            "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning" | "markdown-parser")[],
+        plugins?: pluginsOptions[]
+    },
+    routing?: {
+        rules?: ((req: Request, _res: Response<any>, url: string) => string)[],
+        errorPages?: fileByUrl.ErrorPages
+        urlStop?: string[],
+        ignoreTypes?: string[],
+        ignorePaths?: string[],
+    },
+    serveLimits: serveLimits
+    serve?: {
+        port?: number,
         http2?: boolean,
-        greenlock?: {
+        greenLock?: {
             staging?: null,
             cluster?: null,
             email?: string,
@@ -98,123 +126,161 @@ interface GlobalSettings {
             agreeToTerms?: boolean,
             sites?: SiteSettings[]
         }
-    },
-    Routing?: {
-        RuleObject?: ((req: Request, _res: Response<any>, url: string) => string)[],
-        StopCheckUrls?: string[],
-        IgnoreTypes?: string[],
-        IgnorePaths?: string[],
-        arrayFuncServer?: ((...data: any) => any)[]
-    },
-    preventCompilationError?: ("close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" |
-        "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning" | "markdown-parser")[],
-    AddCompileSyntax?: ("Razor" | "TypeScript" | string | { [key: string]: any })[]
-    plugins?: pluginsOptions[],
-    ErrorPages?: fileByUrl.ErrorPages
+    }
 }
 
+let pageInRamActivate: () => Promise<void>;
+export function pageInRamActivateFunc(){
+    return pageInRamActivate;
+}
+
+const baseRoutingIgnoreTypes = [...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray];
+
 interface ExportSettings extends GlobalSettings {
-    DevMode: boolean,
-    SettingsPath: string,
-    CookiesSecret: string,
-    SessionSecret: string,
-    CookiesMiddleware: TinyhttpPlugin,
-    CookieEncrypterMiddleware: TinyhttpPlugin,
-    SessionMiddleware: TinyhttpPlugin,
-    bodyParser: TinyhttpPlugin
-    formidable: formidableServer,
-    OnDev: GlobalSettings,
-    OnProduction: GlobalSettings
+    development: boolean,
+    settingsPath: string,
+    middleware: {
+        cookies: TinyhttpPlugin
+        cookieEncrypter: TinyhttpPlugin
+        session: TinyhttpPlugin
+        bodyParser: TinyhttpPlugin
+        formidable: formidableServer
+    }
+
+    secret: {
+        cookies: string
+        session: string
+    }
+
+    implDev?: GlobalSettings,
+    implProd?: GlobalSettings
 }
 
 export const Export: ExportSettings = {
-    set DevMode(value) {
+    get settingsPath() {
+        return workingDirectory + BasicSettings.WebSiteFolder + "/Settings";
+    },
+    set development(value) {
         DevMode_ = value;
         if (!value) {
-            CompilationEnded = BuildServer.compileAll();
+            compilationScan = BuildServer.compileAll();
             process.env.NODE_ENV = "production";
         }
         fileByUrl.Settings.DevMode = value;
         SetDevMode(value);
     },
-    get DevMode() {
+    get development() {
         return DevMode_;
     },
-    get SettingsPath() {
-        return workingDirectory + BasicSettings.WebSiteFolder + "/Settings";
+    middleware: {
+        get cookies(): (req: Request, _res: Response<any>, next?: NextFunction) => void {
+            return <any>CookiesMiddleware;
+        },
+        get cookieEncrypter() {
+            return CookieEncrypterMiddleware;
+        },
+        get session() {
+            return SessionStore;
+        },
+        get formidable() {
+            return formidableServer;
+        },
+        get bodyParser() {
+            return bodyParserServer;
+        }
     },
-    set CacheDays(value) {
-        fileByUrl.Settings.CacheDays = value;
+    secret: {
+        get cookies() {
+            return CookiesSecret;
+        },
+        get session() {
+            return SessionSecret;
+        },
     },
-    get CacheDays() {
-        return fileByUrl.Settings.CacheDays;
+    general: {
+        importOnLoad: [],
+        set pageInRam(value) {
+            fileByUrl.Settings.PageRam = value;
+            pageInRamActivate = async () => {
+                const preparations = await compilationScan;
+                await preparations?.();
+                if (!fileByUrl.Settings.PageRam) {
+                    await fileByUrl.LoadAllPagesToRam();
+                } else if (!value) {
+                    fileByUrl.ClearAllPagesFromRam();
+                }
+            }
+        },
+        get pageInRam() {
+            return fileByUrl.Settings.PageRam;
+        }
     },
-    set PageRam(value) {
-        fileByUrl.Settings.PageRam = value;
+    compile: {
+        set compileSyntax(value) {
+            InsertModelsSettings.AddCompileSyntax = value;
+        },
+        get compileSyntax() {
+            return InsertModelsSettings.AddCompileSyntax;
+        },
+        set ignoreError(value) {
+            (<any>PrintIfNewSettings).PreventErrors = value;
+        },
+        get ignoreError() {
+            return (<any>PrintIfNewSettings).PreventErrors;
+        },
+        set plugins(value) {
+            InsertModelsSettings.plugins.length = 0;
+            InsertModelsSettings.plugins.push(...value);
+        },
+        get plugins() {
+            return InsertModelsSettings.plugins;
+        }
     },
-    get PageRam() {
-        return fileByUrl.Settings.PageRam;
+    routing: {
+        rules: [],
+        urlStop: [],
+        ignoreTypes: baseRoutingIgnoreTypes,
+        ignorePaths: [],
+        get errorPages() {
+            return fileByUrl.Settings.ErrorPages;
+        },
+        set errorPages(value) {
+            fileByUrl.Settings.ErrorPages = value;
+        }
     },
-    set CookiesExpiresDays(value) {
-        CookieSettings.maxAge = 86400000 * value;
+    serveLimits: {
+        cacheDays: 3,
+        cookiesExpiresDays: 1,
+        set sessionTotalRamMB(value: number) {
+            serveLimits.sessionTotalRamMB = value;
+            buildSession();
+        },
+        set sessionTimeMinutes(value: number) {
+            serveLimits.sessionTimeMinutes = value;
+            buildSession();
+
+        },
+        set sessionCheckPeriodMinutes(value: number) {
+            serveLimits.sessionCheckPeriodMinutes = value;
+            buildSession();
+
+        },
+        set fileLimitMB(value: number) {
+            serveLimits.fileLimitMB = value;
+            buildFormidable();
+
+        },
+        set requestLimitMB(value: number) {
+            serveLimits.requestLimitMB = value;
+            buildFormidable();
+            buildBodyParser();
+
+        }
     },
-    get CookiesExpiresDays() {
-        return CookieSettings.maxAge / 86400000;
-    },
-    get CookiesSecret() {
-        return CookiesSecret;
-    },
-    get SessionSecret() {
-        return SessionSecret;
-    },
-    get CookiesMiddleware(): (req: Request, _res: Response<any>, next?: NextFunction) => void {
-        return <any>CookiesMiddleware;
-    },
-    get CookieEncrypterMiddleware() {
-        return CookieEncrypterMiddleware;
-    },
-    get SessionMiddleware() {
-        return SessionStore;
-    },
-    get formidable() {
-        return formidableServer;
-    },
-    get bodyParser() {
-        return bodyParserServer;
-    },
-    set AddCompileSyntax(value) {
-        InsertModelsSettings.AddCompileSyntax = value;
-    },
-    get AddCompileSyntax() {
-        return InsertModelsSettings.AddCompileSyntax;
-    },
-    set plugins(value) {
-        InsertModelsSettings.plugins.length = 0;
-        InsertModelsSettings.plugins.push(...value);
-    },
-    get plugins() {
-        return InsertModelsSettings.plugins;
-    },
-    set preventCompilationError(value) {
-        (<any>PrintIfNewSettings).PreventErrors = value;
-    },
-    get preventCompilationError() {
-        return (<any>PrintIfNewSettings).PreventErrors;
-    },
-    get ErrorPages() {
-        return fileByUrl.Settings.ErrorPages;
-    },
-    set ErrorPages(value) {
-        fileByUrl.Settings.ErrorPages = value;
-    },
-    RequestLimitMB: 5,
-    MaxFileUploadMB: 100,
-    SessionTimeMinutes: 0,
-    ReapIntervalSessionMinutes: 30,
-    Serve: {
-        AppPort: 8080,
+    serve: {
+        port: 8080,
         http2: false,
-        greenlock: {
+        greenLock: {
             staging: null,
             cluster: null,
             email: null,
@@ -222,185 +288,103 @@ export const Export: ExportSettings = {
             agreeToTerms: false,
             sites: []
         }
-    },
-    Routing: {
-        RuleObject: [],
-        StopCheckUrls: [],
-        IgnoreTypes: [...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray],
-        IgnorePaths: [],
-        arrayFuncServer: []
-    },
-    OnDev: {
-
-    },
-    OnProduction: {
-
     }
 }
 
-let firstLoad = true;
-
-export function ReformidableServer() {
+export function buildFormidable() {
     formidableServer = {
-        maxFileSize: Export.MaxFileUploadMB * 1024 * 1024,
+        maxFileSize: Export.serveLimits.fileLimitMB * 1048576,
         uploadDir: SystemData + "/UploadFiles/",
         multiples: true,
-        maxFieldsSize: Export.RequestLimitMB * 1024 * 1024
+        maxFieldsSize: Export.serveLimits.requestLimitMB * 1048576
     };
 }
 
-export function RebodyParserServer() {
-    bodyParserServer = (<any>bodyParser).json({ limit: Export.RequestLimitMB + 'mb' });
+export function buildBodyParser() {
+    bodyParserServer = (<any>bodyParser).json({ limit: Export.serveLimits.requestLimitMB + 'mb' });
 }
 
-function CheckChange(o, Settings) {
-    let re = false;
-    for (const i in o) {
-        if (Settings[i] != null && Settings[i] != Export[o[i]]) {
-            re = true;
-        }
-        Export[o[i]] = Settings[i];
-    }
-    return re;
-}
 
-export async function ReSessionStore() {
-    if (!Export.SessionTimeMinutes) {
+export function buildSession() {
+    if (!Export.serveLimits.sessionTimeMinutes || !Export.serveLimits.sessionTotalRamMB) {
         SessionStore = (req, res, next) => next();
         return;
     }
 
-    const sequelize = new BetterSqlite3(SystemData + '/RuntimeBuild/Session.db');
-    sequelize.pragma('journal_mode = WAL');
-
     SessionStore = session({
-        cookie: { maxAge: Export.SessionTimeMinutes * 60 * 1000, sameSite: true },
+        cookie: { maxAge: Export.serveLimits.sessionTimeMinutes * 60 * 1000, sameSite: true },
         secret: SessionSecret,
         resave: false,
         saveUninitialized: false,
-        store: new SequelizeStore({
-            client: sequelize,
-            expired: {
-                clear: true,
-                intervalMs: Export.ReapIntervalSessionMinutes * 60 * 1000
-            }
+        store: new MemoryStore({
+            checkPeriod: Export.serveLimits.sessionCheckPeriodMinutes * 60 * 1000,
+            max: Export.serveLimits.sessionTotalRamMB * 1048576
         })
     });
 }
 
-const ReserverChange = {
-    'request-limit-mb': 'RequestLimitMB',
-    'upload-files-size-limit-mb': 'MaxFileUploadMB'
+function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'ignore' | 'only' = 'ignore') {
+    let hasImpleated = false;
+    for (const i in json) {
+        const include = rules.includes(i);
+        if (rulesType == 'only' && include || rulesType == 'ignore' && !include) {
+            hasImpleated = true;
+            to[i] = json[i];
+        }
+    }
+    return hasImpleated;
 }
 
 // read the settings of the website
 export async function requireSettings() {
-    if (await SettingsExsit(Export.SettingsPath)) {
-        const Settings = await GetSettings(Export.SettingsPath, DevMode_);
+    if (!await SettingsExsit(Export.settingsPath)) return;
+    const Settings: ExportSettings = await GetSettings(Export.settingsPath, DevMode_);
 
-        if (Settings.development)
-            Object.assign(Settings, Settings["on-dev"]);
+    if (Settings.development)
+        Object.assign(Settings, Settings.implDev);
 
-        else
-            Object.assign(Settings, Settings["on-production"]);
-
-
-        if (Settings['add-compile-syntax'])
-            Export.AddCompileSyntax = Settings['add-compile-syntax'];
+    else
+        Object.assign(Settings, Settings.implProd);
 
 
-        if (Settings['plugins'])
-            Export.plugins = Settings['plugins'];
+    copyJSON(Export.compile, Settings.compile);
 
+    copyJSON(Export.routing, Settings.routing, ['ignoreTypes']);
+    Export.routing.ignoreTypes = Settings.routing.ignoreTypes.concat(baseRoutingIgnoreTypes);
 
-        if (Settings["prevent-compilation-error"])
-            Export.preventCompilationError = Settings["prevent-compilation-error"];
+    copyJSON(Export.serveLimits, Settings.serveLimits, ['cacheDays', 'cookiesExpiresDays'], 'only');
 
-
-        let makeCompile: () => Promise<void>;
-        if (firstLoad || Settings.development != null && Settings.development !== DevMode_) {
-            Export.DevMode = Settings.development;
-            makeCompile = await CompilationEnded;
-        }
-
-        if (Settings["error-pages"])
-            Export.ErrorPages = Settings["error-pages"];
-
-
-        if (Settings["cache-days"])
-            Export.CacheDays = Settings["cache-days"];
-
-
-        if (Settings.rules)
-            Export.Routing.RuleObject = Settings.rules;
-
-        if (Settings["stop-url-check"])
-            Export.Routing.StopCheckUrls = Settings["stop-url-check"];
-
-        if (Settings["cookies-expires-days"])
-            Export.CookiesExpiresDays = Settings["cookies-expires-days"];
-
-        if (Settings['request-limit-mb'] && Settings['request-limit-mb'] != Export.RequestLimitMB) {
-            Export.RequestLimitMB = Settings['request-limit-mb'];
-            if (!firstLoad) {
-                RebodyParserServer();
-            }
-        }
-
-        if (firstLoad)
-            firstLoad = false;
-
-        if (Settings['session-time-minutes'] !== undefined && Settings['session-time-minutes'] != Export.SessionTimeMinutes) {
-            Export.SessionTimeMinutes = Settings['session-time-minutes'];
-            await ReSessionStore();
-        }
-
-        if (Settings['ignore-types']) {
-            Export.Routing.IgnoreTypes = Settings['ignore-types'];
-            Export.Routing.IgnoreTypes.push(...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray);
-        }
-
-        if (Settings['ignore-start-paths'])
-            Export.Routing.IgnorePaths = Settings['ignore-start-paths'];
-
-        if (Settings['require-on-start'])
-            Export.Routing.arrayFuncServer = <any>await StartRequire(Settings['require-on-start'], DevMode_);
-        else
-            Export.Routing.arrayFuncServer = [];
-
-        Export.Routing.arrayFuncServer.push(async () => {
-            await makeCompile?.();
-
-            if (Settings["save-page-ram"] != null) {
-                if (!Export.PageRam && Settings["save-page-ram"]) {
-                    await fileByUrl.LoadAllPagesToRam();
-                }
-                Export.PageRam = Settings["save-page-ram"];
-                if (!Export.PageRam) {
-                    fileByUrl.ClearAllPagesFromRam();
-                }
-            }
-        });
-
-        if (CheckChange(ReserverChange, Settings))
-            ReformidableServer();
-
-        if (Settings.serve) {
-            if (Settings.serve.port) {
-                Export.Serve.AppPort = Settings.serve.port;
-            }
-
-            if (Settings.serve.http2) {
-                Export.Serve.http2 = Settings.serve.http2;
-            }
-
-            if (Settings.serve.greenlock) {
-                Export.Serve.greenlock = Settings.serve.greenlock;
-            }
-        }
-
-    } else {
-        Export.DevMode = DevMode_;
-        await (await CompilationEnded)?.();
+    if (copyJSON(serveLimits, Settings.serveLimits, ['sessionTotalRamMB', 'sessionTimeMinutes', 'sessionCheckPeriodMinutes'], 'only')) {
+        buildSession();
     }
+
+    if (copyJSON(serveLimits, Settings.serveLimits, ['fileLimitMB', 'requestLimitMB'], 'only')) {
+        buildFormidable();
+    }
+
+    if (copyJSON(serveLimits, Settings.serveLimits, ['requestLimitMB'], 'only')) {
+        buildBodyParser();
+    }
+
+    copyJSON(Export.serve, Settings.serve);
+
+    /* --- problematic updates --- */
+    if(DevMode_ != Settings.development){
+        Export.development = Settings.development
+    }
+
+    if (Settings.general.importOnLoad) {
+        Export.general.importOnLoad = <any>await StartRequire(<any>Settings.general.importOnLoad, DevMode_);
+    }
+
+    //need to down lasted so it won't interfere with 'importOnLoad'
+    if (!copyJSON(Export.general, Settings.general, ['pageInRam'], 'only') && Settings.development) {
+        pageInRamActivate = await compilationScan;
+    }
+}
+
+export function buildFirstLoad() {
+    buildSession();
+    buildFormidable();
+    buildBodyParser();
 }

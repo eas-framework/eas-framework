@@ -19,9 +19,10 @@ export default class ParseBasePage {
         this.parseBase(code);
     }
 
-    async loadSettings(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string){
+    async loadSettings(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent = false){
         await this.loadCodeFile(pagePath, isTs, dependenceObject, pageName);
-        this.loadDefine();
+        if(!isComponent)
+            this.loadDefine();
     }
 
     private parseBase(code: StringTracker) {
@@ -117,13 +118,12 @@ export default class ParseBasePage {
             dependenceObject[SmallPath] = fileState;
 
             const baseModelData = await AddDebugInfo(pageName + ' -> ' + SmallPath, haveCode); // read model
-            const modelData = <StringTracker>JSParser.fixText(baseModelData.allData);
-            modelData.AddTextBefore('<%');
-            modelData.AddTextAfter('%>');
+            baseModelData.allData.AddTextBefore('<%');
+            baseModelData.allData.AddTextAfter('%>');
 
-            modelData.AddTextBefore(baseModelData.stringInfo);
+            baseModelData.allData.AddTextBefore(baseModelData.stringInfo);
 
-            this.scriptFile = modelData;
+            this.scriptFile = baseModelData.allData;
         } else {
             PrintIfNew({
                 id: SmallPath,

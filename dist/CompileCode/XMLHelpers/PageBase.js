@@ -5,7 +5,6 @@ import { AddDebugInfo } from './CodeInfoAndDebug.js';
 import EasyFs from '../../OutputInput/EasyFs.js';
 import path from 'path';
 import { BasicSettings } from "../../RunTimeBuild/SearchFileSystem.js";
-import JSParser from "../JSParser.js";
 import { PrintIfNew } from "../../OutputInput/PrintNew.js";
 const stringAttributes = ['\'', '"', '`'];
 export default class ParseBasePage {
@@ -14,9 +13,10 @@ export default class ParseBasePage {
         this.valueArray = [];
         this.parseBase(code);
     }
-    async loadSettings(pagePath, isTs, dependenceObject, pageName) {
+    async loadSettings(pagePath, isTs, dependenceObject, pageName, isComponent = false) {
         await this.loadCodeFile(pagePath, isTs, dependenceObject, pageName);
-        this.loadDefine();
+        if (!isComponent)
+            this.loadDefine();
     }
     parseBase(code) {
         let dataSplit;
@@ -88,11 +88,10 @@ export default class ParseBasePage {
         if (fileState != null) {
             dependenceObject[SmallPath] = fileState;
             const baseModelData = await AddDebugInfo(pageName + ' -> ' + SmallPath, haveCode); // read model
-            const modelData = JSParser.fixText(baseModelData.allData);
-            modelData.AddTextBefore('<%');
-            modelData.AddTextAfter('%>');
-            modelData.AddTextBefore(baseModelData.stringInfo);
-            this.scriptFile = modelData;
+            baseModelData.allData.AddTextBefore('<%');
+            baseModelData.allData.AddTextAfter('%>');
+            baseModelData.allData.AddTextBefore(baseModelData.stringInfo);
+            this.scriptFile = baseModelData.allData;
         }
         else {
             PrintIfNew({

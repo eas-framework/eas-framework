@@ -2,7 +2,7 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { find_end_of_def, find_end_of_q, find_end_block } from './RustBind/index.js';
 import * as Settings from './Settings';
 import { getDirname } from '../../RunTimeBuild/SearchFileSystem';
-import Multithreading from '../Multithreading';
+import workerPool from 'workerpool';
 import {cpus} from 'os';
 
 const __dirname = getDirname(import.meta.url);
@@ -41,47 +41,37 @@ export class BaseReader {
     }
 }
 
-const cpuLength = cpus().length;
+const cpuLength = Math.max(1, Math.floor(cpus().length / 2));
 export class InsertComponentBase {
-    private asyncMethod: Multithreading;
+    private asyncMethod: workerPool.WorkerPool;
 
     SimpleSkip: string[] = Settings.SimpleSkip;
     SkipSpecialTag: string[][] = Settings.SkipSpecialTag;
 
     constructor(private printNew?: any) {
-
-        this.asyncMethod = new Multithreading(cpuLength, __dirname + '/RustBind/workerInsertComponent.js');
+        this.asyncMethod = workerPool.pool(__dirname + '/RustBind/workerInsertComponent.js', {maxWorkers: cpuLength});
     }
 
-    private printErrors(text: StringTracker, errors: any[]) {
-        if (this.printNew) {
-            for (const i of errors) {
-                this.printNew({
-                    text: `\nWarning, you didn't write right this tag: "${i.type_name}", used in: ${text.at(Number(i.index)).lineInfo}\n(the system will auto close it)\n`,
-                    errorName: "close-tag"
-                });
-            }
+    private printErrors(text: StringTracker, errors: string) {
+        if (!this.printNew) return;
+            
+        for (const i of JSON.parse(errors)) {
+            this.printNew({
+                text: `\nWarning, you didn't write right this tag: "${i.type_name}", used in: ${text.at(Number(i.index)).lineInfo}\n(the system will auto close it)\n`,
+                errorName: "close-tag"
+            });
         }
     }
-
     public async FindCloseChar(text: StringTracker, Search: string) {
-        const [point, errors] = await this.asyncMethod.getMethod({
-            FindCloseChar: [text.eq, Search],
-            GetErrors: []
-        });
-
-        this.printErrors(text, JSON.parse(errors));
+        const [point,errors]  = await this.asyncMethod.exec('FindCloseChar', [text.eq, Search]);
+        this.printErrors(text, errors);
 
         return point;
     }
 
     public async FindCloseCharHTML(text: StringTracker, Search: string) {
-        const [point, errors] = await this.asyncMethod.getMethod({
-            FindCloseCharHTML: [text.eq, Search],
-            GetErrors: []
-        });
-
-        this.printErrors(text, JSON.parse(errors));
+        const [point,errors] = await this.asyncMethod.exec('FindCloseCharHTML', [text.eq, Search]);
+        this.printErrors(text, errors);
 
         return point;
     }

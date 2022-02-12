@@ -6,6 +6,7 @@ import StringTracker from '../EasyDebug/StringTracker.js';
 import { PrintIfNew } from '../OutputInput/PrintNew.js';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader.js';
 import pathNode from 'path';
+import ParseBasePage from './XMLHelpers/PageBase.js';
 export default class InsertComponent extends InsertComponentBase {
     constructor(PluginBuild) {
         super(PrintIfNew);
@@ -195,7 +196,7 @@ export default class InsertComponent extends InsertComponentBase {
         fileData = fileData.replace(/<\:reader( )*\/>/gi, BetweenTagData ?? '');
         pathName = pathName + ' -> ' + SmallPath;
         fileData = await this.StartReplace(fileData, pathName, FullPath, SmallPath, isDebug, dependenceObject, buildScript, sessionInfo);
-        fileData = await NoTrackStringCode(fileData, `${pathName} ->\b${FullPath}`, isDebug, buildScript);
+        fileData = await NoTrackStringCode(fileData, `${pathName} ->\n${FullPath}`, isDebug, buildScript);
         return fileData;
     }
     async insertTagData(path, pathName, LastSmallPath, type, dataTag, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }) {
@@ -228,7 +229,9 @@ export default class InsertComponent extends InsertComponentBase {
                 sessionInfo.cacheComponent[AllPathTypes.SmallPath] = { mtimeMs: await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs') }; // add to dependenceObject
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs;
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            fileData = allData;
+            const baseData = new ParseBasePage(allData);
+            await baseData.loadSettings(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath, true);
+            fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;
         }
         if (SearchInComment) {

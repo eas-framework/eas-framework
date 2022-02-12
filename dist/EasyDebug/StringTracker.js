@@ -537,8 +537,20 @@ export default class StringTracker {
     toString() {
         return this.OneString;
     }
-    extractInfo(type) {
+    extractInfo(type = '<line>') {
         return this.DefaultInfoText.info.split(type).pop().trim();
+    }
+    /**
+     * Extract error info form error message
+     */
+    debugLine({ message, loc }) {
+        let searchLine = this.getLine(loc?.line ?? 1), column = loc?.column ?? 0;
+        if (searchLine.startsWith('//')) {
+            searchLine = this.getLine(loc?.line - 1);
+            column = 0;
+        }
+        const data = searchLine.DefaultInfoText;
+        return `${message}, on file -> ${data.info.split('<line>').shift()}:${data.line}:${column}`;
     }
 }
 //# sourceMappingURL=StringTracker.js.map

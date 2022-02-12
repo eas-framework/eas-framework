@@ -7,7 +7,7 @@ async function ReplaceBefore(code, defineData) {
     return code;
 }
 function ErrorTemplate(info) {
-    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += '<p style="color:red;text-align:left;font-size:16px;">Syntax Error: ${info}</p>'`;
+    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += '<p style="color:red;text-align:left;font-size:16px;">Syntax Error: ${info.replaceAll('\n', '<br/>')}</p>'`;
 }
 function ReplaceAfter(code) {
     return code.replace('"use strict";Object.defineProperty(exports, "__esModule", {value: true});', '');
@@ -18,7 +18,7 @@ function ReplaceAfter(code) {
  * @param type
  * @returns
  */
-export default async function BuildScript(text, pathName, isTypescript, isDebug, removeToMoudule) {
+export default async function BuildScript(text, isTypescript, isDebug, removeToMoudule) {
     text = text.trim();
     const Options = {
         transforms: ['imports'],
@@ -34,7 +34,7 @@ export default async function BuildScript(text, pathName, isTypescript, isDebug,
         Result.code = ReplaceAfter(Result.code);
     }
     catch (err) {
-        const errorMessage = `${err.message}, on file -> ${pathName}:${text.getLine(err?.loc?.line ?? 1).DefaultInfoText.line}:${err?.loc?.column ?? 0}`;
+        const errorMessage = text.debugLine(err);
         PrintIfNew({
             errorName: 'compilation-error',
             text: errorMessage

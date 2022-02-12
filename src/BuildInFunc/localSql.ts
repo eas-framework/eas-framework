@@ -1,29 +1,33 @@
 import EasyFs from '../OutputInput/EasyFs';
-import BetterSqlite3, { Database } from 'better-sqlite3';
+import initSqlJs, { Database } from 'sql.js';
 import { print } from '../OutputInput/Console';
 import { workingDirectory } from '../RunTimeBuild/SearchFileSystem';
+import path from 'path';
 
 export default class LocalSql {
     public db: Database;
+    public savePath: string;
+    public hadChange = false;
 
-    constructor(public folder?: string, private logs = false) {
-        this.folder = folder ?? workingDirectory + "SystemSave/";
+    constructor(savePath?: string, checkIntervalMinutes = 10) {
+        this.savePath = savePath ?? workingDirectory + "SystemSave/DataBase.db";
+        setInterval(() =>this.updateLocalFile(), 1000 * 60 * checkIntervalMinutes);
     }
 
     async load() {
-        await EasyFs.mkdirIfNotExists(this.folder);
+        const notExits = await EasyFs.mkdirIfNotExists(path.dirname(this.savePath));
+        const SQL = await initSqlJs();
 
-        this.loadSkipCheck();
+        let readData: Buffer;
+        if (!notExits && await EasyFs.existsFile(this.savePath))
+            readData = await EasyFs.readFile(this.savePath, 'binary');
+        this.db = new SQL.Database(readData);
     }
 
-    loadSkipCheck(){
-        this.db = BetterSqlite3(this.folder + 'DataBase.db', this.logs ? {
-            verbose: print.log
-        }: null);
-    }
-
-    private prepareSql(query: string): BetterSqlite3.Statement<any[]>{
-        return this.db.prepare(query);
+    private updateLocalFile(){
+        if(!this.hadChange) return;
+        this.hadChange = false;
+        EasyFs.writeFile(this.savePath, this.db.export());
     }
 
     private buildQueryTemplate(arr: string[], params: any[]) {
@@ -34,41 +38,52 @@ export default class LocalSql {
 
         query += arr.at(-1);
 
-        return this.prepareSql(query);
+        return query;
     }
 
-    insert(queryArray: string[], ...valuesArray: any[]){
-        const query = this.buildQueryTemplate(queryArray, valuesArray);
+    insert(queryArray: string[], ...valuesArray: any[]) {
+        const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
         try {
-            return query.run(valuesArray).lastInsertRowid
-        } catch(err) {
+            const id = query.get(valuesArray)[0];
+            this.hadChange = true;
+            query.free();
+            return id;
+        } catch (err) {
             print.error(err);
         }
     }
 
-    affected(queryArray: string[], ...valuesArray: any[]){
-        const query = this.buildQueryTemplate(queryArray, valuesArray);
+    affected(queryArray: string[], ...valuesArray: any[]) {
+        const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
+        
         try {
-            return query.run(valuesArray).changes
-        } catch(err) {
+             query.run(valuesArray)
+             const effected = this.db.getRowsModified()
+             this.hadChange ||= effected > 0;
+             query.free();
+             return effected;
+        } catch (err) {
             print.error(err);
         }
     }
 
-    select(queryArray: string[], ...valuesArray: any[]){
+    select(queryArray: string[], ...valuesArray: any[]) {
         const query = this.buildQueryTemplate(queryArray, valuesArray);
         try {
-            return query.all(valuesArray)
-        } catch(err) {
+            return this.db.exec(query);
+        } catch (err) {
             print.error(err);
         }
     }
 
-    selectOne(queryArray: string[], ...valuesArray: any[]){
-        const query = this.buildQueryTemplate(queryArray, valuesArray);
+    selectOne(queryArray: string[], ...valuesArray: any[]) {
+        const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
         try {
-            return query.get(valuesArray)
-        } catch(err) {
+            query.step();
+            const one = query.getAsObject();
+            query.free();
+            return one;
+        } catch (err) {
             print.error(err);
         }
     }

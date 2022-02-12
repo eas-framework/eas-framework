@@ -16,7 +16,7 @@ async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name
         const {write, safeWrite, setResponse, sendToSelector} = new buildTemplate(out_run_script);
         ${
             replaceForClient(
-                    await BuildScriptWithoutModule(parse, path),
+                    await BuildScriptWithoutModule(parse),
                     `var exports = ${name}.exports;`
                 )
         }

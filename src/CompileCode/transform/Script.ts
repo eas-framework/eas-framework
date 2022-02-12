@@ -10,7 +10,7 @@ async function ReplaceBefore(code: string, defineData?: { [key: string]: string 
 }
 
 function ErrorTemplate(info: string){
-    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += '<p style="color:red;text-align:left;font-size:16px;">Syntax Error: ${info}</p>'`;
+    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += '<p style="color:red;text-align:left;font-size:16px;">Syntax Error: ${info.replaceAll('\n', '<br/>')}</p>'`;
 }
 
 function ReplaceAfter(code: string){
@@ -22,7 +22,7 @@ function ReplaceAfter(code: string){
  * @param type 
  * @returns 
  */
-export default async function BuildScript(text: StringTracker, pathName: string, isTypescript: boolean, isDebug: boolean, removeToMoudule: boolean): Promise<string> {
+export default async function BuildScript(text: StringTracker, isTypescript: boolean, isDebug: boolean, removeToMoudule: boolean): Promise<string> {
     text = text.trim();
 
     const Options: TransformOptions = {
@@ -41,7 +41,7 @@ export default async function BuildScript(text: StringTracker, pathName: string,
         Result.code = ReplaceAfter(Result.code);
 
     } catch (err) {
-        const errorMessage = `${err.message}, on file -> ${pathName}:${text.getLine(err?.loc?.line??1).DefaultInfoText.line}:${err?.loc?.column??0}`;
+        const errorMessage = text.debugLine(err);
         PrintIfNew({
             errorName: 'compilation-error',
             text: errorMessage

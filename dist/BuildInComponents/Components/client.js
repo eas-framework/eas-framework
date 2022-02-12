@@ -10,7 +10,7 @@ async function template(BuildScriptWithoutModule, name, params, selector, mainCo
     const parse = JSParser.RunAndExport(mainCode, path, isDebug);
     return `function ${name}({${params}}, selector = "${selector}", out_run_script = {text: ''}){
         const {write, safeWrite, setResponse, sendToSelector} = new buildTemplate(out_run_script);
-        ${replaceForClient(await BuildScriptWithoutModule(parse, path), `var exports = ${name}.exports;`)}
+        ${replaceForClient(await BuildScriptWithoutModule(parse), `var exports = ${name}.exports;`)}
         return sendToSelector(selector, out_run_script.text);
     }\n${name}.exports = {};`;
 }

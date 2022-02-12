@@ -40,18 +40,46 @@ interface Markdown {
     hljsClass: boolean;
 }
 declare type pluginsOptions = "MinAll" | "MinHTML" | "MinCss" | "MinSass" | "MinJS" | "MinTS" | "MinJSX" | JSXOptions | "MinTSX" | TSXOptions | transformOptions | "SafeDebug" | Markdown;
+interface serveLimits {
+    cacheDays?: number;
+    fileLimitMB?: number;
+    requestLimitMB?: number;
+    cookiesExpiresDays?: number;
+    sessionTotalRamMB?: number;
+    sessionTimeMinutes?: number;
+    sessionCheckPeriodMinutes?: number;
+}
+declare const serveLimits: {
+    sessionTotalRamMB: number;
+    sessionTimeMinutes: number;
+    sessionCheckPeriodMinutes: number;
+    fileLimitMB: number;
+    requestLimitMB: number;
+};
 interface GlobalSettings {
-    RequestLimitMB?: number;
-    MaxFileUploadMB?: number;
-    SessionTimeMinutes?: number;
-    ReapIntervalSessionMinutes?: number;
-    CacheDays?: number;
-    PageRam?: boolean;
-    CookiesExpiresDays?: number;
-    Serve?: {
-        AppPort?: number;
+    general?: {
+        pageInRam?: boolean;
+        importOnLoad?: ((...data: any) => any)[];
+    };
+    compile?: {
+        compileSyntax?: ("Razor" | "TypeScript" | string | {
+            [key: string]: any;
+        })[];
+        ignoreError?: ("close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" | "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning" | "markdown-parser")[];
+        plugins?: pluginsOptions[];
+    };
+    routing?: {
+        rules?: ((req: Request, _res: Response<any>, url: string) => string)[];
+        errorPages?: fileByUrl.ErrorPages;
+        urlStop?: string[];
+        ignoreTypes?: string[];
+        ignorePaths?: string[];
+    };
+    serveLimits: serveLimits;
+    serve?: {
+        port?: number;
         http2?: boolean;
-        greenlock?: {
+        greenLock?: {
             staging?: null;
             cluster?: null;
             email?: string;
@@ -60,36 +88,29 @@ interface GlobalSettings {
             sites?: SiteSettings[];
         };
     };
-    Routing?: {
-        RuleObject?: ((req: Request, _res: Response<any>, url: string) => string)[];
-        StopCheckUrls?: string[];
-        IgnoreTypes?: string[];
-        IgnorePaths?: string[];
-        arrayFuncServer?: ((...data: any) => any)[];
-    };
-    preventCompilationError?: ("close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" | "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning" | "markdown-parser")[];
-    AddCompileSyntax?: ("Razor" | "TypeScript" | string | {
-        [key: string]: any;
-    })[];
-    plugins?: pluginsOptions[];
-    ErrorPages?: fileByUrl.ErrorPages;
 }
+export declare function pageInRamActivateFunc(): () => Promise<void>;
 interface ExportSettings extends GlobalSettings {
-    DevMode: boolean;
-    SettingsPath: string;
-    CookiesSecret: string;
-    SessionSecret: string;
-    CookiesMiddleware: TinyhttpPlugin;
-    CookieEncrypterMiddleware: TinyhttpPlugin;
-    SessionMiddleware: TinyhttpPlugin;
-    bodyParser: TinyhttpPlugin;
-    formidable: formidableServer;
-    OnDev: GlobalSettings;
-    OnProduction: GlobalSettings;
+    development: boolean;
+    settingsPath: string;
+    middleware: {
+        cookies: TinyhttpPlugin;
+        cookieEncrypter: TinyhttpPlugin;
+        session: TinyhttpPlugin;
+        bodyParser: TinyhttpPlugin;
+        formidable: formidableServer;
+    };
+    secret: {
+        cookies: string;
+        session: string;
+    };
+    implDev?: GlobalSettings;
+    implProd?: GlobalSettings;
 }
 export declare const Export: ExportSettings;
-export declare function ReformidableServer(): void;
-export declare function RebodyParserServer(): void;
-export declare function ReSessionStore(): Promise<void>;
+export declare function buildFormidable(): void;
+export declare function buildBodyParser(): void;
+export declare function buildSession(): void;
 export declare function requireSettings(): Promise<void>;
+export declare function buildFirstLoad(): void;
 export {};

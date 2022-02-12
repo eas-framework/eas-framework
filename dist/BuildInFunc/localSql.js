@@ -1,24 +1,27 @@
 import EasyFs from '../OutputInput/EasyFs.js';
-import BetterSqlite3 from 'better-sqlite3';
+import initSqlJs from 'sql.js';
 import { print } from '../OutputInput/Console.js';
 import { workingDirectory } from '../RunTimeBuild/SearchFileSystem.js';
+import path from 'path';
 export default class LocalSql {
-    constructor(folder, logs = false) {
-        this.folder = folder;
-        this.logs = logs;
-        this.folder = folder ?? workingDirectory + "SystemSave/";
+    constructor(savePath, checkIntervalMinutes = 10) {
+        this.hadChange = false;
+        this.savePath = savePath ?? workingDirectory + "SystemSave/DataBase.db";
+        setInterval(() => this.updateLocalFile(), 1000 * 60 * checkIntervalMinutes);
     }
     async load() {
-        await EasyFs.mkdirIfNotExists(this.folder);
-        this.loadSkipCheck();
+        const notExits = await EasyFs.mkdirIfNotExists(path.dirname(this.savePath));
+        const SQL = await initSqlJs();
+        let readData;
+        if (!notExits && await EasyFs.existsFile(this.savePath))
+            readData = await EasyFs.readFile(this.savePath, 'binary');
+        this.db = new SQL.Database(readData);
     }
-    loadSkipCheck() {
-        this.db = BetterSqlite3(this.folder + 'DataBase.db', this.logs ? {
-            verbose: print.log
-        } : null);
-    }
-    prepareSql(query) {
-        return this.db.prepare(query);
+    updateLocalFile() {
+        if (!this.hadChange)
+            return;
+        this.hadChange = false;
+        EasyFs.writeFile(this.savePath, this.db.export());
     }
     buildQueryTemplate(arr, params) {
         let query = '';
@@ -26,21 +29,28 @@ export default class LocalSql {
             query += arr[i] + '?';
         }
         query += arr.at(-1);
-        return this.prepareSql(query);
+        return query;
     }
     insert(queryArray, ...valuesArray) {
-        const query = this.buildQueryTemplate(queryArray, valuesArray);
+        const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
         try {
-            return query.run(valuesArray).lastInsertRowid;
+            const id = query.get(valuesArray)[0];
+            this.hadChange = true;
+            query.free();
+            return id;
         }
         catch (err) {
             print.error(err);
         }
     }
     affected(queryArray, ...valuesArray) {
-        const query = this.buildQueryTemplate(queryArray, valuesArray);
+        const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
         try {
-            return query.run(valuesArray).changes;
+            query.run(valuesArray);
+            const effected = this.db.getRowsModified();
+            this.hadChange || (this.hadChange = effected > 0);
+            query.free();
+            return effected;
         }
         catch (err) {
             print.error(err);
@@ -49,16 +59,19 @@ export default class LocalSql {
     select(queryArray, ...valuesArray) {
         const query = this.buildQueryTemplate(queryArray, valuesArray);
         try {
-            return query.all(valuesArray);
+            return this.db.exec(query);
         }
         catch (err) {
             print.error(err);
         }
     }
     selectOne(queryArray, ...valuesArray) {
-        const query = this.buildQueryTemplate(queryArray, valuesArray);
+        const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
         try {
-            return query.get(valuesArray);
+            query.step();
+            const one = query.getAsObject();
+            query.free();
+            return one;
         }
         catch (err) {
             print.error(err);

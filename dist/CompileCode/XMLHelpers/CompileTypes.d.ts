@@ -62,7 +62,7 @@ export declare type CompileInFileFunc = (path: string, arrayType: string[], debu
     CompiledData: string;
     dependenceObject: any;
 }>;
-export declare type BuildScriptWithoutModule = (code: StringTracker, pathName: string) => Promise<string>;
+export declare type BuildScriptWithoutModule = (code: StringTracker) => Promise<string>;
 export declare type StringArrayOrObject = (string | {
     [key: string]: string;
 })[];

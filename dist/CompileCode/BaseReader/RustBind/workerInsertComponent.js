@@ -5,7 +5,6 @@ import {SimpleSkip, SkipSpecialTag} from '../Settings.js';
 insert_component(JSON.stringify(SkipSpecialTag), JSON.stringify(SimpleSkip));
 
 workerPool.worker({
-  FindCloseChar: find_close_char,
-  FindCloseCharHTML: find_close_char_html_elem,
-  GetErrors: get_errors
+  FindCloseChar: (...a) => [find_close_char(...a), get_errors()],
+  FindCloseCharHTML: (...a) => [find_close_char_html_elem(...a), get_errors()]
 });

@@ -8,6 +8,7 @@ import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFile
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
 import pathNode from 'path';
+import ParseBasePage from './XMLHelpers/PageBase';
 
 interface DefaultValues {
     value: StringTracker,
@@ -260,7 +261,7 @@ export default class InsertComponent extends InsertComponentBase {
 
         fileData = await this.StartReplace(fileData, pathName, FullPath, SmallPath, isDebug, dependenceObject, buildScript, sessionInfo);
 
-        fileData = await NoTrackStringCode(fileData, `${pathName} ->\b${FullPath}`, isDebug, buildScript);
+        fileData = await NoTrackStringCode(fileData, `${pathName} ->\n${FullPath}`, isDebug, buildScript);
 
         return fileData;
     }
@@ -305,8 +306,10 @@ export default class InsertComponent extends InsertComponentBase {
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
 
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
+            const baseData = new ParseBasePage(allData);
+            await baseData.loadSettings(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath, true);
 
-            fileData = allData;
+            fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;
         }
 

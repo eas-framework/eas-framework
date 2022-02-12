@@ -168,5 +168,15 @@ export default class StringTracker {
     matchAll(searchValue: string | RegExp): StringTracker[];
     match(searchValue: string | RegExp): ArrayMatch | StringTracker[];
     toString(): string;
-    extractInfo(type: string): string;
+    extractInfo(type?: string): string;
+    /**
+     * Extract error info form error message
+     */
+    debugLine({ message, loc }: {
+        message: string;
+        loc?: {
+            line: number;
+            column: number;
+        };
+    }): string;
 }

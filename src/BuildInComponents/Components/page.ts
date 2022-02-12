@@ -40,7 +40,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
     if (!(await EasyFs.stat(FullPath, null, true)).isFile?.()) {
         PrintIfNew({
-            text: `Page not found! -> ${pathName}\n-> ${type.lineInfo}`,
+            text: `Page not found! -> ${pathName} -> \n${type.lineInfo}`,
             errorName: 'page-not-found',
             type: 'error'
         });

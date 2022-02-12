@@ -15,7 +15,7 @@ declare function unlink(path: string): Promise<boolean>;
 declare function unlinkIfExists(path: string): Promise<boolean>;
 declare function readdir(path: string, options?: {}): Promise<string[] | Buffer[] | Dirent[]>;
 declare function mkdirIfNotExists(path: string): Promise<boolean>;
-declare function writeFile(path: string, content: string): Promise<boolean>;
+declare function writeFile(path: string, content: string | NodeJS.ArrayBufferView): Promise<boolean>;
 declare function writeJsonFile(path: string, content: any): Promise<boolean>;
 declare function readFile(path: string, encoding?: string): Promise<string | any>;
 declare function readJsonFile(path: string, encoding?: string): Promise<any>;

@@ -1,7 +1,7 @@
 
-import Multithreading from '../Multithreading';
-import {getDirname} from '../../RunTimeBuild/SearchFileSystem';
-import {cpus} from 'os';
+import workerPool from 'workerpool';
+import { getDirname } from '../../RunTimeBuild/SearchFileSystem';
+import { cpus } from 'os';
 
 interface SplitText {
     text: string,
@@ -9,11 +9,11 @@ interface SplitText {
     is_skip: boolean
 }
 
-const cpuLength = cpus().length;
-const parse_stream = new Multithreading(cpuLength, getDirname(import.meta.url) + '/RustBind/worker.js');
+const cpuLength = Math.max(1, Math.floor(cpus().length / 2));
+const parse_stream = workerPool.pool(getDirname(import.meta.url) + '/RustBind/worker.js', { maxWorkers: cpuLength });
 
 export async function ParseTextStream(text: string): Promise<SplitText[]> {
-    return JSON.parse(await parse_stream.getMethod({build_stream: [text]}));
+    return JSON.parse(await parse_stream.exec('build_stream', [text]));
 }
 
 abstract class BaseEntityCode {
@@ -76,7 +76,7 @@ export class ReBuildCodeString extends ReBuildCodeBasic {
 
     private CreateDataCode() {
         for (const i of this.ParseArray) {
-            if(i.is_skip){
+            if (i.is_skip) {
                 this.DataCode.text += `<|${i.type_name ?? ''}|>`;
                 this.DataCode.inputs.push(i.text);
             } else {
@@ -110,7 +110,7 @@ export class ReBuildCodeString extends ReBuildCodeBasic {
                     break;
             }
 
-            if(!IsDefault){
+            if (!IsDefault) {
                 value = value.substring(0, value.length - 2);
             }
 

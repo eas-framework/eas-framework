@@ -5,7 +5,6 @@ console.log(me);
 
 
 import fs from 'fs/promises'
-
 async function readFolder(dir, ext){
     const all = await fs.readdir(dir, {withFileTypes: true});
 

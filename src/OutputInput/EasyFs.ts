@@ -88,7 +88,7 @@ async function mkdirIfNotExists(path: string): Promise<boolean>{
     return false;
 }
 
-function writeFile(path: string, content: string): Promise<boolean>{
+function writeFile(path: string, content:  string | NodeJS.ArrayBufferView): Promise<boolean>{
     return new Promise(res => {
         fs.writeFile(path, content, (err) => {
             if(err){

@@ -1,10 +1,10 @@
-import Multithreading from '../Multithreading.js';
+import workerPool from 'workerpool';
 import { getDirname } from '../../RunTimeBuild/SearchFileSystem.js';
 import { cpus } from 'os';
-const cpuLength = cpus().length;
-const parse_stream = new Multithreading(cpuLength, getDirname(import.meta.url) + '/RustBind/worker.js');
+const cpuLength = Math.max(1, Math.floor(cpus().length / 2));
+const parse_stream = workerPool.pool(getDirname(import.meta.url) + '/RustBind/worker.js', { maxWorkers: cpuLength });
 export async function ParseTextStream(text) {
-    return JSON.parse(await parse_stream.getMethod({ build_stream: [text] }));
+    return JSON.parse(await parse_stream.exec('build_stream', [text]));
 }
 class BaseEntityCode {
     ReplaceAll(text, find, replace) {

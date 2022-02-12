@@ -111,7 +111,7 @@ async function outPage(data: StringTracker, pagePath: string, pageName: string, 
 }
 
 export async function Insert(data: string, fullPathCompile: string, pagePath: string, typeName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: SessionInfo) {
-    const BuildScriptWithPrams = (code: StringTracker, pathName: string, RemoveToModule = true): Promise<string> => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
+    const BuildScriptWithPrams = (code: StringTracker, RemoveToModule = true): Promise<string> => BuildScript(code, isTs(), isDebug, RemoveToModule);
 
     const debugInPage = isDebug && !GetPlugin("SafeDebug");
     const sessionInfo: SessionInfo = hasSessionInfo ??
@@ -143,7 +143,7 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
     DebugString = debugFromPage ? PageTemplate.RunAndExport(DebugString, pagePath, isDebug) :
         await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
 
-    let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, `${smallPath} -><line>${pagePath}`, debugFromPage);
+    let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, debugFromPage);
 
     if (!debugFromPage) {
         DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, isDebug);

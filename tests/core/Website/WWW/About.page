@@ -11,7 +11,7 @@
 <p>Today date: @(new Date().toString())</p>
 @me
 
-<ButtonLink>Cool</ButtonLink>
+<ButtonLink>Cool</ButtonLink> 
 <Page from="wdqwdwdqd.page"/>
 @define('name', 'goto')
 

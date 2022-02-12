@@ -674,7 +674,20 @@ export default class StringTracker {
         return this.OneString;
     }
 
-    public extractInfo(type: string): string {
+    public extractInfo(type = '<line>'): string {
         return this.DefaultInfoText.info.split(type).pop().trim()
+    }
+
+    /**
+     * Extract error info form error message
+     */
+    public debugLine({message, loc}: {message: string, loc?: {line: number, column: number}}): string {
+        let searchLine = this.getLine(loc?.line??1), column = loc?.column??0;
+        if(searchLine.startsWith('//')){
+            searchLine = this.getLine(loc?.line-1);
+            column = 0;
+        }
+        const data = searchLine.DefaultInfoText;
+        return `${message}, on file -> ${data.info.split('<line>').shift()}:${data.line}:${column}`;
     }
 }

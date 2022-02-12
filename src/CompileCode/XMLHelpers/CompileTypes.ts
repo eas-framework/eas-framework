@@ -66,6 +66,6 @@ export interface BuildInComponent {
 
 export type CompileInFileFunc = (path: string, arrayType: string[], debugFromPage: string) => Promise<{CompiledData:string, dependenceObject:any}>;
 
-export type BuildScriptWithoutModule = (code: StringTracker, pathName: string) => Promise<string>;
+export type BuildScriptWithoutModule = (code: StringTracker) => Promise<string>;
 
 export type StringArrayOrObject = (string | {[key: string]: string})[];

@@ -83,7 +83,7 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
     return await outPage(baseData.scriptFile.Plus(modelBuild), FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
 export async function Insert(data, fullPathCompile, pagePath, typeName, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
-    const BuildScriptWithPrams = (code, pathName, RemoveToModule = true) => BuildScript(code, pathName, isTs(), isDebug, RemoveToModule);
+    const BuildScriptWithPrams = (code, RemoveToModule = true) => BuildScript(code, isTs(), isDebug, RemoveToModule);
     const debugInPage = isDebug && !GetPlugin("SafeDebug");
     const sessionInfo = hasSessionInfo ??
         {
@@ -107,7 +107,7 @@ export async function Insert(data, fullPathCompile, pagePath, typeName, smallPat
     DebugString = ParseDebugLine(DebugString, smallPath);
     DebugString = debugFromPage ? PageTemplate.RunAndExport(DebugString, pagePath, isDebug) :
         await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
-    let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, `${smallPath} -><line>${pagePath}`, debugFromPage);
+    let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, debugFromPage);
     if (!debugFromPage) {
         DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, isDebug);
     }

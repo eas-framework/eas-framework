@@ -49,7 +49,7 @@ function ParseDebugLine(code, path) {
 async function NoTrackStringCode(code, path, isDebug, buildScript) {
     code = ParseScriptCode(code, path);
     code = JSParser.RunAndExport(code, path, isDebug);
-    const NewCode = await buildScript(code, path);
+    const NewCode = await buildScript(code);
     const newCodeStringTracker = JSParser.RestoreTrack(NewCode, code.DefaultInfoText);
     newCodeStringTracker.AddTextBefore('<%!{');
     newCodeStringTracker.AddTextAfter('}%>');
@@ -59,7 +59,7 @@ export async function AddDebugInfo(pageName, FullPath, cache = {}) {
     if (!cache.value)
         cache.value = await EasyFs.readFile(FullPath, 'utf8');
     return {
-        allData: new StringTracker(`${pageName} -><line>${FullPath}`, cache.value),
+        allData: new StringTracker(`${pageName}<line>${FullPath}`, cache.value),
         stringInfo: `<%run_script_name=\`${JSParser.fixText(pageName)}\`;%>`
     };
 }
