@@ -212,7 +212,7 @@ export async function requireSettings() {
         Object.assign(Settings, Settings.implProd);
     copyJSON(Export.compile, Settings.compile);
     copyJSON(Export.routing, Settings.routing, ['ignoreTypes']);
-    if (Settings.routing.ignoreTypes)
+    if (Settings.routing?.ignoreTypes)
         Export.routing.ignoreTypes = Settings.routing.ignoreTypes.concat(baseRoutingIgnoreTypes);
     copyJSON(Export.serveLimits, Settings.serveLimits, ['cacheDays', 'cookiesExpiresDays'], 'only');
     if (copyJSON(serveLimits, Settings.serveLimits, ['sessionTotalRamMB', 'sessionTimeMinutes', 'sessionCheckPeriodMinutes'], 'only')) {
@@ -229,7 +229,7 @@ export async function requireSettings() {
     if (DevMode_ != Settings.development) {
         Export.development = Settings.development;
     }
-    if (Settings.general.importOnLoad) {
+    if (Settings.general?.importOnLoad) {
         Export.general.importOnLoad = await StartRequire(Settings.general.importOnLoad, DevMode_);
     }
     //need to down lasted so it won't interfere with 'importOnLoad'
