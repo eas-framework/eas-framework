@@ -209,7 +209,7 @@ export const Export: ExportSettings = {
     },
     RequestLimitMB: 5,
     MaxFileUploadMB: 100,
-    SessionTimeMinutes: 60,
+    SessionTimeMinutes: 0,
     ReapIntervalSessionMinutes: 30,
     Serve: {
         AppPort: 8080,
