@@ -212,7 +212,8 @@ export async function requireSettings() {
         Object.assign(Settings, Settings.implProd);
     copyJSON(Export.compile, Settings.compile);
     copyJSON(Export.routing, Settings.routing, ['ignoreTypes']);
-    Export.routing.ignoreTypes = Settings.routing.ignoreTypes.concat(baseRoutingIgnoreTypes);
+    if (Settings.routing.ignoreTypes)
+        Export.routing.ignoreTypes = Settings.routing.ignoreTypes.concat(baseRoutingIgnoreTypes);
     copyJSON(Export.serveLimits, Settings.serveLimits, ['cacheDays', 'cookiesExpiresDays'], 'only');
     if (copyJSON(serveLimits, Settings.serveLimits, ['sessionTotalRamMB', 'sessionTimeMinutes', 'sessionCheckPeriodMinutes'], 'only')) {
         buildSession();
