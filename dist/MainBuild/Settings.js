@@ -189,6 +189,8 @@ export function buildSession() {
     });
 }
 function copyJSON(to, json, rules = [], rulesType = 'ignore') {
+    if (!json)
+        return false;
     let hasImpleated = false;
     for (const i in json) {
         const include = rules.includes(i);

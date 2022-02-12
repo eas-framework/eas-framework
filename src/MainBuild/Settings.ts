@@ -324,6 +324,7 @@ export function buildSession() {
 }
 
 function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'ignore' | 'only' = 'ignore') {
+    if(!json) return false;
     let hasImpleated = false;
     for (const i in json) {
         const include = rules.includes(i);
