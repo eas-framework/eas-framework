@@ -9,11 +9,11 @@ import MakeApiCall from './ApiCall';
 const { Export } = FuncScript;
 
 export interface ErrorPages {
-    NotFound?: {
+    notFound?: {
         path: string,
         code?: number
     },
-    ServerError?: {
+    serverError?: {
         path: string,
         code?: number
     }
@@ -76,7 +76,7 @@ function isServerFile(filePath: string) {
     return ExtensionInArray(filePath, <any>BasicSettings.pageTypesArray, <any>BasicSettings.ReqFileTypesArray, <any>BasicSettings.pageCodeFileArray);
 }
 
-function GetErrorPage(code: number, LocSettings: 'NotFound' | 'ServerError') {
+function GetErrorPage(code: number, LocSettings: 'notFound' | 'serverError') {
     let arrayType: string[], url: string;
     if (Settings.ErrorPages[LocSettings]) {
         arrayType = getTypes.Static;
@@ -194,7 +194,7 @@ async function BuildPageURL(arrayType: string[], url: string, smallPath: string,
     let fullPageUrl: string;
 
     if (!await EasyFs.existsFile(arrayType[0] + url + '.' + BasicSettings.pageTypes.page)) {
-        const ErrorPage = GetErrorPage(404, 'NotFound');
+        const ErrorPage = GetErrorPage(404, 'notFound');
 
         url = ErrorPage.url;
         arrayType = ErrorPage.arrayType;
@@ -256,8 +256,8 @@ async function GetDynamicPage(arrayType: string[], url: string, fullPageUrl: str
         DynamicFunc = await BuildLoadPage(smallPath);
 
     else {
-        code = Settings.ErrorPages.NotFound?.code ?? 404;
-        const ErrorPage = Settings.ErrorPages.NotFound && Export.PageLoadRam[getTypes.Static[2] + '/' + Settings.ErrorPages.NotFound.path] || Export.PageLoadRam[getTypes.Logs[2] + '/e404'];
+        code = Settings.ErrorPages.notFound?.code ?? 404;
+        const ErrorPage = Settings.ErrorPages.notFound && Export.PageLoadRam[getTypes.Static[2] + '/' + Settings.ErrorPages.notFound.path] || Export.PageLoadRam[getTypes.Logs[2] + '/e404'];
 
         if (ErrorPage)
             DynamicFunc = ErrorPage[1];
@@ -313,7 +313,7 @@ async function ActivatePage(Request: Request | any, Response: Response, arrayTyp
         print.error(e);
         Request.error = e;
 
-        const ErrorPage = GetErrorPage(500, 'ServerError');
+        const ErrorPage = GetErrorPage(500, 'serverError');
 
         DynamicPage(Request, Response, ErrorPage.url, ErrorPage.arrayType, ErrorPage.code);
         return false;

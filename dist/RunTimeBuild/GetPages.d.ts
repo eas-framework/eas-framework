@@ -1,10 +1,10 @@
 import { Request, Response } from '@tinyhttp/app';
 export interface ErrorPages {
-    NotFound?: {
+    notFound?: {
         path: string;
         code?: number;
     };
-    ServerError?: {
+    serverError?: {
         path: string;
         code?: number;
     };
@@ -22,7 +22,7 @@ interface GetPagesSettings {
 declare const Settings: GetPagesSettings;
 declare function LoadAllPagesToRam(): Promise<void>;
 declare function ClearAllPagesFromRam(): void;
-declare function GetErrorPage(code: number, LocSettings: 'NotFound' | 'ServerError'): {
+declare function GetErrorPage(code: number, LocSettings: 'notFound' | 'serverError'): {
     url: string;
     arrayType: string[];
     code: number;

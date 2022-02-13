@@ -134,7 +134,7 @@ async function BuildLoadPage(smallPath) {
 async function BuildPageURL(arrayType, url, smallPath, code) {
     let fullPageUrl;
     if (!await EasyFs.existsFile(arrayType[0] + url + '.' + BasicSettings.pageTypes.page)) {
-        const ErrorPage = GetErrorPage(404, 'NotFound');
+        const ErrorPage = GetErrorPage(404, 'notFound');
         url = ErrorPage.url;
         arrayType = ErrorPage.arrayType;
         code = ErrorPage.code;
@@ -184,8 +184,8 @@ async function GetDynamicPage(arrayType, url, fullPageUrl, smallPath, code) {
     else if (!Settings.PageRam && await SetNewURL() && fullPageUrl)
         DynamicFunc = await BuildLoadPage(smallPath);
     else {
-        code = Settings.ErrorPages.NotFound?.code ?? 404;
-        const ErrorPage = Settings.ErrorPages.NotFound && Export.PageLoadRam[getTypes.Static[2] + '/' + Settings.ErrorPages.NotFound.path] || Export.PageLoadRam[getTypes.Logs[2] + '/e404'];
+        code = Settings.ErrorPages.notFound?.code ?? 404;
+        const ErrorPage = Settings.ErrorPages.notFound && Export.PageLoadRam[getTypes.Static[2] + '/' + Settings.ErrorPages.notFound.path] || Export.PageLoadRam[getTypes.Logs[2] + '/e404'];
         if (ErrorPage)
             DynamicFunc = ErrorPage[1];
         else
@@ -232,7 +232,7 @@ async function ActivatePage(Request, Response, arrayType, url, FileInfo, code, n
     catch (e) {
         print.error(e);
         Request.error = e;
-        const ErrorPage = GetErrorPage(500, 'ServerError');
+        const ErrorPage = GetErrorPage(500, 'serverError');
         DynamicPage(Request, Response, ErrorPage.url, ErrorPage.arrayType, ErrorPage.code);
         return false;
     }
