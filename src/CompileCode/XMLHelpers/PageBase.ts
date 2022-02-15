@@ -71,15 +71,31 @@ export default class ParseBasePage {
         this.clearData = code.trimStart();
     }
 
-    get(name: string){
-        return this.valueArray.find(x => x.key === name)?.value
+    private rebuild(){
+        const build = new StringTracker(null, '@[');
+
+        for(const {key, value} of this.valueArray){
+            build.Plus$ `${key}="${value.replaceAll('"', '\\"')}"]`;
+        }
+        this.clearData = build.Plus("]").Plus(this.clearData);
+    }
+
+    static rebuildBaseInheritance(code: StringTracker, loadInheritance: ParseBasePage): StringTracker{
+        const parse = new ParseBasePage(code);
+
+        for(const name of parse.byValue('inherit')){
+            parse.replaceValue(name, loadInheritance.pop(name))
+        }
+
+        parse.rebuild();
+
+        return parse.clearData;
     }
 
 
     pop(name: string) {
         return this.valueArray.splice(this.valueArray.findIndex(x => x.key === name), 1)[0]?.value;
     }
-
 
     popAny(name: string) {
         const haveName = this.valueArray.findIndex(x => x.key.toLowerCase() == name);

@@ -36,7 +36,7 @@ Components.isTs = isTs;
 
 BuildScriptSettings.plugins = Settings.plugins;
 
-async function outPage(data: StringTracker,scriptFile:StringTracker, lastPageBase: ParseBasePage, pagePath: string, pageName: string, LastSmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap): Promise<StringTracker> {
+async function outPage(data: StringTracker,scriptFile:StringTracker, pagePath: string, pageName: string, LastSmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap): Promise<StringTracker> {
 
     const baseData = new ParseBasePage(data);
     await baseData.loadSettings(pagePath, LastSmallPath, isTs(), dependenceObject, pageName);
@@ -59,8 +59,8 @@ async function outPage(data: StringTracker,scriptFile:StringTracker, lastPageBas
     dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs'); // check page changed date, for dependenceObject
 
     const baseModelData = await AddDebugInfo(pageName, FullPath, SmallPath); // read model
-    let modelData = baseModelData.allData;
-
+    let modelData = ParseBasePage.rebuildBaseInheritance( baseModelData.allData, baseData);
+    
     modelData.AddTextBefore(baseModelData.stringInfo);
 
     pageName += " -> " + SmallPath;
@@ -82,16 +82,12 @@ async function outPage(data: StringTracker,scriptFile:StringTracker, lastPageBas
         return data;
     }
 
-    for(const name of baseData.byValue('inherit')){ //Load all the inherit
-        baseData.replaceValue(name, lastPageBase.pop(name))
-    }
-
     //Build With placeholders
     const modelBuild = new StringTracker();
 
     for (const i of allData.found) {
         i.tag = i.tag.substring(1); // removing the ':'
-        const holderData = outData.found.splice(outData.found.findIndex(x => x.tag == '@' + i.tag), 1).shift();
+        const holderData = outData.found.find((e) => e.tag == '@' + i.tag);
 
         modelBuild.Plus(modelData.substring(0, i.loc));
         modelData = modelData.substring(i.loc);
@@ -99,17 +95,16 @@ async function outPage(data: StringTracker,scriptFile:StringTracker, lastPageBas
         if (holderData) {
             modelBuild.Plus(holderData.data);
         } else { // Try loading data from page base
-            const loadFromBase = baseData.get(i.tag);
+            const loadFromBase = baseData.pop(i.tag);
 
             if (loadFromBase && loadFromBase.eq.toLowerCase() != 'inherit')
-                modelBuild.Plus(baseData.pop(i.tag));
+                modelBuild.Plus(loadFromBase);
         }
     }
 
-    baseData.valueArray.push(...outData.found.map(x => {return{key: x.tag.substring(1), value: x.data}}));
     modelBuild.Plus(modelData);
 
-    return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), baseData, FullPath, pageName, SmallPath, isDebug, dependenceObject);
+    return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
 
 export async function Insert(data: string, fullPathCompile: string, pagePath: string, typeName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: SessionInfo) {
@@ -134,7 +129,7 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
 
     let DebugString = new StringTracker(smallPath, data);
 
-    DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), new ParseBasePage(), pagePath, smallPath, smallPath, isDebug, dependenceObject);
+    DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), pagePath, smallPath, smallPath, isDebug, dependenceObject);
 
     DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);
 
