@@ -11,7 +11,7 @@ export default class ParseBasePage {
     constructor(code) {
         this.scriptFile = new StringTracker();
         this.valueArray = [];
-        this.parseBase(code);
+        code && this.parseBase(code);
     }
     async loadSettings(pagePath, isTs, dependenceObject, pageName, isComponent = false) {
         await this.loadCodeFile(pagePath, isTs, dependenceObject, pageName);
@@ -53,6 +53,9 @@ export default class ParseBasePage {
         }
         this.clearData = code.trimStart();
     }
+    get(name) {
+        return this.valueArray.find(x => x.key === name)?.value;
+    }
     pop(name) {
         return this.valueArray.splice(this.valueArray.findIndex(x => x.key === name), 1)[0]?.value;
     }
@@ -65,6 +68,14 @@ export default class ParseBasePage {
             return;
         this.clearData = asTag.data;
         return asTag.found[0].data.trim();
+    }
+    byValue(value) {
+        return this.valueArray.filter(x => x.value.eq === value).map(x => x.key);
+    }
+    replaceValue(name, value) {
+        const have = this.valueArray.find(x => x.key === name);
+        if (have)
+            have.value = value;
     }
     async loadCodeFile(pagePath, isTs, dependenceObject, pageName) {
         let haveCode = this.popAny('codefile')?.eq;

@@ -28,7 +28,7 @@ Components.GetPlugin = GetPlugin;
 Components.SomePlugins = SomePlugins;
 Components.isTs = isTs;
 BuildScriptSettings.plugins = Settings.plugins;
-async function outPage(data, scriptFile, pagePath, pageName, LastSmallPath, isDebug, dependenceObject) {
+async function outPage(data, scriptFile, lastPageBase, pagePath, pageName, LastSmallPath, isDebug, dependenceObject) {
     const baseData = new ParseBasePage(data);
     await baseData.loadSettings(pagePath, isTs(), dependenceObject, pageName);
     const modelName = baseData.popAny('model')?.eq;
@@ -60,6 +60,9 @@ async function outPage(data, scriptFile, pagePath, pageName, LastSmallPath, isDe
         print.error("Error With model ->", modelName, "at page: ", pageName);
         return data;
     }
+    for (const name of baseData.byValue('inherit')) { //Load all the inherit
+        baseData.replaceValue(name, lastPageBase.pop(name));
+    }
     //Build With placeholders
     const modelBuild = new StringTracker();
     for (const i of allData.found) {
@@ -71,16 +74,13 @@ async function outPage(data, scriptFile, pagePath, pageName, LastSmallPath, isDe
             modelBuild.Plus(holderData.data);
         }
         else { // Try loading data from page base
-            const loadFromBase = baseData.pop(i.tag);
-            if (loadFromBase)
-                if (loadFromBase.eq.toLowerCase() == 'inherit') // Save the placeholder for next model
-                    modelBuild.Plus(`<:${i.tag}/>`);
-                else
-                    modelBuild.Plus(loadFromBase);
+            const loadFromBase = baseData.get(i.tag);
+            if (loadFromBase && loadFromBase.eq.toLowerCase() != 'inherit')
+                modelBuild.Plus(baseData.pop(i.tag));
         }
     }
     modelBuild.Plus(modelData);
-    return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), FullPath, pageName, SmallPath, isDebug, dependenceObject);
+    return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), baseData, FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
 export async function Insert(data, fullPathCompile, pagePath, typeName, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
     const BuildScriptWithPrams = (code, RemoveToModule = true) => BuildScript(code, isTs(), isDebug, RemoveToModule);
@@ -101,7 +101,7 @@ export async function Insert(data, fullPathCompile, pagePath, typeName, smallPat
             cacheComponent: {}
         };
     let DebugString = new StringTracker(pagePath, data);
-    DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), pagePath, smallPath, smallPath, isDebug, dependenceObject);
+    DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), new ParseBasePage(), pagePath, smallPath, smallPath, isDebug, dependenceObject);
     DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);
     DebugString = await Components.Insert(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, BuildScriptWithPrams, sessionInfo); // add components
     DebugString = ParseDebugLine(DebugString, smallPath);

@@ -14,9 +14,9 @@ export default class ParseBasePage {
     public clearData: StringTracker
     public scriptFile = new StringTracker();
 
-    private valueArray: { key: string, value: StringTracker }[] = []
-    constructor(code: StringTracker) {
-        this.parseBase(code);
+    public valueArray: { key: string, value: StringTracker }[] = []
+    constructor(code?: StringTracker) {
+        code && this.parseBase(code);
     }
 
     async loadSettings(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent = false){
@@ -71,9 +71,15 @@ export default class ParseBasePage {
         this.clearData = code.trimStart();
     }
 
+    get(name: string){
+        return this.valueArray.find(x => x.key === name)?.value
+    }
+
+
     pop(name: string) {
         return this.valueArray.splice(this.valueArray.findIndex(x => x.key === name), 1)[0]?.value;
     }
+
 
     popAny(name: string) {
         const haveName = this.valueArray.findIndex(x => x.key.toLowerCase() == name);
@@ -88,6 +94,15 @@ export default class ParseBasePage {
         this.clearData = asTag.data;
 
         return asTag.found[0].data.trim();
+    }
+
+    byValue(value: string){
+        return this.valueArray.filter(x => x.value.eq === value).map(x => x.key)
+    }
+
+    replaceValue(name: string, value: StringTracker){
+        const have = this.valueArray.find(x => x.key === name)
+        if(have) have.value = value;
     }
 
     private async loadCodeFile(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string) {

@@ -18,7 +18,7 @@ function searchForCutMain(data: StringTracker, array:string[], sing:string, bigT
     return searchForCut(data, new RegExp(out, 'u'), sing, bigTag)
 }
 
-function outTagName(data) {
+function outTagName(data: string) {
     const end = data.indexOf(">");
     data = data.substring(0, end);
     while (data.endsWith(" ") || data.endsWith("/")) {
@@ -52,7 +52,7 @@ function searchForCut(data:StringTracker, findArray:RegExp, sing:string, bigTag 
 
     data = data.substring(be + 1);
 
-    const tag = outTagName(data);
+    const tag = outTagName(data.eq);
 
     data = data.substring(findStart(">", data));
 

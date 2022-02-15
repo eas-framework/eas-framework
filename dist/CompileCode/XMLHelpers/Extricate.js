@@ -33,7 +33,7 @@ function searchForCut(data, findArray, sing, bigTag = true, output = new StringT
     }
     output.Plus(data.substring(0, be));
     data = data.substring(be + 1);
-    const tag = outTagName(data);
+    const tag = outTagName(data.eq);
     data = data.substring(findStart(">", data));
     let inTagData;
     if (bigTag) {
