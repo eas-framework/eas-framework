@@ -75,7 +75,7 @@ export default class ParseBasePage {
         const build = new StringTracker(null, '@[');
 
         for(const {key, value} of this.valueArray){
-            build.Plus$ `${key}="${value.replaceAll('"', '\\"')}"]`;
+            build.Plus$ `${key}="${value.replaceAll('"', '\\"')}"`;
         }
         this.clearData = build.Plus("]").Plus(this.clearData);
     }

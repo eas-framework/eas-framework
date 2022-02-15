@@ -10,7 +10,8 @@ export default class ParseBasePage {
     constructor(code?: StringTracker);
     loadSettings(pagePath: string, smallPath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent?: boolean): Promise<void>;
     private parseBase;
-    get(name: string): StringTracker;
+    private rebuild;
+    static rebuildBaseInheritance(code: StringTracker, loadInheritance: ParseBasePage): StringTracker;
     pop(name: string): StringTracker;
     popAny(name: string): StringTracker;
     byValue(value: string): string[];
