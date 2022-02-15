@@ -1,0 +1,4 @@
+@[model='Website' title='inherit']
+<@body/>
+<p>Nested</p>
+<:body/>
