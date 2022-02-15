@@ -63,7 +63,8 @@ export default class ParseBasePage {
     static rebuildBaseInheritance(code, loadInheritance) {
         const parse = new ParseBasePage(code);
         for (const name of parse.byValue('inherit')) {
-            parse.replaceValue(name, loadInheritance.pop(name));
+            const have = loadInheritance.pop(name);
+            have && parse.replaceValue(name, have);
         }
         parse.rebuild();
         return parse.clearData;
