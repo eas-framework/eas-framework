@@ -19,8 +19,8 @@ export default class ParseBasePage {
         code && this.parseBase(code);
     }
 
-    async loadSettings(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent = false){
-        await this.loadCodeFile(pagePath, isTs, dependenceObject, pageName);
+    async loadSettings(pagePath: string, smallPath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent = false){
+        await this.loadCodeFile(pagePath, smallPath, isTs, dependenceObject, pageName);
         if(!isComponent)
             this.loadDefine();
     }
@@ -105,7 +105,7 @@ export default class ParseBasePage {
         if(have) have.value = value;
     }
 
-    private async loadCodeFile(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string) {
+    private async loadCodeFile(pagePath: string, pageSmallPath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string) {
         let haveCode = this.popAny('codefile')?.eq;
         if (!haveCode) return;
 
@@ -126,13 +126,13 @@ export default class ParseBasePage {
         if (haveCode[0] == '.')
             haveCode = path.join(path.dirname(pagePath), haveCode)
 
-        const SmallPath = path.relative(BasicSettings.fullWebSitePath, haveCode);
+        const SmallPath = BasicSettings.relative(haveCode);
 
         const fileState = await EasyFs.stat(haveCode, 'mtimeMs', true, null); // check page changed date, for dependenceObject
         if (fileState != null) {
             dependenceObject[SmallPath] = fileState;
 
-            const baseModelData = await AddDebugInfo(pageName + ' -> ' + SmallPath, haveCode); // read model
+            const baseModelData = await AddDebugInfo(pageName, haveCode, SmallPath); // read model
             baseModelData.allData.AddTextBefore('<%');
             baseModelData.allData.AddTextAfter('%>');
 
@@ -144,10 +144,10 @@ export default class ParseBasePage {
                 id: SmallPath,
                 type: 'error',
                 errorName: 'codeFileNotFound',
-                text: 'Code file not found: ' + SmallPath
+                text: `\nCode file not found: ${pageSmallPath}<line>${SmallPath}`
             });
 
-            this.scriptFile = new StringTracker(pageName, `<%='<p style="color:red;text-align:left;font-size:16px;">Code File Not Found: ${SmallPath}</p>'%>`);
+            this.scriptFile = new StringTracker(pageName, `<%="<p style=\\"color:red;text-align:left;font-size:16px;\\">Code File Not Found: '${pageSmallPath}' -> '${SmallPath}'</p>"%>`);
         }
     }
 

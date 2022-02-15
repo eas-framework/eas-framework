@@ -8,7 +8,7 @@ export default class ParseBasePage {
         value: StringTracker;
     }[];
     constructor(code?: StringTracker);
-    loadSettings(pagePath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent?: boolean): Promise<void>;
+    loadSettings(pagePath: string, smallPath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent?: boolean): Promise<void>;
     private parseBase;
     get(name: string): StringTracker;
     pop(name: string): StringTracker;

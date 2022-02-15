@@ -68,12 +68,12 @@ async function NoTrackStringCode(code:StringTracker, path: string, isDebug: bool
     return newCodeStringTracker;
 }
 
-export async function AddDebugInfo(pageName:string, FullPath:string, cache: {value?: string} = {}){
+export async function AddDebugInfo(pageName:string, FullPath:string, SmallPath:string, cache: {value?: string} = {}){
     if(!cache.value)
         cache.value = await EasyFs.readFile(FullPath, 'utf8');
 
     return {
-        allData: new StringTracker(`${pageName}<line>${FullPath}`, cache.value),
+        allData: new StringTracker(`${pageName}<line>${SmallPath}`, cache.value),
         stringInfo: `<%run_script_name=\`${JSParser.fixText(pageName)}\`;%>`
     }
 }

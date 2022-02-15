@@ -39,7 +39,7 @@ BuildScriptSettings.plugins = Settings.plugins;
 async function outPage(data: StringTracker,scriptFile:StringTracker, lastPageBase: ParseBasePage, pagePath: string, pageName: string, LastSmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap): Promise<StringTracker> {
 
     const baseData = new ParseBasePage(data);
-    await baseData.loadSettings(pagePath, isTs(), dependenceObject, pageName);
+    await baseData.loadSettings(pagePath, LastSmallPath, isTs(), dependenceObject, pageName);
 
     const modelName = baseData.popAny('model')?.eq;
 
@@ -58,7 +58,7 @@ async function outPage(data: StringTracker,scriptFile:StringTracker, lastPageBas
 
     dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs'); // check page changed date, for dependenceObject
 
-    const baseModelData = await AddDebugInfo(pageName, FullPath); // read model
+    const baseModelData = await AddDebugInfo(pageName, FullPath, SmallPath); // read model
     let modelData = baseModelData.allData;
 
     modelData.AddTextBefore(baseModelData.stringInfo);
@@ -131,7 +131,7 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
         cacheComponent: {}
     };
 
-    let DebugString = new StringTracker(pagePath, data);
+    let DebugString = new StringTracker(smallPath, data);
 
     DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), new ParseBasePage(), pagePath, smallPath, smallPath, isDebug, dependenceObject);
 

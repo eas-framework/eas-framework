@@ -76,6 +76,9 @@ const BasicSettings = {
         if (await EasyFs.existsFile(this.tsConfig)) {
             return await EasyFs.readFile(this.tsConfig);
         }
+    },
+    relative(fullPath) {
+        return path.relative(fullWebSitePath_, fullPath);
     }
 };
 BasicSettings.pageTypesArray = Object.values(BasicSettings.pageTypes);

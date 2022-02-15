@@ -196,7 +196,7 @@ export default class InsertComponent extends InsertComponentBase {
         fileData = fileData.replace(/<\:reader( )*\/>/gi, BetweenTagData ?? '');
         pathName = pathName + ' -> ' + SmallPath;
         fileData = await this.StartReplace(fileData, pathName, FullPath, SmallPath, isDebug, dependenceObject, buildScript, sessionInfo);
-        fileData = await NoTrackStringCode(fileData, `${pathName} ->\n${FullPath}`, isDebug, buildScript);
+        fileData = await NoTrackStringCode(fileData, `${pathName} ->\n${SmallPath}`, isDebug, buildScript);
         return fileData;
     }
     async insertTagData(path, pathName, LastSmallPath, type, dataTag, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }) {
@@ -228,9 +228,9 @@ export default class InsertComponent extends InsertComponentBase {
             if (!sessionInfo.cacheComponent[AllPathTypes.SmallPath]?.mtimeMs)
                 sessionInfo.cacheComponent[AllPathTypes.SmallPath] = { mtimeMs: await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs') }; // add to dependenceObject
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs;
-            const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
+            const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
             const baseData = new ParseBasePage(allData);
-            await baseData.loadSettings(AllPathTypes.FullPath, this.isTs(), dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath, true);
+            await baseData.loadSettings(AllPathTypes.FullPath, AllPathTypes.SmallPath, this.isTs(), dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath, true);
             fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;
         }

@@ -30,7 +30,7 @@ Components.isTs = isTs;
 BuildScriptSettings.plugins = Settings.plugins;
 async function outPage(data, scriptFile, lastPageBase, pagePath, pageName, LastSmallPath, isDebug, dependenceObject) {
     const baseData = new ParseBasePage(data);
-    await baseData.loadSettings(pagePath, isTs(), dependenceObject, pageName);
+    await baseData.loadSettings(pagePath, LastSmallPath, isTs(), dependenceObject, pageName);
     const modelName = baseData.popAny('model')?.eq;
     if (!modelName)
         return scriptFile.Plus(baseData.scriptFile, baseData.clearData);
@@ -43,7 +43,7 @@ async function outPage(data, scriptFile, lastPageBase, pagePath, pageName, LastS
         return new StringTracker(data.DefaultInfoText, PageTemplate.printError(ErrorMessage));
     }
     dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs'); // check page changed date, for dependenceObject
-    const baseModelData = await AddDebugInfo(pageName, FullPath); // read model
+    const baseModelData = await AddDebugInfo(pageName, FullPath, SmallPath); // read model
     let modelData = baseModelData.allData;
     modelData.AddTextBefore(baseModelData.stringInfo);
     pageName += " -> " + SmallPath;
@@ -100,7 +100,7 @@ export async function Insert(data, fullPathCompile, pagePath, typeName, smallPat
             },
             cacheComponent: {}
         };
-    let DebugString = new StringTracker(pagePath, data);
+    let DebugString = new StringTracker(smallPath, data);
     DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), new ParseBasePage(), pagePath, smallPath, smallPath, isDebug, dependenceObject);
     DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);
     DebugString = await Components.Insert(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, BuildScriptWithPrams, sessionInfo); // add components

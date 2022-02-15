@@ -31,6 +31,7 @@ declare const BasicSettings: {
     readonly fullWebSitePath: string;
     readonly tsConfig: string;
     tsConfigFile(): Promise<any>;
+    relative(fullPath: string): string;
 };
 declare function filesInDirectory(path: any, output: any, pathMore?: string): Promise<void>;
 declare function DeleteInDirectory(path: any): Promise<void>;

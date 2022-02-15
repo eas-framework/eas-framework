@@ -11,11 +11,14 @@ require('source-map-support').install();"use strict";module.exports = (__dirname
 
                 {try {
 
+run_script_code=`write("<p style=\\"color:red;text-align:left;font-size:16px;\\">Code File Not Found: 'WWW/errors/e404.page' -> 'WWW/errors/e404.page.ts'</p>");;`;
+//!WWW/errors/e404.page:1:137
+write("<p style=\"color:red;text-align:left;font-size:16px;\">Code File Not Found: 'WWW/errors/e404.page' -> 'WWW/errors/e404.page.ts'</p>");;
 run_script_code=`run_script_name=\`WWW/errors/e404.page\`;`;
-//!WWW/errors/e404.page<line>/Users/idoio/Documents/beyond-easy/tests/core/Website/Models/Website.mode:0:41
+//!WWW/errors/e404.page<line>Models/Website.mode:0:41
 run_script_name=`WWW/errors/e404.page`;
 run_script_code=``;
-//!WWW/errors/e404.page<line>/Users/idoio/Documents/beyond-easy/tests/core/Website/Models/Website.mode:2:1
+//!WWW/errors/e404.page<line>Models/Website.mode:2:1
 
 out_run_script.text+=`
 <!DOCTYPE html>
@@ -57,6 +60,7 @@ out_run_script.text+=`</head>
                 </div>
             </nav>
         </header>
+        <nnn/>
         
         <main class="flex-shrink-0 pt-5">
             <div class="container mt-5">
@@ -76,4 +80,4 @@ out_run_script.text+=`</head>
                     console.error("Error runing this code: '" + run_script_code + "'");
                     console.error("Error stack: " + e.stack);
                 }}});}
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uL3Rlc3RzL2NvcmUvV2Vic2l0ZS9Nb2RlbHMvV2Vic2l0ZS5tb2RlIiwiLi4vLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL1dXVy9lcnJvcnMvZTQwNC5wYWdlIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBOztBQUVBOzs7Ozs7Ozs7QUFSQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFHQTtBQUNBO0FBQ0E7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQzNDQTtBRDRDQTtBQUNBO0FBQ0E7QUFBQTtBQWpEQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSIsImZpbGUiOiJlNDA0LnBhZ2UuY2pzIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uL01vZGVscy9XZWJzaXRlLm1vZGUiLCIuLi8uLi8uLi8uLi9XV1cvZXJyb3JzL2U0MDQucGFnZSJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTs7OztBQ1hBOzs7Ozs7OztBREdBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUdBO0FBQ0E7QUFDQTtBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUMxQ0E7QUQyQ0E7QUFDQTtBQUNBO0FBQUE7QUFsREE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0EiLCJmaWxlIjoiZTQwNC5wYWdlLmNqcyJ9

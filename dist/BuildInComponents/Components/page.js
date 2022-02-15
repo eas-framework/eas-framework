@@ -32,12 +32,12 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
     const FullPath = getTypes.Static[0] + SmallPathWithoutFolder, FullPathCompile = getTypes.Static[1] + SmallPathWithoutFolder + '.cjs', SmallPath = getTypes.Static[2] + '/' + SmallPathWithoutFolder;
     if (!(await EasyFs.stat(FullPath, null, true)).isFile?.()) {
         PrintIfNew({
-            text: `\n: ${pathName} -> ${type.lineInfo}`,
+            text: `\nPage not found: ${type.at(0).lineInfo} -> ${SmallPath}`,
             errorName: 'page-not-found',
             type: 'error'
         });
         return {
-            compiledString: new StringTracker(type.DefaultInfoText)
+            compiledString: new StringTracker(type.DefaultInfoText, `<p style="color:red;text-align:left;font-size:16px;">Page not found: ${type.lineInfo} -> ${SmallPath}</p>`)
         };
     }
     let ReturnData;
