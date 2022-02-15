@@ -19,9 +19,9 @@ export default class ParseBasePage {
         code && this.parseBase(code);
     }
 
-    async loadSettings(pagePath: string, smallPath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent = false){
+    async loadSettings(pagePath: string, smallPath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent = false) {
         await this.loadCodeFile(pagePath, smallPath, isTs, dependenceObject, pageName);
-        if(!isComponent)
+        if (!isComponent)
             this.loadDefine();
     }
 
@@ -71,26 +71,28 @@ export default class ParseBasePage {
         this.clearData = code.trimStart();
     }
 
-    private rebuild(){
+    private rebuild() {
         const build = new StringTracker(null, '@[');
 
-        for(const {key, value} of this.valueArray){
-            build.Plus$ `${key}="${value.replaceAll('"', '\\"')}"`;
+        for (const { key, value } of this.valueArray) {
+            build.Plus$`${key}="${value.replaceAll('"', '\\"')}"`;
         }
-        this.clearData = build.Plus("]").Plus(this.clearData);
+        build.Plus("]").Plus(this.clearData);
+        this.clearData = build;
     }
 
-    static rebuildBaseInheritance(code: StringTracker, loadInheritance: ParseBasePage): StringTracker{
+    static rebuildBaseInheritance(code: StringTracker): StringTracker {
         const parse = new ParseBasePage(code);
+        const build = new StringTracker();
 
-        for(const name of parse.byValue('inherit')){
-            const have = loadInheritance.pop(name);
-            have && parse.replaceValue(name, have);
+        for (const name of parse.byValue('inherit')) {
+            parse.pop(name)
+            build.Plus(`<@${name}><:${name}/></@${name}>`)
         }
 
         parse.rebuild();
 
-        return parse.clearData;
+        return parse.clearData.Plus(build);
     }
 
 
@@ -113,13 +115,13 @@ export default class ParseBasePage {
         return asTag.found[0].data.trim();
     }
 
-    byValue(value: string){
+    byValue(value: string) {
         return this.valueArray.filter(x => x.value.eq === value).map(x => x.key)
     }
 
-    replaceValue(name: string, value: StringTracker){
+    replaceValue(name: string, value: StringTracker) {
         const have = this.valueArray.find(x => x.key === name)
-        if(have) have.value = value;
+        if (have) have.value = value;
     }
 
     private async loadCodeFile(pagePath: string, pageSmallPath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string) {
@@ -177,7 +179,7 @@ export default class ParseBasePage {
         const before = this.clearData.substring(0, have);
         let workData = this.clearData.substring(have + 8).trimStart();
 
-        for(let i = 0; i < limitArguments; i++) { // arguments reader loop
+        for (let i = 0; i < limitArguments; i++) { // arguments reader loop
             const quotationSign = workData.at(0).eq;
 
             const endQuote = BaseReader.findEntOfQ(workData.eq.substring(1), quotationSign);
@@ -193,22 +195,22 @@ export default class ParseBasePage {
             workData = afterArgument.substring(1).trimStart();
         }
 
-        workData = workData.substring(workData.indexOf(')')+1);
+        workData = workData.substring(workData.indexOf(')') + 1);
         this.clearData = before.trimEnd().Plus(workData.trimStart());
 
         return argumentArray;
     }
 
-    private loadDefine(){
+    private loadDefine() {
         let lastValue = this.loadSetting();
 
         const values: StringTracker[][] = [];
-        while(lastValue){
+        while (lastValue) {
             values.unshift(lastValue);
             lastValue = this.loadSetting();
         }
 
-        for(const [name, value] of values){
+        for (const [name, value] of values) {
             this.clearData = this.clearData.replaceAll(`:${name.eq}:`, value);
         }
     }

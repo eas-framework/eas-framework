@@ -59,7 +59,7 @@ async function outPage(data: StringTracker,scriptFile:StringTracker, pagePath: s
     dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs'); // check page changed date, for dependenceObject
 
     const baseModelData = await AddDebugInfo(pageName, FullPath, SmallPath); // read model
-    let modelData = ParseBasePage.rebuildBaseInheritance( baseModelData.allData, baseData);
+    let modelData = ParseBasePage.rebuildBaseInheritance( baseModelData.allData);
     
     modelData.AddTextBefore(baseModelData.stringInfo);
 

@@ -11,7 +11,7 @@ export default class ParseBasePage {
     loadSettings(pagePath: string, smallPath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent?: boolean): Promise<void>;
     private parseBase;
     private rebuild;
-    static rebuildBaseInheritance(code: StringTracker, loadInheritance: ParseBasePage): StringTracker;
+    static rebuildBaseInheritance(code: StringTracker): StringTracker;
     pop(name: string): StringTracker;
     popAny(name: string): StringTracker;
     byValue(value: string): string[];

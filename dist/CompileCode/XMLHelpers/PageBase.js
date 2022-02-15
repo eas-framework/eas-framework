@@ -58,16 +58,18 @@ export default class ParseBasePage {
         for (const { key, value } of this.valueArray) {
             build.Plus$ `${key}="${value.replaceAll('"', '\\"')}"`;
         }
-        this.clearData = build.Plus("]").Plus(this.clearData);
+        build.Plus("]").Plus(this.clearData);
+        this.clearData = build;
     }
-    static rebuildBaseInheritance(code, loadInheritance) {
+    static rebuildBaseInheritance(code) {
         const parse = new ParseBasePage(code);
+        const build = new StringTracker();
         for (const name of parse.byValue('inherit')) {
-            const have = loadInheritance.pop(name);
-            have && parse.replaceValue(name, have);
+            parse.pop(name);
+            build.Plus(`<@${name}><:${name}/></@${name}>`);
         }
         parse.rebuild();
-        return parse.clearData;
+        return parse.clearData.Plus(build);
     }
     pop(name) {
         return this.valueArray.splice(this.valueArray.findIndex(x => x.key === name), 1)[0]?.value;
