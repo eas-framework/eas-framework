@@ -28,12 +28,12 @@ Components.GetPlugin = GetPlugin;
 Components.SomePlugins = SomePlugins;
 Components.isTs = isTs;
 BuildScriptSettings.plugins = Settings.plugins;
-async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, dependenceObject) {
+async function outPage(data, scriptFile, pagePath, pageName, LastSmallPath, isDebug, dependenceObject) {
     const baseData = new ParseBasePage(data);
     await baseData.loadSettings(pagePath, isTs(), dependenceObject, pageName);
     const modelName = baseData.popAny('model')?.eq;
     if (!modelName)
-        return baseData.scriptFile.Plus(baseData.clearData);
+        return scriptFile.Plus(baseData.scriptFile, baseData.clearData);
     data = baseData.clearData;
     //import model
     const { SmallPath, FullPath } = CreateFilePath(pagePath, LastSmallPath, modelName, 'Models', BasicSettings.pageTypes.model); // find location of the file
@@ -80,7 +80,7 @@ async function outPage(data, pagePath, pageName, LastSmallPath, isDebug, depende
         }
     }
     modelBuild.Plus(modelData);
-    return await outPage(baseData.scriptFile.Plus(modelBuild), FullPath, pageName, SmallPath, isDebug, dependenceObject);
+    return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
 export async function Insert(data, fullPathCompile, pagePath, typeName, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
     const BuildScriptWithPrams = (code, RemoveToModule = true) => BuildScript(code, isTs(), isDebug, RemoveToModule);
@@ -101,7 +101,7 @@ export async function Insert(data, fullPathCompile, pagePath, typeName, smallPat
             cacheComponent: {}
         };
     let DebugString = new StringTracker(pagePath, data);
-    DebugString = await outPage(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject);
+    DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), pagePath, smallPath, smallPath, isDebug, dependenceObject);
     DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);
     DebugString = await Components.Insert(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, BuildScriptWithPrams, sessionInfo); // add components
     DebugString = ParseDebugLine(DebugString, smallPath);

@@ -7,7 +7,9 @@ export default class LocalSql {
     constructor(savePath, checkIntervalMinutes = 10) {
         this.hadChange = false;
         this.savePath = savePath ?? workingDirectory + "SystemSave/DataBase.db";
-        setInterval(() => this.updateLocalFile(), 1000 * 60 * checkIntervalMinutes);
+        this.updateLocalFile = this.updateLocalFile.bind(this);
+        setInterval(this.updateLocalFile, 1000 * 60 * checkIntervalMinutes);
+        process.on('SIGINT', this.updateLocalFile);
     }
     async load() {
         const notExits = await EasyFs.mkdirIfNotExists(path.dirname(this.savePath));

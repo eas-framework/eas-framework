@@ -1,4 +1,4 @@
-@[model=Website title="This is about page" codeFile="./About.page.js"]
+@[model='./nested' title="This is about page" codeFile="./About.page.js"]
 @{
     {}
 

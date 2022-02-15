@@ -72,10 +72,6 @@ function ExtensionInArray(filePath: string, ...arrays: string[]) {
     return false;
 }
 
-function isServerFile(filePath: string) {
-    return ExtensionInArray(filePath, <any>BasicSettings.pageTypesArray, <any>BasicSettings.ReqFileTypesArray, <any>BasicSettings.pageCodeFileArray);
-}
-
 function GetErrorPage(code: number, LocSettings: 'notFound' | 'serverError') {
     let arrayType: string[], url: string;
     if (Settings.ErrorPages[LocSettings]) {
@@ -170,7 +166,7 @@ async function isURLPathAFile(Request: Request | any, url: string, arrayType: st
     if (code == 200) {
         fullPageUrl = getTypes.Static[0] + url;
         //check that is not server file
-        if (await serverBuild(Request, Settings.DevMode, url) || !isServerFile(url) && await EasyFs.existsFile(fullPageUrl))
+        if (await serverBuild(Request, Settings.DevMode, url) || await EasyFs.existsFile(fullPageUrl))
             file = true;
         else  // then it a server page or error page
             fullPageUrl = arrayType[2];

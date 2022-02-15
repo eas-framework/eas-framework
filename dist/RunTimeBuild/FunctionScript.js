@@ -8,11 +8,12 @@ import { handelConnectorService } from '../BuildInComponents/index.js';
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.cjs';
 import { CutTheLast, SplitFirst } from '../StringMethods/Splitting.js';
 import RequireFile from './ImportFileRuntime.js';
+import { PrintIfNew } from '../OutputInput/PrintNew.js';
 const Export = {
     PageLoadRam: {},
     PageRam: true
 };
-async function RequirePage(filePath, pathname, typeArray, LastRequire, DataObject) {
+async function RequirePage(filePath, importFrom, pathname, typeArray, LastRequire, DataObject) {
     const ReqFilePath = LastRequire[filePath];
     const resModel = () => ReqFilePath.model(DataObject);
     let fileExists;
@@ -46,6 +47,11 @@ async function RequirePage(filePath, pathname, typeArray, LastRequire, DataObjec
     }
     fileExists = fileExists ?? await EasyFs.existsFile(fullPath);
     if (!fileExists) {
+        PrintIfNew({
+            type: 'warn',
+            errorName: 'import-not-exists',
+            text: `Import '${copyPath}' does not exists from '${importFrom}'`
+        });
         LastRequire[copyPath] = { model: () => { }, date: -1, path: fullPath };
         return LastRequire[copyPath].model;
     }
@@ -85,10 +91,10 @@ async function LoadPage(url, ext = BasicSettings.pageTypes.page) {
     const typeArray = getTypes[SplitInfo[0]];
     const LastRequire = {};
     function _require(DataObject, p) {
-        return RequireFile(p, pathname, typeArray, LastRequire, DataObject.isDebug);
+        return RequireFile(p, url, pathname, typeArray, LastRequire, DataObject.isDebug);
     }
     function _include(DataObject, p, WithObject = {}) {
-        return RequirePage(p, pathname, typeArray, LastRequire, { ...WithObject, ...DataObject });
+        return RequirePage(p, url, pathname, typeArray, LastRequire, { ...WithObject, ...DataObject });
     }
     const compiledPath = path.join(typeArray[1], SplitInfo[1] + "." + ext + '.cjs');
     const private_var = {};
@@ -103,7 +109,7 @@ async function LoadPage(url, ext = BasicSettings.pageTypes.page) {
     }
 }
 function BuildPage(LoadPageFunc, run_script_name) {
-    const RequestVar = {};
+    const PageVar = {};
     return (async function (Response, Request, Post, Query, Cookies, Session, Files, isDebug) {
         const out_run_script = { text: '' };
         function ToStringInfo(str) {
@@ -163,7 +169,8 @@ function BuildPage(LoadPageFunc, run_script_name) {
             Files,
             Cookies,
             isDebug,
-            RequestVar,
+            PageVar,
+            GlobalVar,
             codebase: ''
         };
         await LoadPageFunc(DataSend);

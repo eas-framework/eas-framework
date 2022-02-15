@@ -1,6 +1,7 @@
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import EasyFs from '../OutputInput/EasyFs';
 import { ImportFile, AddExtension } from '../ImportFiles/Script';
+import { PrintIfNew } from '../OutputInput/PrintNew';
 
 type RequireFiles = {
     path: string
@@ -72,7 +73,7 @@ function getChangeArray(oldDeps: StringAnyMap, newDeps: StringAnyMap, parent = '
     return changeArray;
 }
 
-export default async function RequireFile(filePath: string, pathname: string, typeArray: string[], LastRequire: { [key: string]: RequireFiles }, isDebug: boolean) {
+export default async function RequireFile(filePath: string, importFrom: string, pathname: string, typeArray: string[], LastRequire: { [key: string]: RequireFiles }, isDebug: boolean) {
     const ReqFile = LastRequire[filePath];
 
     let fileExists: number, newDeps: StringAnyMap;
@@ -131,11 +132,17 @@ export default async function RequireFile(filePath: string, pathname: string, ty
             else {
                 newDeps = newDeps ?? {};
 
-                LastRequire[copyPath] = { model: await ImportFile(filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath }
+                LastRequire[copyPath] = { model: await ImportFile(importFrom, filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath }
             }
         }
-        else
+        else {
             LastRequire[copyPath] = { model: {}, status: 0, path: filePath };
+            PrintIfNew({
+                type: 'warn',
+                errorName: 'import-not-exists',
+                text: `Import '${filePath}' does not exists from '${importFrom}'`
+              })
+        }
     }
 
     const builtModel = LastRequire[copyPath];

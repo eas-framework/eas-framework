@@ -44,7 +44,7 @@ async function getPageDataByUrl(req: Request, res: Response) {
 
 async function getPageWithoutRules(req: Request, res: Response, url: string) {
     if (Settings.routing.ignorePaths.find(i => url.startsWith(i)) || Settings.routing.ignoreTypes.find(i => url.endsWith('.'+i))) {
-        const ErrorPage = fileByUrl.GetErrorPage(404, 'NotFound');
+        const ErrorPage = fileByUrl.GetErrorPage(404, 'notFound');
         return await fileByUrl.DynamicPage(req, res, ErrorPage.url, ErrorPage.arrayType, ErrorPage.code);
     }
 

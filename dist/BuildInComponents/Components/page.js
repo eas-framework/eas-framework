@@ -32,7 +32,7 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
     const FullPath = getTypes.Static[0] + SmallPathWithoutFolder, FullPathCompile = getTypes.Static[1] + SmallPathWithoutFolder + '.cjs', SmallPath = getTypes.Static[2] + '/' + SmallPathWithoutFolder;
     if (!(await EasyFs.stat(FullPath, null, true)).isFile?.()) {
         PrintIfNew({
-            text: `Page not found! -> ${pathName} -> \n${type.lineInfo}`,
+            text: `\n: ${pathName} -> ${type.lineInfo}`,
             errorName: 'page-not-found',
             type: 'error'
         });

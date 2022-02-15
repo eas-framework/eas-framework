@@ -47,7 +47,7 @@ export class InsertComponentBase {
             return;
         for (const i of JSON.parse(errors)) {
             this.printNew({
-                text: `\nWarning, you didn't write right this tag: "${i.type_name}", used in: ${text.at(Number(i.index)).lineInfo}\n(the system will auto close it)\n`,
+                text: `\nWarning, you didn't write right this tag: "${i.type_name}", used in: ${text.at(Number(i.index)).lineInfo}\n(the system will auto close it)`,
                 errorName: "close-tag"
             });
         }

@@ -19,6 +19,7 @@ declare const BasicSettings: {
         component: string[];
     };
     pageCodeFileArray: any[];
+    partExtensions: string[];
     ReqFileTypes: {
         js: string;
         ts: string;

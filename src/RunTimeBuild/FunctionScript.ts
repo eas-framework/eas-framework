@@ -10,13 +10,14 @@ import { handelConnectorService } from '../BuildInComponents/index';
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.cjs';
 import { CutTheLast, SplitFirst } from '../StringMethods/Splitting';
 import RequireFile from './ImportFileRuntime';
+import { PrintIfNew } from '../OutputInput/PrintNew';
 
 const Export = {
     PageLoadRam: {},
     PageRam: true
 }
 
-async function RequirePage(filePath: string, pathname: string, typeArray: string[], LastRequire: { [key: string]: any }, DataObject: any) {
+async function RequirePage(filePath: string, importFrom: string, pathname: string, typeArray: string[], LastRequire: { [key: string]: any }, DataObject: any) {
     const ReqFilePath = LastRequire[filePath];
     const resModel = () => ReqFilePath.model(DataObject);
 
@@ -62,6 +63,11 @@ async function RequirePage(filePath: string, pathname: string, typeArray: string
 
     fileExists = fileExists ?? await EasyFs.existsFile(fullPath);
     if (!fileExists) {
+        PrintIfNew({
+            type: 'warn',
+            errorName: 'import-not-exists',
+            text: `Import '${copyPath}' does not exists from '${importFrom}'`
+          })
         LastRequire[copyPath] = { model: () => { }, date: -1, path: fullPath };
         return LastRequire[copyPath].model;
     }
@@ -114,11 +120,11 @@ async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
     const LastRequire = {};
 
     function _require(DataObject: any, p: string) {
-        return RequireFile(p, pathname, typeArray, LastRequire, DataObject.isDebug);
+        return RequireFile(p, url, pathname, typeArray, LastRequire, DataObject.isDebug);
     }
 
     function _include(DataObject: any, p: string, WithObject = {}) {
-        return RequirePage(p, pathname, typeArray, LastRequire, { ...WithObject, ...DataObject });
+        return RequirePage(p, url, pathname, typeArray, LastRequire, { ...WithObject, ...DataObject });
     }
 
     const compiledPath = path.join(typeArray[1], SplitInfo[1] + "." + ext + '.cjs');
@@ -136,7 +142,7 @@ async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
 }
 
 function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: string) {
-    const RequestVar = {};
+    const PageVar = {};
 
     return (async function (Response: Response, Request: Request, Post: { [key: string]: any } | null, Query: { [key: string]: any }, Cookies: { [key: string]: any }, Session: { [key: string]: any }, Files: Files, isDebug: boolean) {
         const out_run_script = { text: '' };
@@ -209,7 +215,8 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
             Files,
             Cookies,
             isDebug,
-            RequestVar,
+            PageVar,
+            GlobalVar,
             codebase: ''
         }
 

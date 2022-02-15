@@ -35,19 +35,21 @@ const getTypes = {
         return getTypes.Static;
     }
 };
+const pageTypes = {
+    page: "page",
+    model: "mode",
+    component: "inte"
+};
 const BasicSettings = {
-    pageTypes: {
-        page: "page",
-        model: "mode",
-        component: "inte"
-    },
+    pageTypes,
     pageTypesArray: [],
     pageCodeFile: {
-        page: ["page.js", "page.ts"],
-        model: ["mode.js", "mode.ts"],
-        component: ["inte.js", "inte.ts"]
+        page: [pageTypes.page + ".js", pageTypes.page + ".ts"],
+        model: [pageTypes.model + ".js", pageTypes.model + ".ts"],
+        component: [pageTypes.component + ".js", pageTypes.component + ".ts"]
     },
     pageCodeFileArray: [],
+    partExtensions: ['serv', 'api'],
     ReqFileTypes: {
         js: "serv.js",
         ts: "serv.ts",

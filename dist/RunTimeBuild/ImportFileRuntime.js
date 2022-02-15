@@ -1,5 +1,6 @@
 import EasyFs from '../OutputInput/EasyFs.js';
 import { ImportFile, AddExtension } from '../ImportFiles/Script.js';
+import { PrintIfNew } from '../OutputInput/PrintNew.js';
 const CacheRequireFiles = {};
 async function makeDependencies(dependencies, typeArray, basePath = '', cache = {}) {
     const dependenciesMap = {};
@@ -55,7 +56,7 @@ function getChangeArray(oldDeps, newDeps, parent = '') {
     }
     return changeArray;
 }
-export default async function RequireFile(filePath, pathname, typeArray, LastRequire, isDebug) {
+export default async function RequireFile(filePath, importFrom, pathname, typeArray, LastRequire, isDebug) {
     const ReqFile = LastRequire[filePath];
     let fileExists, newDeps;
     if (ReqFile) {
@@ -100,11 +101,17 @@ export default async function RequireFile(filePath, pathname, typeArray, LastReq
                 LastRequire[copyPath] = haveModel;
             else {
                 newDeps = newDeps ?? {};
-                LastRequire[copyPath] = { model: await ImportFile(filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath };
+                LastRequire[copyPath] = { model: await ImportFile(importFrom, filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath };
             }
         }
-        else
+        else {
             LastRequire[copyPath] = { model: {}, status: 0, path: filePath };
+            PrintIfNew({
+                type: 'warn',
+                errorName: 'import-not-exists',
+                text: `Import '${filePath}' does not exists from '${importFrom}'`
+            });
+        }
     }
     const builtModel = LastRequire[copyPath];
     CacheRequireFiles[builtModel.path] = builtModel;

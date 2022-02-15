@@ -6,19 +6,17 @@ export async function StartRequire(array, isDebug) {
     const arrayFuncServer = [];
     for (let i of array) {
         i = AddExtension(i);
-        const b = await ImportFile(i, getTypes.Static, isDebug);
+        const b = await ImportFile('root folder (WWW)', i, getTypes.Static, isDebug);
         if (b && typeof b.StartServer == 'function') {
             arrayFuncServer.push(b.StartServer);
         }
         else {
-            print.log("Can't find StartServer function at module - " + i);
+            print.log(`Can't find StartServer function at module - ${i}\n`);
         }
     }
     return arrayFuncServer;
 }
-export async function SettingsExsit(filePath) {
-    return await EasyFs.existsFile(filePath + '.ts') || await EasyFs.existsFile(filePath + '.js');
-}
+let lastSettingsImport;
 export async function GetSettings(filePath, isDebug) {
     if (await EasyFs.existsFile(filePath + '.ts')) {
         filePath += '.ts';
@@ -26,6 +24,10 @@ export async function GetSettings(filePath, isDebug) {
     else {
         filePath += '.js';
     }
+    const changeTime = await EasyFs.stat(filePath, 'mtimeMs', true);
+    if (changeTime == lastSettingsImport || !changeTime)
+        return null;
+    lastSettingsImport = changeTime;
     const data = await RequireOnce(filePath, isDebug);
     return data.default;
 }

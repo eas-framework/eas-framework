@@ -42,10 +42,11 @@ async function FilesInFolder(arrayType, path = "") {
         }
         else {
             if (isFileType(SearchFileSystem.BasicSettings.pageTypesArray, n)) {
-                await compileFile(path + n, arrayType, false);
+                if (await SearchFileSystem.CheckDependencyChange(arrayType[2] + '/' + path + n))
+                    await compileFile(path + n, arrayType, false);
             }
             else if (arrayType == SearchFileSystem.getTypes.Static && isFileType(SearchFileSystem.BasicSettings.ReqFileTypesArray, n)) {
-                await ReqScript(path + n, arrayType, false);
+                await ReqScript('Production Loader', path + n, arrayType, false);
             }
             else {
                 await StaticFiles(path + n, false);

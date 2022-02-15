@@ -8,7 +8,7 @@ import { SetDevMode } from '../OutputInput/Console.js';
 import session from 'express-session';
 import { Settings as InsertModelsSettings } from '../CompileCode/InsertModels.js';
 import bodyParser from 'body-parser';
-import { StartRequire, GetSettings, SettingsExsit } from './ImportModule.js';
+import { StartRequire, GetSettings } from './ImportModule.js';
 import { Settings as PrintIfNewSettings } from '../OutputInput/PrintNew.js';
 import MemorySession from 'memorystore';
 const CookiesSecret = uuidv4().substring(0, 32), SessionSecret = uuidv4(), MemoryStore = MemorySession(session), CookiesMiddleware = cookieParser(CookiesSecret), CookieEncrypterMiddleware = cookieEncrypter(CookiesSecret, {}), CookieSettings = { httpOnly: true, signed: true, maxAge: 86400000 * 30 };
@@ -29,7 +29,7 @@ let pageInRamActivate;
 export function pageInRamActivateFunc() {
     return pageInRamActivate;
 }
-const baseRoutingIgnoreTypes = [...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray];
+const baseRoutingIgnoreTypes = [...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray, ...BasicSettings.pageCodeFileArray];
 export const Export = {
     get settingsPath() {
         return workingDirectory + BasicSettings.WebSiteFolder + "/Settings";
@@ -203,9 +203,9 @@ function copyJSON(to, json, rules = [], rulesType = 'ignore') {
 }
 // read the settings of the website
 export async function requireSettings() {
-    if (!await SettingsExsit(Export.settingsPath))
-        return;
     const Settings = await GetSettings(Export.settingsPath, DevMode_);
+    if (Settings == null)
+        return;
     if (Settings.development)
         Object.assign(Settings, Settings.implDev);
     else

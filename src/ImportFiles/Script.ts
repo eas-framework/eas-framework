@@ -115,18 +115,19 @@ export async function BuildScriptSmallPath(InStaticPath: string, typeArray: stri
 }
 
 export function AddExtension(FilePath: string) {
-  if (!BasicSettings.ReqFileTypesArray.find((x) => FilePath.endsWith(x))) {
-    FilePath =
-      FilePath.substring(0, FilePath.length - path.extname(FilePath).length) +
-      "." + BasicSettings.ReqFileTypes[isTs() ? "ts" : "js"];
-  }
+  const fileExt = path.extname(FilePath);
+  
+  if (BasicSettings.partExtensions.includes(fileExt.substring(1)))
+    FilePath += "." + (isTs() ? "ts" : "js")
+  else if (fileExt == '')
+    FilePath += "." + BasicSettings.ReqFileTypes[isTs() ? "ts" : "js"];
 
   return FilePath;
 }
 
 const SavedModules = {};
 
-export default async function LoadImport(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache: string[] = []) {
+export default async function LoadImport(importFrom: string, InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache: string[] = []) {
   let TimeCheck: any;
 
   InStaticPath = path.join(AddExtension(InStaticPath).toLowerCase());
@@ -135,16 +136,26 @@ export default async function LoadImport(InStaticPath: string, typeArray: string
 
   //wait if this module is on process, if not declare this as on process module
   let processEnd: (v?: any) => void;
-  if(!SavedModules[SavedModulesPath])
+  if (!SavedModules[SavedModulesPath])
     SavedModules[SavedModulesPath] = new Promise(r => processEnd = r);
-  else if(SavedModules[SavedModulesPath] instanceof Promise)
+  else if (SavedModules[SavedModulesPath] instanceof Promise)
     await SavedModules[SavedModulesPath];
 
   //build paths
-  const reBuild = !PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs"));
+  const reBuild = !PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true));
+
   if (reBuild) {
+    TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs", true);
+    if (TimeCheck == null) {
+      PrintIfNew({
+        type: 'warn',
+        errorName: 'import-not-exists',
+        text: `Import '${InStaticPath}' does not exists from '${importFrom}'`
+      })
+      SavedModules[SavedModulesPath] = null
+      return null;
+    }
     await BuildScriptSmallPath(InStaticPath, typeArray, isDebug);
-    TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs");
     await UpdatePageDependency(SavedModulesPath, TimeCheck);
   }
 
@@ -171,7 +182,7 @@ export default async function LoadImport(InStaticPath: string, typeArray: string
         return import(p);
     }
 
-    return LoadImport(p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
+    return LoadImport(InStaticPath, p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
   }
 
   const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
@@ -186,11 +197,13 @@ export default async function LoadImport(InStaticPath: string, typeArray: string
   return MyModule;
 }
 
-export function ImportFile(InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache?: string[]) {
-  if (!isDebug)
-    return SavedModules[path.join(typeArray[2],InStaticPath.toLowerCase())];
+export function ImportFile(importFrom: string, InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache?: string[]) {
+  if (!isDebug) {
+    const haveImport = SavedModules[path.join(typeArray[2], InStaticPath.toLowerCase())];
+    if (haveImport !== undefined) return haveImport;
+  }
 
-  return LoadImport(InStaticPath, typeArray, isDebug, useDeps, withoutCache);
+  return LoadImport(importFrom, InStaticPath, typeArray, isDebug, useDeps, withoutCache);
 }
 
 export async function RequireOnce(filePath: string, isDebug: boolean) {

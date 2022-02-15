@@ -1,1 +1,1 @@
-{"version":3,"file":"Index.js","sourceRoot":"","sources":["../../src/BuildInFunc/Index.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,MAAM,YAAY,CAAA;AAE3B,MAAO,CAAC,QAAQ,GAAG,QAAQ,CAAC;AAMlC,OAAO,EAAC,QAAQ,EAAC,CAAC"}
+{"version":3,"file":"Index.js","sourceRoot":"","sources":["../../src/BuildInFunc/Index.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,MAAM,YAAY,CAAA;AACjC,OAAO,EAAC,KAAK,EAAC,MAAM,wBAAwB,CAAA;AAEtC,MAAO,CAAC,QAAQ,GAAG,QAAQ,CAAC;AAC5B,MAAO,CAAC,IAAI,GAAG,KAAK,CAAC;AAO3B,OAAO,EAAC,QAAQ,EAAE,KAAK,IAAI,IAAI,EAAC,CAAC"}

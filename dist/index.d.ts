@@ -1,6 +1,6 @@
 import server, { Settings } from './MainBuild/Server';
-import { LocalSql } from './BuildInFunc/Index';
+import { LocalSql, dump } from './BuildInFunc/Index';
 export type { Request, Response } from './MainBuild/Types';
-export declare const AsyncRequire: (path: string) => Promise<any>;
+export declare const AsyncImport: (path: string, importFrom?: string) => Promise<any>;
 export declare const Server: typeof server;
-export { Settings, LocalSql };
+export { Settings, LocalSql, dump };

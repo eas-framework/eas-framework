@@ -11,7 +11,9 @@ export default class LocalSql {
 
     constructor(savePath?: string, checkIntervalMinutes = 10) {
         this.savePath = savePath ?? workingDirectory + "SystemSave/DataBase.db";
-        setInterval(() =>this.updateLocalFile(), 1000 * 60 * checkIntervalMinutes);
+        this.updateLocalFile = this.updateLocalFile.bind(this);
+        setInterval(this.updateLocalFile, 1000 * 60 * checkIntervalMinutes);
+        process.on('SIGINT', this.updateLocalFile)
     }
 
     async load() {

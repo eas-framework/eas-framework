@@ -8,7 +8,7 @@ import { SetDevMode } from '../OutputInput/Console';
 import session from 'express-session';
 import { Settings as InsertModelsSettings } from '../CompileCode/InsertModels';
 import bodyParser from 'body-parser';
-import { StartRequire, GetSettings, SettingsExsit } from './ImportModule';
+import { StartRequire, GetSettings } from './ImportModule';
 import { Request, Response, NextFunction } from '@tinyhttp/app';
 import { Settings as PrintIfNewSettings } from '../OutputInput/PrintNew';
 import { Options as TransformOptions } from 'sucrase';
@@ -134,7 +134,7 @@ export function pageInRamActivateFunc(){
     return pageInRamActivate;
 }
 
-const baseRoutingIgnoreTypes = [...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray];
+const baseRoutingIgnoreTypes = [...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray, ...BasicSettings.pageCodeFileArray];
 
 interface ExportSettings extends GlobalSettings {
     development: boolean,
@@ -338,8 +338,8 @@ function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'ignore' 
 
 // read the settings of the website
 export async function requireSettings() {
-    if (!await SettingsExsit(Export.settingsPath)) return;
     const Settings: ExportSettings = await GetSettings(Export.settingsPath, DevMode_);
+    if(Settings == null) return;
 
     if (Settings.development)
         Object.assign(Settings, Settings.implDev);
