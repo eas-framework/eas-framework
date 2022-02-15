@@ -91,7 +91,7 @@ async function outPage(data: StringTracker,scriptFile:StringTracker, lastPageBas
 
     for (const i of allData.found) {
         i.tag = i.tag.substring(1); // removing the ':'
-        const holderData = outData.found.find((e) => e.tag == '@' + i.tag);
+        const holderData = outData.found.splice(outData.found.findIndex(x => x.tag == '@' + i.tag), 1).shift();
 
         modelBuild.Plus(modelData.substring(0, i.loc));
         modelData = modelData.substring(i.loc);
@@ -106,6 +106,7 @@ async function outPage(data: StringTracker,scriptFile:StringTracker, lastPageBas
         }
     }
 
+    baseData.valueArray.push(...outData.found.map(x => {return{key: x.tag.substring(1), value: x.data}}));
     modelBuild.Plus(modelData);
 
     return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), baseData, FullPath, pageName, SmallPath, isDebug, dependenceObject);
