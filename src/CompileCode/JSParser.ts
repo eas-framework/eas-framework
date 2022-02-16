@@ -94,7 +94,7 @@ export default class JSParser {
                 const writeScript = script.substring(1, index);
 
                 if (t == ':')
-                    stringCopy.Plus$`safeWrite(${writeScript});`;
+                    stringCopy.Plus$`writeSafe(${writeScript});`;
                 else
                     stringCopy.Plus$`write(${writeScript});`;
 

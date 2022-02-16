@@ -62,12 +62,12 @@ async function StartApp(Server?) {
 
     const OpenListing = await StartListing(app, Server);
 
-    app.all("*", ParseRequest);
-
     for (const func of Settings.general.importOnLoad) {
         await func(app, appOnline.server, Settings);
     }
     await pageInRamActivateFunc()?.()
+
+    app.all("*", ParseRequest);
 
     await OpenListing(Settings.serve.port);
 

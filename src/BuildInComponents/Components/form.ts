@@ -139,13 +139,13 @@ export async function handelConnector(thisPage: any, connectorInfo: any) {
 
     if (!isValid && !response)
         if (connectorInfo.message === true)
-            thisPage.safeWrite(connectorInfo.message);
+            thisPage.writeSafe(connectorInfo.message);
         else
             response = connectorInfo.message;
 
     if (response)
         if (connectorInfo.safe)
-            thisPage.safeWrite(response);
+            thisPage.writeSafe(response);
         else
             thisPage.write(response);
 }

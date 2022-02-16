@@ -13,7 +13,7 @@ const serveScript = '/serv/temp.js';
 async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name: string, params: string, selector: string, mainCode: StringTracker, path: string, isDebug: boolean){
     const parse = JSParser.RunAndExport(mainCode, path, isDebug);
     return `function ${name}({${params}}, selector = "${selector}", out_run_script = {text: ''}){
-        const {write, safeWrite, setResponse, sendToSelector} = new buildTemplate(out_run_script);
+        const {write, writeSafe, setResponse, sendToSelector} = new buildTemplate(out_run_script);
         ${
             replaceForClient(
                     await BuildScriptWithoutModule(parse),

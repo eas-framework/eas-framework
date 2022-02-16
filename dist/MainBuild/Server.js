@@ -47,11 +47,11 @@ async function StartApp(Server) {
     }
     fileByUrl.Settings.SessionStore = async (req, res, next) => Settings.middleware.session(req, res, next);
     const OpenListing = await StartListing(app, Server);
-    app.all("*", ParseRequest);
     for (const func of Settings.general.importOnLoad) {
         await func(app, appOnline.server, Settings);
     }
     await pageInRamActivateFunc()?.();
+    app.all("*", ParseRequest);
     await OpenListing(Settings.serve.port);
     console.log("App listing at port: " + Settings.serve.port);
 }
