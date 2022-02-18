@@ -255,26 +255,41 @@ export const Export: ExportSettings = {
             serveLimits.sessionTotalRamMB = value;
             buildSession();
         },
+        get sessionTotalRamMB(){
+            return serveLimits.sessionTotalRamMB;
+        },
         set sessionTimeMinutes(value: number) {
             serveLimits.sessionTimeMinutes = value;
             buildSession();
 
+        },
+        get sessionTimeMinutes() {
+            return serveLimits.sessionTimeMinutes;
         },
         set sessionCheckPeriodMinutes(value: number) {
             serveLimits.sessionCheckPeriodMinutes = value;
             buildSession();
 
         },
+        get sessionCheckPeriodMinutes() {
+            return serveLimits.sessionCheckPeriodMinutes;
+        },
         set fileLimitMB(value: number) {
             serveLimits.fileLimitMB = value;
             buildFormidable();
 
+        },
+        get fileLimitMB() {
+            return serveLimits.fileLimitMB;
         },
         set requestLimitMB(value: number) {
             serveLimits.requestLimitMB = value;
             buildFormidable();
             buildBodyParser();
 
+        },
+        get requestLimitMB() {
+            return serveLimits.requestLimitMB;
         }
     },
     serve: {

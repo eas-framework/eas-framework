@@ -130,22 +130,37 @@ export const Export = {
             serveLimits.sessionTotalRamMB = value;
             buildSession();
         },
+        get sessionTotalRamMB() {
+            return serveLimits.sessionTotalRamMB;
+        },
         set sessionTimeMinutes(value) {
             serveLimits.sessionTimeMinutes = value;
             buildSession();
+        },
+        get sessionTimeMinutes() {
+            return serveLimits.sessionTimeMinutes;
         },
         set sessionCheckPeriodMinutes(value) {
             serveLimits.sessionCheckPeriodMinutes = value;
             buildSession();
         },
+        get sessionCheckPeriodMinutes() {
+            return serveLimits.sessionCheckPeriodMinutes;
+        },
         set fileLimitMB(value) {
             serveLimits.fileLimitMB = value;
             buildFormidable();
+        },
+        get fileLimitMB() {
+            return serveLimits.fileLimitMB;
         },
         set requestLimitMB(value) {
             serveLimits.requestLimitMB = value;
             buildFormidable();
             buildBodyParser();
+        },
+        get requestLimitMB() {
+            return serveLimits.requestLimitMB;
         }
     },
     serve: {
