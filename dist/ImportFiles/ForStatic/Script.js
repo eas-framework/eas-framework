@@ -8,7 +8,7 @@ async function BuildScript(inputPath, type, isDebug, moreOptions, haveDifferentS
     const AddOptions = {
         transforms: [],
         sourceMapOptions: {
-            compiledFilename: inputPath,
+            compiledFilename: '/' + inputPath,
         },
         filePath: inputPath,
         ...GetPlugin("transformOptions"), ...moreOptions

@@ -1,5 +1,5 @@
 export default {
-    development: true, // development mode, if off, then is optimize for production
+    development: false, // development mode, if off, then is optimize for production
 
     general: {
         pageInRam: true,

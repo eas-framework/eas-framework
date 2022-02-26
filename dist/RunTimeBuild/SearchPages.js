@@ -5,6 +5,7 @@ import * as SearchFileSystem from './SearchFileSystem.js';
 import ReqScript from '../ImportFiles/Script.js';
 import StaticFiles from '../ImportFiles/StaticFiles.js';
 import path from 'path';
+import CompileState from './CompileState.js';
 export function RemoveEndType(string) {
     return string.substring(0, string.lastIndexOf('.'));
 }
@@ -32,37 +33,42 @@ function isFileType(types, name) {
     }
     return false;
 }
-async function FilesInFolder(arrayType, path = "") {
+async function FilesInFolder(arrayType, path, state) {
     const allInFolder = await EasyFs.readdir(arrayType[0] + path, { withFileTypes: true });
     for (const i of allInFolder) {
-        const n = i.name;
+        const n = i.name, connect = path + n;
         if (i.isDirectory()) {
-            await EasyFs.mkdir(arrayType[1] + path + n);
-            await FilesInFolder(arrayType, path + n + '/');
+            await EasyFs.mkdir(arrayType[1] + connect);
+            await FilesInFolder(arrayType, connect + '/', state);
         }
         else {
             if (isFileType(SearchFileSystem.BasicSettings.pageTypesArray, n)) {
-                if (await SearchFileSystem.CheckDependencyChange(arrayType[2] + '/' + path + n))
-                    await compileFile(path + n, arrayType, false);
+                state.addPage(connect);
+                if (await SearchFileSystem.CheckDependencyChange(arrayType[2] + '/' + connect)) //check if not already compile from a 'in-file' call
+                    await compileFile(connect, arrayType, false);
             }
             else if (arrayType == SearchFileSystem.getTypes.Static && isFileType(SearchFileSystem.BasicSettings.ReqFileTypesArray, n)) {
-                await ReqScript('Production Loader', path + n, arrayType, false);
+                state.addImport(connect);
+                await ReqScript('Production Loader', connect, arrayType, false);
             }
             else {
-                await StaticFiles(path + n, false);
+                await StaticFiles(connect, false);
             }
         }
     }
 }
-async function CreateCompile(t) {
+async function RequireScripts(scripts) {
+    for (const path of scripts) {
+        await ReqScript('Production Loader', path, SearchFileSystem.getTypes.Static, false);
+    }
+}
+async function CreateCompile(t, state) {
     const types = SearchFileSystem.getTypes[t];
     await SearchFileSystem.DeleteInDirectory(types[1]);
-    return () => FilesInFolder(types);
+    return () => FilesInFolder(types, '', state);
 }
 /**
  * when page call other page;
- * @param path
- * @param arrayType
  */
 async function FastCompileInFile(path, arrayType, debugFromPage, sessionInfo) {
     await EasyFs.makePathReal(path, arrayType[1]);
@@ -74,14 +80,17 @@ export async function FastCompile(path, arrayType) {
     ClearWarning();
 }
 export async function compileAll() {
+    let state = await CompileState.checkLoad();
+    if (state)
+        return () => RequireScripts(state.scripts);
     SearchFileSystem.ClearPagesDependency();
-    // await CheckPath(path,  SearchFileSystem.getTypes.Logs[1]);
-    // await CheckPath(path, SearchFileSystem.getTypes.Static[1]);
-    const activateArray = [await CreateCompile(SearchFileSystem.getTypes.Static[2]), await CreateCompile(SearchFileSystem.getTypes.Logs[2]), ClearWarning];
+    state = new CompileState();
+    const activateArray = [await CreateCompile(SearchFileSystem.getTypes.Static[2], state), await CreateCompile(SearchFileSystem.getTypes.Logs[2], state), ClearWarning];
     return async () => {
         for (const i of activateArray) {
             await i();
         }
+        state.export();
     };
 }
 //# sourceMappingURL=SearchPages.js.map

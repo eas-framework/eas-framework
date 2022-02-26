@@ -24,7 +24,7 @@ export class SourceMapBasic {
         }
         else
             source = path.relative(this.fileDirName, source);
-        return source.replace(/\\/gi, '/');
+        return path.join('/', source.replace(/\\/gi, '/'));
     }
     mapAsURLComment() {
         let mapString = `sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(this.map.toString()).toString("base64")}`;
@@ -51,12 +51,12 @@ export default class SourceMapStore extends SourceMapBasic {
         let waitNextLine = false;
         for (let index = 0; index < length; index++) {
             const { text, line, info } = DataArray[index];
-            if (text == '\n' && ++this.lineCount && !(waitNextLine = false) || waitNextLine)
+            if (text == '\n' && !(waitNextLine = false) || waitNextLine)
                 continue;
             if (line && info && (waitNextLine = true))
                 this.map.addMapping({
                     original: { line, column: 0 },
-                    generated: { line: this.lineCount + 1, column: 0 },
+                    generated: { line: ++this.lineCount, column: 0 },
                     source: this.getSource(info)
                 });
         }

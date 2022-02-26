@@ -35,6 +35,8 @@ export const Export = {
         return workingDirectory + BasicSettings.WebSiteFolder + "/Settings";
     },
     set development(value) {
+        if (DevMode_ == value)
+            return;
         DevMode_ = value;
         if (!value) {
             compilationScan = BuildServer.compileAll();
@@ -74,6 +76,10 @@ export const Export = {
     general: {
         importOnLoad: [],
         set pageInRam(value) {
+            if (fileByUrl.Settings.PageRam != value) {
+                pageInRamActivate = async () => (await compilationScan)?.();
+                return;
+            }
             fileByUrl.Settings.PageRam = value;
             pageInRamActivate = async () => {
                 const preparations = await compilationScan;
@@ -127,6 +133,8 @@ export const Export = {
         cacheDays: 3,
         cookiesExpiresDays: 1,
         set sessionTotalRamMB(value) {
+            if (serveLimits.sessionTotalRamMB == value)
+                return;
             serveLimits.sessionTotalRamMB = value;
             buildSession();
         },
@@ -134,6 +142,8 @@ export const Export = {
             return serveLimits.sessionTotalRamMB;
         },
         set sessionTimeMinutes(value) {
+            if (serveLimits.sessionTimeMinutes == value)
+                return;
             serveLimits.sessionTimeMinutes = value;
             buildSession();
         },
@@ -141,6 +151,8 @@ export const Export = {
             return serveLimits.sessionTimeMinutes;
         },
         set sessionCheckPeriodMinutes(value) {
+            if (serveLimits.sessionCheckPeriodMinutes == value)
+                return;
             serveLimits.sessionCheckPeriodMinutes = value;
             buildSession();
         },
@@ -148,6 +160,8 @@ export const Export = {
             return serveLimits.sessionCheckPeriodMinutes;
         },
         set fileLimitMB(value) {
+            if (serveLimits.fileLimitMB == value)
+                return;
             serveLimits.fileLimitMB = value;
             buildFormidable();
         },
@@ -155,6 +169,8 @@ export const Export = {
             return serveLimits.fileLimitMB;
         },
         set requestLimitMB(value) {
+            if (serveLimits.requestLimitMB == value)
+                return;
             serveLimits.requestLimitMB = value;
             buildFormidable();
             buildBodyParser();
@@ -241,9 +257,7 @@ export async function requireSettings() {
     }
     copyJSON(Export.serve, Settings.serve);
     /* --- problematic updates --- */
-    if (DevMode_ != Settings.development) {
-        Export.development = Settings.development;
-    }
+    Export.development = Settings.development;
     if (Settings.general?.importOnLoad) {
         Export.general.importOnLoad = await StartRequire(Settings.general.importOnLoad, DevMode_);
     }

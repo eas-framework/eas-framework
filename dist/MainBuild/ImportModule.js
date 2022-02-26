@@ -31,4 +31,7 @@ export async function GetSettings(filePath, isDebug) {
     const data = await RequireOnce(filePath, isDebug);
     return data.default;
 }
+export function getSettingsDate() {
+    return lastSettingsImport;
+}
 //# sourceMappingURL=ImportModule.js.map

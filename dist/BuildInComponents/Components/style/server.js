@@ -10,41 +10,38 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
     const SaveServerCode = new EnableGlobalReplace();
     await SaveServerCode.load(BetweenTagData.trimStart(), pathName);
     let outStyle = SaveServerCode.StartBuild();
-    async function importSass(url, res) {
-        const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, getTypes.Static[2], 'sass');
+    async function importSass(url) {
+        const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, getTypes.Static[2], InsertComponent.GetPlugin("sass")?.default ?? language);
         if (!await EasyFs.existsFile(FullPath)) {
             PrintIfNew({
                 text: `Sass import not found, on file -> ${pathName}:${BetweenTagData.DefaultInfoText.line}`,
                 errorName: 'sass-import-not-found',
                 type: 'error'
             });
-            res(null);
             return;
         }
         dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs');
-        res({
-            file: FullPath
-        });
+        return new URL(FullPath);
     }
-    let sassOutput = { expression: null, result: null };
-    if (language != 'css')
-        sassOutput = await new Promise((res) => {
-            sass.render({
-                data: outStyle,
-                indentedSyntax: language == 'sass',
-                importer(url, prev, done) {
-                    importSass(url, done);
-                },
-            }, (expression, result) => res({ expression, result }));
-        });
-    const { expression, result } = sassOutput;
-    if (expression?.status)
-        PrintIfNew({
-            text: `${expression.message}, on file -> ${pathName}:${BetweenTagData.getLine(expression.line).DefaultInfoText.line}`,
-            errorName: expression?.status == 5 ? 'sass-warning' : 'sass-error',
-            type: expression?.status == 5 ? 'warn' : 'error'
-        });
-    outStyle = result?.css?.toString() ?? outStyle;
+    let result;
+    if (language != 'css') {
+        try {
+            result = await sass.compileStringAsync(outStyle, {
+                syntax: language == 'sass' ? 'indented' : 'scss',
+                importer: {
+                    findFileUrl: importSass
+                }
+            });
+        }
+        catch (expression) {
+            PrintIfNew({
+                text: `${expression.message}, on file -> ${pathName}:${BetweenTagData.getLine(expression.line).DefaultInfoText.line}`,
+                errorName: expression?.status == 5 ? 'sass-warning' : 'sass-error',
+                type: expression?.status == 5 ? 'warn' : 'error'
+            });
+        }
+    }
+    outStyle = result?.css ?? outStyle;
     if (InsertComponent.SomePlugins("MinCss", "MinAll", "MinSass"))
         outStyle = MinCss(outStyle);
     else

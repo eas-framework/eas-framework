@@ -9,34 +9,34 @@ import { dirname, extname } from 'path';
 import sass from 'sass';
 import { v4 as uuid } from 'uuid';
 import path from 'path';
+import url from 'url';
 export async function preprocess(fullPath, smallPath, dependenceObject = {}, makeAbsolute, svelteExt = '') {
     const content = await EasyFs.readFile(fullPath);
     const addStyle = [];
     const { code, dependencies, map } = await svelte.preprocess(content, {
         async style({ content, attributes, filename }) {
             const outputStyle = (['sass', 'scss'].includes(attributes.lang) ? SomePlugins("MinSass", "MinAll") : SomePlugins("MinCss", "MinAll")) ? 'compressed' : 'expanded';
-            const { css, stats } = await new Promise(resolve => sass.render({
-                file: filename,
-                indentedSyntax: attributes.lang == 'sass',
-                data: content,
-                outputStyle,
-                includePaths: [
-                    dirname(fullPath),
-                ],
-            }, (err, result) => {
-                if (err) {
-                    PrintIfNew({
-                        text: `${err.message}, on file -> ${smallPath}${err.line ? ':' + err.line : ''}`,
-                        errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
-                        type: err?.status == 5 ? 'warn' : 'error'
-                    });
-                }
-                ;
-                resolve(result);
-            }));
+            try {
+                const { css, loadedUrls } = await sass.compileStringAsync(content, {
+                    url: new URL(filename),
+                    syntax: attributes.lang == 'sass' ? 'indented' : 'scss',
+                    style: outputStyle,
+                    loadPaths: [dirname(fullPath)]
+                });
+                return {
+                    code: css.toString(),
+                    dependencies: loadedUrls.map(x => url.fileURLToPath(x))
+                };
+            }
+            catch (err) {
+                PrintIfNew({
+                    text: `${err.message}, on file -> ${smallPath}${err.line ? ':' + err.line : ''}`,
+                    errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
+                    type: err?.status == 5 ? 'warn' : 'error'
+                });
+            }
             return {
-                code: css.toString(),
-                dependencies: stats.includedFiles
+                code: content
             };
         },
         async script({ content, attributes }) {
@@ -84,7 +84,7 @@ export async function preprocess(fullPath, smallPath, dependenceObject = {}, mak
     });
     dependencies.push(getTypes.Static[0] + path.relative(getTypes.Static[2], smallPath));
     for (const i of dependencies) {
-        dependenceObject[i.substring(BasicSettings.fullWebSitePath.length)] = await EasyFs.stat(i, 'mtimeMs');
+        dependenceObject[BasicSettings.relative(i)] = await EasyFs.stat(i, 'mtimeMs');
     }
     let fullCode = code;
     if (addStyle.length) {
@@ -141,7 +141,7 @@ export async function registerExtension(filePath, smallPath, dependenceObject, i
     const fullImportPath = fullCompilePath + '.ssr.cjs';
     await EasyFs.writeFile(fullImportPath, js.code);
     if (css.code) {
-        css.map.sources[0] = inStaticFile.split(/\/|\//).pop() + '?source=true';
+        css.map.sources[0] = '/' + inStaticFile.split(/\/|\//).pop() + '?source=true';
         css.code += '\n/*# sourceMappingURL=' + css.map.toUrl() + '*/';
     }
     await EasyFs.writeFile(fullCompilePath + '.css', css.code ?? '');

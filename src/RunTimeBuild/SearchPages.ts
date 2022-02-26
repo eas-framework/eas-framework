@@ -7,6 +7,7 @@ import ReqScript from '../ImportFiles/Script';
 import StaticFiles from '../ImportFiles/StaticFiles';
 import { SessionInfo } from '../CompileCode/XMLHelpers/CompileTypes';
 import path from 'path';
+import CompileState from './CompileState';
 
 export function RemoveEndType(string) {
     return string.substring(0, string.lastIndexOf('.'));
@@ -36,47 +37,53 @@ function isFileType(types: string[], name: string) {
     name = name.toLowerCase();
 
     for (const type of types) {
-        if(name.endsWith('.' + type)){
+        if (name.endsWith('.' + type)) {
             return true;
         }
     }
     return false;
 }
 
-async function FilesInFolder(arrayType: string[], path = "") {
+async function FilesInFolder(arrayType: string[], path: string, state: CompileState) {
     const allInFolder = await EasyFs.readdir(arrayType[0] + path, { withFileTypes: true });
 
     for (const i of <Dirent[]>allInFolder) {
-        const n = i.name;
+        const n = i.name, connect = path + n;
         if (i.isDirectory()) {
-            await EasyFs.mkdir(arrayType[1] + path + n);
-            await FilesInFolder(arrayType, path + n + '/');
+            await EasyFs.mkdir(arrayType[1] + connect);
+            await FilesInFolder(arrayType, connect + '/', state);
         }
         else {
             if (isFileType(SearchFileSystem.BasicSettings.pageTypesArray, n)) {
-                if(await SearchFileSystem.CheckDependencyChange(arrayType[2] + '/' + path + n))
-                    await compileFile(path + n, arrayType, false);
-            } else if(arrayType == SearchFileSystem.getTypes.Static && isFileType(SearchFileSystem.BasicSettings.ReqFileTypesArray, n)){
-                await ReqScript('Production Loader', path + n, arrayType, false);
+                state.addPage(connect);
+                if (await SearchFileSystem.CheckDependencyChange(arrayType[2] + '/' + connect)) //check if not already compile from a 'in-file' call
+                    await compileFile(connect, arrayType, false);
+            } else if (arrayType == SearchFileSystem.getTypes.Static && isFileType(SearchFileSystem.BasicSettings.ReqFileTypesArray, n)) {
+                state.addImport(connect);
+                await ReqScript('Production Loader', connect, arrayType, false);
             } else {
-                await StaticFiles(path + n, false);
+                await StaticFiles(connect, false);
             }
         }
     }
 }
 
-async function CreateCompile(t:string) {
+async function RequireScripts(scripts: string[]) {
+    for (const path of scripts) {
+        await ReqScript('Production Loader', path, SearchFileSystem.getTypes.Static, false);
+    }
+}
+
+async function CreateCompile(t: string, state: CompileState) {
     const types = SearchFileSystem.getTypes[t];
     await SearchFileSystem.DeleteInDirectory(types[1]);
-    return () => FilesInFolder(types);
+    return () => FilesInFolder(types, '', state);
 }
 
 
 
 /**
  * when page call other page;
- * @param path 
- * @param arrayType 
  */
 async function FastCompileInFile(path: string, arrayType: string[], debugFromPage?: string, sessionInfo?: SessionInfo) {
     await EasyFs.makePathReal(path, arrayType[1]);
@@ -91,14 +98,18 @@ export async function FastCompile(path: string, arrayType: string[]) {
 }
 
 export async function compileAll() {
+    let state = await CompileState.checkLoad()
+
+    if (state) return () => RequireScripts(state.scripts)
     SearchFileSystem.ClearPagesDependency();
-    // await CheckPath(path,  SearchFileSystem.getTypes.Logs[1]);
-    // await CheckPath(path, SearchFileSystem.getTypes.Static[1]);
-    const activateArray = [await CreateCompile(SearchFileSystem.getTypes.Static[2]), await CreateCompile(SearchFileSystem.getTypes.Logs[2]), ClearWarning];
+    state = new CompileState()
+
+    const activateArray = [await CreateCompile(SearchFileSystem.getTypes.Static[2], state), await CreateCompile(SearchFileSystem.getTypes.Logs[2], state), ClearWarning];
 
     return async () => {
-        for(const i of activateArray){
+        for (const i of activateArray) {
             await i();
         }
+        state.export()
     }
 }

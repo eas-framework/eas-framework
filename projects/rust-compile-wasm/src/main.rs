@@ -1,21 +1,22 @@
 mod actions;
 mod builder;
+mod better_string;
 use builder::InsertComponent;
 mod razor;
 
 fn main() {
     //println!("{:?}", actions::base_reader::find_end_of_def("=newAlertsLength == 0 ? 'd-none': 'd-inline-block'", vec![";", "\n", "%>"]));
-    let mut parser = InsertComponent::new(vec![vec!["%".to_owned(), "%".to_owned()], vec!["#{debug}".to_owned(), "{debug}#".to_owned()]], vec!["textarea".to_owned(),"script".to_owned(), "style".to_owned()]);
+  //   let mut parser = InsertComponent::new(vec![vec!["%".to_owned(), "%".to_owned()], vec!["#{debug}".to_owned(), "{debug}#".to_owned()]], vec!["textarea".to_owned(),"script".to_owned(), "style".to_owned()]);
 
-    let text = r#"
+  //   let text = r#"
 
-    <title>Mixed HTML Example</title>
+  //   <title>Mixed HTML Example</title>
     
-  <%!@DefaultInsertBundle%></head>
-  <body>
-    <h1>Mixed HTML Example</h1>
+  // <%!@DefaultInsertBundle%></head>
+  // <body>
+  //   <h1>Mixed HTML Example</h1>
     
-  </body>"#;
+  // </body>"#;
 
     // let index = parser.find_close_char(text, ">");
 
@@ -37,17 +38,17 @@ fn main() {
 
     // parser.clear();
 
-    let index = parser.public_html_element(text, "head");
+    // let index = parser.public_html_element(text, "head");
 
 
-    println!("index {:?}, array:  {:?}", index, parser.error_vec);
+    // println!("index {:?}, array:  {:?}", index, parser.error_vec);
 
-    println!("{:?}", actions::base_actions::cut_start(text, index as usize));
+    // println!("{:?}", actions::base_actions::cut_start(text, index as usize));
 
     
-    let text2: String = text.chars().skip(parser.error_vec[0].index as usize).collect();
+    // let text2: String = text.chars().skip(parser.error_vec[0].index as usize).collect();
 
-    println!("text {:?}", text2);
+    // println!("text {:?}", text2);
 
 
 //     println!("text {:?}", actions::base_reader::block_skip_text(r#"    <div>refre</div>

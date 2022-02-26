@@ -2,11 +2,11 @@ import fs from 'fs';
 import EasyFs from '../OutputInput/EasyFs.js';
 import { cwd } from 'process';
 import path from 'path';
-import { URL } from 'url';
+import { fileURLToPath } from 'url';
 function getDirname(url) {
-    return path.dirname(new URL(url).pathname);
+    return path.dirname(fileURLToPath(url));
 }
-const SystemData = getDirname(import.meta.url) + '/../SystemData';
+const SystemData = path.join(getDirname(import.meta.url), '/../SystemData');
 const PagesInfoPath = SystemData + '/PagesInfo.json';
 let WebSiteFolder_ = "WebSite";
 const StaticName = 'WWW', LogsName = 'Logs';

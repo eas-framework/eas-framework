@@ -3,7 +3,9 @@ export default class LocalSql {
     db: Database;
     savePath: string;
     hadChange: boolean;
+    private loaded;
     constructor(savePath?: string, checkIntervalMinutes?: number);
+    private notLoaded;
     load(): Promise<void>;
     private updateLocalFile;
     private buildQueryTemplate;

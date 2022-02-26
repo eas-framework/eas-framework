@@ -35,3 +35,7 @@ export async function GetSettings(filePath: string, isDebug: boolean){
     const data = await RequireOnce(filePath, isDebug);
     return data.default;
 }
+
+export function getSettingsDate(){
+    return lastSettingsImport
+}

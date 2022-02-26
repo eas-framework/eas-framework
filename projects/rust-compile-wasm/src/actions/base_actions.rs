@@ -1,3 +1,5 @@
+use crate::better_string::b_string::BetterString;
+
 pub fn get_from_vec(arr: &Vec<char>, num: usize, minus: usize) -> char {
     if minus > num {
         return ' ';
@@ -58,14 +60,14 @@ pub fn index_of(text: &str, find: &str) -> i32 {
     -1
 }
 
-pub fn split_max_2(text: &str, sp: char) -> Vec<&str> {
-    let split = text.split_once(sp);
+pub fn split_max_2(text: &BetterString, sp: char) -> Vec<BetterString> {
+    let split = text.index_of_char(sp);
 
     if split.is_none() {
-        return vec![text];
+        return vec![text.clone()];
     }
     
-    let get_data = split.unwrap();
+    let index = split.unwrap() as usize;
 
-    vec![&get_data.0, &get_data.1]
+    vec![text.substring_end(index), text.substring_start(index+1)]
 }

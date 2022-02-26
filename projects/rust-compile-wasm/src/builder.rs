@@ -1,3 +1,5 @@
+use crate::better_string::b_string::BetterString;
+
 use super::actions::base_actions::*;
 use super::actions::base_reader;
 use serde::{Deserialize, Serialize};
@@ -7,12 +9,15 @@ use lazy_static::lazy_static;
 
 lazy_static!{
     static ref HTML_TAG: Regex = Regex::new(r"[\pL]").unwrap();
+    static ref HTML_SMALL_CLOSE_BETTER: BetterString = BetterString::new("</");
+    static ref HTML_CLOSE_BETTER: BetterString = BetterString::new(">");
+    static ref HTML_CLOSE: String = String::from(">");
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct ErrorInfo {
     pub type_name: String,
-    pub index: usize,
+    pub index: usize
 }
 
 pub struct ResultInsertComponent{
@@ -20,16 +25,15 @@ pub struct ResultInsertComponent{
     index: usize,
     result_index: i32
 }
-
 pub struct InsertComponent {
-    pub skip_special_tag: Vec<Vec<String>>,
-    pub simple_skip: Vec<String>,
+    pub skip_special_tag: Vec<Vec<BetterString>>,
+    pub simple_skip: Vec<BetterString>,
     pub error_vec: Vec<ErrorInfo>,
     cache: Vec<ResultInsertComponent>
 }
 
 impl InsertComponent {
-    pub fn new(skip_special_tag: Vec<Vec<String>>, simple_skip: Vec<String>) -> Self {
+    pub fn new(skip_special_tag: Vec<Vec<BetterString>>, simple_skip: Vec<BetterString>) -> Self {
         InsertComponent {
             skip_special_tag,
             simple_skip,
@@ -38,26 +42,26 @@ impl InsertComponent {
         }
     }
 
-    fn find_special_tag(&self, tag: &str) -> Option<&Vec<String>> {
-        for i in self.skip_special_tag.iter() {
-            if cut_end(tag, len(&i[0])) == i[0] {
+    fn find_special_tag(&self, tag: &BetterString) -> Option<&Vec<BetterString>> {
+        for i in self.skip_special_tag.iter() {            
+            if tag.starts_with(&i[0]) {
                 return Some(i);
             }
         }
         None
     }
 
-    fn char_html_element_with_cache(&mut self, text: &str, search: &str, search_len: usize, as_big_tag: bool,add_index: usize) -> i32 {
-        let found = self.cache.iter().find(|x| x.index == add_index && x.search == search);
+    fn char_html_element_with_cache(&mut self, text: &BetterString, search: &BetterString, search_string: &str, as_big_tag: bool,add_index: usize) -> i32 {
+        let found = self.cache.iter().find(|x| x.index == add_index && x.search == search_string);
 
         if found.is_some() {
             return found.unwrap().result_index;
         }
 
-        let get_index = self.find_close_char_html_element(text, search, search_len, as_big_tag, add_index, false);
+        let get_index = self.find_close_char_html_element(text, search,search_string, as_big_tag, add_index, false);
 
         self.cache.push(ResultInsertComponent {
-            search: search.to_owned(),
+            search: search.to_string(),
             index: add_index,
             result_index: get_index
         });
@@ -65,50 +69,50 @@ impl InsertComponent {
         get_index
     }
 
-    fn find_close_char_html_element(&mut self, text: &str, search: &str, search_len: usize, as_big_tag: bool,add_index: usize, in_tag: bool) -> i32 {
-        let chars: Vec<char> = text.chars().collect();
-        let chars_len = chars.len();
+    fn find_close_char_html_element(&mut self, text: &BetterString, search: &BetterString,search_string: &str, as_big_tag: bool,add_index: usize, in_tag: bool) -> i32 {
+        let chars_len = text.len();
     
-        if chars_len < search_len {
+        if chars_len < search.len() {
             return -1;
         }
     
         let mut i: usize = 0;
-        let length = chars_len - search_len;
+        let length = chars_len - search.len();
         while i <= length {
 
-            let this_char = chars[i];
+            let this_char = text.at(i);
             
-            if in_tag && find_char_arr(base_reader::TEXT_BLOCK, &&this_char) && get_from_vec(&chars, i, 1) != '\\'
+            if in_tag && find_char_arr(base_reader::TEXT_BLOCK, &&this_char) && text.at_minus( i, 1) != '\\'
             {
-                i += base_reader::find_end_of_q(&cut_start(text, i + 1), this_char);
-            } else if cut(&text, i, i + search_len) == search {
+                i += base_reader::find_end_of_q(&text.substring_start(i+1), this_char);
+            } else if text.substring(i, i + search.len()).eq(search) {
                 return i as i32;
             } else if this_char == '<' {
                 let copy_start_index = i + 1;
-                let sub_text = cut_start(text, copy_start_index);
+                let sub_text = text.substring_start(copy_start_index);
                 let found_tag = self.find_special_tag(&sub_text);
     
                 if found_tag.is_none() {
-                    if as_big_tag && at(&sub_text, 0) == '/' || length > i+1 && !HTML_TAG.is_match(&chars[i+1].to_string())
+                    if as_big_tag && sub_text.at(0) == '/' || length > i+1 && !HTML_TAG.is_match(&text.at(i+1).to_string())
                     {
                         i += 1;
                         continue;
                     }
     
-                     let found = self.find_close_char_html_element(&sub_text, &">", 1, false, 0, true) as usize;
+                     let found = self.find_close_char_html_element(&sub_text, &HTML_CLOSE_BETTER, &HTML_CLOSE, false, 0, true) as usize;
     
                     i += found;
     
-                    if at(&sub_text, found - 1) != '/'
+                    if sub_text.at(found - 1) != '/'
                     {
-                        let max_find = cut_end(&sub_text, found);
-                        let next_text = cut_start(&sub_text, found + 1);
+                        let max_find = sub_text.substring_end(found);
+                        let next_text = sub_text.substring_start(found+1);
                         
-                        let tag_type = split_max_2(&max_find, ' ')[0];
+                        let tag_type = &split_max_2(&max_find, ' ')[0];
                         let mut end_tag_index;
-                        let skip_tag = self.simple_skip.iter().any(|x| x == &tag_type);
-                        let find_end = &("</".to_owned() + tag_type);
+                        let skip_tag = self.simple_skip.iter().any(|x| x.eq(&tag_type));
+                        
+                        let find_end = &HTML_SMALL_CLOSE_BETTER.concat(&tag_type);
     
                         let next_index_from_start =
                             add_index + copy_start_index + found + 1;
@@ -120,7 +124,7 @@ impl InsertComponent {
                             end_tag_index = self.char_html_element_with_cache(
                                 &next_text,
                                 find_end,
-                                2 + len(tag_type),
+                                &find_end.to_string(),
                                 true,
                                 next_index_from_start,
                             );
@@ -130,7 +134,7 @@ impl InsertComponent {
 
                             if !self.error_vec.iter().any(|x|x.index == index) {
                                 self.error_vec.push(ErrorInfo {
-                                    type_name: String::from(tag_type),
+                                    type_name: tag_type.to_string(),
                                     index,
                                 });
                             }
@@ -139,24 +143,22 @@ impl InsertComponent {
                                 end_tag_index += 1;
                             }
 
-                            let next_text = cut_start(&next_text, end_tag_index as usize);
+                            let next_text = next_text.substring_start(end_tag_index as usize);
     
                             i += end_tag_index as usize + base_reader::find_end_of_def_char(&next_text, '>') as usize;
                         }
                     }
                 } else {
                     let tag_info = found_tag.unwrap();
-                    let len_tag_info0 = len(&tag_info[0]);
-                    let len_tag_info1 = len(&tag_info[1]);
+                    let len_tag_info0 = tag_info[0].len();
+                    let len_tag_info1 = tag_info[1].len();
     
-                    let end_script = index_of(
-                        &cut_start(&sub_text, len_tag_info0),
-                        &(tag_info[1].to_owned() + ">"),
-                    );
-                    if end_script != -1 {
-                        i += end_script as usize + len_tag_info0 + len_tag_info1 + 1;
+                    
+                    let end_script = sub_text.substring_start(len_tag_info0).index_of_better(&tag_info[1].concat(&HTML_CLOSE_BETTER));
+                    if end_script != None {
+                        i += end_script.unwrap() as usize + len_tag_info0 + len_tag_info1 + 1;
                     } else {
-                        i += len(&sub_text);
+                        i += sub_text.len();
                     }
                 }
             }
@@ -166,13 +168,13 @@ impl InsertComponent {
     }
 
     pub fn find_close_char(&mut self, text: &str, search: &str)  -> i32 {
-        self.find_close_char_html_element(text, search, len(search), false, 0, true)
+        self.find_close_char_html_element(&BetterString::new(text), &BetterString::new(search),search, false, 0, true)
 
     }
 
     pub fn public_html_element(&mut self, text: &str, search: &str) -> i32 {
         let be_search = "</".to_owned() + search;
-        self.find_close_char_html_element(text, &be_search, 2 + len(search), false, 0, false)
+        self.find_close_char_html_element(&BetterString::new(text), &BetterString::new(&be_search),&be_search, false, 0, false)
     }
 
     pub fn clear(&mut self) {

@@ -1,6 +1,8 @@
 mod actions;
 mod builder;
 mod razor;
+mod better_string;
+use better_string::b_string::BetterString;
 use builder::InsertComponent;
 
 use wasm_bindgen::prelude::*;
@@ -37,7 +39,7 @@ pub fn get_errors() -> String {
 #[wasm_bindgen]
 pub fn find_end_block(text: &str, block: &str) -> i32 {
     let block_chars = block.chars().collect::<Vec<char>>();
-    actions::base_reader::block_skip_text(text, block_chars)
+    actions::base_reader::block_skip_text(&BetterString::new(text), block_chars)
 }
 
 #[wasm_bindgen]
@@ -47,24 +49,27 @@ pub fn insert_component(skip_special_tag: &str, simple_skip: &str) {
 
     let mut comp = component_builder.lock().unwrap();
 
-    comp.skip_special_tag = skip;
-    comp.simple_skip = simple;
+    comp.skip_special_tag = skip.iter().map(|x| x.iter().map(|b| BetterString::new(b)).collect()).collect();
+    comp.simple_skip = simple.iter().map(|x| BetterString::new(x)).collect();
 }
 
 #[wasm_bindgen]
 pub fn find_end_of_def(text: &str, end_type: &str) -> i32{
     let end_t: Vec<String> = serde_json::from_str(end_type).unwrap();
+    let as_better: Vec<BetterString>= end_t.iter().map(|x| BetterString::new(x)).collect();
 
-    let mut copy: Vec<&str>  = vec![];
 
-    for i in end_t.iter() {
+    let mut copy: Vec<&BetterString>  = vec![];
+
+    for i in as_better.iter() {
         copy.push(&i);
     }
 
-    actions::base_reader::find_end_of_def(text, copy)
+
+    actions::base_reader::find_end_of_def(&BetterString::new(text), copy)
 }
 
 #[wasm_bindgen]
 pub fn find_end_of_q(text: &str, q_type: char) -> usize {
-    actions::base_reader::find_end_of_q(text, q_type)
+    actions::base_reader::find_end_of_q(&BetterString::new(text), q_type)
 }

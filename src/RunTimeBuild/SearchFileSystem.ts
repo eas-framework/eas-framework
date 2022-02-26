@@ -2,13 +2,13 @@ import fs, {Dirent} from 'fs';
 import EasyFs from '../OutputInput/EasyFs';
 import {cwd} from 'process';
 import path from 'path';
-import {URL} from 'url'
+import {fileURLToPath} from 'url'
 
 function getDirname(url: string){
-    return path.dirname(new URL(url).pathname);
+    return path.dirname(fileURLToPath(url));
 }
 
-const SystemData = getDirname(import.meta.url) + '/../SystemData';
+const SystemData = path.join(getDirname(import.meta.url), '/../SystemData');
 
 const PagesInfoPath = SystemData + '/PagesInfo.json';
 

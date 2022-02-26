@@ -3,17 +3,31 @@ import initSqlJs, { Database } from 'sql.js';
 import { print } from '../OutputInput/Console';
 import { workingDirectory } from '../RunTimeBuild/SearchFileSystem';
 import path from 'path';
+import { PrintIfNew } from '../OutputInput/PrintNew';
 
 export default class LocalSql {
     public db: Database;
     public savePath: string;
     public hadChange = false;
+    private loaded = false;
 
     constructor(savePath?: string, checkIntervalMinutes = 10) {
         this.savePath = savePath ?? workingDirectory + "SystemSave/DataBase.db";
         this.updateLocalFile = this.updateLocalFile.bind(this);
         setInterval(this.updateLocalFile, 1000 * 60 * checkIntervalMinutes);
         process.on('SIGINT', this.updateLocalFile)
+        process.on('exit', this.updateLocalFile);
+    }
+
+    private notLoaded(){
+        if(!this.loaded){
+            PrintIfNew({
+                errorName: 'dn-not-loaded',
+                text: 'DataBase is not loaded, please use \'await db.load()\'',
+                type: 'error'
+            })
+            return true
+        }
     }
 
     async load() {
@@ -44,6 +58,7 @@ export default class LocalSql {
     }
 
     insert(queryArray: string[], ...valuesArray: any[]) {
+        if(this.notLoaded()) return
         const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
         try {
             const id = query.get(valuesArray)[0];
@@ -56,6 +71,7 @@ export default class LocalSql {
     }
 
     affected(queryArray: string[], ...valuesArray: any[]) {
+        if(this.notLoaded()) return
         const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
         
         try {
@@ -70,6 +86,7 @@ export default class LocalSql {
     }
 
     select(queryArray: string[], ...valuesArray: any[]) {
+        if(this.notLoaded()) return
         const query = this.buildQueryTemplate(queryArray, valuesArray);
         try {
             return this.db.exec(query);
@@ -79,6 +96,7 @@ export default class LocalSql {
     }
 
     selectOne(queryArray: string[], ...valuesArray: any[]) {
+        if(this.notLoaded()) return
         const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
         try {
             query.step();
