@@ -1,6 +1,6 @@
 import StringTracker from '../../EasyDebug/StringTracker';
 import { BuildScriptWithoutModule } from './CompileTypes';
-declare function ParseDebugLine(code: StringTracker, path: string): StringTracker;
+declare function ParseDebugLine(code: StringTracker, path: string): Promise<StringTracker>;
 declare function NoTrackStringCode(code: StringTracker, path: string, isDebug: boolean, buildScript: BuildScriptWithoutModule): Promise<StringTracker>;
 export declare function AddDebugInfo(pageName: string, FullPath: string, SmallPath: string, cache?: {
     value?: string;

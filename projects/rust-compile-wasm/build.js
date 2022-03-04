@@ -30,7 +30,8 @@ async function copyFiles(code){
     content = "import {promises} from 'fs';\nimport path from 'path';\n" +content;
    
     content = content.replace("import * as wasm from './rust_assembly_bg.wasm';", 
-`const wasmModule = new WebAssembly.Module(await promises.readFile(path.dirname(new URL(import.meta.url).pathname).substring(1)+'/build.wasm'));
+`import {fileURLToPath} from 'url';
+const wasmModule = new WebAssembly.Module(await promises.readFile(path.dirname(fileURLToPath(import.meta.url))+'/build.wasm'));
 const wasmInstance = new WebAssembly.Instance(wasmModule, {});
 const wasm = wasmInstance.exports;`);
 

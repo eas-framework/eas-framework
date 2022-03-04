@@ -89,7 +89,14 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
     Result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," +
       Buffer.from(sourceMap).toString("base64");
   } else {
-    Result = (await minify(Result, { module: false })).code;
+    try {
+      Result = (await minify(Result, { module: false })).code;
+    } catch (err) {
+      PrintIfNew({
+        errorName: 'minify',
+        text: `${err.message} on file -> ${filePath}`
+      })
+    }
   }
 
   if (savePath) {
@@ -116,7 +123,7 @@ export async function BuildScriptSmallPath(InStaticPath: string, typeArray: stri
 
 export function AddExtension(FilePath: string) {
   const fileExt = path.extname(FilePath);
-  
+
   if (BasicSettings.partExtensions.includes(fileExt.substring(1)))
     FilePath += "." + (isTs() ? "ts" : "js")
   else if (fileExt == '')

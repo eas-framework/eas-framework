@@ -66,6 +66,9 @@ impl BetterString {
     }
 
     pub fn at(&self, index: usize) -> char {
+        if self.length <= index {
+            return ' ';
+        }
         self.chars[index]
     }
 
@@ -88,10 +91,16 @@ impl BetterString {
         &self.chars
     }
 
-    pub fn index_of_better(&self, find: &BetterString) -> Option<u32> {
+    pub fn index_of_better(&self, find: &BetterString) -> Option<usize> {
         let mut i = 0;
 
-        'main: while i < self.length {
+        if self.length <= find.length {
+            return None;
+        }
+
+        let length = self.length - find.length;
+
+        'main: while i < length{
             let this_char = self.chars[i];
 
             if find.chars[0] == this_char {
@@ -102,7 +111,7 @@ impl BetterString {
                     }
                 }
 
-                return Option::Some(i as u32);
+                return Option::Some(i);
             }
 
             i += 1;
@@ -112,7 +121,7 @@ impl BetterString {
     }
 
     pub fn starts_with(&self, find: &BetterString) -> bool {
-        if find.length < self.length {
+        if find.length > self.length {
             return false;
         }
 
@@ -125,6 +134,20 @@ impl BetterString {
         true
     }
 
+    pub fn trim_start(&self) -> BetterString {
+        let mut i = 0;
+        for current in 0..self.length {
+            let c = self.chars[current];
+            if c.is_whitespace() || c == '\t' || c == '\r' || c == '\n' {
+                i += 1;
+            } else {
+                break;
+            }
+        }
+
+        self.substring_start(i)
+    }
+
     pub fn eq(&self, text: &BetterString) -> bool{
         if text.length != self.length {
             return false;
@@ -133,18 +156,18 @@ impl BetterString {
         self.starts_with(text)
     }
 
-    pub fn index_of(&self, find: &str) -> Option<u32> {
+    pub fn index_of(&self, find: &str) -> Option<usize> {
         self.index_of_better(&BetterString::new(find))
     }
 
-    pub fn index_of_char(&self, find: char) -> Option<u32> {
+    pub fn index_of_char(&self, find: &char) -> Option<usize> {
         let mut i = 0;
 
         while i < self.length {
             let this_char = self.chars[i];
 
-            if find == this_char {
-                return Option::Some(i as u32);
+            if find == &this_char {
+                return Option::Some(i);
             }
 
             i += 1;

@@ -1,6 +1,7 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import sass from 'sass';
+import {pathToFileURL} from "url";
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import EasyFs from '../../../OutputInput/EasyFs';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug';
@@ -32,7 +33,7 @@ export default async function BuildCode(language: string, path: string, pathName
         }
         dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs');
 
-        return new URL(FullPath)
+        return pathToFileURL(FullPath)
     }
 
     let result: sass.CompileResult;

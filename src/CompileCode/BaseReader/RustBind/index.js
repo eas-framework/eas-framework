@@ -1,7 +1,6 @@
 import {promises} from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
-
 const wasmModule = new WebAssembly.Module(await promises.readFile(path.dirname(fileURLToPath(import.meta.url))+'/build.wasm'));
 const wasmInstance = new WebAssembly.Instance(wasmModule, {});
 const wasm = wasmInstance.exports;
@@ -181,5 +180,49 @@ export function find_end_of_q(text, q_type) {
     var len0 = WASM_VECTOR_LEN;
     var ret = wasm.find_end_of_q(ptr0, len0, q_type.codePointAt(0));
     return ret >>> 0;
+}
+
+/**
+* @param {string} text
+* @returns {string}
+*/
+export function razor_to_ejs(text) {
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        var ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        wasm.razor_to_ejs(retptr, ptr0, len0);
+        var r0 = getInt32Memory0()[retptr / 4 + 0];
+        var r1 = getInt32Memory0()[retptr / 4 + 1];
+        return getStringFromWasm0(r0, r1);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_free(r0, r1);
+    }
+}
+
+/**
+* @param {string} text
+* @param {string} start
+* @param {string} end
+* @returns {string}
+*/
+export function ejs_parse(text, start, end) {
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        var ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        var ptr1 = passStringToWasm0(start, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len1 = WASM_VECTOR_LEN;
+        var ptr2 = passStringToWasm0(end, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len2 = WASM_VECTOR_LEN;
+        wasm.ejs_parse(retptr, ptr0, len0, ptr1, len1, ptr2, len2);
+        var r0 = getInt32Memory0()[retptr / 4 + 0];
+        var r1 = getInt32Memory0()[retptr / 4 + 1];
+        return getStringFromWasm0(r0, r1);
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+        wasm.__wbindgen_free(r0, r1);
+    }
 }
 

@@ -22,7 +22,6 @@ export declare class BaseReader {
 }
 export declare class InsertComponentBase {
     private printNew?;
-    private asyncMethod;
     SimpleSkip: string[];
     SkipSpecialTag: string[][];
     constructor(printNew?: any);
@@ -30,3 +29,11 @@ export declare class InsertComponentBase {
     FindCloseChar(text: StringTracker, Search: string): Promise<any>;
     FindCloseCharHTML(text: StringTracker, Search: string): Promise<any>;
 }
+declare type ParseBlocks = {
+    name: string;
+    start: number;
+    end: number;
+}[];
+export declare function RazorToEJS(text: string): Promise<ParseBlocks>;
+export declare function EJSParser(text: string, start: string, end: string): Promise<ParseBlocks>;
+export {};

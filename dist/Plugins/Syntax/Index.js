@@ -1,5 +1,5 @@
 import RazorSyntax from './RazorSyntax.js';
-export default async function GetSyntax(CompileType) {
+export default function GetSyntax(CompileType) {
     let func;
     switch (CompileType.name || CompileType) {
         case "Razor":

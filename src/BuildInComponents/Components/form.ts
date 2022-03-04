@@ -55,7 +55,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
     }
 
     const compiledString = new StringTracker(type.DefaultInfoText).Plus$
-        `<%
+        `<%!
 @?ConnectHereForm(${sendTo});
 %><form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>
     <input type="hidden" name="connectorFormCall" value="${name}"/>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)}</form>`;

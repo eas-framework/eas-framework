@@ -1,7 +1,6 @@
 use crate::better_string::b_string::BetterString;
-
-use super::actions::base_actions::*;
-use super::actions::base_reader;
+use crate::actions::base_actions::*;
+use crate::actions::base_reader;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use regex::Regex;
@@ -11,7 +10,6 @@ lazy_static!{
     static ref HTML_TAG: Regex = Regex::new(r"[\pL]").unwrap();
     static ref HTML_SMALL_CLOSE_BETTER: BetterString = BetterString::new("</");
     static ref HTML_CLOSE_BETTER: BetterString = BetterString::new(">");
-    static ref HTML_CLOSE: String = String::from(">");
 }
 
 #[derive(Serialize, Deserialize)]
@@ -58,7 +56,7 @@ impl InsertComponent {
             return found.unwrap().result_index;
         }
 
-        let get_index = self.find_close_char_html_element(text, search,search_string, as_big_tag, add_index, false);
+        let get_index = self.find_close_char_html_element(text, search, as_big_tag, add_index, false);
 
         self.cache.push(ResultInsertComponent {
             search: search.to_string(),
@@ -69,7 +67,7 @@ impl InsertComponent {
         get_index
     }
 
-    fn find_close_char_html_element(&mut self, text: &BetterString, search: &BetterString,search_string: &str, as_big_tag: bool,add_index: usize, in_tag: bool) -> i32 {
+    fn find_close_char_html_element(&mut self, text: &BetterString, search: &BetterString, as_big_tag: bool,add_index: usize, in_tag: bool) -> i32 {
         let chars_len = text.len();
     
         if chars_len < search.len() {
@@ -99,7 +97,7 @@ impl InsertComponent {
                         continue;
                     }
     
-                     let found = self.find_close_char_html_element(&sub_text, &HTML_CLOSE_BETTER, &HTML_CLOSE, false, 0, true) as usize;
+                     let found = self.find_close_char_html_element(&sub_text, &HTML_CLOSE_BETTER, false, 0, true) as usize;
     
                     i += found;
     
@@ -108,7 +106,7 @@ impl InsertComponent {
                         let max_find = sub_text.substring_end(found);
                         let next_text = sub_text.substring_start(found+1);
                         
-                        let tag_type = &split_max_2(&max_find, ' ')[0];
+                        let tag_type = &split_max_2(&max_find, &' ')[0];
                         let mut end_tag_index;
                         let skip_tag = self.simple_skip.iter().any(|x| x.eq(&tag_type));
                         
@@ -145,7 +143,7 @@ impl InsertComponent {
 
                             let next_text = next_text.substring_start(end_tag_index as usize);
     
-                            i += end_tag_index as usize + base_reader::find_end_of_def_char(&next_text, '>') as usize;
+                            i += end_tag_index as usize + base_reader::find_end_of_def_char(&next_text, &'>') as usize;
                         }
                     }
                 } else {
@@ -156,7 +154,7 @@ impl InsertComponent {
                     
                     let end_script = sub_text.substring_start(len_tag_info0).index_of_better(&tag_info[1].concat(&HTML_CLOSE_BETTER));
                     if end_script != None {
-                        i += end_script.unwrap() as usize + len_tag_info0 + len_tag_info1 + 1;
+                        i += end_script.unwrap() + len_tag_info0 + len_tag_info1 + 1;
                     } else {
                         i += sub_text.len();
                     }
@@ -168,13 +166,13 @@ impl InsertComponent {
     }
 
     pub fn find_close_char(&mut self, text: &str, search: &str)  -> i32 {
-        self.find_close_char_html_element(&BetterString::new(text), &BetterString::new(search),search, false, 0, true)
+        self.find_close_char_html_element(&BetterString::new(text), &BetterString::new(search), false, 0, true)
 
     }
 
     pub fn public_html_element(&mut self, text: &str, search: &str) -> i32 {
         let be_search = "</".to_owned() + search;
-        self.find_close_char_html_element(&BetterString::new(text), &BetterString::new(&be_search),&be_search, false, 0, false)
+        self.find_close_char_html_element(&BetterString::new(text), &BetterString::new(&be_search), false, 0, false)
     }
 
     pub fn clear(&mut self) {

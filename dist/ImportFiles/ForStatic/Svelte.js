@@ -9,7 +9,7 @@ import { dirname, extname } from 'path';
 import sass from 'sass';
 import { v4 as uuid } from 'uuid';
 import path from 'path';
-import url from 'url';
+import { fileURLToPath } from 'url';
 export async function preprocess(fullPath, smallPath, dependenceObject = {}, makeAbsolute, svelteExt = '') {
     const content = await EasyFs.readFile(fullPath);
     const addStyle = [];
@@ -18,14 +18,13 @@ export async function preprocess(fullPath, smallPath, dependenceObject = {}, mak
             const outputStyle = (['sass', 'scss'].includes(attributes.lang) ? SomePlugins("MinSass", "MinAll") : SomePlugins("MinCss", "MinAll")) ? 'compressed' : 'expanded';
             try {
                 const { css, loadedUrls } = await sass.compileStringAsync(content, {
-                    url: new URL(filename),
                     syntax: attributes.lang == 'sass' ? 'indented' : 'scss',
                     style: outputStyle,
                     loadPaths: [dirname(fullPath)]
                 });
                 return {
                     code: css.toString(),
-                    dependencies: loadedUrls.map(x => url.fileURLToPath(x))
+                    dependencies: loadedUrls.map(x => fileURLToPath(x))
                 };
             }
             catch (err) {
@@ -158,9 +157,17 @@ export default async function BuildScript(inputPath, isDebug) {
         hydratable: true,
         sveltePath: '/serv/svelte'
     });
-    const minCode = SomePlugins("MinJS") || SomePlugins("MinAll");
-    if (minCode)
-        js.code = (await minify(js.code, { module: false })).code;
+    if (SomePlugins("MinJS") || SomePlugins("MinAll")) {
+        try {
+            js.code = (await minify(js.code, { module: false })).code;
+        }
+        catch (err) {
+            PrintIfNew({
+                errorName: 'minify',
+                text: `${err.message} on file -> ${fullPath}`
+            });
+        }
+    }
     if (isDebug) {
         js.map.sources[0] = fullPath.split(/\/|\//).pop() + '?source=true';
         js.code += '\n//# sourceMappingURL=' + js.map.toUrl();

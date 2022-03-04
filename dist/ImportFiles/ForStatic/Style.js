@@ -3,6 +3,7 @@ import { PrintIfNew } from '../../OutputInput/PrintNew.js';
 import EasyFs from '../../OutputInput/EasyFs.js';
 import { SomePlugins } from '../../CompileCode/InsertModels.js';
 import path from 'path';
+import { pathToFileURL } from "url";
 import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem.js';
 export async function BuildStyleSass(inputPath, type, isDebug) {
     const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
@@ -25,7 +26,7 @@ export async function BuildStyleSass(inputPath, type, isDebug) {
             return;
         }
         dependenceObject[path.relative(BasicSettings.fullWebSitePath, connectUrl)] = await EasyFs.stat(connectUrl, 'mtimeMs');
-        return new URL(connectUrl);
+        return pathToFileURL(connectUrl);
     }
     const fileData = await EasyFs.readFile(fullPath);
     try {

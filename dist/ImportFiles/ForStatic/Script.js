@@ -30,9 +30,16 @@ async function BuildScript(inputPath, type, isDebug, moreOptions, haveDifferentS
             text: `${err.message}, on file -> ${fullPath}:${err?.loc?.line ?? 0}:${err?.loc?.column ?? 0}`
         });
     }
-    const minit = SomePlugins("Min" + type.toUpperCase()) || SomePlugins("MinAll");
-    if (minit) {
-        result = (await minify(result, { module: false })).code;
+    if (SomePlugins("Min" + type.toUpperCase()) || SomePlugins("MinAll")) {
+        try {
+            result = (await minify(result, { module: false })).code;
+        }
+        catch (err) {
+            PrintIfNew({
+                errorName: 'minify',
+                text: `${err.message} on file -> ${fullPath}`
+            });
+        }
     }
     await EasyFs.makePathReal(inputPath, getTypes.Static[1]);
     await EasyFs.writeFile(fullCompilePath, result);

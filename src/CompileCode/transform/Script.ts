@@ -14,7 +14,7 @@ function ErrorTemplate(info: string){
 }
 
 function ReplaceAfter(code: string){
-    return code.replace('"use strict";Object.defineProperty(exports, "__esModule", {value: true});', '');
+    return code.replace('"use strict";', '').replace('Object.defineProperty(exports, "__esModule", {value: true});', '');
 }
 /**
  * 
@@ -52,7 +52,14 @@ export default async function BuildScript(text: StringTracker, isTypescript: boo
     }
 
     if (!isDebug && !removeToMoudule) {
-        Result.code = (await minify(Result.code, { module: false })).code;
+        try {
+            Result.code = (await minify(Result.code, { module: false })).code;
+        } catch (err) {
+            PrintIfNew({
+                errorName: 'minify',
+                text: text.debugLine(err)
+            })
+        }
     }
 
     return Result.code;

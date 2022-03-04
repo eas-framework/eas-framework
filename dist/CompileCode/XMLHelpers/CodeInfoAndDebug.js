@@ -3,9 +3,9 @@ import { BasicSettings, workingDirectory, getTypes } from '../../RunTimeBuild/Se
 import JSParser from './../JSParser.js';
 import StringTracker from '../../EasyDebug/StringTracker.js';
 import EasyFs from '../../OutputInput/EasyFs.js';
-function ParseTextCode(code, path) {
+async function ParseTextCode(code, path) {
     const parser = new JSParser(code, path, '<#{debug}', '{debug}#>', 'debug info');
-    parser.findScripts();
+    await parser.findScripts();
     const newCodeString = new StringTracker(code.DefaultInfoText);
     for (const i of parser.values) {
         if (i.type == 'text') {
@@ -17,9 +17,9 @@ function ParseTextCode(code, path) {
     }
     return newCodeString;
 }
-function ParseScriptCode(code, path) {
+async function ParseScriptCode(code, path) {
     const parser = new JSParser(code, path, '<#{debug}', '{debug}#>', 'debug info');
-    parser.findScripts();
+    await parser.findScripts();
     const newCodeString = new StringTracker(code.DefaultInfoText);
     for (const i of parser.values) {
         if (i.type == 'text') {
@@ -31,15 +31,15 @@ function ParseScriptCode(code, path) {
     }
     return newCodeString;
 }
-function ParseDebugLine(code, path) {
+async function ParseDebugLine(code, path) {
     const parser = new JSParser(code, path);
-    parser.findScripts();
+    await parser.findScripts();
     for (const i of parser.values) {
         if (i.type == 'text') {
-            i.text = ParseTextCode(i.text, path);
+            i.text = await ParseTextCode(i.text, path);
         }
         else {
-            i.text = ParseScriptCode(i.text, path);
+            i.text = await ParseScriptCode(i.text, path);
         }
     }
     parser.start = "<%";
@@ -47,8 +47,8 @@ function ParseDebugLine(code, path) {
     return parser.ReBuildText();
 }
 async function NoTrackStringCode(code, path, isDebug, buildScript) {
-    code = ParseScriptCode(code, path);
-    code = JSParser.RunAndExport(code, path, isDebug);
+    code = await ParseScriptCode(code, path);
+    code = await JSParser.RunAndExport(code, path, isDebug);
     const NewCode = await buildScript(code);
     const newCodeStringTracker = JSParser.RestoreTrack(NewCode, code.DefaultInfoText);
     newCodeStringTracker.AddTextBefore('<%!{');

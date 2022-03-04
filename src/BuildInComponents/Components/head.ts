@@ -8,7 +8,7 @@ import Base64Id from '../../StringMethods/Id';
 export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
     return {
         compiledString: new StringTracker(type.DefaultInfoText).Plus$`<head${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)
-            }<%!@DefaultInsertBundle%></head>`,
+            }@DefaultInsertBundle</head>`,
         checkComponents: false
     }
 }
@@ -69,7 +69,7 @@ export async function addFinalizeBuild(pageData: StringTracker, sessionInfo: Ses
     if (!buildBundleString)  // there isn't anything to bundle
         return removeBundle();
 
-    const replaceWith = new StringTracker(null, `out_run_script.text+= \`${buildBundleString}\``); // add bundle to page
+    const replaceWith = new StringTracker(null, buildBundleString); // add bundle to page
     let bundleSucceed = false;
 
     for (let i = 0; i < bundlePlaceholder.length && !bundleSucceed; i++)

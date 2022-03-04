@@ -681,10 +681,10 @@ export default class StringTracker {
     /**
      * Extract error info form error message
      */
-    public debugLine({message, loc}: {message: string, loc?: {line: number, column: number}}): string {
-        let searchLine = this.getLine(loc?.line??1), column = loc?.column??0;
-        if(searchLine.startsWith('//')){
-            searchLine = this.getLine(loc?.line-1);
+    public debugLine({ message, loc, line, col }: { message: string, loc?: { line: number, column: number }, line?: number, col?: number }): string {
+        let searchLine = this.getLine(line ?? loc?.line ?? 1), column = col ?? loc?.column ?? 0;
+        if (searchLine.startsWith('//')) {
+            searchLine = this.getLine((line ?? loc?.line) - 1);
             column = 0;
         }
         const data = searchLine.DefaultInfoText;

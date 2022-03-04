@@ -1,9 +1,9 @@
 import StringTracker, { StringTrackerDataInfo } from '../EasyDebug/StringTracker';
-import { BaseReader } from './BaseReader/Reader';
+import { BaseReader, EJSParser } from './BaseReader/Reader';
 import { ParseTextStream, ReBuildCodeString } from './ScriptReader/EasyScript';
 
 interface JSParserValues {
-    type: 'text' | 'script' | 'none-track-script',
+    type: 'text' | 'script' | 'no-track',
     text: StringTracker
 }
 
@@ -58,81 +58,34 @@ export default class JSParser {
         return WithInfo;
     }
 
-    findScripts() {
+    async findScripts() {
+        const values = await EJSParser(this.text.eq, this.start, this.end);
         this.values = [];
-        let text = this.text;
 
-        for (let i = 0; i < this.text.length; i++) {
-            const StartIndex = text.indexOf(this.start);
+        for (const i of values) {
+            let substring = this.text.substring(i.start, i.end);
+            let type = i.name;
 
-            if (StartIndex == -1)
-                break;
-
-
-            const TextBefore = text.substring(0, StartIndex);
+            switch (i.name) {
+                case "print":
+                    substring = new StringTracker().Plus$`write(${substring});`;
+                    type = 'script';
+                    break;
+                case "escape":
+                    substring = new StringTracker().Plus$`writeSafe(${substring});`;
+                    type = 'script';
+                    break;
+                case "debug":
+                    substring = new StringTracker().Plus$`\nrun_script_name = \`${JSParser.fixText(substring)}\`;`
+                    type = 'no-track';
+                    break;
+            }
 
             this.values.push({
-                type: 'text',
-                text: TextBefore
+                text: substring,
+                type: <any>type
             });
-
-            text = text.substring(StartIndex + this.start.length);
-
-            const EndIndex = text.indexOf(this.end);
-
-            if (EndIndex == -1) {
-                throw new Error(`JSParser, can't find close tag for ${this.type}, at: ${this.path}`);
-            }
-
-            let script = text.substring(0, EndIndex).trimEnd();
-
-            const t = script.at(0).eq;
-            if (t == '=' || t == ':') {
-                const index = this.findEndOfDefGlobal(script);
-                const stringCopy = new StringTracker(script.StartInfo);
-
-                const writeScript = script.substring(1, index);
-
-                if (t == ':')
-                    stringCopy.Plus$`writeSafe(${writeScript});`;
-                else
-                    stringCopy.Plus$`write(${writeScript});`;
-
-
-                script = new StringTracker(script.StartInfo).Plus$`${stringCopy};${script.substring(index+1)}`;
-            }
-
-            if (t != '#') {
-                if (script.startsWith('{?debug_file?}')) {
-                    const info = script.substring(14);
-
-                    this.values.push({
-                        type: 'script',
-                        text: new StringTracker(null).Plus$`\nrun_script_name = \`${JSParser.fixText(info)}\`;`
-                    });
-                }
-                else if (t == '!') {
-                    this.values.push({
-                        type: 'none-track-script',
-                        text: script.substring(1)
-                    });
-                }
-                else {
-                    this.values.push({
-                        type: 'script',
-                        text: script
-                    });
-                }
-
-            }
-
-            text = text.substring(EndIndex + this.end.length);
         }
-
-        this.values.push({
-            type: 'text',
-            text
-        });
     }
 
     static fixText(text: StringTracker | string) {
@@ -146,7 +99,7 @@ export default class JSParser {
                 if (i.text.eq != '') {
                     allcode.Plus(i.text);
                 }
-            } else if (i.type == 'none-track-script') {
+            } else if (i.type == 'no-track') {
                 allcode.Plus(this.start, '!', i.text, this.end);
 
             } else {
@@ -187,9 +140,9 @@ export default class JSParser {
         return `<p style="color:red;text-align:left;font-size:16px;">${message}</p>`;
     }
 
-    static RunAndExport(text: StringTracker, path: string, isDebug: boolean) {
+    static async RunAndExport(text: StringTracker, path: string, isDebug: boolean) {
         const parser = new JSParser(text, path)
-        parser.findScripts();
+        await parser.findScripts();
         return parser.BuildAll(isDebug);
     }
 
@@ -230,7 +183,7 @@ export default class JSParser {
 //build special class for parser comments /**/ so you be able to add Razor inside of style ot script tag
 
 interface GlobalReplaceArray {
-    type: 'script' | 'none-track-script',
+    type: 'script' | 'no-track',
     text: StringTracker
 }
 
@@ -245,13 +198,13 @@ export class EnableGlobalReplace {
     }
 
     async load(code: StringTracker, path: string) {
-        this.buildCode = new ReBuildCodeString(await ParseTextStream(this.ExtractAndSaveCode(code)));
+        this.buildCode = new ReBuildCodeString(await ParseTextStream(await this.ExtractAndSaveCode(code)));
         this.path = path;
     }
 
-    private ExtractAndSaveCode(code: StringTracker) {
+    private async ExtractAndSaveCode(code: StringTracker) {
         const extractCode = new JSParser(code, this.path);
-        extractCode.findScripts();
+        await extractCode.findScripts();
 
         let newText = "";
         let counter = 0;
@@ -278,9 +231,9 @@ export class EnableGlobalReplace {
         });
     }
 
-    public StartBuild() {
+    public async StartBuild() {
         const extractComments = new JSParser(new StringTracker(null, this.buildCode.CodeBuildText), this.path, '/*', '*/');
-        extractComments.findScripts();
+        await extractComments.findScripts();
 
         for (const i of extractComments.values) {
             if (i.type == 'text') {
@@ -293,7 +246,7 @@ export class EnableGlobalReplace {
     }
 
     private RestoreAsCode(Data: GlobalReplaceArray) {
-        return new StringTracker(Data.text.StartInfo).Plus$`<%${Data.type == 'none-track-script' ? '!' : ''}${Data.text}%>`;
+        return new StringTracker(Data.text.StartInfo).Plus$`<%${Data.type == 'no-track' ? '!': ''}${Data.text}%>`;
     }
 
     public RestoreCode(code: StringTracker) {

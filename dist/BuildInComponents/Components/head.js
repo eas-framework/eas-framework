@@ -5,7 +5,7 @@ import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem.js'
 import Base64Id from '../../StringMethods/Id.js';
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, buildScript, sessionInfo) {
     return {
-        compiledString: new StringTracker(type.DefaultInfoText).Plus$ `<head${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)}<%!@DefaultInsertBundle%></head>`,
+        compiledString: new StringTracker(type.DefaultInfoText).Plus$ `<head${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)}@DefaultInsertBundle</head>`,
         checkComponents: false
     };
 }
@@ -49,7 +49,7 @@ export async function addFinalizeBuild(pageData, sessionInfo, fullCompilePath) {
     const removeBundle = () => { bundlePlaceholder.forEach(x => pageData = pageData.replace(x, '')); return pageData; };
     if (!buildBundleString) // there isn't anything to bundle
         return removeBundle();
-    const replaceWith = new StringTracker(null, `out_run_script.text+= \`${buildBundleString}\``); // add bundle to page
+    const replaceWith = new StringTracker(null, buildBundleString); // add bundle to page
     let bundleSucceed = false;
     for (let i = 0; i < bundlePlaceholder.length && !bundleSucceed; i++)
         pageData = pageData.replacer(bundlePlaceholder[i], () => (bundleSucceed = true) && replaceWith);

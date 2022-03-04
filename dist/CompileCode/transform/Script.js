@@ -10,7 +10,7 @@ function ErrorTemplate(info) {
     return `module.exports = () => (DataObject) => DataObject.out_run_script.text += '<p style="color:red;text-align:left;font-size:16px;">Syntax Error: ${info.replaceAll('\n', '<br/>')}</p>'`;
 }
 function ReplaceAfter(code) {
-    return code.replace('"use strict";Object.defineProperty(exports, "__esModule", {value: true});', '');
+    return code.replace('"use strict";', '').replace('Object.defineProperty(exports, "__esModule", {value: true});', '');
 }
 /**
  *
@@ -43,7 +43,15 @@ export default async function BuildScript(text, isTypescript, isDebug, removeToM
             Result.code = ErrorTemplate(errorMessage);
     }
     if (!isDebug && !removeToMoudule) {
-        Result.code = (await minify(Result.code, { module: false })).code;
+        try {
+            Result.code = (await minify(Result.code, { module: false })).code;
+        }
+        catch (err) {
+            PrintIfNew({
+                errorName: 'minify',
+                text: text.debugLine(err)
+            });
+        }
     }
     return Result.code;
 }

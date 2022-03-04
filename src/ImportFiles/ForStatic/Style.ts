@@ -3,6 +3,7 @@ import { PrintIfNew } from '../../OutputInput/PrintNew';
 import EasyFs from '../../OutputInput/EasyFs';
 import { SomePlugins } from '../../CompileCode/InsertModels';
 import path from 'path';
+import {pathToFileURL} from "url";
 import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem';
 
 export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | "css", isDebug: boolean): Promise<{ [key: string]: number }> {
@@ -33,7 +34,7 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
         }
         dependenceObject[path.relative(BasicSettings.fullWebSitePath, connectUrl)] = await EasyFs.stat(connectUrl, 'mtimeMs');
 
-        return new URL(connectUrl);
+        return pathToFileURL(connectUrl);
     }
 
     const fileData = await EasyFs.readFile(fullPath);

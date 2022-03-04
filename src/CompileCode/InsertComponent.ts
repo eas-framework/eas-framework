@@ -1,7 +1,7 @@
 import EasyFs from '../OutputInput/EasyFs';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import { NoTrackStringCode, CreateFilePath, PathTypes, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug';
-import { IsInclude, StartCompiling } from '../BuildInComponents/index';
+import { AllBuildIn, IsInclude, StartCompiling } from '../BuildInComponents/index';
 import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/StringTracker';
 import AddPlugin from '../Plugins/Index';
 import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, SessionInfo } from './XMLHelpers/CompileTypes';
@@ -25,10 +25,13 @@ export default class InsertComponent extends InsertComponentBase {
     public SomePlugins: (...names: string[]) => boolean;
     public isTs: () => boolean;
 
+    private regexSearch: RegExp;
+
     constructor(PluginBuild: AddPlugin) {
         super(PrintIfNew);
         this.dirFolder = 'Components/';
         this.PluginBuild = PluginBuild;
+        this.regexSearch =  new RegExp(`<([\\p{Lu}_\\-:0-9]|${AllBuildIn.join('|')})`, 'u')
     }
 
     FindSpecialTagByStart(string: string) {
@@ -356,8 +359,7 @@ export default class InsertComponent extends InsertComponentBase {
 
         const promiseBuild: (StringTracker | Promise<StringTracker>)[] = [];
 
-
-        while ((find = data.search(/<[\p{L}_\-:0-9]/u)) != -1) {
+        while ((find = data.search(this.regexSearch)) != -1) {
 
             //heck if there is special tag - need to skip it
             const locSkip = data.eq;
@@ -377,7 +379,7 @@ export default class InsertComponent extends InsertComponentBase {
             const startFrom = data.substring(find);
 
             //tag type 
-            const tagTypeEnd = startFrom.search("\ |/|\>");
+            const tagTypeEnd = startFrom.search('\ |/|\>|(<%)');
 
             const tagType = startFrom.substring(1, tagTypeEnd);
 

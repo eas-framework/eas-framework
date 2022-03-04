@@ -4,6 +4,8 @@ import { getDirname } from '../../RunTimeBuild/SearchFileSystem.js';
 import workerPool from 'workerpool';
 import { cpus } from 'os';
 const __dirname = getDirname(import.meta.url);
+const cpuLength = Math.max(1, Math.floor(cpus().length / 2));
+const pool = workerPool.pool(__dirname + '/RustBind/workerInsertComponent.js', { maxWorkers: cpuLength });
 export class BaseReader {
     /**
      * Find the end of quotation marks, skipping things like escaping: "\\""
@@ -34,13 +36,11 @@ export class BaseReader {
         return find_end_block(text, open + end);
     }
 }
-const cpuLength = Math.max(1, Math.floor(cpus().length / 2));
 export class InsertComponentBase {
     constructor(printNew) {
         this.printNew = printNew;
         this.SimpleSkip = Settings.SimpleSkip;
         this.SkipSpecialTag = Settings.SkipSpecialTag;
-        this.asyncMethod = workerPool.pool(__dirname + '/RustBind/workerInsertComponent.js', { maxWorkers: cpuLength });
     }
     printErrors(text, errors) {
         if (!this.printNew)
@@ -53,14 +53,20 @@ export class InsertComponentBase {
         }
     }
     async FindCloseChar(text, Search) {
-        const [point, errors] = await this.asyncMethod.exec('FindCloseChar', [text.eq, Search]);
+        const [point, errors] = await pool.exec('FindCloseChar', [text.eq, Search]);
         this.printErrors(text, errors);
         return point;
     }
     async FindCloseCharHTML(text, Search) {
-        const [point, errors] = await this.asyncMethod.exec('FindCloseCharHTML', [text.eq, Search]);
+        const [point, errors] = await pool.exec('FindCloseCharHTML', [text.eq, Search]);
         this.printErrors(text, errors);
         return point;
     }
+}
+export async function RazorToEJS(text) {
+    return JSON.parse(await pool.exec('RazorToEJS', [text]));
+}
+export async function EJSParser(text, start, end) {
+    return JSON.parse(await pool.exec('EJSParser', [text, start, end]));
 }
 //# sourceMappingURL=Reader.js.map

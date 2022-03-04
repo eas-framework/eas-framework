@@ -172,11 +172,13 @@ export default class StringTracker {
     /**
      * Extract error info form error message
      */
-    debugLine({ message, loc }: {
+    debugLine({ message, loc, line, col }: {
         message: string;
         loc?: {
             line: number;
             column: number;
         };
+        line?: number;
+        col?: number;
     }): string;
 }

@@ -41,13 +41,20 @@ export default async function BuildCode(language: string, tagData: tagDataObject
 
         resultCode = transform(BetweenTagData.eq, AddOptions).code;
 
-        if (InsertComponent.SomePlugins("Min" + language.toUpperCase()) || InsertComponent.SomePlugins("MinAll"))
-            resultCode = (await minify(resultCode, { module: false, format: { comments: 'all' } })).code;
-
+        if (InsertComponent.SomePlugins("Min" + language.toUpperCase()) || InsertComponent.SomePlugins("MinAll")){
+            try {
+                resultCode = (await minify(resultCode, { module: false, format: { comments: 'all' } })).code;
+            } catch (err) {
+                PrintIfNew({
+                    errorName: 'minify',
+                    text: BetweenTagData.debugLine(err)
+                });
+            }
+        }
     } catch (err) {
         PrintIfNew({
             errorName: 'compilation-error',
-            text: `${err.message}, on file -> ${pathName}:${BetweenTagData.getLine(err?.loc?.line ?? 0).DefaultInfoText.line}:${err.loc.column}`
+            text: BetweenTagData.debugLine(err)
         });
     }
 

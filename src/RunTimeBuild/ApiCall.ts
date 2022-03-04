@@ -69,7 +69,7 @@ export default async function (Request: any, Response: any, url: string, isDebug
 
     if (dataInfo) {
         return await MakeCall(
-            await RequireFile('/' + staticPath, '', getTypes.Static, dataInfo.depsMap, isDebug),
+            await RequireFile('/' + staticPath, 'api-call', '', getTypes.Static, dataInfo.depsMap, isDebug),
             Request,
             Response,
             url.substring(staticPath.length - 6),

@@ -1,5 +1,6 @@
 import StringTracker from '../../../EasyDebug/StringTracker.js';
 import sass from 'sass';
+import { pathToFileURL } from "url";
 import { PrintIfNew } from '../../../OutputInput/PrintNew.js';
 import EasyFs from '../../../OutputInput/EasyFs.js';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug.js';
@@ -9,7 +10,7 @@ import { getTypes } from '../../../RunTimeBuild/SearchFileSystem.js';
 export default async function BuildCode(language, path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent) {
     const SaveServerCode = new EnableGlobalReplace();
     await SaveServerCode.load(BetweenTagData.trimStart(), pathName);
-    let outStyle = SaveServerCode.StartBuild();
+    let outStyle = await SaveServerCode.StartBuild();
     async function importSass(url) {
         const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, getTypes.Static[2], InsertComponent.GetPlugin("sass")?.default ?? language);
         if (!await EasyFs.existsFile(FullPath)) {
@@ -21,7 +22,7 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
             return;
         }
         dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs');
-        return new URL(FullPath);
+        return pathToFileURL(FullPath);
     }
     let result;
     if (language != 'css') {

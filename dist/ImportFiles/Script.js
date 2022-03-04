@@ -56,7 +56,15 @@ async function BuildScript(filePath, savePath, isTypescript, isDebug) {
             Buffer.from(sourceMap).toString("base64");
     }
     else {
-        Result = (await minify(Result, { module: false })).code;
+        try {
+            Result = (await minify(Result, { module: false })).code;
+        }
+        catch (err) {
+            PrintIfNew({
+                errorName: 'minify',
+                text: `${err.message} on file -> ${filePath}`
+            });
+        }
     }
     if (savePath) {
         await EasyFs.makePathReal(path.dirname(savePath));

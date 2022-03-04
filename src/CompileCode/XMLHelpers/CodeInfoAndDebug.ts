@@ -5,9 +5,9 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { BuildScriptWithoutModule } from './CompileTypes';
 import EasyFs from '../../OutputInput/EasyFs';
 
-function ParseTextCode(code:StringTracker, path:string) {
+async function ParseTextCode(code:StringTracker, path:string) {
     const parser = new JSParser(code, path, '<#{debug}', '{debug}#>', 'debug info');
-    parser.findScripts();
+    await parser.findScripts();
 
     const newCodeString = new StringTracker(code.DefaultInfoText);
     for (const i of parser.values) {
@@ -21,9 +21,9 @@ function ParseTextCode(code:StringTracker, path:string) {
     return newCodeString;
 }
 
-function ParseScriptCode(code:StringTracker, path:string) {
+async function ParseScriptCode(code:StringTracker, path:string) {
     const parser = new JSParser(code, path, '<#{debug}', '{debug}#>', 'debug info');
-    parser.findScripts();
+    await parser.findScripts();
 
 
     const newCodeString = new StringTracker(code.DefaultInfoText);
@@ -37,15 +37,15 @@ function ParseScriptCode(code:StringTracker, path:string) {
     return newCodeString;
 }
 
-function ParseDebugLine(code:StringTracker, path:string) {
+async function ParseDebugLine(code:StringTracker, path:string) {
     const parser = new JSParser(code, path);
-    parser.findScripts();
+    await parser.findScripts();
 
     for (const i of parser.values) {
         if (i.type == 'text') {
-            i.text = ParseTextCode(i.text, path);
+            i.text = await ParseTextCode(i.text, path);
         } else {
-            i.text = ParseScriptCode(i.text, path);
+            i.text = await ParseScriptCode(i.text, path);
         }
     }
 
@@ -55,8 +55,8 @@ function ParseDebugLine(code:StringTracker, path:string) {
 }
 
 async function NoTrackStringCode(code:StringTracker, path: string, isDebug: boolean, buildScript: BuildScriptWithoutModule) {
-    code = ParseScriptCode(code, path);
-    code = JSParser.RunAndExport(code, path, isDebug);
+    code = await ParseScriptCode(code, path);
+    code = await JSParser.RunAndExport(code, path, isDebug);
 
     const NewCode = await buildScript(code);
    

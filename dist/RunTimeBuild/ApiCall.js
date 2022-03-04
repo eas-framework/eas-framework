@@ -47,7 +47,7 @@ export default async function (Request, Response, url, isDebug, nextPrase) {
         }
     }
     if (dataInfo) {
-        return await MakeCall(await RequireFile('/' + staticPath, '', getTypes.Static, dataInfo.depsMap, isDebug), Request, Response, url.substring(staticPath.length - 6), isDebug, nextPrase);
+        return await MakeCall(await RequireFile('/' + staticPath, 'api-call', '', getTypes.Static, dataInfo.depsMap, isDebug), Request, Response, url.substring(staticPath.length - 6), isDebug, nextPrase);
     }
 }
 // -- end of fetch file --

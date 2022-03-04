@@ -6,7 +6,7 @@ export function SetDevMode(d: boolean) {
 
 export const print = new Proxy(console,{
     get(target, prop, receiver) {
-        if(DevMode_)
+        if(true)
             return target[prop];
         return () => {}
     }

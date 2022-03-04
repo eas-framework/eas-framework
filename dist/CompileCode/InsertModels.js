@@ -101,8 +101,8 @@ export async function Insert(data, fullPathCompile, pagePath, typeName, smallPat
     DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), pagePath, smallPath, smallPath, isDebug, dependenceObject);
     DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);
     DebugString = await Components.Insert(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, BuildScriptWithPrams, sessionInfo); // add components
-    DebugString = ParseDebugLine(DebugString, smallPath);
-    DebugString = debugFromPage ? PageTemplate.RunAndExport(DebugString, pagePath, isDebug) :
+    DebugString = await ParseDebugLine(DebugString, smallPath);
+    DebugString = debugFromPage ? await PageTemplate.RunAndExport(DebugString, pagePath, isDebug) :
         await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
     let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, debugFromPage);
     if (!debugFromPage) {

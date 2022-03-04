@@ -1,5 +1,6 @@
 import StringTracker from '../../../EasyDebug/StringTracker.js';
 import sass from 'sass';
+import { pathToFileURL } from "url";
 import { PrintIfNew } from '../../../OutputInput/PrintNew.js';
 import EasyFs from '../../../OutputInput/EasyFs.js';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug.js';
@@ -24,7 +25,7 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
             return;
         }
         dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs');
-        return new URL(FullPath);
+        return pathToFileURL(FullPath);
     }
     let result;
     if (language != 'css') {

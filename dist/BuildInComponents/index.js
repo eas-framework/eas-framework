@@ -8,7 +8,7 @@ import markdown from './Components/markdown.js';
 import head, { addFinalizeBuild as addFinalizeBuildHead } from './Components/head.js';
 import connect, { addFinalizeBuild as addFinalizeBuildConnect, handelConnector as handelConnectorConnect } from './Components/connect.js';
 import form, { addFinalizeBuild as addFinalizeBuildForm, handelConnector as handelConnectorForm } from './Components/form.js';
-const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown"];
+export const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown"];
 export function StartCompiling(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo) {
     let reData;
     switch (type.eq.toLowerCase()) {

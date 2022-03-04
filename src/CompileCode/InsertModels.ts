@@ -135,9 +135,9 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
 
     DebugString = await Components.Insert(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, BuildScriptWithPrams, sessionInfo); // add components
 
-    DebugString = ParseDebugLine(DebugString, smallPath);
+    DebugString = await ParseDebugLine(DebugString, smallPath);
 
-    DebugString = debugFromPage ? PageTemplate.RunAndExport(DebugString, pagePath, isDebug) :
+    DebugString = debugFromPage ? await PageTemplate.RunAndExport(DebugString, pagePath, isDebug) :
         await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
 
     let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, debugFromPage);

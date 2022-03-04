@@ -1,6 +1,7 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { tagDataObjectArray, StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import sass from 'sass';
+import {pathToFileURL} from "url";
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import EasyFs from '../../../OutputInput/EasyFs';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug';
@@ -13,7 +14,7 @@ export default async function BuildCode(language: string, path: string, pathName
     const SaveServerCode = new EnableGlobalReplace();
     await SaveServerCode.load(BetweenTagData.trimStart(), pathName);
 
-    let outStyle = SaveServerCode.StartBuild();
+    let outStyle = await SaveServerCode.StartBuild();
 
     async function importSass(url: string) {
         const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, getTypes.Static[2], InsertComponent.GetPlugin("sass")?.default ?? language);
@@ -27,7 +28,7 @@ export default async function BuildCode(language: string, path: string, pathName
         }
         dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs');
 
-        return new URL(FullPath)
+        return pathToFileURL(FullPath)
     }
 
     let result: sass.CompileResult;

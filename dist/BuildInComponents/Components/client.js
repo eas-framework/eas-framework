@@ -1,13 +1,14 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
 import JSParser from '../../CompileCode/JSParser.js';
 import { minify } from "terser";
+import { PrintIfNew } from '../../OutputInput/PrintNew.js';
 function replaceForClient(BetweenTagData, exportInfo) {
     BetweenTagData = BetweenTagData.replace(`"use strict";Object.defineProperty(exports, "__esModule", {value: true});`, exportInfo);
     return BetweenTagData;
 }
 const serveScript = '/serv/temp.js';
 async function template(BuildScriptWithoutModule, name, params, selector, mainCode, path, isDebug) {
-    const parse = JSParser.RunAndExport(mainCode, path, isDebug);
+    const parse = await JSParser.RunAndExport(mainCode, path, isDebug);
     return `function ${name}({${params}}, selector = "${selector}", out_run_script = {text: ''}){
         const {write, writeSafe, setResponse, sendToSelector} = new buildTemplate(out_run_script);
         ${replaceForClient(await BuildScriptWithoutModule(parse), `var exports = ${name}.exports;`)}
@@ -23,7 +24,15 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
     let scriptInfo = await template(BuildScriptWithoutModule, dataTag.getValue('name'), dataTag.getValue('params'), dataTag.getValue('selector'), BetweenTagData, pathName, isDebug && !InsertComponent.SomePlugins("SafeDebug"));
     const minScript = InsertComponent.SomePlugins("MinJS") || InsertComponent.SomePlugins("MinAll");
     if (minScript) {
-        scriptInfo = (await minify(scriptInfo, { module: false, format: { comments: 'all' } })).code;
+        try {
+            scriptInfo = (await minify(scriptInfo, { module: false, format: { comments: 'all' } })).code;
+        }
+        catch (err) {
+            PrintIfNew({
+                errorName: 'minify',
+                text: err + '\nonfile: ' + pathName
+            });
+        }
     }
     sessionInfo.script.addText(scriptInfo);
     return {

@@ -7,7 +7,7 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
     let result = '', ResCode = BetweenTagData;
     const SaveServerCode = new EnableGlobalReplace("serv");
     await SaveServerCode.load(BetweenTagData, pathName);
-    const BetweenTagDataExtracted = SaveServerCode.StartBuild();
+    const BetweenTagDataExtracted = await SaveServerCode.StartBuild();
     const AddOptions = {
         transforms: [],
         ...InsertComponent.GetPlugin("transformOptions")
@@ -28,14 +28,23 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
                 break;
         }
         result = transform(BetweenTagDataExtracted, AddOptions).code;
-        if (InsertComponent.SomePlugins("Min" + language.toUpperCase()) || InsertComponent.SomePlugins("MinAll"))
-            result = (await minify(result, { module: false, format: { comments: 'all' } })).code;
+        if (InsertComponent.SomePlugins("Min" + language.toUpperCase()) || InsertComponent.SomePlugins("MinAll")) {
+            try {
+                result = (await minify(result, { module: false, format: { comments: 'all' } })).code;
+            }
+            catch (err) {
+                PrintIfNew({
+                    errorName: 'minify',
+                    text: BetweenTagData.debugLine(err)
+                });
+            }
+        }
         ResCode = SaveServerCode.RestoreCode(new StringTracker(BetweenTagData.StartInfo, result));
     }
     catch (err) {
         PrintIfNew({
             errorName: 'compilation-error',
-            text: `${err.message}, on file -> ${pathName}:${BetweenTagData.getLine(err?.loc?.line ?? 0).DefaultInfoText.line}:${err.loc.column}`
+            text: BetweenTagData.debugLine(err)
         });
     }
     return {

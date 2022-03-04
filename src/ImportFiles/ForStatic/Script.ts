@@ -23,7 +23,7 @@ async function BuildScript(inputPath: string, type: string, isDebug: boolean, mo
         result = code;
 
         if (isDebug && haveDifferentSource) {
-            sourceMap.sources = sourceMap.sources.map(x => x.split(/\/|\\/).pop() +  '?source=true');
+            sourceMap.sources = sourceMap.sources.map(x => x.split(/\/|\\/).pop() + '?source=true');
 
             result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," +
                 Buffer.from(JSON.stringify(sourceMap)).toString("base64");
@@ -35,16 +35,21 @@ async function BuildScript(inputPath: string, type: string, isDebug: boolean, mo
         });
     }
 
-    const minit = SomePlugins("Min" + type.toUpperCase()) || SomePlugins("MinAll");
-
-    if (minit) {
-        result = (await minify(result, { module: false })).code;
+    if (SomePlugins("Min" + type.toUpperCase()) || SomePlugins("MinAll")) {
+        try {
+            result = (await minify(result, { module: false })).code;
+        } catch (err) {
+            PrintIfNew({
+                errorName: 'minify',
+                text: `${err.message} on file -> ${fullPath}`
+            })
+        }
     }
 
     await EasyFs.makePathReal(inputPath, getTypes.Static[1]);
     await EasyFs.writeFile(fullCompilePath, result);
 
-    return { 
+    return {
         thisFile: await EasyFs.stat(fullPath, 'mtimeMs')
     };
 }

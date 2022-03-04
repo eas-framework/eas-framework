@@ -1,1 +1,1 @@
-export default function GetSyntax(CompileType: any): Promise<any>;
+export default function GetSyntax(CompileType: any): any;

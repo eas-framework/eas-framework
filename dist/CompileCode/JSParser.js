@@ -1,5 +1,5 @@
 import StringTracker from '../EasyDebug/StringTracker.js';
-import { BaseReader } from './BaseReader/Reader.js';
+import { BaseReader, EJSParser } from './BaseReader/Reader.js';
 import { ParseTextStream, ReBuildCodeString } from './ScriptReader/EasyScript.js';
 export default class JSParser {
     constructor(text, path, start = "<%", end = "%>", type = 'script') {
@@ -33,62 +33,31 @@ export default class JSParser {
         }
         return WithInfo;
     }
-    findScripts() {
+    async findScripts() {
+        const values = await EJSParser(this.text.eq, this.start, this.end);
         this.values = [];
-        let text = this.text;
-        for (let i = 0; i < this.text.length; i++) {
-            const StartIndex = text.indexOf(this.start);
-            if (StartIndex == -1)
-                break;
-            const TextBefore = text.substring(0, StartIndex);
+        for (const i of values) {
+            let substring = this.text.substring(i.start, i.end);
+            let type = i.name;
+            switch (i.name) {
+                case "print":
+                    substring = new StringTracker().Plus$ `write(${substring});`;
+                    type = 'script';
+                    break;
+                case "escape":
+                    substring = new StringTracker().Plus$ `writeSafe(${substring});`;
+                    type = 'script';
+                    break;
+                case "debug":
+                    substring = new StringTracker().Plus$ `\nrun_script_name = \`${JSParser.fixText(substring)}\`;`;
+                    type = 'no-track';
+                    break;
+            }
             this.values.push({
-                type: 'text',
-                text: TextBefore
+                text: substring,
+                type: type
             });
-            text = text.substring(StartIndex + this.start.length);
-            const EndIndex = text.indexOf(this.end);
-            if (EndIndex == -1) {
-                throw new Error(`JSParser, can't find close tag for ${this.type}, at: ${this.path}`);
-            }
-            let script = text.substring(0, EndIndex).trimEnd();
-            const t = script.at(0).eq;
-            if (t == '=' || t == ':') {
-                const index = this.findEndOfDefGlobal(script);
-                const stringCopy = new StringTracker(script.StartInfo);
-                const writeScript = script.substring(1, index);
-                if (t == ':')
-                    stringCopy.Plus$ `writeSafe(${writeScript});`;
-                else
-                    stringCopy.Plus$ `write(${writeScript});`;
-                script = new StringTracker(script.StartInfo).Plus$ `${stringCopy};${script.substring(index + 1)}`;
-            }
-            if (t != '#') {
-                if (script.startsWith('{?debug_file?}')) {
-                    const info = script.substring(14);
-                    this.values.push({
-                        type: 'script',
-                        text: new StringTracker(null).Plus$ `\nrun_script_name = \`${JSParser.fixText(info)}\`;`
-                    });
-                }
-                else if (t == '!') {
-                    this.values.push({
-                        type: 'none-track-script',
-                        text: script.substring(1)
-                    });
-                }
-                else {
-                    this.values.push({
-                        type: 'script',
-                        text: script
-                    });
-                }
-            }
-            text = text.substring(EndIndex + this.end.length);
         }
-        this.values.push({
-            type: 'text',
-            text
-        });
     }
     static fixText(text) {
         return text.replace(/\\/gi, '\\\\').replace(/`/gi, '\\`').replace(/\$/gi, '\\u0024');
@@ -101,7 +70,7 @@ export default class JSParser {
                     allcode.Plus(i.text);
                 }
             }
-            else if (i.type == 'none-track-script') {
+            else if (i.type == 'no-track') {
                 allcode.Plus(this.start, '!', i.text, this.end);
             }
             else {
@@ -135,9 +104,9 @@ export default class JSParser {
     static printError(message) {
         return `<p style="color:red;text-align:left;font-size:16px;">${message}</p>`;
     }
-    static RunAndExport(text, path, isDebug) {
+    static async RunAndExport(text, path, isDebug) {
         const parser = new JSParser(text, path);
-        parser.findScripts();
+        await parser.findScripts();
         return parser.BuildAll(isDebug);
     }
     static split2FromEnd(text, splitChar, numToSplitFromEnd = 1) {
@@ -171,12 +140,12 @@ export class EnableGlobalReplace {
         this.replacer = RegExp(`${addText}\\/\\*!system--<\\|ejs\\|([0-9])\\|>\\*\\/|system--<\\|ejs\\|([0-9])\\|>`);
     }
     async load(code, path) {
-        this.buildCode = new ReBuildCodeString(await ParseTextStream(this.ExtractAndSaveCode(code)));
+        this.buildCode = new ReBuildCodeString(await ParseTextStream(await this.ExtractAndSaveCode(code)));
         this.path = path;
     }
-    ExtractAndSaveCode(code) {
+    async ExtractAndSaveCode(code) {
         const extractCode = new JSParser(code, this.path);
-        extractCode.findScripts();
+        await extractCode.findScripts();
         let newText = "";
         let counter = 0;
         for (const i of extractCode.values) {
@@ -199,9 +168,9 @@ export class EnableGlobalReplace {
             return new StringTracker(index.StartInfo).Plus$ `${this.addText}/*!system--<|ejs|${index}|>*/`;
         });
     }
-    StartBuild() {
+    async StartBuild() {
         const extractComments = new JSParser(new StringTracker(null, this.buildCode.CodeBuildText), this.path, '/*', '*/');
-        extractComments.findScripts();
+        await extractComments.findScripts();
         for (const i of extractComments.values) {
             if (i.type == 'text') {
                 i.text = this.ParseOutsideOfComment(i.text);
@@ -211,7 +180,7 @@ export class EnableGlobalReplace {
         return this.buildCode.BuildCode();
     }
     RestoreAsCode(Data) {
-        return new StringTracker(Data.text.StartInfo).Plus$ `<%${Data.type == 'none-track-script' ? '!' : ''}${Data.text}%>`;
+        return new StringTracker(Data.text.StartInfo).Plus$ `<%${Data.type == 'no-track' ? '!' : ''}${Data.text}%>`;
     }
     RestoreCode(code) {
         return code.replacer(this.replacer, (SplitToReplace) => {

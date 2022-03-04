@@ -15,6 +15,7 @@ export default class InsertComponent extends InsertComponentBase {
     GetPlugin: (name: string) => any;
     SomePlugins: (...names: string[]) => boolean;
     isTs: () => boolean;
+    private regexSearch;
     constructor(PluginBuild: AddPlugin);
     FindSpecialTagByStart(string: string): string[];
     tagData(text: StringTracker, a?: tagDataObjectArray): tagDataObjectArray;

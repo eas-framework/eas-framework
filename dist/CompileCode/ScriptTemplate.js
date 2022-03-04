@@ -63,8 +63,8 @@ export class PageTemplate extends JSParser {
         }
         return text;
     }
-    static BuildPage(text, path, isDebug, fullPathCompile, sessionInfo) {
-        const builtCode = PageTemplate.RunAndExport(text, path, isDebug);
+    static async BuildPage(text, path, isDebug, fullPathCompile, sessionInfo) {
+        const builtCode = await PageTemplate.RunAndExport(text, path, isDebug);
         return PageTemplate.AddPageTemplate(builtCode, isDebug, fullPathCompile, sessionInfo);
     }
     static AddAfterBuild(text, isDebug) {

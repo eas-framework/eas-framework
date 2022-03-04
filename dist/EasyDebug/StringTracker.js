@@ -543,10 +543,10 @@ export default class StringTracker {
     /**
      * Extract error info form error message
      */
-    debugLine({ message, loc }) {
-        let searchLine = this.getLine(loc?.line ?? 1), column = loc?.column ?? 0;
+    debugLine({ message, loc, line, col }) {
+        let searchLine = this.getLine(line ?? loc?.line ?? 1), column = col ?? loc?.column ?? 0;
         if (searchLine.startsWith('//')) {
-            searchLine = this.getLine(loc?.line - 1);
+            searchLine = this.getLine((line ?? loc?.line) - 1);
             column = 0;
         }
         const data = searchLine.DefaultInfoText;

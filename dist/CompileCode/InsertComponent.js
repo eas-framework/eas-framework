@@ -1,7 +1,7 @@
 import EasyFs from '../OutputInput/EasyFs.js';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem.js';
 import { NoTrackStringCode, CreateFilePath, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug.js';
-import { IsInclude, StartCompiling } from '../BuildInComponents/index.js';
+import { AllBuildIn, IsInclude, StartCompiling } from '../BuildInComponents/index.js';
 import StringTracker from '../EasyDebug/StringTracker.js';
 import { PrintIfNew } from '../OutputInput/PrintNew.js';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader.js';
@@ -13,6 +13,7 @@ export default class InsertComponent extends InsertComponentBase {
         this.RemoveEndType = (text) => text;
         this.dirFolder = 'Components/';
         this.PluginBuild = PluginBuild;
+        this.regexSearch = new RegExp(`<([\\p{Lu}_\\-:0-9]|${AllBuildIn.join('|')})`, 'u');
     }
     FindSpecialTagByStart(string) {
         for (const i of this.SkipSpecialTag) {
@@ -265,7 +266,7 @@ export default class InsertComponent extends InsertComponentBase {
     async StartReplace(data, pathName, path, smallPath, isDebug, dependenceObject, buildScript, sessionInfo) {
         let find;
         const promiseBuild = [];
-        while ((find = data.search(/<[\p{L}_\-:0-9]/u)) != -1) {
+        while ((find = data.search(this.regexSearch)) != -1) {
             //heck if there is special tag - need to skip it
             const locSkip = data.eq;
             const specialSkip = this.FindSpecialTagByStart(locSkip.trim());
@@ -280,7 +281,7 @@ export default class InsertComponent extends InsertComponentBase {
             const cutStartData = data.substring(0, find); //<
             const startFrom = data.substring(find);
             //tag type 
-            const tagTypeEnd = startFrom.search("\ |/|\>");
+            const tagTypeEnd = startFrom.search('\ |/|\>|(<%)');
             const tagType = startFrom.substring(1, tagTypeEnd);
             const findEndOfSmallTag = await this.FindCloseChar(startFrom.substring(1), '>') + 1;
             let inTag = startFrom.substring(tagTypeEnd + 1, findEndOfSmallTag);

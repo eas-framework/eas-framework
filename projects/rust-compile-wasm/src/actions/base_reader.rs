@@ -1,7 +1,5 @@
 use crate::better_string::b_string::BetterString;
 
-use super::base_actions::*;
-
 pub static TEXT_BLOCK: [&'static char; 3] = [&'"', &'\'', &'`'];
 
 pub fn find_end_of_q(text: &BetterString, q_type: char) -> usize {
@@ -39,7 +37,29 @@ pub fn find_end_of_def(text: &BetterString, end_type: Vec<&BetterString>) -> i32
     -1
 }
 
-pub fn find_end_of_def_char(text: &BetterString, end_type: char) -> i32 {
+pub fn find_end_of_def_word(text: &BetterString, end_type: &BetterString) -> i32 {
+    let length = text.len();
+
+    let mut i = 0;
+    while i < length {
+
+        let char = text.at(i);
+        if TEXT_BLOCK.iter().any(|&x| x==&char) && text.at_minus( i,1) != '\\' {
+            i += find_end_of_q(&text.substring_start( i+1), char) + 1;
+            continue;
+        } 
+
+        if !text.at_minus(i,1).is_alphabetic() && !text.at(i+end_type.len()).is_alphabetic() && text.substring_start(i).starts_with(end_type) {
+            return i as i32;
+        }
+
+        i+=1;
+    }
+
+    -1
+}
+
+pub fn find_end_of_def_char(text: &BetterString, end_type: &char) -> i32 {
     let length = text.len();
 
     let mut i = 0;
@@ -48,7 +68,7 @@ pub fn find_end_of_def_char(text: &BetterString, end_type: char) -> i32 {
         let char = text.at(i);
         if TEXT_BLOCK.iter().any(|&x| x==&char) && text.at_minus( i,1) != '\\' {
             i += find_end_of_q(&text.substring_start(i+1), char);
-        } else if char == end_type {
+        } else if &char == end_type {
             return i as i32;
         }
 
