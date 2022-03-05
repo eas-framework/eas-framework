@@ -4,7 +4,7 @@ import { BasicSettings, workingDirectory, SystemData } from '../RunTimeBuild/Sea
 import * as BuildServer from '../RunTimeBuild/SearchPages.js';
 import { cookieParser } from '@tinyhttp/cookie-parser';
 import cookieEncrypter from 'cookie-encrypter';
-import { SetDevMode } from '../OutputInput/Console.js';
+import { allowPrint } from '../OutputInput/Console.js';
 import session from 'express-session';
 import { Settings as InsertModelsSettings } from '../CompileCode/InsertModels.js';
 import bodyParser from 'body-parser';
@@ -43,7 +43,7 @@ export const Export = {
             process.env.NODE_ENV = "production";
         }
         fileByUrl.Settings.DevMode = value;
-        SetDevMode(value);
+        allowPrint(value);
     },
     get development() {
         return DevMode_;

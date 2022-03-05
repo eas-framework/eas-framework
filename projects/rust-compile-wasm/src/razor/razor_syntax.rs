@@ -18,7 +18,7 @@ lazy_static! {
     static ref RAZOR_CHAR: char = '@';
     static ref COMMENT_CHAR: char = '*';
     static ref COMMENT_END: BetterString =
-        BetterString::new(&(RAZOR_CHAR.to_string() + &COMMENT_CHAR.to_string()));
+        BetterString::new(&(COMMENT_CHAR.to_string() + &RAZOR_CHAR.to_string()));
     static ref CASE: BetterString = BetterString::new("case");
     static ref BREAK: BetterString = BetterString::new("break");
     static ref NOT_RAZOR_WORDS: Vec<String> = vec![String::from("default")];
@@ -236,9 +236,9 @@ impl Razor {
 
         if name == "auto" {
             name = if escape_script {
-                "print"
-            } else {
                 "escape"
+            } else {
+                "print"
             }
         }
 
@@ -288,15 +288,11 @@ impl Razor {
         self.values.push(RazorBlock {
             start: escape_script_usize + add_index,
             end: i - 1 + add_index,
-            name: if escape_script {
-                "escape".to_owned()
-            } else {
-                "print".to_owned()
-            }
+            name: name.to_owned(),
         });
     }
 
-    pub fn builder(&mut self, text: &BetterString, add_index: usize) {
+    pub fn builder(&mut self, text: &BetterString, mut add_index: usize) {
         let index = text.index_of_char(&RAZOR_CHAR);
 
         if index == None {
@@ -325,8 +321,8 @@ impl Razor {
                 end: index + add_index
             });
 
-            let add_index = add_index + index;
-            let text = text.substring_start(index);
+            add_index += index+2;
+            let text = text.substring_start(index+2);
             let index = text.index_of_better(&COMMENT_END);
             let num_index;
 
@@ -351,7 +347,7 @@ impl Razor {
             end: index + add_index
         });
 
-        let add_index = add_index + index + 1;
+        add_index +=  index + 1;
         let next_text = text.substring_start(index + 1);
         let first_word_index = Razor::find_first_word(&next_text);
 

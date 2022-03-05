@@ -12,6 +12,7 @@
         Session.count++;
     }
     var en = debug
+
 }
 
 <client name="more" params="name,cool">
@@ -19,7 +20,8 @@
         <ButtonLink>@i+Cool</ButtonLink>
     }
 </client>
-<meta name="viewport" content="width=device-width, initial-"></meta>
+<meta name="viewport" 🥰 content="width=device-width, initial-"></meta>
+<h1 @(true ? ' checked': '')></h1>
 <p>Today date: @(DateString())</p>
 <p>Debug Mode? @en</p>
 <p>Session count: @(Session?.count)</p>
@@ -30,8 +32,8 @@
 <p>Session count: @(Session?.count)</p>
 <ButtonLink link="#" &onclick="window.location.reload()">Reload page</ButtonLink> 
 <p>If you change/remove the key ‘ignore-start-paths’ at the settings file, you will be able to see the private page.</p>
-<input type="checkbox" id="checkbox" @(debug ? 'checked': '')/><label for="checkbox">checkbox</label><p>Today date: @(DateString())</p>
-<p>Debug Mode? @en</p>
+<input type="checkbox" id="checkb🥰ox" @(debug ? 'checked🥰': '')/><label for="checkbox">checkbox</label><p>Today date: @(DateString())</p>
+<p>Debug Mode? 🥰 🥰 @en</p>
 <p>Session count: @(Session?.count)</p>
 <ButtonLink link="#" &onclick="window.location.reload()">Reload page</ButtonLink> 
 <p>If you change/remove the key ‘ignore-start-paths’ at the settings file, you will be able to see the private page.</p>
@@ -144,8 +146,8 @@
 <p>Debug Mode? @en</p>
 <p>Session count: @(Session?.count)</p>
 <ButtonLink link="#" &onclick="window.location.reload()">Reload page</ButtonLink> 
-<p>If you change/remove the key ‘ignore-start-paths’ at the settings file, you will be able to see the private page.</p>
-<input type="checkbox" id="checkbox" @(debug ? 'checked': '')/><label for="checkbox">checkbox</label><p>Today date: @(DateString())</p>
+<p>If you change/remove the key 🥰 ‘ignore-start-paths’ at the settings file, you will be able to see the private page.</p>
+<input type="checkbox" id="checkbox" @(debug ? 'checked': '🥰')/><label for="checkbox">checkbox</label><p>Today date: @(DateString())</p>
 <p>Debug Mode? @en</p>
 <p>Session count: @(Session?.count)</p>
 <ButtonLink link="#" &onclick="window.location.reload()">Reload page</ButtonLink> 

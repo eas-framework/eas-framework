@@ -21,11 +21,6 @@ export default class StringTracker {
     setDefault(Info?: StringTrackerDataInfo): void;
     getDataArray(): StringTrackerDataInfo[];
     /**
-     * allow indexing like string does: myString[0] -> StringTracker
-     * @returns proxy that allow Proxy
-     */
-    private Indexing;
-    /**
      * get the InfoText that are setted on the last InfoText
      */
     get DefaultInfoText(): StringTrackerDataInfo;
@@ -101,6 +96,12 @@ export default class StringTracker {
      */
     AddTextBefore(text: string, info?: string, line?: number, char?: number): void;
     /**
+     * Add Text File Tracking
+     * @param text
+     * @param info
+     */
+    private AddFileText;
+    /**
      * simple methof to cut string
      * @param start
      * @param end
@@ -131,6 +132,12 @@ export default class StringTracker {
     codePointAt(pos: number): number;
     [Symbol.iterator](): Generator<StringTracker, void, unknown>;
     getLine(line: number, startFromOne?: boolean): StringTracker;
+    /**
+     * convert uft-16 length to count of chars
+     * @param index
+     * @returns
+     */
+    private charLength;
     indexOf(text: string): number;
     lastIndexOf(text: string): number;
     /**

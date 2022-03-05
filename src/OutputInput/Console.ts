@@ -1,12 +1,12 @@
-let DevMode_ = true;
+let printMode = true;
 
-export function SetDevMode(d: boolean) {
-    DevMode_ = d;
+export function allowPrint(d: boolean) {
+    printMode = d;
 }
 
 export const print = new Proxy(console,{
     get(target, prop, receiver) {
-        if(true)
+        if(printMode)
             return target[prop];
         return () => {}
     }

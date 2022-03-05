@@ -5,7 +5,7 @@
         out_run_script.text+=`
     `;
 run_script_code=`for(var i = 0; i < 20; i++){`;
-//!WWW/index.page:18:33
+//!WWW/index.page:19:33
 for(var i = 0; i < 20; i++){
 out_run_script.text+=`
         `;
@@ -16,14 +16,14 @@ run_script_code=`run_script_name=\`WWW/index.page -> Components/ButtonLink.inte\
 //!WWW/index.page -> Components/ButtonLink.inte<line>Components/ButtonLink.inte.js:0:65
 run_script_name=`WWW/index.page -> Components/ButtonLink.inte`;
 out_run_script.text+=`<a>`;
-run_script_code=`writeSafe(i);`;
-//!WWW/index.page:19:23
-writeSafe(i);
+run_script_code=`write(i);`;
+//!WWW/index.page:20:23
+write(i);
 out_run_script.text+=`+Cool</a>`;}
 out_run_script.text+=`
     `;
 run_script_code=`}`;
-//!WWW/index.page:20:5
+//!WWW/index.page:21:5
 }
 out_run_script.text+=`
 `;

@@ -14,9 +14,8 @@ export default class StringTracker {
             this.setDefault(Info);
         }
         if (text) {
-            this.AddTextAfter(text, this.DefaultInfoText.info, 1);
+            this.AddFileText(text, this.DefaultInfoText.info);
         }
-        return this.Indexing();
     }
     static get emptyInfo() {
         return {
@@ -32,23 +31,6 @@ export default class StringTracker {
     }
     getDataArray() {
         return this.DataArray;
-    }
-    /**
-     * allow indexing like string does: myString[0] -> StringTracker
-     * @returns proxy that allow Proxy
-     */
-    Indexing() {
-        return new Proxy(this, {
-            get(target, prop) {
-                if (typeof prop == 'string') {
-                    const index = Number(prop);
-                    if (!isNaN(index) && !(prop in target)) {
-                        return target.charAt(index);
-                    }
-                }
-                return target[prop];
-            },
-        });
     }
     /**
      * get the InfoText that are setted on the last InfoText
@@ -192,27 +174,20 @@ export default class StringTracker {
      */
     AddTextAction(text, action, info = this.DefaultInfoText.info, LineCount = 0, CharCount = 1) {
         const dataStore = [];
-        for (const i of text) {
-            if (i) {
-                dataStore.push({
-                    text: i,
-                    info,
-                    line: LineCount,
-                    char: CharCount
-                });
-                CharCount++;
-            }
-            if (i == '\n') {
+        for (const char of [...text]) {
+            dataStore.push({
+                text: char,
+                info,
+                line: LineCount,
+                char: CharCount
+            });
+            CharCount++;
+            if (char == '\n') {
                 LineCount++;
                 CharCount = 1;
             }
         }
-        if (action == 'push') {
-            this.DataArray.push(...dataStore);
-        }
-        else {
-            this.DataArray = dataStore.concat(this.DataArray);
-        }
+        this.DataArray[action](...dataStore);
     }
     /**
      * add text at the *end* of the string
@@ -229,6 +204,27 @@ export default class StringTracker {
      */
     AddTextBefore(text, info, line, char) {
         this.AddTextAction(text, "unshift", info, line, char);
+    }
+    /**
+     * Add Text File Tracking
+     * @param text
+     * @param info
+     */
+    AddFileText(text, info = this.DefaultInfoText.info) {
+        let LineCount = 1, CharCount = 1;
+        for (const char of [...text]) {
+            this.DataArray.push({
+                text: char,
+                info,
+                line: LineCount,
+                char: CharCount
+            });
+            CharCount++;
+            if (char == '\n') {
+                LineCount++;
+                CharCount = 1;
+            }
+        }
     }
     /**
      * simple methof to cut string
@@ -311,11 +307,28 @@ export default class StringTracker {
     getLine(line, startFromOne = true) {
         return this.split('\n')[line - +startFromOne];
     }
+    /**
+     * convert uft-16 length to count of chars
+     * @param index
+     * @returns
+     */
+    charLength(index) {
+        if (index <= 0) {
+            return index;
+        }
+        let count = 0;
+        for (const char of this.DataArray) {
+            count++;
+            index -= char.text.length;
+            if (index <= 0)
+                return count;
+        }
+    }
     indexOf(text) {
-        return this.OneString.indexOf(text);
+        return this.charLength(this.OneString.indexOf(text));
     }
     lastIndexOf(text) {
-        return this.OneString.lastIndexOf(text);
+        return this.charLength(this.OneString.lastIndexOf(text));
     }
     /**
      * return string as unicode
@@ -323,7 +336,7 @@ export default class StringTracker {
     unicodeMe(value) {
         let a = "";
         for (const v of value) {
-            a += "\\u" + ("000" + v.charCodeAt(0).toString(16)).substr(-4);
+            a += "\\u" + ("000" + v.charCodeAt(0).toString(16)).slice(-4);
         }
         return a;
     }
@@ -338,7 +351,7 @@ export default class StringTracker {
         return newString;
     }
     search(regex) {
-        return this.OneString.search(regex);
+        return this.charLength(this.OneString.search(regex));
     }
     startsWith(search, position) {
         return this.OneString.startsWith(search, position);
@@ -430,13 +443,13 @@ export default class StringTracker {
         const allSplit = [];
         let mainText = this.OneString, hasMath = mainText.match(regex), addNext = 0, counter = 0;
         while ((limit == null || counter < limit) && hasMath?.[0]?.length) {
+            const length = [...hasMath[0]].length, index = this.charLength(hasMath.index);
             allSplit.push({
-                index: hasMath.index + addNext,
-                length: hasMath[0].length
+                index: index + addNext,
+                length
             });
-            const addLength = hasMath.index + hasMath[0].length;
-            mainText = mainText.slice(addLength);
-            addNext += addLength;
+            mainText = mainText.slice(hasMath.index + hasMath[0].length);
+            addNext += index + length;
             hasMath = mainText.match(regex);
             counter++;
         }
