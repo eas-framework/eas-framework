@@ -12,6 +12,7 @@ import { StringNumberMap, SessionInfo } from './XMLHelpers/CompileTypes';
 import BuildScript from './transform/Script';
 import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings';
 import ParseBasePage from './XMLHelpers/PageBase';
+import { newSession } from './Session';
 
 export const Settings = { AddCompileSyntax: ['Razor'], plugins: [] };
 const PluginBuild = new AddPlugin(Settings);
@@ -36,7 +37,7 @@ Components.isTs = isTs;
 
 BuildScriptSettings.plugins = Settings.plugins;
 
-async function outPage(data: StringTracker,scriptFile:StringTracker, pagePath: string, pageName: string, LastSmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap): Promise<StringTracker> {
+async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath: string, pageName: string, LastSmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap): Promise<StringTracker> {
 
     const baseData = new ParseBasePage(data);
     await baseData.loadSettings(pagePath, LastSmallPath, isTs(), dependenceObject, pageName);
@@ -59,8 +60,8 @@ async function outPage(data: StringTracker,scriptFile:StringTracker, pagePath: s
     dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs'); // check page changed date, for dependenceObject
 
     const baseModelData = await AddDebugInfo(pageName, FullPath, SmallPath); // read model
-    let modelData = ParseBasePage.rebuildBaseInheritance( baseModelData.allData);
-    
+    let modelData = ParseBasePage.rebuildBaseInheritance(baseModelData.allData);
+
     modelData.AddTextBefore(baseModelData.stringInfo);
 
     pageName += " -> " + SmallPath;
@@ -107,25 +108,8 @@ async function outPage(data: StringTracker,scriptFile:StringTracker, pagePath: s
     return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
 
-export async function Insert(data: string, fullPathCompile: string, pagePath: string, typeName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, hasSessionInfo?: SessionInfo) {
+export async function Insert(data: string, fullPathCompile: string, pagePath: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, sessionInfo?: SessionInfo) {
     const BuildScriptWithPrams = (code: StringTracker, RemoveToModule = true): Promise<string> => BuildScript(code, isTs(), isDebug, RemoveToModule);
-
-    const debugInPage = isDebug && !GetPlugin("SafeDebug");
-    const sessionInfo: SessionInfo = hasSessionInfo ??
-    {
-        connectorArray: [], scriptURLSet: [], styleURLSet: [],
-        style: new SourceMapStore(smallPath, debugInPage, true),
-        script: new SourceMapStore(smallPath, debugInPage, false),
-        scriptModule: new SourceMapStore(smallPath, debugInPage, false),
-        headHTML: '',
-        typeName,
-        cache: {
-            style: [],
-            script: [],
-            scriptModule: []
-        },
-        cacheComponent: {}
-    };
 
     let DebugString = new StringTracker(smallPath, data);
 
@@ -137,14 +121,14 @@ export async function Insert(data: string, fullPathCompile: string, pagePath: st
 
     DebugString = await ParseDebugLine(DebugString, smallPath);
 
-    DebugString = debugFromPage ? await PageTemplate.RunAndExport(DebugString, pagePath, isDebug) :
-        await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
+    if (debugFromPage) { // return StringTracker, because this import was from page
+        return DebugString;
+    }
+
+    DebugString = await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
 
     let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, debugFromPage);
-
-    if (!debugFromPage) {
-        DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, isDebug);
-    }
+    DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, isDebug);
 
     return DebugStringAsBuild;
 }

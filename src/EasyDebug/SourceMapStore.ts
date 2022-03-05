@@ -47,26 +47,31 @@ export abstract class SourceMapBasic {
 
 export default class SourceMapStore extends SourceMapBasic {
     private storeString = '';
+    private actionLoad: { name: string, data: any[] }[] = [];
 
     constructor(filePath: string, private debug = true, isCss = false, httpSource = true) {
         super(filePath, httpSource, isCss);
     }
 
     notEmpty() {
-        return Boolean(this.storeString);
+        return this.actionLoad.length > 0;
     }
 
     addStringTracker(track: StringTracker, { text: text = track.eq } = {}) {
+        this.actionLoad.push({ name: 'addStringTracker', data: [track, text] });
+    }
+
+    private _addStringTracker(track: StringTracker, { text: text = track.eq } = {}) {
         if (!this.debug)
-            return this.addText(text);
+            return this._addText(text);
 
         const DataArray = track.getDataArray(), length = DataArray.length;
         let waitNextLine = false;
 
         for (let index = 0; index < length; index++) {
-            const {text, line, info} = DataArray[index];
+            const { text, line, info } = DataArray[index];
 
-            if (text == '\n' && !(waitNextLine = false) || waitNextLine) 
+            if (text == '\n' && !(waitNextLine = false) || waitNextLine)
                 continue;
 
             if (line && info && (waitNextLine = true))
@@ -80,15 +85,24 @@ export default class SourceMapStore extends SourceMapBasic {
         this.storeString += text;
     }
 
+
     addText(text: string) {
+        this.actionLoad.push({ name: 'addText', data: [text] });
+    }
+
+    private _addText(text: string) {
         if (this.debug)
             this.lineCount += text.split('\n').length - 1;
         this.storeString += text;
     }
 
     async addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string) {
+        this.actionLoad.push({ name: 'addSourceMapWithStringTracker', data: [fromMap, track, text] });
+    }
+
+    private async _addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string) {
         if (!this.debug)
-            return this.addText(text);
+            return this._addText(text);
 
         new SourceMapConsumer(fromMap).eachMapping((m) => {
             const dataInfo = track.getLine(m.originalLine).getDataArray()[0];
@@ -107,13 +121,37 @@ export default class SourceMapStore extends SourceMapBasic {
                 });
         });
 
-        this.addText(text);
+        this._addText(text);
+    }
+
+    private buildAll() {
+        for (const { name, data } of this.actionLoad) {
+            switch (name) {
+                case 'addStringTracker':
+                    //@ts-ignore
+                    this._addStringTracker(...data)
+                    break;
+                case 'addText':
+                    //@ts-ignore
+                    this._addText(...data)
+                    break;
+                case 'addSourceMapWithStringTracker':
+                    //@ts-ignore
+                    this._addSourceMapWithStringTracker(...data)
+                    break;
+            }
+        }
     }
 
     createDataWithMap() {
+        this.buildAll();
         if (!this.debug)
             return this.storeString;
 
         return this.storeString + this.mapAsURLComment();
+    }
+
+    concat(data: SourceMapStore){
+        this.actionLoad.push(...data.actionLoad);
     }
 }

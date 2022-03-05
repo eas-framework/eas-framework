@@ -9,10 +9,11 @@ export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, 
     let message = parseTagDataStringBoolean(dataTag, 'message'); // show error message
     if (message === null)
         message = isDebug && !SomePlugins("SafeDebug");
-    sessionInfo.scriptURLSet.push({
-        url: serveScript,
-        attributes: { async: null }
-    });
+    if (!sessionInfo.scriptURLSet.find(x => x.url == serveScript))
+        sessionInfo.scriptURLSet.push({
+            url: serveScript,
+            attributes: { async: null }
+        });
     sessionInfo.script.addText(template(name));
     sessionInfo.connectorArray.push({
         type: 'connect',

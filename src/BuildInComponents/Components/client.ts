@@ -4,35 +4,35 @@ import JSParser from '../../CompileCode/JSParser'
 import { minify } from "terser";
 import { PrintIfNew } from '../../OutputInput/PrintNew';
 
-function replaceForClient(BetweenTagData: string, exportInfo: string){
+function replaceForClient(BetweenTagData: string, exportInfo: string) {
     BetweenTagData = BetweenTagData.replace(`"use strict";Object.defineProperty(exports, "__esModule", {value: true});`, exportInfo);
     return BetweenTagData;
 }
 
 const serveScript = '/serv/temp.js';
 
-async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name: string, params: string, selector: string, mainCode: StringTracker, path: string, isDebug: boolean){
+async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name: string, params: string, selector: string, mainCode: StringTracker, path: string, isDebug: boolean) {
     const parse = await JSParser.RunAndExport(mainCode, path, isDebug);
     return `function ${name}({${params}}, selector = "${selector}", out_run_script = {text: ''}){
         const {write, writeSafe, setResponse, sendToSelector} = new buildTemplate(out_run_script);
-        ${
-            replaceForClient(
-                    await BuildScriptWithoutModule(parse),
-                    `var exports = ${name}.exports;`
-                )
+        ${replaceForClient(
+        await BuildScriptWithoutModule(parse),
+        `var exports = ${name}.exports;`
+    )
         }
         return sendToSelector(selector, out_run_script.text);
     }\n${name}.exports = {};`
 }
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent>{
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
 
     BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, (x: StringTracker) => x.eq, sessionInfo);
 
-    sessionInfo.scriptURLSet.push({
-        url: serveScript,
-        attributes: {async: null}
-    });
+    if (!sessionInfo.scriptURLSet.find(x => x.url == serveScript))
+        sessionInfo.scriptURLSet.push({
+            url: serveScript,
+            attributes: { async: null }
+        });
 
     let scriptInfo = await template(
         BuildScriptWithoutModule,
@@ -52,7 +52,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         } catch (err) {
             PrintIfNew({
                 errorName: 'minify',
-                text: err + '\nonfile: '+pathName
+                text: BetweenTagData.debugLine(err)
             })
         }
     }

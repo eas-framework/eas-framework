@@ -3,6 +3,7 @@ import EasyFs from '../OutputInput/EasyFs';
 import {cwd} from 'process';
 import path from 'path';
 import {fileURLToPath} from 'url'
+import { StringNumberMap } from '../CompileCode/XMLHelpers/CompileTypes';
 
 function getDirname(url: string){
     return path.dirname(fileURLToPath(url));
@@ -22,7 +23,7 @@ const CompileLogs = SystemData + `/${LogsName}Compile/`;
 const workingDirectory = cwd() + '/';
 
 function GetFullWebSitePath() {
-    return workingDirectory + WebSiteFolder_+ '/';
+    return path.join(workingDirectory,WebSiteFolder_, '/');
 }
 let fullWebSitePath_ = GetFullWebSitePath();
 
@@ -148,10 +149,8 @@ function ClearPagesDependency() {
     }
 }
 
-async function CheckDependencyChange(path:string) {
-    const o = PagesInfo[path];
-
-    for (const i in o) {
+async function CheckDependencyChange(path:string, dependencies: StringNumberMap = PagesInfo[path]) {
+    for (const i in dependencies) {
         let p = i;
 
         if (i == 'thisPage') {
@@ -159,11 +158,12 @@ async function CheckDependencyChange(path:string) {
         }
 
         const FilePath = fullWebSitePath_  + p;
-        if (await EasyFs.stat(FilePath, 'mtimeMs', true) != o[i]) {
+        if (await EasyFs.stat(FilePath, 'mtimeMs', true) != dependencies[i]) {
             return true;
         }
     }
-    return !o;
+    
+    return !dependencies;
 }
 
 export {

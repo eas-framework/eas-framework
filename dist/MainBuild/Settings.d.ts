@@ -69,7 +69,8 @@ interface GlobalSettings {
         plugins?: pluginsOptions[];
     };
     routing?: {
-        rules?: ((req: Request, _res: Response<any>, url: string) => string)[];
+        rules?: ((url: string, req: Request, res: Response<any>) => string | Promise<string>)[];
+        validPath: ((url: string, req: Request, res: Response<any>) => boolean | Promise<boolean>)[];
         errorPages?: fileByUrl.ErrorPages;
         urlStop?: string[];
         ignoreTypes?: string[];

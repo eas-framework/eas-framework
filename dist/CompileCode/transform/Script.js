@@ -18,7 +18,7 @@ function ReplaceAfter(code) {
  * @param type
  * @returns
  */
-export default async function BuildScript(text, isTypescript, isDebug, removeToMoudule) {
+export default async function BuildScript(text, isTypescript, isDebug, removeToModule) {
     text = text.trim();
     const Options = {
         transforms: ['imports'],
@@ -42,7 +42,7 @@ export default async function BuildScript(text, isTypescript, isDebug, removeToM
         if (isDebug)
             Result.code = ErrorTemplate(errorMessage);
     }
-    if (!isDebug && !removeToMoudule) {
+    if (!isDebug && !removeToModule) {
         try {
             Result.code = (await minify(Result.code, { module: false })).code;
         }

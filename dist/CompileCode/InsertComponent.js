@@ -213,7 +213,7 @@ export default class InsertComponent extends InsertComponentBase {
             if (folder)
                 folder = data.remove('folder') || '.';
             const tagPath = (folder ? folder + '/' : '') + type.replace(/:/gi, "/").eq;
-            const relativesFilePath = type.extractInfo('<line>'), relativesFilePathSmall = pathNode.relative(BasicSettings.fullWebSitePath, relativesFilePath);
+            const relativesFilePathSmall = type.extractInfo('<line>'), relativesFilePath = pathNode.join(BasicSettings.fullWebSitePath, relativesFilePathSmall);
             AllPathTypes = CreateFilePath(relativesFilePath, relativesFilePathSmall, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
             if (sessionInfo.cacheComponent[AllPathTypes.SmallPath] === null || sessionInfo.cacheComponent[AllPathTypes.SmallPath] === undefined && !await EasyFs.existsFile(AllPathTypes.FullPath)) {
                 sessionInfo.cacheComponent[AllPathTypes.SmallPath] = null;
@@ -235,7 +235,7 @@ export default class InsertComponent extends InsertComponentBase {
             fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;
         }
-        if (SearchInComment) {
+        if (SearchInComment && BetweenTagData) {
             const { SmallPath, FullPath } = AllPathTypes;
             fileData = await this.buildTagBasic(fileData, data, path, pathName, BuildIn ? type.eq : FullPath, BuildIn ? type.eq : SmallPath, isDebug, dependenceObject, buildScript, sessionInfo, BetweenTagData);
             if (addStringInfo)

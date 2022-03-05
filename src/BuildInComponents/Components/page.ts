@@ -1,10 +1,10 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
-import { CreateFilePathOnePath, PathTypes } from './../../CompileCode/XMLHelpers/CodeInfoAndDebug';
+import { tagDataObjectArray, StringNumberMap, BuildInComponent, StringAnyMap, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { BasicSettings, CheckDependencyChange, getTypes, PagesInfo } from '../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../OutputInput/EasyFs';
 import { PrintIfNew } from '../../OutputInput/PrintNew';
 import path_node from 'path';
+import { extendsSession } from '../../CompileCode/Session';
 
 function InFolderPagePath(inputPath: string, fullPath:string){
     if (inputPath[0] == '.') {
@@ -31,16 +31,17 @@ function InFolderPagePath(inputPath: string, fullPath:string){
     return inputPath;
 }
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: StringAnyMap): Promise<BuildInComponent> {
+const cacheMap: { [key: string]: {CompiledData: StringTracker, dependence: StringNumberMap, newSession: SessionInfo}} = {};
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionInfo): Promise<BuildInComponent> {
     const filepath = dataTag.getValue("from");
 
     const SmallPathWithoutFolder = InFolderPagePath(filepath, path);
 
-    const FullPath = getTypes.Static[0] + SmallPathWithoutFolder, FullPathCompile =  getTypes.Static[1] + SmallPathWithoutFolder + '.cjs', SmallPath = getTypes.Static[2] + '/' + SmallPathWithoutFolder;
+    const FullPath = getTypes.Static[0] + SmallPathWithoutFolder, SmallPath = getTypes.Static[2] + '/' + SmallPathWithoutFolder;
 
     if (!(await EasyFs.stat(FullPath, null, true)).isFile?.()) {
         PrintIfNew({
-            text: `\nPage not found: ${type.at(0).lineInfo} -> ${SmallPath}`,
+            text: `\nPage not found: ${type.at(0).lineInfo} -> ${FullPath}`,
             errorName: 'page-not-found',
             type: 'error'
         });
@@ -49,27 +50,29 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         };
     }
 
-    let ReturnData: string;
+    let ReturnData: StringTracker;
 
-    if (!await EasyFs.existsFile(FullPathCompile) || await CheckDependencyChange(SmallPath) || isDebug) {
-        const { CompiledData, dependenceObject: dependence } = await InsertComponent.CompileInFile(SmallPathWithoutFolder, getTypes.Static, pathName, sessionInfo);
+    const haveCache = cacheMap[SmallPathWithoutFolder];
+    if (!haveCache || await CheckDependencyChange(null, haveCache.dependence)) {
+        const { CompiledData, dependenceObject: dependence , sessionInfo: newSession} = await InsertComponent.CompileInFile(SmallPathWithoutFolder, getTypes.Static, pathName);
         dependence[SmallPath] = dependence.thisPage;
         delete dependence.thisPage;
 
-        Object.assign(dependenceObject, dependence);
+        extendsSession(sessionInfo, newSession);
 
+        cacheMap[SmallPathWithoutFolder] = {CompiledData, dependence, newSession};
+        Object.assign(dependenceObject, dependence);
         ReturnData = CompiledData;
     } else {
-        const copy = {...PagesInfo[ InsertComponent.RemoveEndType(SmallPath)]}
-        copy[SmallPath] = copy.thisPage;
-        delete copy.thisPage;
+        const { CompiledData, dependence, newSession } = cacheMap[SmallPathWithoutFolder];
+   
+        Object.assign(dependenceObject, dependence);
+        extendsSession(sessionInfo, newSession);
 
-        Object.assign(dependenceObject, copy);
-
-        ReturnData = await EasyFs.readFile(FullPathCompile);
+        ReturnData = CompiledData;
     }
 
     return {
-        compiledString: new StringTracker(type.DefaultInfoText, `<%!${ReturnData}%>`)
+        compiledString: ReturnData
     }
 }

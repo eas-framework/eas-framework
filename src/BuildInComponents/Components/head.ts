@@ -78,5 +78,5 @@ export async function addFinalizeBuild(pageData: StringTracker, sessionInfo: Ses
     if(bundleSucceed)
         return removeBundle();
 
-    return pageData.Plus(replaceWith);
+    return pageData.Plus$ `\nout_run_script.text+='${replaceWith}';`;
 }

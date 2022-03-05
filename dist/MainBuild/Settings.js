@@ -30,6 +30,7 @@ export function pageInRamActivateFunc() {
     return pageInRamActivate;
 }
 const baseRoutingIgnoreTypes = [...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray, ...BasicSettings.pageCodeFileArray];
+const baseValidPath = [(path) => path.split('.').at(-2) != 'serv']; // ignoring files that ends with .serv.*
 export const Export = {
     get settingsPath() {
         return workingDirectory + BasicSettings.WebSiteFolder + "/Settings";
@@ -120,6 +121,7 @@ export const Export = {
     routing: {
         rules: [],
         urlStop: [],
+        validPath: baseValidPath,
         ignoreTypes: baseRoutingIgnoreTypes,
         ignorePaths: [],
         get errorPages() {
@@ -242,9 +244,11 @@ export async function requireSettings() {
     else
         Object.assign(Settings, Settings.implProd);
     copyJSON(Export.compile, Settings.compile);
-    copyJSON(Export.routing, Settings.routing, ['ignoreTypes']);
-    if (Settings.routing?.ignoreTypes)
-        Export.routing.ignoreTypes = Settings.routing.ignoreTypes.concat(baseRoutingIgnoreTypes);
+    copyJSON(Export.routing, Settings.routing, ['ignoreTypes', 'validPath']);
+    //concat default values of routing
+    const concatArray = (name, array) => Settings.routing?.[name] && (Export.routing[name] = Settings.routing[name].concat(array));
+    concatArray('ignoreTypes', baseRoutingIgnoreTypes);
+    concatArray('validPath', baseValidPath);
     copyJSON(Export.serveLimits, Settings.serveLimits, ['cacheDays', 'cookiesExpiresDays'], 'only');
     if (copyJSON(serveLimits, Settings.serveLimits, ['sessionTotalRamMB', 'sessionTimeMinutes', 'sessionCheckPeriodMinutes'], 'only')) {
         buildSession();

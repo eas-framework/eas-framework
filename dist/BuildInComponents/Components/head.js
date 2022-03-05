@@ -55,6 +55,6 @@ export async function addFinalizeBuild(pageData, sessionInfo, fullCompilePath) {
         pageData = pageData.replacer(bundlePlaceholder[i], () => (bundleSucceed = true) && replaceWith);
     if (bundleSucceed)
         return removeBundle();
-    return pageData.Plus(replaceWith);
+    return pageData.Plus$ `\nout_run_script.text+='${replaceWith}';`;
 }
 //# sourceMappingURL=head.js.map

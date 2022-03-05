@@ -1,6 +1,6 @@
 import EasyFs from '../OutputInput/EasyFs';
 import { Dirent } from 'fs';
-import { Insert, Components } from '../CompileCode/InsertModels';
+import { Insert, Components, GetPlugin } from '../CompileCode/InsertModels';
 import { ClearWarning } from '../OutputInput/PrintNew'
 import * as SearchFileSystem from './SearchFileSystem';
 import ReqScript from '../ImportFiles/Script';
@@ -8,29 +8,31 @@ import StaticFiles from '../ImportFiles/StaticFiles';
 import { SessionInfo } from '../CompileCode/XMLHelpers/CompileTypes';
 import path from 'path';
 import CompileState from './CompileState';
+import { newSession } from '../CompileCode/Session';
 
-export function RemoveEndType(string) {
+export function RemoveEndType(string: string) {
     return string.substring(0, string.lastIndexOf('.'));
 }
 Components.RemoveEndType = RemoveEndType;
 
-async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, debugFromPage?: string, sessionInfo?: SessionInfo) {
+async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, debugFromPage?: string, hasSessionInfo?: SessionInfo) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
     const dependenceObject: any = {
         thisPage: await EasyFs.stat(FullFilePath, 'mtimeMs')
     };
 
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
-    const ExcluUrl = (debugFromPage ? debugFromPage + ' -> ' : '') + arrayType[2] + '/' + filePath;
+    const ExcluUrl = (debugFromPage ? debugFromPage + '<line>' : '') + arrayType[2] + '/' + filePath;
 
-    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, arrayType[2], ExcluUrl, isDebug, dependenceObject, Boolean(debugFromPage), sessionInfo);
+    const sessionInfo: SessionInfo = hasSessionInfo ?? newSession(ExcluUrl, arrayType[2], isDebug && !GetPlugin("SafeDebug"));
+    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(debugFromPage), sessionInfo);
 
     if (!debugFromPage) {
-        await EasyFs.writeFile(FullPathCompile, CompiledData);
+        await EasyFs.writeFile(FullPathCompile, <string>CompiledData);
         await SearchFileSystem.UpdatePageDependency(RemoveEndType(ExcluUrl), dependenceObject);
     }
 
-    return { CompiledData, dependenceObject };
+    return { CompiledData, dependenceObject, sessionInfo };
 }
 
 function isFileType(types: string[], name: string) {
@@ -90,7 +92,7 @@ async function FastCompileInFile(path: string, arrayType: string[], debugFromPag
     return await compileFile(path, arrayType, true, debugFromPage, sessionInfo);
 }
 
-Components.CompileInFile = FastCompileInFile;
+Components.CompileInFile = <any>FastCompileInFile;
 
 export async function FastCompile(path: string, arrayType: string[]) {
     await FastCompileInFile(path, arrayType);

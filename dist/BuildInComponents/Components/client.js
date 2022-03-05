@@ -17,10 +17,11 @@ async function template(BuildScriptWithoutModule, name, params, selector, mainCo
 }
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo) {
     BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, (x) => x.eq, sessionInfo);
-    sessionInfo.scriptURLSet.push({
-        url: serveScript,
-        attributes: { async: null }
-    });
+    if (!sessionInfo.scriptURLSet.find(x => x.url == serveScript))
+        sessionInfo.scriptURLSet.push({
+            url: serveScript,
+            attributes: { async: null }
+        });
     let scriptInfo = await template(BuildScriptWithoutModule, dataTag.getValue('name'), dataTag.getValue('params'), dataTag.getValue('selector'), BetweenTagData, pathName, isDebug && !InsertComponent.SomePlugins("SafeDebug"));
     const minScript = InsertComponent.SomePlugins("MinJS") || InsertComponent.SomePlugins("MinAll");
     if (minScript) {
@@ -30,7 +31,7 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
         catch (err) {
             PrintIfNew({
                 errorName: 'minify',
-                text: err + '\nonfile: ' + pathName
+                text: BetweenTagData.debugLine(err)
             });
         }
     }

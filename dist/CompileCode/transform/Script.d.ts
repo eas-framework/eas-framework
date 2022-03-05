@@ -5,4 +5,4 @@ import StringTracker from '../../EasyDebug/StringTracker';
  * @param type
  * @returns
  */
-export default function BuildScript(text: StringTracker, isTypescript: boolean, isDebug: boolean, removeToMoudule: boolean): Promise<string>;
+export default function BuildScript(text: StringTracker, isTypescript: boolean, isDebug: boolean, removeToModule: boolean): Promise<string>;

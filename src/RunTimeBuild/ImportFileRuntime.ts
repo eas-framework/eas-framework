@@ -127,7 +127,7 @@ export default async function RequireFile(filePath: string, importFrom: string, 
 
         if (fileExists) {
             const haveModel = CacheRequireFiles[filePath];
-            if (haveModel && compareDependenciesSame(haveModel.dependencies, newDeps ?? await makeDependencies(haveModel.dependencies, typeArray)))
+            if (haveModel && compareDependenciesSame(haveModel.dependencies, newDeps = newDeps ?? await makeDependencies(haveModel.dependencies, typeArray)))
                 LastRequire[copyPath] = haveModel;
             else {
                 newDeps = newDeps ?? {};

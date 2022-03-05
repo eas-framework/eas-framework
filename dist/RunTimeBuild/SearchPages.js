@@ -1,28 +1,30 @@
 import EasyFs from '../OutputInput/EasyFs.js';
-import { Insert, Components } from '../CompileCode/InsertModels.js';
+import { Insert, Components, GetPlugin } from '../CompileCode/InsertModels.js';
 import { ClearWarning } from '../OutputInput/PrintNew.js';
 import * as SearchFileSystem from './SearchFileSystem.js';
 import ReqScript from '../ImportFiles/Script.js';
 import StaticFiles from '../ImportFiles/StaticFiles.js';
 import path from 'path';
 import CompileState from './CompileState.js';
+import { newSession } from '../CompileCode/Session.js';
 export function RemoveEndType(string) {
     return string.substring(0, string.lastIndexOf('.'));
 }
 Components.RemoveEndType = RemoveEndType;
-async function compileFile(filePath, arrayType, isDebug, debugFromPage, sessionInfo) {
+async function compileFile(filePath, arrayType, isDebug, debugFromPage, hasSessionInfo) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
     const dependenceObject = {
         thisPage: await EasyFs.stat(FullFilePath, 'mtimeMs')
     };
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
-    const ExcluUrl = (debugFromPage ? debugFromPage + ' -> ' : '') + arrayType[2] + '/' + filePath;
-    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, arrayType[2], ExcluUrl, isDebug, dependenceObject, Boolean(debugFromPage), sessionInfo);
+    const ExcluUrl = (debugFromPage ? debugFromPage + '<line>' : '') + arrayType[2] + '/' + filePath;
+    const sessionInfo = hasSessionInfo ?? newSession(ExcluUrl, arrayType[2], isDebug && !GetPlugin("SafeDebug"));
+    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(debugFromPage), sessionInfo);
     if (!debugFromPage) {
         await EasyFs.writeFile(FullPathCompile, CompiledData);
         await SearchFileSystem.UpdatePageDependency(RemoveEndType(ExcluUrl), dependenceObject);
     }
-    return { CompiledData, dependenceObject };
+    return { CompiledData, dependenceObject, sessionInfo };
 }
 function isFileType(types, name) {
     name = name.toLowerCase();

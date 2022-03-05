@@ -13,7 +13,7 @@
 </form>
 
 
-@{
+@{ 
     function checkLogin(name, password){
         if(testLogin(mail, password))
             return Response.redirect('/');
@@ -37,7 +37,7 @@
         }
     }
 }
-<connect sendTo="userMessage" name="sendMessageServer" validator="text:1:200,userId:integer"/>
+<connect sendTo="userMessage" name="sendMessageServer" validator="text: 1:200,userId:integer"/>
 
 <input type="number" id="userId" placeholder="User Id"/>
 <textarea id="message" name="message" placeholder="Enter your message"></textarea>

@@ -14,7 +14,7 @@ export default {
 
     routing: {
         rules: {
-            "/Examples/User/": (req, res, url) => '/Files/User/Examples/' + url.split('/').pop()
+            "/Examples/User/": (url, req, res) => '/Files/User/Examples/' + url.split('/').pop()
         },
         urlStop: [ // make sure any path after x remains same as x, for example /admin/editUsers/34234/cool => /admin/editUsers
             "/User/Files"
@@ -32,6 +32,7 @@ export default {
         },
         ignoreTypes: ["json"], // ignore file extension (auto ignore common server files)
         ignorePaths: ["/Private"],
+        validPath: [(url, req, res) => url.substring(3, 5) != 'hi'] // check url path, if one of the methods return false, then the server returns a 404
     }, 
     serveLimits: {
         cacheDays: 3,

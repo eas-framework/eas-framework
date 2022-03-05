@@ -58,8 +58,8 @@ export interface BuildInComponent {
     compiledString: StringTracker;
     checkComponents?: boolean;
 }
-export declare type CompileInFileFunc = (path: string, arrayType: string[], debugFromPage: string) => Promise<{
-    CompiledData: string;
+export declare type CompileInFileFunc = (path: string, arrayType: string[], debugFromPage: string, sessionInfo: SessionInfo) => Promise<{
+    CompiledData: StringTracker;
     dependenceObject: any;
 }>;
 export declare type BuildScriptWithoutModule = (code: StringTracker) => Promise<string>;

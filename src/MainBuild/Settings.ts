@@ -108,7 +108,8 @@ interface GlobalSettings {
         plugins?: pluginsOptions[]
     },
     routing?: {
-        rules?: ((req: Request, _res: Response<any>, url: string) => string)[],
+        rules?: ((url: string, req: Request, res: Response<any>) => string | Promise<string>)[],
+        validPath: ((url: string, req: Request, res: Response<any>) => boolean | Promise<boolean>)[],
         errorPages?: fileByUrl.ErrorPages
         urlStop?: string[],
         ignoreTypes?: string[],
@@ -135,6 +136,7 @@ export function pageInRamActivateFunc(){
 }
 
 const baseRoutingIgnoreTypes = [...BasicSettings.ReqFileTypesArray, ...BasicSettings.pageTypesArray, ...BasicSettings.pageCodeFileArray];
+const baseValidPath = [(path: string) => path.split('.').at(-2) != 'serv']; // ignoring files that ends with .serv.*
 
 interface ExportSettings extends GlobalSettings {
     development: boolean,
@@ -245,6 +247,7 @@ export const Export: ExportSettings = {
     routing: {
         rules: [],
         urlStop: [],
+        validPath: baseValidPath,
         ignoreTypes: baseRoutingIgnoreTypes,
         ignorePaths: [],
         get errorPages() {
@@ -376,10 +379,13 @@ export async function requireSettings() {
 
     copyJSON(Export.compile, Settings.compile);
 
-    copyJSON(Export.routing, Settings.routing, ['ignoreTypes']);
+    copyJSON(Export.routing, Settings.routing, ['ignoreTypes', 'validPath']);
 
-    if(Settings.routing?.ignoreTypes)
-        Export.routing.ignoreTypes = Settings.routing.ignoreTypes.concat(baseRoutingIgnoreTypes);
+    //concat default values of routing
+    const concatArray = (name: string, array: any[]) => Settings.routing?.[name] && (Export.routing[name] = Settings.routing[name].concat(array));
+
+    concatArray('ignoreTypes', baseRoutingIgnoreTypes);
+    concatArray('validPath', baseValidPath);
 
     copyJSON(Export.serveLimits, Settings.serveLimits, ['cacheDays', 'cookiesExpiresDays'], 'only');
 

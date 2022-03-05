@@ -98,7 +98,7 @@ impl BetterString {
             return None;
         }
 
-        let length = self.length - find.length;
+        let length = self.length - find.length+1;
 
         'main: while i < length{
             let this_char = self.chars[i];

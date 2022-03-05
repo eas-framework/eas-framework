@@ -22,7 +22,7 @@ function ReplaceAfter(code: string){
  * @param type 
  * @returns 
  */
-export default async function BuildScript(text: StringTracker, isTypescript: boolean, isDebug: boolean, removeToMoudule: boolean): Promise<string> {
+export default async function BuildScript(text: StringTracker, isTypescript: boolean, isDebug: boolean, removeToModule: boolean): Promise<string> {
     text = text.trim();
 
     const Options: TransformOptions = {
@@ -51,7 +51,7 @@ export default async function BuildScript(text: StringTracker, isTypescript: boo
             Result.code = ErrorTemplate(errorMessage);
     }
 
-    if (!isDebug && !removeToMoudule) {
+    if (!isDebug && !removeToModule) {
         try {
             Result.code = (await minify(Result.code, { module: false })).code;
         } catch (err) {

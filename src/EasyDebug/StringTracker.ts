@@ -1,3 +1,5 @@
+import { BasicSettings } from "../RunTimeBuild/SearchFileSystem";
+
 export interface StringTrackerDataInfo {
     text?: string,
     info: string,
@@ -101,7 +103,10 @@ export default class StringTracker {
      */
     get lineInfo() {
         const d = this.DefaultInfoText;
-        return `${d.info}:${d.line}:${d.char}`;
+        const s = d.info.split('<line>');
+        s.push(BasicSettings.fullWebSitePath + s.pop());
+
+        return `${s.join('<line>')}:${d.line}:${d.char}`;
     }
 
 
@@ -705,6 +710,6 @@ export default class StringTracker {
             column = 0;
         }
         const data = searchLine.DefaultInfoText;
-        return `${message}, on file -> ${data.info.split('<line>').shift()}:${data.line}:${column}`;
+        return `${message}, on file -> ${BasicSettings.fullWebSitePath}${data.info.split('<line>').shift()}:${data.line}:${column}`;
     }
 }

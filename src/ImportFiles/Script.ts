@@ -189,7 +189,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
         return import(p);
     }
 
-    return LoadImport(InStaticPath, p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
+    return LoadImport(filePath, p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
   }
 
   const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");

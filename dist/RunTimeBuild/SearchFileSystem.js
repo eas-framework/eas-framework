@@ -14,7 +14,7 @@ const StaticCompile = SystemData + `/${StaticName}Compile/`;
 const CompileLogs = SystemData + `/${LogsName}Compile/`;
 const workingDirectory = cwd() + '/';
 function GetFullWebSitePath() {
-    return workingDirectory + WebSiteFolder_ + '/';
+    return path.join(workingDirectory, WebSiteFolder_, '/');
 }
 let fullWebSitePath_ = GetFullWebSitePath();
 function GetSource(name) {
@@ -122,19 +122,18 @@ function ClearPagesDependency() {
         delete PagesInfo[i];
     }
 }
-async function CheckDependencyChange(path) {
-    const o = PagesInfo[path];
-    for (const i in o) {
+async function CheckDependencyChange(path, dependencies = PagesInfo[path]) {
+    for (const i in dependencies) {
         let p = i;
         if (i == 'thisPage') {
             p = path + "." + BasicSettings.pageTypes.page;
         }
         const FilePath = fullWebSitePath_ + p;
-        if (await EasyFs.stat(FilePath, 'mtimeMs', true) != o[i]) {
+        if (await EasyFs.stat(FilePath, 'mtimeMs', true) != dependencies[i]) {
             return true;
         }
     }
-    return !o;
+    return !dependencies;
 }
 export { getDirname, SystemData, workingDirectory, filesInDirectory, DeleteInDirectory, getTypes, BasicSettings, PagesInfo, ClearPagesDependency, UpdatePageDependency, CheckDependencyChange };
 //# sourceMappingURL=SearchFileSystem.js.map

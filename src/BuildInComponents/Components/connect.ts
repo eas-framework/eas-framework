@@ -18,10 +18,11 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
     if (message === null)
         message = isDebug && !SomePlugins("SafeDebug");
 
-    sessionInfo.scriptURLSet.push({
-        url: serveScript,
-        attributes: { async: null }
-    });
+    if (!sessionInfo.scriptURLSet.find(x => x.url == serveScript))
+        sessionInfo.scriptURLSet.push({
+            url: serveScript,
+            attributes: { async: null }
+        });
 
     sessionInfo.script.addText(template(name));
 
@@ -98,12 +99,12 @@ export async function handelConnector(thisPage: any, connectorArray: any[]) {
         thisPage.Response.end(JSON.stringify(obj));
     }
 
-    if (!have.validator.length || isValid === true) 
+    if (!have.validator.length || isValid === true)
         betterJSON(await have.sendTo(...values));
 
-     else if (have.notValid) 
+    else if (have.notValid)
         betterJSON(await have.notValid(...<any>isValid));
-    
+
     else if (have.message)
         betterJSON({
             error: typeof have.message == 'string' ? have.message : (<any>isValid).shift()

@@ -3,7 +3,6 @@
 }
 <h1>Try it</h1>
 <p>@func()</p>
-
-@{
-    include 'cond'
-}
+<page from="cond"/>
+<markdown file="./cool.md"/>
+<C folder="./foo">FFFF</C>

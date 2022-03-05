@@ -18,7 +18,7 @@ pub fn rebuild_ejs(text: &str) -> String {
             "print" => format!("<%={}%>", substring),
             "escape" => format!("<%:{}%>", substring),
             "debug" => format!("<%{{?debug_file?}}{}%>", substring),
-            "hide-script" => format!("<%*{}%>", substring),
+            "no-track" => format!("<%!{}%>", substring),
             _ => "Error".to_owned(),
         }
     }

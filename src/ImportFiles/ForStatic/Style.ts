@@ -60,7 +60,7 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
         await EasyFs.writeFile(fullCompilePath, data);
     } catch (expression) {
         PrintIfNew({
-            text: `${expression.message}, on file -> ${inputPath}${expression.line ? ':' + expression.line : ''}`,
+            text: `${expression.message}, on file -> ${fullPath}${expression.line ? ':' + expression.line : ''}`,
             errorName: expression?.status == 5 ? 'sass-warning' : 'sass-error',
             type: expression?.status == 5 ? 'warn' : 'error'
         });

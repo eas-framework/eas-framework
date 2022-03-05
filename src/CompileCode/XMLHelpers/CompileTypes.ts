@@ -64,7 +64,7 @@ export interface BuildInComponent {
     checkComponents?: boolean
 }
 
-export type CompileInFileFunc = (path: string, arrayType: string[], debugFromPage: string) => Promise<{CompiledData:string, dependenceObject:any}>;
+export type CompileInFileFunc = (path: string, arrayType: string[], debugFromPage: string, sessionInfo: SessionInfo) => Promise<{CompiledData:StringTracker, dependenceObject:any}>;
 
 export type BuildScriptWithoutModule = (code: StringTracker) => Promise<string>;
 

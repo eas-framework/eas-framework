@@ -97,7 +97,7 @@ export default async function RequireFile(filePath, importFrom, pathname, typeAr
         fileExists = fileExists ?? await EasyFs.stat(fullPath, 'mtimeMs', true, 0);
         if (fileExists) {
             const haveModel = CacheRequireFiles[filePath];
-            if (haveModel && compareDependenciesSame(haveModel.dependencies, newDeps ?? await makeDependencies(haveModel.dependencies, typeArray)))
+            if (haveModel && compareDependenciesSame(haveModel.dependencies, newDeps = newDeps ?? await makeDependencies(haveModel.dependencies, typeArray)))
                 LastRequire[copyPath] = haveModel;
             else {
                 newDeps = newDeps ?? {};

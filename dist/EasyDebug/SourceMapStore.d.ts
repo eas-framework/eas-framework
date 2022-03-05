@@ -14,12 +14,18 @@ export declare abstract class SourceMapBasic {
 export default class SourceMapStore extends SourceMapBasic {
     private debug;
     private storeString;
+    private actionLoad;
     constructor(filePath: string, debug?: boolean, isCss?: boolean, httpSource?: boolean);
     notEmpty(): boolean;
     addStringTracker(track: StringTracker, { text: text }?: {
         text?: string;
     }): void;
+    private _addStringTracker;
     addText(text: string): void;
+    private _addText;
     addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string): Promise<void>;
+    private _addSourceMapWithStringTracker;
+    private buildAll;
     createDataWithMap(): string;
+    concat(data: SourceMapStore): void;
 }

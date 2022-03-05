@@ -29,7 +29,7 @@ export async function preprocess(fullPath, smallPath, dependenceObject = {}, mak
             }
             catch (err) {
                 PrintIfNew({
-                    text: `${err.message}, on file -> ${smallPath}${err.line ? ':' + err.line : ''}`,
+                    text: `${err.message}, on file -> ${fullPath}${err.line ? ':' + err.line : ''}`,
                     errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
                     type: err?.status == 5 ? 'warn' : 'error'
                 });

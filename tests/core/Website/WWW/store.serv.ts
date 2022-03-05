@@ -1,4 +1,4 @@
-let data = 40;
+let data = 90;
 
 export function getData(){
     return data;

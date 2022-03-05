@@ -5,13 +5,14 @@ import { finalizeBuild } from '../BuildInComponents/index';
 import { SessionInfo } from '../CompileCode/XMLHelpers/CompileTypes';
 import JSParser from './JSParser';
 import { SourceMapBasic } from '../EasyDebug/SourceMapStore';
+import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 
 class createPageSourceMap extends SourceMapBasic {
     constructor(filePath: string) {
         super(filePath, false);
     }
 
-    addMappingFromTrack(track: StringTracker) {
+    addMappingFromTrack(track: StringTracker, connectPath: string) {
         const DataArray = track.getDataArray(), length = DataArray.length;
         let waitNextLine = true;
 
@@ -25,7 +26,7 @@ class createPageSourceMap extends SourceMapBasic {
                 this.map.addMapping({
                     original: { line, column: 0 },
                     generated: { line: this.lineCount, column: 0 },
-                    source: this.getSource(info)
+                    source: connectPath + this.getSource(info)
                 });
         }
     }
@@ -33,9 +34,9 @@ class createPageSourceMap extends SourceMapBasic {
 
 export class PageTemplate extends JSParser {
 
-    private static CreateSourceMap(text: StringTracker, filePath: string): string {
+    private static CreateSourceMap(text: StringTracker, filePath: string, connectPath: string): string {
         const storeMap = new createPageSourceMap(filePath);
-        storeMap.addMappingFromTrack(text);
+        storeMap.addMappingFromTrack(text, connectPath);
 
         return storeMap.mapAsURLComment();
     }
@@ -81,7 +82,7 @@ export class PageTemplate extends JSParser {
         text.AddTextAfter(`}});}`);
 
         if (isDebug) {
-            text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile));
+            text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile, BasicSettings.fullWebSitePath));
         }
 
         return text;

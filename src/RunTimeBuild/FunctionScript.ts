@@ -53,7 +53,7 @@ async function RequirePage(filePath: string, importFrom: string, pathname: strin
         filePath = pathname && (pathname + '/' + filePath) || filePath;
     }
 
-    const fullPath = typeArray[0] + filePath;
+    const fullPath = path.join(typeArray[0], filePath);
 
     if (![BasicSettings.pageTypes.page, BasicSettings.pageTypes.component].includes(extname)) {
         const importText = await EasyFs.readFile(fullPath);
@@ -120,11 +120,11 @@ async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
     const LastRequire = {};
 
     function _require(DataObject: any, p: string) {
-        return RequireFile(p, url, pathname, typeArray, LastRequire, DataObject.isDebug);
+        return RequireFile(p, __filename, pathname, typeArray, LastRequire, DataObject.isDebug);
     }
 
     function _include(DataObject: any, p: string, WithObject = {}) {
-        return RequirePage(p, url, pathname, typeArray, LastRequire, { ...WithObject, ...DataObject });
+        return RequirePage(p, __filename, pathname, typeArray, LastRequire, { ...WithObject, ...DataObject });
     }
 
     const compiledPath = path.join(typeArray[1], SplitInfo[1] + "." + ext + '.cjs');

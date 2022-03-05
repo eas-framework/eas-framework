@@ -36,14 +36,25 @@ async function getPageDataByUrl(req: Request, res: Response) {
     const RuleIndex = Object.keys(Settings.routing.rules).find(i => url.startsWith(i));
 
     if (RuleIndex) {
-        url = await Settings.routing.rules[RuleIndex](req, res, url);
+        url = await Settings.routing.rules[RuleIndex](url, req, res);
     }
 
     await getPageWithoutRules(req, res, url);
 }
 
 async function getPageWithoutRules(req: Request, res: Response, url: string) {
-    if (Settings.routing.ignorePaths.find(i => url.startsWith(i)) || Settings.routing.ignoreTypes.find(i => url.endsWith('.'+i))) {
+    let notValid: any = Settings.routing.ignorePaths.find(i => url.startsWith(i)) || Settings.routing.ignoreTypes.find(i => url.endsWith('.'+i));
+    
+    if(!notValid) {
+        for(const valid of Settings.routing.validPath){ // check if url isn't valid
+            if(!await valid(url, req, res)){
+                notValid = true;
+                break;
+            }
+        }
+    }
+
+    if (notValid) {
         const ErrorPage = fileByUrl.GetErrorPage(404, 'notFound');
         return await fileByUrl.DynamicPage(req, res, ErrorPage.url, ErrorPage.arrayType, ErrorPage.code);
     }

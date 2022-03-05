@@ -40,13 +40,17 @@ export default class SourceMapStore extends SourceMapBasic {
         super(filePath, httpSource, isCss);
         this.debug = debug;
         this.storeString = '';
+        this.actionLoad = [];
     }
     notEmpty() {
-        return Boolean(this.storeString);
+        return this.actionLoad.length > 0;
     }
     addStringTracker(track, { text: text = track.eq } = {}) {
+        this.actionLoad.push({ name: 'addStringTracker', data: [track, text] });
+    }
+    _addStringTracker(track, { text: text = track.eq } = {}) {
         if (!this.debug)
-            return this.addText(text);
+            return this._addText(text);
         const DataArray = track.getDataArray(), length = DataArray.length;
         let waitNextLine = false;
         for (let index = 0; index < length; index++) {
@@ -63,13 +67,19 @@ export default class SourceMapStore extends SourceMapBasic {
         this.storeString += text;
     }
     addText(text) {
+        this.actionLoad.push({ name: 'addText', data: [text] });
+    }
+    _addText(text) {
         if (this.debug)
             this.lineCount += text.split('\n').length - 1;
         this.storeString += text;
     }
     async addSourceMapWithStringTracker(fromMap, track, text) {
+        this.actionLoad.push({ name: 'addSourceMapWithStringTracker', data: [fromMap, track, text] });
+    }
+    async _addSourceMapWithStringTracker(fromMap, track, text) {
         if (!this.debug)
-            return this.addText(text);
+            return this._addText(text);
         new SourceMapConsumer(fromMap).eachMapping((m) => {
             const dataInfo = track.getLine(m.originalLine).getDataArray()[0];
             if (m.source == this.filePath)
@@ -85,12 +95,34 @@ export default class SourceMapStore extends SourceMapBasic {
                     generated: { line: m.generatedLine, column: m.generatedColumn }
                 });
         });
-        this.addText(text);
+        this._addText(text);
+    }
+    buildAll() {
+        for (const { name, data } of this.actionLoad) {
+            switch (name) {
+                case 'addStringTracker':
+                    //@ts-ignore
+                    this._addStringTracker(...data);
+                    break;
+                case 'addText':
+                    //@ts-ignore
+                    this._addText(...data);
+                    break;
+                case 'addSourceMapWithStringTracker':
+                    //@ts-ignore
+                    this._addSourceMapWithStringTracker(...data);
+                    break;
+            }
+        }
     }
     createDataWithMap() {
+        this.buildAll();
         if (!this.debug)
             return this.storeString;
         return this.storeString + this.mapAsURLComment();
+    }
+    concat(data) {
+        this.actionLoad.push(...data.actionLoad);
     }
 }
 //# sourceMappingURL=SourceMapStore.js.map

@@ -7,7 +7,6 @@ import AddPlugin from '../Plugins/Index.js';
 import { CreateFilePath, ParseDebugLine, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug.js';
 import * as extricate from './XMLHelpers/Extricate.js';
 import StringTracker from '../EasyDebug/StringTracker.js';
-import SourceMapStore from '../EasyDebug/SourceMapStore.js';
 import BuildScript from './transform/Script.js';
 import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings.js';
 import ParseBasePage from './XMLHelpers/PageBase.js';
@@ -79,35 +78,19 @@ async function outPage(data, scriptFile, pagePath, pageName, LastSmallPath, isDe
     modelBuild.Plus(modelData);
     return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), FullPath, pageName, SmallPath, isDebug, dependenceObject);
 }
-export async function Insert(data, fullPathCompile, pagePath, typeName, smallPath, isDebug, dependenceObject, debugFromPage, hasSessionInfo) {
+export async function Insert(data, fullPathCompile, pagePath, smallPath, isDebug, dependenceObject, debugFromPage, sessionInfo) {
     const BuildScriptWithPrams = (code, RemoveToModule = true) => BuildScript(code, isTs(), isDebug, RemoveToModule);
-    const debugInPage = isDebug && !GetPlugin("SafeDebug");
-    const sessionInfo = hasSessionInfo ??
-        {
-            connectorArray: [], scriptURLSet: [], styleURLSet: [],
-            style: new SourceMapStore(smallPath, debugInPage, true),
-            script: new SourceMapStore(smallPath, debugInPage, false),
-            scriptModule: new SourceMapStore(smallPath, debugInPage, false),
-            headHTML: '',
-            typeName,
-            cache: {
-                style: [],
-                script: [],
-                scriptModule: []
-            },
-            cacheComponent: {}
-        };
     let DebugString = new StringTracker(smallPath, data);
     DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), pagePath, smallPath, smallPath, isDebug, dependenceObject);
     DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);
     DebugString = await Components.Insert(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, BuildScriptWithPrams, sessionInfo); // add components
     DebugString = await ParseDebugLine(DebugString, smallPath);
-    DebugString = debugFromPage ? await PageTemplate.RunAndExport(DebugString, pagePath, isDebug) :
-        await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
-    let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, debugFromPage);
-    if (!debugFromPage) {
-        DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, isDebug);
+    if (debugFromPage) { // return StringTracker, because this import was from page
+        return DebugString;
     }
+    DebugString = await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
+    let DebugStringAsBuild = await BuildScriptWithPrams(DebugString, debugFromPage);
+    DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, isDebug);
     return DebugStringAsBuild;
 }
 //# sourceMappingURL=InsertModels.js.map

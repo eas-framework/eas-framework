@@ -1,11 +1,12 @@
 import { finalizeBuild } from '../BuildInComponents/index.js';
 import JSParser from './JSParser.js';
 import { SourceMapBasic } from '../EasyDebug/SourceMapStore.js';
+import { BasicSettings } from '../RunTimeBuild/SearchFileSystem.js';
 class createPageSourceMap extends SourceMapBasic {
     constructor(filePath) {
         super(filePath, false);
     }
-    addMappingFromTrack(track) {
+    addMappingFromTrack(track, connectPath) {
         const DataArray = track.getDataArray(), length = DataArray.length;
         let waitNextLine = true;
         for (let index = 0; index < length; index++) {
@@ -16,15 +17,15 @@ class createPageSourceMap extends SourceMapBasic {
                 this.map.addMapping({
                     original: { line, column: 0 },
                     generated: { line: this.lineCount, column: 0 },
-                    source: this.getSource(info)
+                    source: connectPath + this.getSource(info)
                 });
         }
     }
 }
 export class PageTemplate extends JSParser {
-    static CreateSourceMap(text, filePath) {
+    static CreateSourceMap(text, filePath, connectPath) {
         const storeMap = new createPageSourceMap(filePath);
-        storeMap.addMappingFromTrack(text);
+        storeMap.addMappingFromTrack(text, connectPath);
         return storeMap.mapAsURLComment();
     }
     static async AddPageTemplate(text, isDebug, fullPathCompile, sessionInfo) {
@@ -59,7 +60,7 @@ export class PageTemplate extends JSParser {
         }
         text.AddTextAfter(`}});}`);
         if (isDebug) {
-            text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile));
+            text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile, BasicSettings.fullWebSitePath));
         }
         return text;
     }
