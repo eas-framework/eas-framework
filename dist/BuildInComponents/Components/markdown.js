@@ -11,6 +11,21 @@ import slugify from '@sindresorhus/slugify';
 import markdownItAttrs from 'markdown-it-attrs';
 import markdownItAbbr from 'markdown-it-abbr';
 import MinCss from '../../CompileCode/CssMinimizer.js';
+function codeWithCopy(md) {
+    function renderCode(origRule) {
+        return (...args) => {
+            const origRendered = origRule(...args);
+            return `<div class="code-copy">
+                <div>
+                    <a href="#copy" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.innerText)">copy</a>
+                </div>
+                ${origRendered}
+            </div>`;
+        };
+    }
+    md.renderer.rules.code_block = renderCode(md.renderer.rules.code_block);
+    md.renderer.rules.fence = renderCode(md.renderer.rules.fence);
+}
 export default async function BuildCode(type, dataTag, BetweenTagData, InsertComponent, session, dependenceObject) {
     const markDownPlugin = InsertComponent.GetPlugin('markdown');
     const hljsClass = parseTagDataStringBoolean(dataTag, 'hljsClass', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
@@ -38,6 +53,8 @@ export default async function BuildCode(type, dataTag, BetweenTagData, InsertCom
             return `<pre${hljsClass}><code>${md.utils.escapeHtml(str)}</code></pre>`;
         }
     });
+    if (parseTagDataStringBoolean(dataTag, 'copy-code', markDownPlugin?.copyCode ?? true))
+        md.use(codeWithCopy);
     if (parseTagDataStringBoolean(dataTag, 'header-link', markDownPlugin?.headerLink ?? true))
         md.use(anchor, {
             slugify: (s) => slugify(s),
@@ -57,7 +74,7 @@ export default async function BuildCode(type, dataTag, BetweenTagData, InsertCom
         dependenceObject[filePath] = await EasyFs.stat(fullPath, 'mtimeMs');
     }
     const renderHTML = md.render(markdownCode), buildHTML = new StringTracker(type.DefaultInfoText);
-    const theme = dataTag.remove('codeTheme') || markDownPlugin?.codeTheme || 'atom-one-light';
+    const theme = dataTag.remove('codeTheme') || markDownPlugin?.codeTheme || 'atom-one';
     if (haveHighlight) {
         const cssLink = '/serv/md/code-theme/' + theme + '.css';
         if (!session.styleURLSet.find(x => x.url === cssLink))
@@ -66,7 +83,7 @@ export default async function BuildCode(type, dataTag, BetweenTagData, InsertCom
             });
     }
     dataTag.addClass('markdown-body');
-    const style = parseTagDataStringBoolean(dataTag, 'theme', markDownPlugin?.theme ?? 'light');
+    const style = parseTagDataStringBoolean(dataTag, 'theme', markDownPlugin?.theme ?? 'auto');
     const cssLink = '/serv/md/theme/' + style + '.min.css';
     if (style != 'none' && !session.styleURLSet.find(x => x.url === cssLink))
         session.styleURLSet.push({
@@ -88,8 +105,24 @@ export async function minifyMarkdownTheme() {
         const mini = (await EasyFs.readFile(themePath + i + '.css'))
             .replace(/(\n\.markdown-body {)|(^.markdown-body {)/gm, (match) => {
             return match + 'padding:20px;';
-        });
+        }) + '.code-copy>div{text-align:right;margin-bottom:-30px;margin-right:10px;}.code-copy>div a:focus{color:#6bb86a}';
         await EasyFs.writeFile(themePath + i + '.min.css', MinCss(mini));
+        await EasyFs.unlink(themePath + i + '.css');
+    }
+}
+function splitStart(text1, text2) {
+    const [before, after] = text1.split('}.hljs{');
+    return [before + '}', '.hljs{' + after, '.hljs{' + text2.split('}.hljs{').pop()];
+}
+const codeThemePath = workingDirectory + 'node_modules/highlight.js/styles/', codeThemeArray = ['atom-one'];
+export async function autoCodeTheme() {
+    for (const name of codeThemeArray) {
+        const thisPath = codeThemePath + name;
+        const darkText = await EasyFs.readFile(thisPath + '-dark.css');
+        const lightText = await EasyFs.readFile(thisPath + '-light.css');
+        const [start, dark, light] = splitStart(darkText, lightText);
+        const darkLight = `${start}@media(prefers-color-scheme:dark){${dark}}@media(prefers-color-scheme:light){${light}}`;
+        await EasyFs.writeFile(thisPath + '.css', darkLight);
     }
 }
 //# sourceMappingURL=markdown.js.map

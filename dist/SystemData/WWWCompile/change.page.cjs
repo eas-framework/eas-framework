@@ -75,7 +75,7 @@ out_run_script.text+=`
 
 `;
 
-                if(_optionalChain([Post, 'optionalAccess', _ => _.connectorFormCall]) == "d944b265-82c9-4d5f-95bf-e30cacf4347f"){
+                if(_optionalChain([Post, 'optionalAccess', _ => _.connectorFormCall]) == "f8387a2f-1941-4698-bee9-365852ba2b88"){
                     await handelConnector("form", page, 
                         {
                             sendTo:me,
@@ -89,7 +89,7 @@ out_run_script.text+=`
                 }
 
 out_run_script.text+=`<form method=post>
-    <input type="hidden" name="connectorFormCall" value="d944b265-82c9-4d5f-95bf-e30cacf4347f"/>
+    <input type="hidden" name="connectorFormCall" value="f8387a2f-1941-4698-bee9-365852ba2b88"/>
     <input name="am" value="more--------++"/>
 </form>
 
@@ -120,7 +120,7 @@ out_run_script.text+=`
 
 `;
 
-                if(_optionalChain([Post, 'optionalAccess', _2 => _2.connectorFormCall]) == "1088c84f-821f-47cb-9629-ecadd6df8718"){
+                if(_optionalChain([Post, 'optionalAccess', _2 => _2.connectorFormCall]) == "c4fa65d6-cf79-4355-986c-c84e5cc327c5"){
                     await handelConnector("form", page, 
                         {
                             sendTo:checkLogin,
@@ -134,7 +134,7 @@ out_run_script.text+=`
                 }
 
 out_run_script.text+=`<form action="post" validator="email:email,password:6:30" method=post>
-    <input type="hidden" name="connectorFormCall" value="1088c84f-821f-47cb-9629-ecadd6df8718"/>
+    <input type="hidden" name="connectorFormCall" value="c4fa65d6-cf79-4355-986c-c84e5cc327c5"/>
     <input type="email" name="email" placeholder="Enter your email address"/>
     <input type="password" name="password" placeholder="Enter your password"/>
     <button type="submit">Submit</button>
@@ -182,7 +182,7 @@ out_run_script.text+=`
 
 `;
 
-                if(_optionalChain([Post, 'optionalAccess', _3 => _3.connectorFormCall]) == "1088c84f-821f-47cb-9629-ecadd6df8718"){
+                if(_optionalChain([Post, 'optionalAccess', _3 => _3.connectorFormCall]) == "c4fa65d6-cf79-4355-986c-c84e5cc327c5"){
                     await handelConnector("form", page, 
                         {
                             sendTo:checkLogin,
@@ -196,7 +196,7 @@ out_run_script.text+=`
                 }
 
 out_run_script.text+=`<form action="post" method=post>
-    <input type="hidden" name="connectorFormCall" value="93e79c8f-b6e6-470e-9bf1-5caf48ed0014"/>
+    <input type="hidden" name="connectorFormCall" value="c2404600-1353-4888-a477-5e8e66511a30"/>
     <input type="email" name="email" placeholder="Enter your email address"/>
     <input type="password" name="password" placeholder="Enter your password"/>
     <button type="submit">Submit</button>
@@ -204,7 +204,14 @@ out_run_script.text+=`<form action="post" method=post>
 out_run_script.text+=`
 <div class="markdown-body"><h1 class="i-am" id="so-coo" tabindex="-1"><a class="header-anchor" href="#so-coo">So coo</a></h1>
 <p>this is <abbr title="Hyper Text Markup Language">HTML</abbr> and you</p>
-</div>
+<div class="code-copy">
+                <div>
+                    <a href="#copy" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.innerText)">copy</a>
+                </div>
+                <pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>ok<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</code></pre>
+
+            </div></div>
 `;
 run_script_code=`run_script_name=\`WWW/change.page\`;`;
 //!WWW/change.page<line>/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/foo/C.inte:0:36
@@ -221,7 +228,7 @@ run_script_name=`WWW/change.page`;{out_run_script.text+=`<h1>FFFF</h1>`;}
                 return;
             }
         }
-out_run_script.text+='<link rel="stylesheet" href="/serv/md/theme/dark.min.css"/><script src="/serv/connect.js" async></script><script src="/change-Y2hhb.pub.js" defer></script>';
+out_run_script.text+='<link rel="stylesheet" href="/serv/md/code-theme/atom-one.css"/><link rel="stylesheet" href="/serv/md/theme/dark.min.css"/><script src="/serv/connect.js" async></script><script src="/change-Y2hhb.pub.js" defer></script>';
 }
                 catch(e){
                     run_script_name += ' -> <line>' + e.stack.split(/\n( )*at /)[2];
@@ -232,4 +239,4 @@ out_run_script.text+='<link rel="stylesheet" href="/serv/md/theme/dark.min.css"/
                     console.error("Error runing this code: '" + run_script_code + "'");
                     console.error("Error stack: " + e.stack);
                 }}});}
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9pZG9pby9Eb2N1bWVudHMvYmV5b25kLWVhc3kvdGVzdHMvY29yZS9XZWJzaXRlLy9XV1cvY2hhbmdlLnBhZ2UiLCIvVXNlcnMvaWRvaW8vRG9jdW1lbnRzL2JleW9uZC1lYXN5L3Rlc3RzL2NvcmUvV2Vic2l0ZS8vV1dXL2NvbmQucGFnZSIsIi9Vc2Vycy9pZG9pby9Eb2N1bWVudHMvYmV5b25kLWVhc3kvdGVzdHMvY29yZS9XZWJzaXRlLy9XV1cvZm9vL0MuaW50ZSJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFDQTs7OztBQUVBO0FBQ0E7OztBQUFBO0FBQ0E7QUFEQTtBQ0pBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7Ozs7Ozs7Ozs7Ozs7QUFOQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7Ozs7QUFFQTs7O0FBQ0E7QUFDQTs7QUFBQTs7QUFHQTtBQUFBO0FBQ0E7QUFDQTtBQUZBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBQ0E7O0FBSEE7O0FBQUE7QUFBQTs7O0FBR0E7Ozs7Ozs7OztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOzs7OztBQUVBOztBQUdBO0FBQUE7QUFDQTtBQUNBO0FBRkE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFDQTs7QUFIQTs7QUFBQTtBQUNBO0FBQ0E7QUFBQTs7QUFFQTs7Ozs7Ozs7Ozs7Ozs7QUFFQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7Ozs7O0FBSUE7QUFDQTtBQUNBOzs7O0FBU0E7O0FBR0E7QUFBQTtBQUNBO0FBQ0E7QUFGQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUNBOztBQUhBOztBQUFBO0FBQ0E7QUFDQTtBQUFBO0FBMURBO0FETUE7OztBQUFBOzs7QUVOQTtBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBIiwiZmlsZSI6ImNoYW5nZS5wYWdlLmNqcyJ9
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9pZG9pby9Eb2N1bWVudHMvYmV5b25kLWVhc3kvdGVzdHMvY29yZS9XZWJzaXRlLy9XV1cvY2hhbmdlLnBhZ2UiLCIvVXNlcnMvaWRvaW8vRG9jdW1lbnRzL2JleW9uZC1lYXN5L3Rlc3RzL2NvcmUvV2Vic2l0ZS8vV1dXL2NvbmQucGFnZSIsIi9Vc2Vycy9pZG9pby9Eb2N1bWVudHMvYmV5b25kLWVhc3kvdGVzdHMvY29yZS9XZWJzaXRlLy9XV1cvZm9vL0MuaW50ZSJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFDQTs7OztBQUVBO0FBQ0E7OztBQUFBO0FBQ0E7QUFEQTtBQ0pBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7Ozs7Ozs7Ozs7Ozs7QUFOQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7Ozs7QUFFQTs7O0FBQ0E7QUFDQTs7QUFBQTs7QUFHQTtBQUFBO0FBQ0E7QUFDQTtBQUZBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUNBO0FBQ0E7O0FBSEE7O0FBQUE7QUFBQTs7O0FBR0E7Ozs7Ozs7OztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOztBQUNBOzs7OztBQUVBOztBQUdBO0FBQUE7QUFDQTtBQUNBO0FBRkE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQ0E7QUFDQTs7QUFIQTs7QUFBQTtBQUNBO0FBQ0E7QUFBQTs7QUFFQTs7Ozs7Ozs7Ozs7Ozs7QUFFQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7QUFDQTs7Ozs7O0FBSUE7QUFDQTtBQUNBOzs7O0FBU0E7O0FBR0E7QUFBQTtBQUNBO0FBQ0E7QUFGQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFDQTtBQUNBOztBQUhBOztBQUFBO0FBQ0E7QUFDQTtBQUFBO0FBMURBO0FETUE7Ozs7Ozs7Ozs7QUFBQTs7O0FFTkE7QUFBQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSIsImZpbGUiOiJjaGFuZ2UucGFnZS5janMifQ==

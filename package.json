@@ -4,8 +4,8 @@
   "description": "Node.js framework, with a lot of built in features",
   "main": "dist/index.js",
   "scripts": {
-    "postinstall": "node ./dist/scripts/postinstall.js",
-    "build": "node build && npm run postinstall",
+    "postinstall": "node dist/scripts/install.js",
+    "build": "node build",
     "writeGitLabCi": "node build/writeGitLabCi.js",
     "build:ts": "tsc --project tsconfig.json",
     "build:ts:production": "tsc --project production.tsconfig.json",
