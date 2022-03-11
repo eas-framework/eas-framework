@@ -22,7 +22,7 @@ declare type page = {
     Cookies: AddAny;
     PageVar: AddAny;
     GlobalVar: AddAny;
-};
+} & AddAny;
 declare global {
     let page: page;
     let write: write;

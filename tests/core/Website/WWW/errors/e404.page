@@ -1,6 +1,4 @@
-@[codeFile='inherit']
-
-<@model>Website</@model>
+@[model=Website]
 <@title>Page Not Found</@title>
 <@body/>
 <h1>404 2</h1>

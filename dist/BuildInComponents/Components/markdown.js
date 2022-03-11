@@ -6,7 +6,7 @@ import { PrintIfNew } from '../../OutputInput/PrintNew.js';
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs.js';
 import { BasicSettings } from '../../RunTimeBuild/SearchFileSystem.js';
-export default async function BuildCode(type, dataTag, BetweenTagData, InsertComponent, session) {
+export default async function BuildCode(type, dataTag, BetweenTagData, InsertComponent, session, dependenceObject) {
     const markDownPlugin = InsertComponent.GetPlugin('markdown');
     const hljsClass = parseTagDataStringBoolean(dataTag, 'hljsClass', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
     let haveHighlight = false;
@@ -35,10 +35,12 @@ export default async function BuildCode(type, dataTag, BetweenTagData, InsertCom
     });
     let markdownCode = BetweenTagData?.eq;
     if (!markdownCode) {
-        let filePath = path.join(BasicSettings.fullWebSitePath, path.dirname(type.extractInfo('<line>')), dataTag.remove('file'));
+        let filePath = path.join(path.dirname(type.extractInfo('<line>')), dataTag.remove('file'));
         if (!path.extname(filePath))
             filePath += '.serv.md';
-        markdownCode = await EasyFs.readFile(filePath); //get markdown from file
+        const fullPath = path.join(BasicSettings.fullWebSitePath, filePath);
+        markdownCode = await EasyFs.readFile(fullPath); //get markdown from file
+        dependenceObject[filePath] = await EasyFs.stat(fullPath, 'mtimeMs');
     }
     const renderHTML = md.render(markdownCode), buildHTML = new StringTracker(type.DefaultInfoText);
     const theme = dataTag.remove('theme') || markDownPlugin?.theme || 'atom-one-light';

@@ -40,7 +40,7 @@ export function StartCompiling(path, pathName, LastSmallPath, type, dataTag, Bet
             reData = svelte(path, LastSmallPath, isDebug, dataTag, dependenceObject, sessionInfo);
             break;
         case "markdown":
-            reData = markdown(type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            reData = markdown(type, dataTag, BetweenTagData, InsertComponent, sessionInfo, dependenceObject);
             break;
         default:
             console.error("Component is not build yet");
