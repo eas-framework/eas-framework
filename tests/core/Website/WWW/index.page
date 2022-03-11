@@ -14,7 +14,7 @@
     var en = debug
 
 }
-
+@Query
 <client name="more" params="name,cool">
     @for(var i = 0; i < 20; i++){
         <ButtonLink>@i+Cool</ButtonLink>

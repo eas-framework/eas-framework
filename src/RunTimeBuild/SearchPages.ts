@@ -15,19 +15,19 @@ export function RemoveEndType(string: string) {
 }
 Components.RemoveEndType = RemoveEndType;
 
-async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, debugFromPage?: string, hasSessionInfo?: SessionInfo) {
+async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, hasSessionInfo?: SessionInfo, nestedPage?: string, nestedPageData?: string) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
     const dependenceObject: any = {
         thisPage: await EasyFs.stat(FullFilePath, 'mtimeMs')
     };
 
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
-    const ExcluUrl = (debugFromPage ? debugFromPage + '<line>' : '') + arrayType[2] + '/' + filePath;
+    const ExcluUrl = (nestedPage ? nestedPage + '<line>' : '') + arrayType[2] + '/' + filePath;
 
     const sessionInfo: SessionInfo = hasSessionInfo ?? newSession(ExcluUrl, arrayType[2], isDebug && !GetPlugin("SafeDebug"));
-    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(debugFromPage), sessionInfo);
+    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(nestedPage), nestedPageData, sessionInfo);
 
-    if (!debugFromPage) {
+    if (!nestedPage) {
         await EasyFs.writeFile(FullPathCompile, <string>CompiledData);
         await SearchFileSystem.UpdatePageDependency(RemoveEndType(ExcluUrl), dependenceObject);
     }
@@ -87,9 +87,9 @@ async function CreateCompile(t: string, state: CompileState) {
 /**
  * when page call other page;
  */
-async function FastCompileInFile(path: string, arrayType: string[], debugFromPage?: string, sessionInfo?: SessionInfo) {
+async function FastCompileInFile(path: string, arrayType: string[], sessionInfo?: SessionInfo, nestedPage?: string, nestedPageData?: string) {
     await EasyFs.makePathReal(path, arrayType[1]);
-    return await compileFile(path, arrayType, true, debugFromPage, sessionInfo);
+    return await compileFile(path, arrayType, true, sessionInfo, nestedPage, nestedPageData);
 }
 
 Components.CompileInFile = <any>FastCompileInFile;

@@ -2,7 +2,8 @@ import StringTracker from '../../EasyDebug/StringTracker.js';
 import { RazorToEJS } from '../../CompileCode/BaseReader/Reader.js';
 const addWriteMap = {
     "include": "await ",
-    "import": "await "
+    "import": "await ",
+    "transfer": "return await "
 };
 export default async function ConvertSyntax(text, options) {
     const values = await RazorToEJS(text.eq);

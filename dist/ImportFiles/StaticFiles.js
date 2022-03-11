@@ -127,12 +127,13 @@ async function unsafeDebug(isDebug, filePath, checked) {
 async function svelteStyle(filePath, checked, isDebug) {
     const baseFilePath = filePath.substring(0, filePath.length - 4); // removing '.css'
     const fullPath = getTypes.Static[1] + filePath;
-    if (path.extname(baseFilePath) == '.svelte' && (checked || await EasyFs.existsFile(fullPath)))
+    let exists;
+    if (path.extname(baseFilePath) == '.svelte' && (checked || (exists = await EasyFs.existsFile(fullPath))))
         return {
             type: 'css',
             inServer: fullPath
         };
-    if (isDebug) {
+    if (isDebug && exists) {
         await BuildFile(baseFilePath, isDebug, getTypes.Static[1] + baseFilePath);
         return svelteStyle(filePath, checked, false);
     }

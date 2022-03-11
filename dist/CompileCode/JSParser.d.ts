@@ -16,6 +16,7 @@ export default class JSParser {
     ScriptWithInfo(text: StringTracker): StringTracker;
     findScripts(): Promise<void>;
     static fixText(text: StringTracker | string): string | StringTracker;
+    static fixTextSimpleQuotes(text: StringTracker | string): string | StringTracker;
     ReBuildText(): StringTracker;
     BuildAll(isDebug: boolean): StringTracker;
     static printError(message: string): string;

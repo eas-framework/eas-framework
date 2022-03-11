@@ -6,7 +6,7 @@ declare type RequireFiles = {
     dependencies?: StringAnyMap;
     static?: boolean;
 };
-export default function RequireFile(filePath: string, importFrom: string, pathname: string, typeArray: string[], LastRequire: {
+export default function RequireFile(filePath: string, __filename: string, __dirname: string, typeArray: string[], LastRequire: {
     [key: string]: RequireFiles;
 }, isDebug: boolean): Promise<any>;
 export {};

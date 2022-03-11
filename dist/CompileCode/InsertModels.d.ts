@@ -9,4 +9,4 @@ export declare const Components: InsertComponent;
 export declare function GetPlugin(name: string): any;
 export declare function SomePlugins(...data: string[]): boolean;
 export declare function isTs(): boolean;
-export declare function Insert(data: string, fullPathCompile: string, pagePath: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, debugFromPage: boolean, sessionInfo?: SessionInfo): Promise<string | StringTracker>;
+export declare function Insert(data: string, fullPathCompile: string, pagePath: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, nestedPage?: boolean, nestedPageData?: string, sessionInfo?: SessionInfo): Promise<string | StringTracker>;

@@ -11,16 +11,16 @@ export function RemoveEndType(string) {
     return string.substring(0, string.lastIndexOf('.'));
 }
 Components.RemoveEndType = RemoveEndType;
-async function compileFile(filePath, arrayType, isDebug, debugFromPage, hasSessionInfo) {
+async function compileFile(filePath, arrayType, isDebug, hasSessionInfo, nestedPage, nestedPageData) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
     const dependenceObject = {
         thisPage: await EasyFs.stat(FullFilePath, 'mtimeMs')
     };
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
-    const ExcluUrl = (debugFromPage ? debugFromPage + '<line>' : '') + arrayType[2] + '/' + filePath;
+    const ExcluUrl = (nestedPage ? nestedPage + '<line>' : '') + arrayType[2] + '/' + filePath;
     const sessionInfo = hasSessionInfo ?? newSession(ExcluUrl, arrayType[2], isDebug && !GetPlugin("SafeDebug"));
-    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(debugFromPage), sessionInfo);
-    if (!debugFromPage) {
+    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(nestedPage), nestedPageData, sessionInfo);
+    if (!nestedPage) {
         await EasyFs.writeFile(FullPathCompile, CompiledData);
         await SearchFileSystem.UpdatePageDependency(RemoveEndType(ExcluUrl), dependenceObject);
     }
@@ -72,9 +72,9 @@ async function CreateCompile(t, state) {
 /**
  * when page call other page;
  */
-async function FastCompileInFile(path, arrayType, debugFromPage, sessionInfo) {
+async function FastCompileInFile(path, arrayType, sessionInfo, nestedPage, nestedPageData) {
     await EasyFs.makePathReal(path, arrayType[1]);
-    return await compileFile(path, arrayType, true, debugFromPage, sessionInfo);
+    return await compileFile(path, arrayType, true, sessionInfo, nestedPage, nestedPageData);
 }
 Components.CompileInFile = FastCompileInFile;
 export async function FastCompile(path, arrayType) {

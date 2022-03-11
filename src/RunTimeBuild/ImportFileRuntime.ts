@@ -2,6 +2,7 @@ import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import EasyFs from '../OutputInput/EasyFs';
 import { ImportFile, AddExtension } from '../ImportFiles/Script';
 import { PrintIfNew } from '../OutputInput/PrintNew';
+import path from 'path';
 
 type RequireFiles = {
     path: string
@@ -73,7 +74,7 @@ function getChangeArray(oldDeps: StringAnyMap, newDeps: StringAnyMap, parent = '
     return changeArray;
 }
 
-export default async function RequireFile(filePath: string, importFrom: string, pathname: string, typeArray: string[], LastRequire: { [key: string]: RequireFiles }, isDebug: boolean) {
+export default async function RequireFile(filePath: string, __filename: string, __dirname: string, typeArray: string[], LastRequire: { [key: string]: RequireFiles }, isDebug: boolean) {
     const ReqFile = LastRequire[filePath];
 
     let fileExists: number, newDeps: StringAnyMap;
@@ -102,9 +103,8 @@ export default async function RequireFile(filePath: string, importFrom: string, 
 
             if (filePath[1] == '/')
                 filePath = filePath.substring(2);
-
-            filePath = pathname && (pathname + '/' + filePath) || filePath;
-
+                
+            filePath = path.join(path.relative(__dirname, typeArray[0]), filePath);
         } else if (filePath[0] != '/')
             static_modules = true;
 
@@ -132,7 +132,7 @@ export default async function RequireFile(filePath: string, importFrom: string, 
             else {
                 newDeps = newDeps ?? {};
 
-                LastRequire[copyPath] = { model: await ImportFile(importFrom, filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath }
+                LastRequire[copyPath] = { model: await ImportFile(__filename, filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath }
             }
         }
         else {
@@ -140,7 +140,7 @@ export default async function RequireFile(filePath: string, importFrom: string, 
             PrintIfNew({
                 type: 'warn',
                 errorName: 'import-not-exists',
-                text: `Import '${filePath}' does not exists from '${importFrom}'`
+                text: `Import '${filePath}' does not exists from '${__filename}'`
               })
         }
     }

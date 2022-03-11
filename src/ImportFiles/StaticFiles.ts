@@ -8,7 +8,7 @@ import { Response, Request } from '@tinyhttp/app';
 import { GetPlugin } from '../CompileCode/InsertModels';
 import fs from 'fs';
 import promptly from 'promptly';
-import {argv} from 'process';
+import { argv } from 'process';
 
 const SupportedTypes = ['js', 'svelte', 'ts', 'jsx', 'tsx', 'css', 'sass', 'scss'];
 
@@ -125,26 +125,26 @@ async function serverBuildByType(Request: Request, filePath: string, checked: bo
 
 let debuggingWithSource: null | boolean = null;
 
-if(argv.includes('allowSourceDebug'))
+if (argv.includes('allowSourceDebug'))
     debuggingWithSource = true;
 async function askDebuggingWithSource() {
     if (typeof debuggingWithSource == 'boolean')
         return debuggingWithSource;
 
-        try {
-            debuggingWithSource = (await promptly.prompt(
-                'Allow debugging JavaScript/CSS in source page? - exposing your source code (no)',
-                {
-                    validator(v: string) {
-                        if (['yes', 'no'].includes(v.trim().toLowerCase()))
-                            return v;
-                        throw new Error('yes or no');
-                    },
-                    timeout: 1000 * 30
-                }
-            )).trim().toLowerCase() == 'yes';
+    try {
+        debuggingWithSource = (await promptly.prompt(
+            'Allow debugging JavaScript/CSS in source page? - exposing your source code (no)',
+            {
+                validator(v: string) {
+                    if (['yes', 'no'].includes(v.trim().toLowerCase()))
+                        return v;
+                    throw new Error('yes or no');
+                },
+                timeout: 1000 * 30
+            }
+        )).trim().toLowerCase() == 'yes';
         // eslint-disable-next-line
-        } catch {}
+    } catch { }
 
 
     return debuggingWithSource;
@@ -168,14 +168,15 @@ async function svelteStyle(filePath: string, checked: boolean, isDebug: boolean)
     const baseFilePath = filePath.substring(0, filePath.length - 4); // removing '.css'
     const fullPath = getTypes.Static[1] + filePath;
 
-    if (path.extname(baseFilePath) == '.svelte' && (checked || await EasyFs.existsFile(fullPath)))
+    let exists: boolean;
+    if (path.extname(baseFilePath) == '.svelte' && (checked || (exists = await EasyFs.existsFile(fullPath))))
         return {
             type: 'css',
             inServer: fullPath
         }
 
-    if (isDebug) {
-        await BuildFile(baseFilePath, isDebug, getTypes.Static[1] + baseFilePath);
+    if (isDebug && exists) {
+        await BuildFile(baseFilePath, isDebug, getTypes.Static[1] + baseFilePath)
         return svelteStyle(filePath, checked, false);
     }
 }
@@ -193,9 +194,9 @@ async function svelteStatic(filePath: string, checked: boolean) {
         }
 }
 
-async function markdownTheme(filePath: string, checked: boolean){
+async function markdownTheme(filePath: string, checked: boolean) {
     if (!filePath.startsWith('serv/markdown-theme/'))
-    return;
+        return;
 
     const fullPath = workingDirectory + 'node_modules/highlight.js/styles' + filePath.substring(19);
 
@@ -251,7 +252,7 @@ export async function GetFile(SmallPath: string, isDebug: boolean, Request: Requ
     // re-compiling if necessary on debug mode
     if (isDebug && (Request.query.source == 'true' || await CheckDependencyChange(SmallPath) && !await BuildFile(SmallPath, isDebug, fullCompilePath))) {
         resPath = fullPath;
-    } else if(ext == 'svelte')
+    } else if (ext == 'svelte')
         resPath += '.js';
 
     Response.end(await fs.promises.readFile(resPath, 'utf8')); // sending the file

@@ -92,6 +92,10 @@ export default class JSParser {
         return text.replace(/\\/gi, '\\\\').replace(/`/gi, '\\`').replace(/\$/gi, '\\u0024');
     }
 
+    static fixTextSimpleQuotes(text: StringTracker | string){
+        return text.replace(/\\/gi, '\\\\').replace(/"/gi, '\\"');
+    }
+
     ReBuildText() {
         const allcode = new StringTracker(this.values[0]?.text?.StartInfo);
         for (const i of this.values) {

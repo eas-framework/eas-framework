@@ -1,6 +1,7 @@
 import EasyFs from '../OutputInput/EasyFs.js';
 import { ImportFile, AddExtension } from '../ImportFiles/Script.js';
 import { PrintIfNew } from '../OutputInput/PrintNew.js';
+import path from 'path';
 const CacheRequireFiles = {};
 async function makeDependencies(dependencies, typeArray, basePath = '', cache = {}) {
     const dependenciesMap = {};
@@ -56,7 +57,7 @@ function getChangeArray(oldDeps, newDeps, parent = '') {
     }
     return changeArray;
 }
-export default async function RequireFile(filePath, importFrom, pathname, typeArray, LastRequire, isDebug) {
+export default async function RequireFile(filePath, __filename, __dirname, typeArray, LastRequire, isDebug) {
     const ReqFile = LastRequire[filePath];
     let fileExists, newDeps;
     if (ReqFile) {
@@ -77,7 +78,7 @@ export default async function RequireFile(filePath, importFrom, pathname, typeAr
         if (filePath[0] == '.') {
             if (filePath[1] == '/')
                 filePath = filePath.substring(2);
-            filePath = pathname && (pathname + '/' + filePath) || filePath;
+            filePath = path.join(path.relative(__dirname, typeArray[0]), filePath);
         }
         else if (filePath[0] != '/')
             static_modules = true;
@@ -101,7 +102,7 @@ export default async function RequireFile(filePath, importFrom, pathname, typeAr
                 LastRequire[copyPath] = haveModel;
             else {
                 newDeps = newDeps ?? {};
-                LastRequire[copyPath] = { model: await ImportFile(importFrom, filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath };
+                LastRequire[copyPath] = { model: await ImportFile(__filename, filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath };
             }
         }
         else {
@@ -109,7 +110,7 @@ export default async function RequireFile(filePath, importFrom, pathname, typeAr
             PrintIfNew({
                 type: 'warn',
                 errorName: 'import-not-exists',
-                text: `Import '${filePath}' does not exists from '${importFrom}'`
+                text: `Import '${filePath}' does not exists from '${__filename}'`
             });
         }
     }

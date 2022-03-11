@@ -6,14 +6,14 @@ import { print } from '../OutputInput/Console.js';
 import { handelConnectorService } from '../BuildInComponents/index.js';
 //@ts-ignore-next-line
 import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.cjs';
-import { CutTheLast, SplitFirst } from '../StringMethods/Splitting.js';
+import { SplitFirst } from '../StringMethods/Splitting.js';
 import RequireFile from './ImportFileRuntime.js';
 import { PrintIfNew } from '../OutputInput/PrintNew.js';
 const Export = {
     PageLoadRam: {},
     PageRam: true
 };
-async function RequirePage(filePath, importFrom, pathname, typeArray, LastRequire, DataObject) {
+async function RequirePage(filePath, __filename, __dirname, typeArray, LastRequire, DataObject) {
     const ReqFilePath = LastRequire[filePath];
     const resModel = () => ReqFilePath.model(DataObject);
     let fileExists;
@@ -32,14 +32,16 @@ async function RequirePage(filePath, importFrom, pathname, typeArray, LastRequir
         extname = BasicSettings.pageTypes.page;
         filePath += '.' + extname;
     }
+    let fullPath;
     if (filePath[0] == '.') {
         if (filePath[1] == '/')
             filePath = filePath.substring(2);
         else
             filePath = filePath.substring(1);
-        filePath = pathname && (pathname + '/' + filePath) || filePath;
+        fullPath = path.join(__dirname, filePath);
     }
-    const fullPath = path.join(typeArray[0], filePath);
+    else
+        fullPath = path.join(typeArray[0], filePath);
     if (![BasicSettings.pageTypes.page, BasicSettings.pageTypes.component].includes(extname)) {
         const importText = await EasyFs.readFile(fullPath);
         DataObject.write(importText);
@@ -50,7 +52,7 @@ async function RequirePage(filePath, importFrom, pathname, typeArray, LastRequir
         PrintIfNew({
             type: 'warn',
             errorName: 'import-not-exists',
-            text: `Import '${copyPath}' does not exists from '${importFrom}'`
+            text: `Import '${copyPath}' does not exists from '${__filename}'`
         });
         LastRequire[copyPath] = { model: () => { }, date: -1, path: fullPath };
         return LastRequire[copyPath].model;
@@ -74,9 +76,6 @@ async function RequirePage(filePath, importFrom, pathname, typeArray, LastRequir
     return await func(DataObject);
 }
 const GlobalVar = {};
-function getFullPath(url) {
-    return path.resolve() + '/' + BasicSettings.WebSiteFolder + CutTheLast('/', '/' + url);
-}
 function getFullPathCompile(url) {
     const SplitInfo = SplitFirst('/', url);
     const typeArray = getTypes[SplitInfo[0]];
@@ -84,28 +83,37 @@ function getFullPathCompile(url) {
 }
 async function LoadPage(url, ext = BasicSettings.pageTypes.page) {
     const SplitInfo = SplitFirst('/', url);
-    const __dirname = getFullPath(url);
-    const Debug__filename = url + "." + ext;
-    const __filename = __dirname + '/' + url.split('/').pop() + "." + ext;
-    const pathname = CutTheLast('/', '/' + SplitInfo[1]);
     const typeArray = getTypes[SplitInfo[0]];
     const LastRequire = {};
-    function _require(DataObject, p) {
-        return RequireFile(p, __filename, pathname, typeArray, LastRequire, DataObject.isDebug);
+    function _require(__filename, __dirname, DataObject, p) {
+        return RequireFile(p, __filename, __dirname, typeArray, LastRequire, DataObject.isDebug);
     }
-    function _include(DataObject, p, WithObject = {}) {
-        return RequirePage(p, __filename, pathname, typeArray, LastRequire, { ...WithObject, ...DataObject });
+    function _include(__filename, __dirname, DataObject, p, WithObject = {}) {
+        return RequirePage(p, __filename, __dirname, typeArray, LastRequire, { ...WithObject, ...DataObject });
+    }
+    function _transfer(p, preserveForm, withObject, __filename, __dirname, DataObject) {
+        DataObject.setResponse('');
+        if (!preserveForm) {
+            const postData = DataObject.Request.body ? {} : null;
+            DataObject = {
+                ...DataObject,
+                Request: { ...DataObject.Request, files: {}, query: {}, body: postData },
+                Post: postData, Query: {}, Files: {}
+            };
+        }
+        return _include(__filename, __dirname, DataObject, p, withObject);
     }
     const compiledPath = path.join(typeArray[1], SplitInfo[1] + "." + ext + '.cjs');
     const private_var = {};
     try {
         const MyModule = await ImportWithoutCache(compiledPath);
-        return MyModule(__dirname, __filename, _require, _include, private_var, handelConnectorService);
+        return MyModule(_require, _include, _transfer, private_var, handelConnectorService);
     }
     catch (e) {
-        print.error("Error path -> ", Debug__filename, "->", e.message);
+        const debug__filename = url + "." + ext;
+        print.error("Error path -> ", debug__filename, "->", e.message);
         print.error(e.stack);
-        return (DataObject) => DataObject.out_run_script.text += `<div style="color:red;text-align:left;font-size:16px;"><p>Error path: ${Debug__filename}</p><p>Error message: ${e.message}</p></div>`;
+        return (DataObject) => DataObject.out_run_script.text += `<div style="color:red;text-align:left;font-size:16px;"><p>Error path: ${debug__filename}</p><p>Error message: ${e.message}</p></div>`;
     }
 }
 function BuildPage(LoadPageFunc, run_script_name) {
@@ -113,8 +121,8 @@ function BuildPage(LoadPageFunc, run_script_name) {
     return (async function (Response, Request, Post, Query, Cookies, Session, Files, isDebug) {
         const out_run_script = { text: '' };
         function ToStringInfo(str) {
-            const asString = String(str);
-            if (asString.startsWith('[object Object]')) {
+            const asString = str?.toString?.();
+            if (asString == null || asString.startsWith('[object Object]')) {
                 return JSON.stringify(str, null, 2);
             }
             return asString;

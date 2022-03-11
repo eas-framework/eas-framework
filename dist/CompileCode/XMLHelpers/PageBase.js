@@ -124,7 +124,7 @@ export default class ParseBasePage {
                 id: SmallPath,
                 type: 'error',
                 errorName: 'codeFileNotFound',
-                text: `\nCode file not found: ${haveCode}<line>${SmallPath}`
+                text: `\nCode file not found: ${pagePath}<line>${SmallPath}`
             });
             this.scriptFile = new StringTracker(pageName, `<%="<p style=\\"color:red;text-align:left;font-size:16px;\\">Code File Not Found: '${pageSmallPath}' -> '${SmallPath}'</p>"%>`);
         }

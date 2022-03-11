@@ -62,6 +62,9 @@ export default class JSParser {
     static fixText(text) {
         return text.replace(/\\/gi, '\\\\').replace(/`/gi, '\\`').replace(/\$/gi, '\\u0024');
     }
+    static fixTextSimpleQuotes(text) {
+        return text.replace(/\\/gi, '\\\\').replace(/"/gi, '\\"');
+    }
     ReBuildText() {
         const allcode = new StringTracker(this.values[0]?.text?.StartInfo);
         for (const i of this.values) {

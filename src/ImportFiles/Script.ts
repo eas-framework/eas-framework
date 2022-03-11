@@ -30,9 +30,9 @@ async function ReplaceBefore(
 }
 
 function template(code: string, isDebug: boolean, dir: string, file: string) {
-  return `${isDebug ? "require('source-map-support').install();" : ''}var __dirname=\`${JSParser.fixText(dir)
-    }\`,__filename=\`${JSParser.fixText(file)
-    }\`;module.exports = (async (require)=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
+  return `${isDebug ? "require('source-map-support').install();" : ''}var __dirname="${JSParser.fixTextSimpleQuotes(dir)
+    }",__filename="${JSParser.fixTextSimpleQuotes(file)
+    }";module.exports = (async (require)=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
 }
 
 /**

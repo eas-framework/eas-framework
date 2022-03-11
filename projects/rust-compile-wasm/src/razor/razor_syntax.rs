@@ -39,7 +39,8 @@ lazy_static! {
     ];
     static ref ADD_TO_SCRIPT: Vec<String> = vec![
         String::from("include"),
-        String::from("import")
+        String::from("import"),
+        String::from("transfer")
     ];
 }
 
@@ -266,8 +267,7 @@ impl Razor {
                     vec![char, if char == '(' { ')' } else { ']' }],
                 ) as usize
                     + 1;
-            } else if !char.is_alphabetic()
-                && ((char == '?' && text.at(i + 1) != '.')
+            } else if !char.is_alphabetic() && char != '_' && char != '$' && ((char == '?' && text.at(i + 1) != '.')
                     || (char == '.' && !text.at(i + 1).is_alphabetic())
                     || char != '.' && char != '?')
             {

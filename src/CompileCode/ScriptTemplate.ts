@@ -41,7 +41,7 @@ export class PageTemplate extends JSParser {
         return storeMap.mapAsURLComment();
     }
 
-    private static async AddPageTemplate(text: StringTracker, isDebug: boolean, fullPathCompile: string, sessionInfo: SessionInfo) {
+    private static async AddPageTemplate(text: StringTracker, isDebug: boolean, fullPath: string, fullPathCompile: string, sessionInfo: SessionInfo) {
 
         text = await finalizeBuild(text, sessionInfo, fullPathCompile);
 
@@ -49,19 +49,20 @@ export class PageTemplate extends JSParser {
             text.AddTextBefore(`try {\n`);
         }
 
-
         text.AddTextBefore(`
-        module.exports = (__dirname, __filename, _require, _include, private_var, handelConnector) => {
+        module.exports = (_require, _include, _transfer, private_var, handelConnector) => {
             return (async function (page) {
-                const require = (p) => _require(page, p);
-                const include = (p, WithObject) => _include(page, p, WithObject);
+                const __filename = "${JSParser.fixTextSimpleQuotes(fullPath)}", __dirname = "${JSParser.fixTextSimpleQuotes(path.dirname(fullPath))}";
+                const require = (p) => _require(__filename, __dirname, page, p);
+                const include = (p, withObject) => _include(__filename, __dirname, page, p, withObject);
         
                 var module = { exports: {} },
                     exports = module.exports,
                     { sendFile, writeSafe, write, echo, setResponse, out_run_script, run_script_name, Response, Request, Post, Query, Session, Files, Cookies, PageVar, GlobalVar} = page,
-                    
-                    run_script_code = run_script_name; 
 
+                    run_script_code = run_script_name;
+
+                    const transfer = (p, preserveForm, withObject) => (out_run_script = {text: ''}, _transfer(p, preserveForm, withObject, __filename, __dirname, page));
                 {`);
 
 
@@ -91,13 +92,29 @@ export class PageTemplate extends JSParser {
     static async BuildPage(text: StringTracker, path: string, isDebug: boolean, fullPathCompile: string, sessionInfo: SessionInfo) {
         const builtCode = await PageTemplate.RunAndExport(text, path, isDebug);
 
-        return PageTemplate.AddPageTemplate(builtCode, isDebug, fullPathCompile, sessionInfo);
+        return PageTemplate.AddPageTemplate(builtCode, isDebug, path, fullPathCompile, sessionInfo);
     }
 
     static AddAfterBuild(text: string, isDebug: boolean) {
         if (isDebug) {
             text = "require('source-map-support').install();" + text;
         }
+        return text;
+    }
+    
+    static InPageTemplate(text: StringTracker, dataObject: any, fullPath: string){
+        text.AddTextBefore(`<%!{
+            const _page = page;
+            {
+            const page = {..._page${dataObject ? ','+dataObject: ''}};
+            const __filename = "${JSParser.fixTextSimpleQuotes(fullPath)}", __dirname = "${JSParser.fixTextSimpleQuotes(path.dirname(fullPath))}";
+            const require = (p) => _require(__filename, __dirname, page, p);
+            const include = (p, withObject) => _include(__filename, __dirname, page, p, withObject);
+            const transfer = (p, preserveForm, withObject) => (out_run_script = {text: ''}, _transfer(p, preserveForm, withObject, __filename, __dirname, page));
+                {%>`);
+
+        text.AddTextAfter('<%!}}}%>');
+
         return text;
     }
 }

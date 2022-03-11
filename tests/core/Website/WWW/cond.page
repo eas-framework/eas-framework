@@ -8,6 +8,8 @@
     }
 }
 
+@__filename
+
 <form sendTo="me">
     <input name="am" value="more--------++"/>
 </form>
@@ -50,7 +52,7 @@
     }
 </script>
 
-
+@transfer('./index')
 <form action="post" sendTo="checkLogin">
     <input type="email" name="email" placeholder="Enter your email address"/>
     <input type="password" name="password" placeholder="Enter your password"/>

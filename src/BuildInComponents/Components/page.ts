@@ -54,7 +54,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
     const haveCache = cacheMap[SmallPathWithoutFolder];
     if (!haveCache || await CheckDependencyChange(null, haveCache.dependence)) {
-        const { CompiledData, dependenceObject: dependence , sessionInfo: newSession} = await InsertComponent.CompileInFile(SmallPathWithoutFolder, getTypes.Static, pathName);
+        const { CompiledData, dependenceObject: dependence , sessionInfo: newSession} = await InsertComponent.CompileInFile(SmallPathWithoutFolder, getTypes.Static, null, pathName, dataTag.remove('object'));
         dependence[SmallPath] = dependence.thisPage;
         delete dependence.thisPage;
 
