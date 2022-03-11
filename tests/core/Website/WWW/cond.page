@@ -52,7 +52,7 @@
     }
 </script>
 
-@transfer('./index')
+<!-- @transfer('./index') -->
 <form action="post" sendTo="checkLogin">
     <input type="email" name="email" placeholder="Enter your email address"/>
     <input type="password" name="password" placeholder="Enter your password"/>

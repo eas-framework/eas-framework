@@ -194,11 +194,11 @@ async function svelteStatic(filePath: string, checked: boolean) {
         }
 }
 
-async function markdownTheme(filePath: string, checked: boolean) {
-    if (!filePath.startsWith('serv/markdown-theme/'))
+async function markdownCodeTheme(filePath: string, checked: boolean) {
+    if (!filePath.startsWith('serv/md/code-theme/'))
         return;
 
-    const fullPath = workingDirectory + 'node_modules/highlight.js/styles' + filePath.substring(19);
+    const fullPath = workingDirectory + 'node_modules/highlight.js/styles' + filePath.substring(18);
 
     if (checked || await EasyFs.existsFile(fullPath))
         return {
@@ -207,12 +207,34 @@ async function markdownTheme(filePath: string, checked: boolean) {
         }
 }
 
+async function markdownTheme(filePath: string, checked: boolean) {
+    if (!filePath.startsWith('serv/md/theme/'))
+        return;
+
+    let fileName = filePath.substring(14);
+    if (fileName.startsWith('auto'))
+        fileName = fileName.substring(4)
+    else
+        fileName = '-' + fileName;
+
+
+    const fullPath = workingDirectory + 'node_modules/github-markdown-css/github-markdown' + fileName;
+
+    if (checked || await EasyFs.existsFile(fullPath))
+        return {
+            type: 'css',
+            inServer: fullPath
+        }
+}
+
+
 export async function serverBuild(Request: Request, isDebug: boolean, path: string, checked = false): Promise<null | buildIn> {
     return await svelteStatic(path, checked) ||
         await svelteStyle(path, checked, isDebug) ||
         await unsafeDebug(isDebug, path, checked) ||
         await serverBuildByType(Request, path, checked) ||
         await markdownTheme(path, checked) ||
+        await markdownCodeTheme(path, checked) ||
         getStatic.find(x => x.path == path);
 }
 

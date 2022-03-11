@@ -245,8 +245,9 @@ export default class StringTracker {
      * @param text 
      * @param info 
      */
-    public AddTextAfter(text: string, info?: string, line?: number, char?: number): void {
+    public AddTextAfter(text: string, info?: string, line?: number, char?: number) {
         this.AddTextAction(text, "push", info, line, char);
+        return this;
     }
 
     /**
@@ -254,8 +255,9 @@ export default class StringTracker {
      * @param text 
      * @param info 
      */
-    public AddTextBefore(text: string, info?: string, line?: number, char?: number): void {
+    public AddTextBefore(text: string, info?: string, line?: number, char?: number) {
         this.AddTextAction(text, "unshift", info, line, char);
+        return this;
     }
 
     /**

@@ -10,7 +10,8 @@ export interface tagDataObject {
 export interface tagDataObjectArray extends Array<tagDataObject> {
     have?: (name: string) => boolean
     remove?: (name: string) => string
-    getValue?: (name: string) => string
+    getValue?: (name: string) => string,
+    addClass?: (name: string) => void
 }
 
 export interface tagDataObjectAsText {

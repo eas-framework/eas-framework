@@ -88,13 +88,13 @@ export default class StringTracker {
      * @param text
      * @param info
      */
-    AddTextAfter(text: string, info?: string, line?: number, char?: number): void;
+    AddTextAfter(text: string, info?: string, line?: number, char?: number): this;
     /**
      * add text at the *start* of the string
      * @param text
      * @param info
      */
-    AddTextBefore(text: string, info?: string, line?: number, char?: number): void;
+    AddTextBefore(text: string, info?: string, line?: number, char?: number): this;
     /**
      * Add Text File Tracking
      * @param text

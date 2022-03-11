@@ -199,6 +199,7 @@ export default class StringTracker {
      */
     AddTextAfter(text, info, line, char) {
         this.AddTextAction(text, "push", info, line, char);
+        return this;
     }
     /**
      * add text at the *start* of the string
@@ -207,6 +208,7 @@ export default class StringTracker {
      */
     AddTextBefore(text, info, line, char) {
         this.AddTextAction(text, "unshift", info, line, char);
+        return this;
     }
     /**
      * Add Text File Tracking

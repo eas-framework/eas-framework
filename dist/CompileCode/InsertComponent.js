@@ -87,6 +87,17 @@ export default class InsertComponent extends InsertComponentBase {
         a.have = (name) => index(name) != -1;
         a.getValue = getValue;
         a.remove = remove;
+        a.addClass = c => {
+            const i = index('class');
+            if (i == -1) {
+                a.push({ n: new StringTracker(null, 'class'), v: new StringTracker(null, c), char: new StringTracker(null, '"') });
+                return;
+            }
+            const item = a[i];
+            if (item.v.length)
+                c = ' ' + c;
+            item.v.AddTextAfter(c);
+        };
         return a;
     }
     findIndexSearchTag(query, tag) {

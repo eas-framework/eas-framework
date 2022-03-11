@@ -31,7 +31,7 @@ export default class InsertComponent extends InsertComponentBase {
         super(PrintIfNew);
         this.dirFolder = 'Components/';
         this.PluginBuild = PluginBuild;
-        this.regexSearch =  new RegExp(`<([\\p{Lu}_\\-:0-9]|${AllBuildIn.join('|')})`, 'u')
+        this.regexSearch = new RegExp(`<([\\p{Lu}_\\-:0-9]|${AllBuildIn.join('|')})`, 'u')
     }
 
     FindSpecialTagByStart(string: string) {
@@ -117,6 +117,17 @@ export default class InsertComponent extends InsertComponentBase {
         a.have = (name: string) => index(name) != -1;
         a.getValue = getValue;
         a.remove = remove;
+        a.addClass = c => {
+            const i = index('class');
+            if (i == -1) {
+                a.push({ n: new StringTracker(null, 'class'), v: new StringTracker(null, c), char: new StringTracker(null, '"') });
+                return;
+            }
+            const item = a[i];
+            if (item.v.length)
+                c = ' ' + c;
+            item.v.AddTextAfter(c);
+        }
         return a;
     }
 
