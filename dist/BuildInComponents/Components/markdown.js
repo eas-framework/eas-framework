@@ -5,11 +5,12 @@ import { parseTagDataStringBoolean } from './serv-connect/index.js';
 import { PrintIfNew } from '../../OutputInput/PrintNew.js';
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs.js';
-import { BasicSettings } from '../../RunTimeBuild/SearchFileSystem.js';
+import { BasicSettings, workingDirectory } from '../../RunTimeBuild/SearchFileSystem.js';
 import anchor from 'markdown-it-anchor';
 import slugify from '@sindresorhus/slugify';
 import markdownItAttrs from 'markdown-it-attrs';
 import markdownItAbbr from 'markdown-it-abbr';
+import MinCss from '../../CompileCode/CssMinimizer.js';
 export default async function BuildCode(type, dataTag, BetweenTagData, InsertComponent, session, dependenceObject) {
     const markDownPlugin = InsertComponent.GetPlugin('markdown');
     const hljsClass = parseTagDataStringBoolean(dataTag, 'hljsClass', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
@@ -66,7 +67,7 @@ export default async function BuildCode(type, dataTag, BetweenTagData, InsertCom
     }
     dataTag.addClass('markdown-body');
     const style = parseTagDataStringBoolean(dataTag, 'theme', markDownPlugin?.theme ?? 'light');
-    const cssLink = '/serv/md/theme/' + style + '.css';
+    const cssLink = '/serv/md/theme/' + style + '.min.css';
     if (style != 'none' && !session.styleURLSet.find(x => x.url === cssLink))
         session.styleURLSet.push({
             url: cssLink
@@ -79,5 +80,16 @@ export default async function BuildCode(type, dataTag, BetweenTagData, InsertCom
         compiledString: buildHTML,
         checkComponents: false
     };
+}
+const themeArray = ['', '-dark', '-light'];
+const themePath = workingDirectory + 'node_modules/github-markdown-css/github-markdown';
+export async function minifyMarkdownTheme() {
+    for (const i of themeArray) {
+        const mini = (await EasyFs.readFile(themePath + i + '.css'))
+            .replace(/(\n\.markdown-body {)|(^.markdown-body {)/gm, (match) => {
+            return match + 'padding:20px;';
+        });
+        await EasyFs.writeFile(themePath + i + '.min.css', MinCss(mini));
+    }
 }
 //# sourceMappingURL=markdown.js.map

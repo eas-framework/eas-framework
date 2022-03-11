@@ -6,11 +6,12 @@ import { parseTagDataStringBoolean } from './serv-connect/index';
 import { PrintIfNew } from '../../OutputInput/PrintNew';
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs';
-import { BasicSettings } from '../../RunTimeBuild/SearchFileSystem';
+import { BasicSettings, workingDirectory } from '../../RunTimeBuild/SearchFileSystem';
 import anchor from 'markdown-it-anchor';
 import slugify from '@sindresorhus/slugify';
 import markdownItAttrs from 'markdown-it-attrs';
 import markdownItAbbr from 'markdown-it-abbr'
+import MinCss from '../../CompileCode/CssMinimizer';
 
 export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: any, session: SessionInfo, dependenceObject: StringNumberMap): Promise<BuildInComponent> {
     const markDownPlugin = InsertComponent.GetPlugin('markdown');
@@ -81,7 +82,7 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
 
     const style = parseTagDataStringBoolean(dataTag, 'theme', markDownPlugin?.theme ?? 'light');
 
-    const cssLink = '/serv/md/theme/' + style + '.css';
+    const cssLink = '/serv/md/theme/' + style + '.min.css';
     if (style != 'none' && !session.styleURLSet.find(x => x.url === cssLink))
         session.styleURLSet.push({
             url: cssLink
@@ -95,5 +96,17 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
     return {
         compiledString: buildHTML,
         checkComponents: false
+    }
+}
+
+const themeArray = ['', '-dark', '-light'];
+const themePath = workingDirectory + 'node_modules/github-markdown-css/github-markdown';
+export async function minifyMarkdownTheme() {
+    for (const i of themeArray) {
+        const mini = (await EasyFs.readFile(themePath + i + '.css'))
+            .replace(/(\n\.markdown-body {)|(^.markdown-body {)/gm, (match: string) => {
+                return match + 'padding:20px;'
+            });
+        await EasyFs.writeFile(themePath + i + '.min.css', MinCss(mini));
     }
 }

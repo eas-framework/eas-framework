@@ -75,7 +75,7 @@ out_run_script.text+=`
 
 `;
 
-                if(_optionalChain([Post, 'optionalAccess', _ => _.connectorFormCall]) == "bdc9a7ad-cd3b-486e-94bd-29f6693a5a6b"){
+                if(_optionalChain([Post, 'optionalAccess', _ => _.connectorFormCall]) == "d944b265-82c9-4d5f-95bf-e30cacf4347f"){
                     await handelConnector("form", page, 
                         {
                             sendTo:me,
@@ -89,7 +89,7 @@ out_run_script.text+=`
                 }
 
 out_run_script.text+=`<form method=post>
-    <input type="hidden" name="connectorFormCall" value="bdc9a7ad-cd3b-486e-94bd-29f6693a5a6b"/>
+    <input type="hidden" name="connectorFormCall" value="d944b265-82c9-4d5f-95bf-e30cacf4347f"/>
     <input name="am" value="more--------++"/>
 </form>
 
@@ -120,7 +120,7 @@ out_run_script.text+=`
 
 `;
 
-                if(_optionalChain([Post, 'optionalAccess', _2 => _2.connectorFormCall]) == "55726cbd-c54e-4a00-a086-c166524aaa64"){
+                if(_optionalChain([Post, 'optionalAccess', _2 => _2.connectorFormCall]) == "1088c84f-821f-47cb-9629-ecadd6df8718"){
                     await handelConnector("form", page, 
                         {
                             sendTo:checkLogin,
@@ -134,7 +134,7 @@ out_run_script.text+=`
                 }
 
 out_run_script.text+=`<form action="post" validator="email:email,password:6:30" method=post>
-    <input type="hidden" name="connectorFormCall" value="55726cbd-c54e-4a00-a086-c166524aaa64"/>
+    <input type="hidden" name="connectorFormCall" value="1088c84f-821f-47cb-9629-ecadd6df8718"/>
     <input type="email" name="email" placeholder="Enter your email address"/>
     <input type="password" name="password" placeholder="Enter your password"/>
     <button type="submit">Submit</button>
@@ -182,7 +182,7 @@ out_run_script.text+=`
 
 `;
 
-                if(_optionalChain([Post, 'optionalAccess', _3 => _3.connectorFormCall]) == "55726cbd-c54e-4a00-a086-c166524aaa64"){
+                if(_optionalChain([Post, 'optionalAccess', _3 => _3.connectorFormCall]) == "1088c84f-821f-47cb-9629-ecadd6df8718"){
                     await handelConnector("form", page, 
                         {
                             sendTo:checkLogin,
@@ -196,7 +196,7 @@ out_run_script.text+=`
                 }
 
 out_run_script.text+=`<form action="post" method=post>
-    <input type="hidden" name="connectorFormCall" value="67279858-b1fd-4b54-a77e-66da27f855e5"/>
+    <input type="hidden" name="connectorFormCall" value="93e79c8f-b6e6-470e-9bf1-5caf48ed0014"/>
     <input type="email" name="email" placeholder="Enter your email address"/>
     <input type="password" name="password" placeholder="Enter your password"/>
     <button type="submit">Submit</button>
@@ -221,7 +221,7 @@ run_script_name=`WWW/change.page`;{out_run_script.text+=`<h1>FFFF</h1>`;}
                 return;
             }
         }
-out_run_script.text+='<link rel="stylesheet" href="/serv/md/theme/light.css"/><script src="/serv/connect.js" async></script><script src="/change-Y2hhb.pub.js" defer></script>';
+out_run_script.text+='<link rel="stylesheet" href="/serv/md/theme/dark.min.css"/><script src="/serv/connect.js" async></script><script src="/change-Y2hhb.pub.js" defer></script>';
 }
                 catch(e){
                     run_script_name += ' -> <line>' + e.stack.split(/\n( )*at /)[2];
