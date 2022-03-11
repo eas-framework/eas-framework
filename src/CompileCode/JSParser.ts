@@ -115,10 +115,11 @@ export default class JSParser {
     }
 
     BuildAll(isDebug: boolean) {
-        if (!this.values.length) {
-            return;
-        }
         const runScript = new StringTracker(this.values[0]?.text?.StartInfo);
+
+        if (!this.values.length) {
+            return runScript;
+        }
 
         for (const i of this.values) {
             if (i.type == 'text') {
