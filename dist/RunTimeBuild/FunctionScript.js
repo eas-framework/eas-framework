@@ -92,7 +92,7 @@ async function LoadPage(url, ext = BasicSettings.pageTypes.page) {
         return RequirePage(p, __filename, __dirname, typeArray, LastRequire, { ...WithObject, ...DataObject });
     }
     function _transfer(p, preserveForm, withObject, __filename, __dirname, DataObject) {
-        DataObject.setResponse('');
+        DataObject.out_run_script.text = '';
         if (!preserveForm) {
             const postData = DataObject.Request.body ? {} : null;
             DataObject = {
