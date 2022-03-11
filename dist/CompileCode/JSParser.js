@@ -83,10 +83,10 @@ export default class JSParser {
         return allcode;
     }
     BuildAll(isDebug) {
-        if (!this.values.length) {
-            return;
-        }
         const runScript = new StringTracker(this.values[0]?.text?.StartInfo);
+        if (!this.values.length) {
+            return runScript;
+        }
         for (const i of this.values) {
             if (i.type == 'text') {
                 if (i.text.eq != '') {
