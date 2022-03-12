@@ -1,7 +1,5 @@
 import { chdir, cwd } from "process";
-import { autoCodeTheme, minifyMarkdownTheme } from "../BuildInComponents/Components/markdown.js";
 if (cwd().split('/').at(-2) == 'node_modules')
     chdir('../../');
-await minifyMarkdownTheme();
-await autoCodeTheme();
+import('./build-scripts.js');
 //# sourceMappingURL=install.js.map
