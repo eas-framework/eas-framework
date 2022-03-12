@@ -40,7 +40,7 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
     }
     catch (expression) {
         PrintIfNew({
-            text: `${expression.message}, on file -> ${pathName}:${BetweenTagData.getLine(expression.line).DefaultInfoText.line}`,
+            text: BetweenTagData.debugLine(expression),
             errorName: expression?.status == 5 ? 'sass-warning' : 'sass-error',
             type: expression?.status == 5 ? 'warn' : 'error'
         });

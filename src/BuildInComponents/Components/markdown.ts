@@ -34,7 +34,7 @@ function codeWithCopy(md: any) {
 export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: any, session: SessionInfo, dependenceObject: StringNumberMap): Promise<BuildInComponent> {
     const markDownPlugin = InsertComponent.GetPlugin('markdown');
 
-    const hljsClass = parseTagDataStringBoolean(dataTag, 'hljsClass', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
+    const hljsClass = parseTagDataStringBoolean(dataTag, 'hljs-class', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
 
     let haveHighlight = false;
     const md = markdown({
@@ -89,7 +89,7 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
 
     const renderHTML = md.render(markdownCode), buildHTML = new StringTracker(type.DefaultInfoText);
 
-    const theme = await createAutoTheme(dataTag.remove('codeTheme') || markDownPlugin?.codeTheme || 'atom-one');
+    const theme = await createAutoTheme(dataTag.remove('code-theme') || markDownPlugin?.codeTheme || 'atom-one');
 
     if (haveHighlight) {
         const cssLink = '/serv/md/code-theme/' + theme + '.css';

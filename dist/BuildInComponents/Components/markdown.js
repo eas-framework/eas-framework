@@ -28,7 +28,7 @@ function codeWithCopy(md) {
 }
 export default async function BuildCode(type, dataTag, BetweenTagData, InsertComponent, session, dependenceObject) {
     const markDownPlugin = InsertComponent.GetPlugin('markdown');
-    const hljsClass = parseTagDataStringBoolean(dataTag, 'hljsClass', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
+    const hljsClass = parseTagDataStringBoolean(dataTag, 'hljs-class', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
     let haveHighlight = false;
     const md = markdown({
         html: true,
@@ -74,7 +74,7 @@ export default async function BuildCode(type, dataTag, BetweenTagData, InsertCom
         dependenceObject[filePath] = await EasyFs.stat(fullPath, 'mtimeMs');
     }
     const renderHTML = md.render(markdownCode), buildHTML = new StringTracker(type.DefaultInfoText);
-    const theme = await createAutoTheme(dataTag.remove('codeTheme') || markDownPlugin?.codeTheme || 'atom-one');
+    const theme = await createAutoTheme(dataTag.remove('code-theme') || markDownPlugin?.codeTheme || 'atom-one');
     if (haveHighlight) {
         const cssLink = '/serv/md/code-theme/' + theme + '.css';
         if (!session.styleURLSet.find(x => x.url === cssLink))
