@@ -1,1 +1,1 @@
-{"version":3,"file":"install.js","sourceRoot":"","sources":["../../src/scripts/install.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,aAAa,EAAE,mBAAmB,EAAE,MAAM,0CAA0C,CAAC;AAE9F,MAAM,mBAAmB,EAAE,CAAC;AAC5B,MAAM,aAAa,EAAE,CAAC"}
+{"version":3,"file":"install.js","sourceRoot":"","sources":["../../src/scripts/install.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,KAAK,EAAE,MAAM,SAAS,CAAC;AAChC,OAAO,EAAE,aAAa,EAAE,mBAAmB,EAAE,MAAM,0CAA0C,CAAC;AAE9F,KAAK,CAAC,KAAK,CAAC,CAAA;AACZ,MAAM,mBAAmB,EAAE,CAAC;AAC5B,MAAM,aAAa,EAAE,CAAC"}

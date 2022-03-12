@@ -4,7 +4,6 @@ import { pathToFileURL } from "url";
 import { PrintIfNew } from '../../../OutputInput/PrintNew.js';
 import EasyFs from '../../../OutputInput/EasyFs.js';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug.js';
-import MinCss from '../../../CompileCode/CssMinimizer.js';
 import { getTypes } from '../../../RunTimeBuild/SearchFileSystem.js';
 export default async function BuildCode(language, path, pathName, LastSmallPath, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo) {
     let outStyle = BetweenTagData.eq;
@@ -28,27 +27,24 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
         return pathToFileURL(FullPath);
     }
     let result;
-    if (language != 'css') {
-        try {
-            result = await sass.compileStringAsync(outStyle, {
-                sourceMap: isDebug,
-                syntax: language == 'sass' ? 'indented' : 'scss',
-                importer: {
-                    findFileUrl: importSass
-                }
-            });
-        }
-        catch (expression) {
-            PrintIfNew({
-                text: `${expression.message}, on file -> ${pathName}:${BetweenTagData.getLine(expression.line).DefaultInfoText.line}`,
-                errorName: expression?.status == 5 ? 'sass-warning' : 'sass-error',
-                type: expression?.status == 5 ? 'warn' : 'error'
-            });
-        }
+    try {
+        result = await sass.compileStringAsync(outStyle, {
+            sourceMap: isDebug,
+            syntax: language == 'sass' ? 'indented' : 'scss',
+            style: ['scss', 'sass'].includes(language) ? InsertComponent.SomePlugins("MinAll", "MinSass") : InsertComponent.SomePlugins("MinCss", "MinAll") ? 'compressed' : 'expanded',
+            importer: {
+                findFileUrl: importSass
+            }
+        });
+        outStyle = result?.css ?? outStyle;
     }
-    outStyle = result?.css ?? outStyle;
-    if (InsertComponent.SomePlugins("MinCss", "MinAll", "MinSass"))
-        outStyle = MinCss(outStyle);
+    catch (expression) {
+        PrintIfNew({
+            text: `${expression.message}, on file -> ${pathName}:${BetweenTagData.getLine(expression.line).DefaultInfoText.line}`,
+            errorName: expression?.status == 5 ? 'sass-warning' : 'sass-error',
+            type: expression?.status == 5 ? 'warn' : 'error'
+        });
+    }
     if (result?.sourceMap)
         sessionInfo.style.addSourceMapWithStringTracker(result.sourceMap, BetweenTagData, outStyle);
     else

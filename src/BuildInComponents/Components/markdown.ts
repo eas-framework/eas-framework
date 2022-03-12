@@ -20,7 +20,7 @@ function codeWithCopy(md: any) {
             const origRendered = origRule(...args);
             return `<div class="code-copy">
                 <div>
-                    <a href="#copy" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.innerText)">copy</a>
+                    <a href="#copy-clipboard" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.innerText)">copy</a>
                 </div>
                 ${origRendered}
             </div>`
@@ -89,7 +89,7 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
 
     const renderHTML = md.render(markdownCode), buildHTML = new StringTracker(type.DefaultInfoText);
 
-    const theme = dataTag.remove('codeTheme') || markDownPlugin?.codeTheme || 'atom-one';
+    const theme = await createAutoTheme(dataTag.remove('codeTheme') || markDownPlugin?.codeTheme || 'atom-one');
 
     if (haveHighlight) {
         const cssLink = '/serv/md/code-theme/' + theme + '.css';
@@ -103,7 +103,7 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
 
     const style = parseTagDataStringBoolean(dataTag, 'theme', markDownPlugin?.theme ?? 'auto');
 
-    const cssLink = '/serv/md/theme/' + style + '.min.css';
+    const cssLink = '/serv/md/theme/' + style + '.css';
     if (style != 'none' && !session.styleURLSet.find(x => x.url === cssLink))
         session.styleURLSet.push({
             url: cssLink
@@ -127,26 +127,51 @@ export async function minifyMarkdownTheme() {
         const mini = (await EasyFs.readFile(themePath + i + '.css'))
             .replace(/(\n\.markdown-body {)|(^.markdown-body {)/gm, (match: string) => {
                 return match + 'padding:20px;'
-            }) + '.code-copy>div{text-align:right;margin-bottom:-30px;margin-right:10px;}.code-copy>div a:focus{color:#6bb86a}'
+            }) + `
+            .code-copy>div {
+                text-align:right;
+                margin-bottom:-30px;
+                margin-right:10px;
+                opacity:0;
+            }
+            .code-copy:hover>div {
+                opacity:1;
+            }
+            .code-copy>div a:focus {
+                color:#6bb86a
+            }`;
         await EasyFs.writeFile(themePath + i + '.min.css', MinCss(mini));
-        await EasyFs.unlink(themePath + i + '.css');
     }
 }
 
-function splitStart(text1: string, text2: string){
-    const [before, after] = text1.split('}.hljs{')
-    return [before + '}', '.hljs{' + after, '.hljs{' + text2.split('}.hljs{').pop()];
+function splitStart(text1: string, text2: string) {
+    const [before, after, last] = text1.split(/(}|\*\/).hljs{/)
+    const addBefore = text1[before.length] == '}' ? '}': '*/';
+    return [before +addBefore, '.hljs{' + (last ?? after), '.hljs{' + text2.split(/(}|\*\/).hljs{/).pop()];
 }
 
-const codeThemePath =  workingDirectory + 'node_modules/highlight.js/styles/', codeThemeArray = ['atom-one'];
-export async function autoCodeTheme(){
-    for(const name of codeThemeArray){
-        const thisPath = codeThemePath + name;
-        const darkText = await EasyFs.readFile(thisPath + '-dark.css');
-        const lightText = await EasyFs.readFile(thisPath + '-light.css');
+const codeThemePath = workingDirectory + 'node_modules/highlight.js/styles/';
 
-        const [start, dark, light] = splitStart(darkText, lightText);
-        const darkLight = `${start}@media(prefers-color-scheme:dark){${dark}}@media(prefers-color-scheme:light){${light}}`;
-        await EasyFs.writeFile(thisPath + '.css', darkLight);
-    }
+async function createAutoTheme(theme: string) {
+    const darkLightSplit = theme.split('|');
+    if (darkLightSplit.length == 1) return theme;
+
+    const name = darkLightSplit[2] || darkLightSplit.slice(0, 2).join('~').replace('/', '-');
+
+    if (await EasyFs.existsFile(codeThemePath + name + '.css'))
+        return name;
+
+    const lightText = await EasyFs.readFile(codeThemePath + darkLightSplit[0] + '.css');
+    const darkText = await EasyFs.readFile(codeThemePath + darkLightSplit[1] + '.css');
+
+    const [start, dark, light] = splitStart(darkText, lightText);
+    const darkLight = `${start}@media(prefers-color-scheme:dark){${dark}}@media(prefers-color-scheme:light){${light}}`;
+    await EasyFs.writeFile(codeThemePath + name + '.css', darkLight);
+
+    return name;
+}
+
+
+export function autoCodeTheme() {
+    return createAutoTheme('atom-one-light|atom-one-dark|atom-one')
 }

@@ -1,7 +1,7 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import sass from 'sass';
-import {pathToFileURL} from "url";
+import { pathToFileURL } from "url";
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import EasyFs from '../../../OutputInput/EasyFs';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug';
@@ -20,7 +20,7 @@ export default async function BuildCode(language: string, path: string, pathName
         };
     sessionInfo.cache.style.push(outStyleAsTrim);
 
-    
+
     async function importSass(url: string) {
         const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, url, getTypes.Static[2], InsertComponent.GetPlugin("sass")?.default ?? language);
         if (!await EasyFs.existsFile(FullPath)) {
@@ -38,28 +38,24 @@ export default async function BuildCode(language: string, path: string, pathName
 
     let result: sass.CompileResult;
 
-    if (language != 'css') {
-        try {
-            result = await sass.compileStringAsync(outStyle, {
-                sourceMap: isDebug,
-                syntax: language == 'sass' ? 'indented': 'scss',
-                importer: {
-                    findFileUrl:importSass
-                }
-            });
-        } catch (expression) {
-            PrintIfNew({
-                text: `${expression.message}, on file -> ${pathName}:${BetweenTagData.getLine(expression.line).DefaultInfoText.line}`,
-                errorName: expression?.status == 5 ? 'sass-warning' : 'sass-error',
-                type: expression?.status == 5 ? 'warn' : 'error'
-            });
-        }
+
+    try {
+        result = await sass.compileStringAsync(outStyle, {
+            sourceMap: isDebug,
+            syntax: language == 'sass' ? 'indented' : 'scss',
+            style: ['scss', 'sass'].includes(language) ? InsertComponent.SomePlugins("MinAll", "MinSass") : InsertComponent.SomePlugins("MinCss", "MinAll") ? 'compressed' : 'expanded',
+            importer: {
+                findFileUrl: importSass
+            }
+        });
+        outStyle = result?.css ?? outStyle;
+    } catch (expression) {
+        PrintIfNew({
+            text: `${expression.message}, on file -> ${pathName}:${BetweenTagData.getLine(expression.line).DefaultInfoText.line}`,
+            errorName: expression?.status == 5 ? 'sass-warning' : 'sass-error',
+            type: expression?.status == 5 ? 'warn' : 'error'
+        });
     }
-
-    outStyle = result?.css ?? outStyle;
-
-    if (InsertComponent.SomePlugins("MinCss", "MinAll", "MinSass"))
-        outStyle = MinCss(outStyle);
 
     if (result?.sourceMap)
         sessionInfo.style.addSourceMapWithStringTracker(result.sourceMap, BetweenTagData, outStyle);
