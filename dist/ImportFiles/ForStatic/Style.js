@@ -36,7 +36,8 @@ export async function BuildStyleSass(inputPath, type, isDebug) {
             style: outputStyle,
             importer: {
                 findFileUrl: importSass
-            }
+            },
+            logger: sass.Logger.silent
         });
         let data = result.css.toString();
         if (isDebug && result.sourceMap) {

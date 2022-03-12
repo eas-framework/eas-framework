@@ -31,7 +31,8 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
                 syntax: language == 'sass' ? 'indented' : 'scss',
                 importer: {
                     findFileUrl: importSass
-                }
+                },
+                logger: sass.Logger.silent
             });
         }
         catch (expression) {

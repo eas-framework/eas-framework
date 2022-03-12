@@ -20,7 +20,8 @@ export async function preprocess(fullPath, smallPath, dependenceObject = {}, mak
                 const { css, loadedUrls } = await sass.compileStringAsync(content, {
                     syntax: attributes.lang == 'sass' ? 'indented' : 'scss',
                     style: outputStyle,
-                    loadPaths: [dirname(fullPath)]
+                    loadPaths: [dirname(fullPath)],
+                    logger: sass.Logger.silent
                 });
                 return {
                     code: css.toString(),

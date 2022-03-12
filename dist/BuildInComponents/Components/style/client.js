@@ -31,10 +31,11 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
         result = await sass.compileStringAsync(outStyle, {
             sourceMap: isDebug,
             syntax: language == 'sass' ? 'indented' : 'scss',
-            style: ['scss', 'sass'].includes(language) ? InsertComponent.SomePlugins("MinAll", "MinSass") : InsertComponent.SomePlugins("MinCss", "MinAll") ? 'compressed' : 'expanded',
+            style: (['scss', 'sass'].includes(language) ? InsertComponent.SomePlugins("MinAll", "MinSass") : InsertComponent.SomePlugins("MinCss", "MinAll")) ? 'compressed' : 'expanded',
             importer: {
                 findFileUrl: importSass
-            }
+            },
+            logger: sass.Logger.silent
         });
         outStyle = result?.css ?? outStyle;
     }

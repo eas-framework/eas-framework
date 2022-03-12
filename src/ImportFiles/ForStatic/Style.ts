@@ -46,7 +46,8 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
             style: outputStyle,
             importer: {
                 findFileUrl: importSass
-            }
+            },
+            logger: sass.Logger.silent
         });
 
         let data = result.css.toString();

@@ -561,7 +561,12 @@ export default class StringTracker {
     /**
      * Extract error info form error message
      */
-    debugLine({ message, loc, line, col }) {
+    debugLine({ message, loc, line, col, sassStack }) {
+        if (sassStack) {
+            const loc = sassStack.match(/[0-9]+:[0-9]+/)[0].split(':').map(x => Number(x));
+            line = loc[0];
+            col = loc[1];
+        }
         let searchLine = this.getLine(line ?? loc?.line ?? 1), column = col ?? loc?.column ?? 0;
         if (searchLine.startsWith('//')) {
             searchLine = this.getLine((line ?? loc?.line) - 1);

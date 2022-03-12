@@ -179,7 +179,8 @@ export default class StringTracker {
     /**
      * Extract error info form error message
      */
-    debugLine({ message, loc, line, col }: {
+    debugLine({ message, loc, line, col, sassStack }: {
+        sassStack?: string;
         message: string;
         loc?: {
             line: number;

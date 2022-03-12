@@ -7,6 +7,9 @@ var i = 3;
 <style lang="sass">
     div
         font-size: 20px
+
+
+        .. ddd
 </style>
 <@body/>
 
