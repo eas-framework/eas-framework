@@ -51,8 +51,8 @@ async function NoTrackStringCode(code, path, isDebug, buildScript) {
     code = await JSParser.RunAndExport(code, path, isDebug);
     const NewCode = await buildScript(code);
     const newCodeStringTracker = JSParser.RestoreTrack(NewCode, code.DefaultInfoText);
-    newCodeStringTracker.AddTextBefore('<%!{');
-    newCodeStringTracker.AddTextAfter('}%>');
+    newCodeStringTracker.AddTextBeforeNoTrack('<%!{');
+    newCodeStringTracker.AddTextAfterNoTrack('}%>');
     return newCodeStringTracker;
 }
 export async function AddDebugInfo(pageName, FullPath, SmallPath, cache = {}) {

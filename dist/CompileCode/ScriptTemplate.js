@@ -12,14 +12,19 @@ class createPageSourceMap extends SourceMapBasic {
         let waitNextLine = true;
         for (let index = 0; index < length; index++) {
             const { text, line, info } = DataArray[index];
-            if (text == '\n' && !(waitNextLine = false) && ++this.lineCount || waitNextLine)
+            if (text == '\n') {
+                this.lineCount++;
+                waitNextLine = false;
                 continue;
-            if (line && info && (waitNextLine = true))
+            }
+            if (!waitNextLine && line && info) {
+                waitNextLine = true;
                 this.map.addMapping({
                     original: { line, column: 0 },
                     generated: { line: this.lineCount, column: 0 },
                     source: connectPath + this.getSource(info)
                 });
+            }
         }
     }
 }
@@ -32,9 +37,9 @@ export class PageTemplate extends JSParser {
     static async AddPageTemplate(text, isDebug, fullPath, fullPathCompile, sessionInfo) {
         text = await finalizeBuild(text, sessionInfo, fullPathCompile);
         if (isDebug) {
-            text.AddTextBefore(`try {\n`);
+            text.AddTextBeforeNoTrack(`try {\n`);
         }
-        text.AddTextBefore(`
+        text.AddTextBeforeNoTrack(`
         module.exports = (_require, _include, _transfer, private_var, handelConnector) => {
             return (async function (page) {
                 const __filename = "${JSParser.fixTextSimpleQuotes(fullPath)}", __dirname = "${JSParser.fixTextSimpleQuotes(path.dirname(fullPath))}";
@@ -50,7 +55,7 @@ export class PageTemplate extends JSParser {
                     const transfer = (p, preserveForm, withObject) => (out_run_script = {text: ''}, _transfer(p, preserveForm, withObject, __filename, __dirname, page));
                 {`);
         if (isDebug) {
-            text.AddTextAfter(`\n}
+            text.AddTextAfterNoTrack(`\n}
                 catch(e){
                     run_script_name += ' -> <line>' + e.stack.split(/\\n( )*at /)[2];
                     out_run_script.text += '${PageTemplate.printError(`<p>Error path: ' + run_script_name.replace(/<line>/gi, '<br/>') + '</p><p>Error message: ' + e.message + '</p>`)}';
@@ -61,7 +66,7 @@ export class PageTemplate extends JSParser {
                     console.error("Error stack: " + e.stack);
                 }`);
         }
-        text.AddTextAfter(`}});}`);
+        text.AddTextAfterNoTrack(`}});}`);
         if (isDebug) {
             text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile, BasicSettings.fullWebSitePath));
         }
@@ -78,7 +83,7 @@ export class PageTemplate extends JSParser {
         return text;
     }
     static InPageTemplate(text, dataObject, fullPath) {
-        text.AddTextBefore(`<%!{
+        text.AddTextBeforeNoTrack(`<%!{
             const _page = page;
             {
             const page = {..._page${dataObject ? ',' + dataObject : ''}};
@@ -87,7 +92,7 @@ export class PageTemplate extends JSParser {
             const include = (p, withObject) => _include(__filename, __dirname, page, p, withObject);
             const transfer = (p, preserveForm, withObject) => (out_run_script = {text: ''}, _transfer(p, preserveForm, withObject, __filename, __dirname, page));
                 {%>`);
-        text.AddTextAfter('<%!}}}%>');
+        text.AddTextAfterNoTrack('<%!}}}%>');
         return text;
     }
 }

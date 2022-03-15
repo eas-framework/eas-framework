@@ -1,10 +1,11 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, BuildInComponent, StringAnyMap, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
-import { BasicSettings, CheckDependencyChange, getTypes, PagesInfo } from '../../RunTimeBuild/SearchFileSystem';
+import { tagDataObjectArray, StringNumberMap, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../OutputInput/EasyFs';
 import { PrintIfNew } from '../../OutputInput/PrintNew';
 import path_node from 'path';
-import { extendsSession } from '../../CompileCode/Session';
+import { SessionBuild } from '../../CompileCode/Session';
+import { CheckDependencyChange } from '../../OutputInput/StoreDeps';
 
 function InFolderPagePath(inputPath: string, fullPath:string){
     if (inputPath[0] == '.') {
@@ -31,8 +32,8 @@ function InFolderPagePath(inputPath: string, fullPath:string){
     return inputPath;
 }
 
-const cacheMap: { [key: string]: {CompiledData: StringTracker, dependence: StringNumberMap, newSession: SessionInfo}} = {};
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionInfo): Promise<BuildInComponent> {
+const cacheMap: { [key: string]: {CompiledData: StringTracker, dependence: StringNumberMap, newSession: SessionBuild}} = {};
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const filepath = dataTag.getValue("from");
 
     const SmallPathWithoutFolder = InFolderPagePath(filepath, path);
@@ -58,7 +59,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         dependence[SmallPath] = dependence.thisPage;
         delete dependence.thisPage;
 
-        extendsSession(sessionInfo, newSession);
+        sessionInfo.extends(newSession)
 
         cacheMap[SmallPathWithoutFolder] = {CompiledData, dependence, newSession};
         Object.assign(dependenceObject, dependence);
@@ -67,7 +68,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         const { CompiledData, dependence, newSession } = cacheMap[SmallPathWithoutFolder];
    
         Object.assign(dependenceObject, dependence);
-        extendsSession(sessionInfo, newSession);
+        sessionInfo.extends(newSession)
 
         ReturnData = CompiledData;
     }

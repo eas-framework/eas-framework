@@ -45,7 +45,7 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
             syntax: type == 'sass' ? 'indented' : 'scss',
             style: outputStyle,
             importer: {
-                findFileUrl: importSass
+                findFileUrl: importSass,
             },
             logger: sass.Logger.silent
         });
@@ -53,6 +53,7 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
         let data = result.css.toString();
 
         if (isDebug && result.sourceMap) {
+            result.sourceMap.sources[0] = inputPath;
             result.sourceMap.sources = result.sourceMap.sources.map(x => x.split(/\/|\\/).pop() + '?source=true');
 
             data += `\r\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(JSON.stringify(result.sourceMap)).toString("base64")}*/`;

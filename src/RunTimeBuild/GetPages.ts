@@ -1,11 +1,12 @@
 import EasyFs from '../OutputInput/EasyFs';
 import { print } from '../OutputInput/Console';
-import { getTypes, BasicSettings, CheckDependencyChange, PagesInfo } from './SearchFileSystem';
+import { getTypes, BasicSettings} from './SearchFileSystem';
 import { FastCompile as FastCompile } from './SearchPages';
 import { GetFile as GetStaticFile, serverBuild } from '../ImportFiles/StaticFiles';
 import { Request, Response } from '@tinyhttp/app';
 import * as FuncScript from './FunctionScript';
 import MakeApiCall from './ApiCall';
+import { CheckDependencyChange, pageDeps } from '../OutputInput/StoreDeps';
 const { Export } = FuncScript;
 
 export interface ErrorPages {
@@ -46,7 +47,7 @@ async function LoadPageToRam(url: string) {
 }
 
 async function LoadAllPagesToRam() {
-    for (const i in PagesInfo) {
+    for (const i in pageDeps.store) {
         if (!ExtensionInArray(i, <any>BasicSettings.ReqFileTypesArray))
             await LoadPageToRam(i);
 
@@ -324,7 +325,7 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
     const makeDeleteArray = makeDeleteRequestFilesArray(Request)
 
     if (FileInfo.file) {
-        Response.setHeader("Cache-Control", "max-age=" + (Settings.CacheDays * 24 * 60 * 60));
+        Settings.CacheDays && Response.setHeader("Cache-Control", "max-age=" + (Settings.CacheDays * 24 * 60 * 60));
         await GetStaticFile(url, Settings.DevMode, Request, Response);
         deleteRequestFiles(makeDeleteArray);
         return;

@@ -233,7 +233,7 @@ impl Razor {
     fn handel_write(&mut self, text: &BetterString, add_index: usize, mut name: &str) {
         let escape_script = text.at(0) == ':';
         let escape_script_usize = escape_script as usize;
-        let is_parenthesis = text.at(escape_script_usize + 1) == '(';
+        let is_parenthesis = text.at(escape_script_usize) == '(';
 
         if name == "auto" {
             name = if escape_script {
@@ -287,7 +287,7 @@ impl Razor {
 
         self.values.push(RazorBlock {
             start: escape_script_usize + add_index,
-            end: i - 1 + add_index,
+            end: i + add_index,
             name: name.to_owned(),
         });
     }

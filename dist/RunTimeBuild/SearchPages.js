@@ -6,7 +6,8 @@ import ReqScript from '../ImportFiles/Script.js';
 import StaticFiles from '../ImportFiles/StaticFiles.js';
 import path from 'path';
 import CompileState from './CompileState.js';
-import { newSession } from '../CompileCode/Session.js';
+import { SessionBuild } from '../CompileCode/Session.js';
+import { CheckDependencyChange, pageDeps } from '../OutputInput/StoreDeps.js';
 export function RemoveEndType(string) {
     return string.substring(0, string.lastIndexOf('.'));
 }
@@ -18,11 +19,11 @@ async function compileFile(filePath, arrayType, isDebug, hasSessionInfo, nestedP
     };
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
     const ExcluUrl = (nestedPage ? nestedPage + '<line>' : '') + arrayType[2] + '/' + filePath;
-    const sessionInfo = hasSessionInfo ?? newSession(ExcluUrl, arrayType[2], isDebug && !GetPlugin("SafeDebug"));
+    const sessionInfo = hasSessionInfo ?? new SessionBuild(arrayType[2] + '/' + filePath, arrayType[2], isDebug && !GetPlugin("SafeDebug"));
     const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(nestedPage), nestedPageData, sessionInfo);
     if (!nestedPage) {
         await EasyFs.writeFile(FullPathCompile, CompiledData);
-        await SearchFileSystem.UpdatePageDependency(RemoveEndType(ExcluUrl), dependenceObject);
+        pageDeps.update(RemoveEndType(ExcluUrl), dependenceObject);
     }
     return { CompiledData, dependenceObject, sessionInfo };
 }
@@ -46,7 +47,7 @@ async function FilesInFolder(arrayType, path, state) {
         else {
             if (isFileType(SearchFileSystem.BasicSettings.pageTypesArray, n)) {
                 state.addPage(connect);
-                if (await SearchFileSystem.CheckDependencyChange(arrayType[2] + '/' + connect)) //check if not already compile from a 'in-file' call
+                if (await CheckDependencyChange(arrayType[2] + '/' + connect)) //check if not already compile from a 'in-file' call
                     await compileFile(connect, arrayType, false);
             }
             else if (arrayType == SearchFileSystem.getTypes.Static && isFileType(SearchFileSystem.BasicSettings.ReqFileTypesArray, n)) {
@@ -85,7 +86,7 @@ export async function compileAll() {
     let state = await CompileState.checkLoad();
     if (state)
         return () => RequireScripts(state.scripts);
-    SearchFileSystem.ClearPagesDependency();
+    pageDeps.clear();
     state = new CompileState();
     const activateArray = [await CreateCompile(SearchFileSystem.getTypes.Static[2], state), await CreateCompile(SearchFileSystem.getTypes.Logs[2], state), ClearWarning];
     return async () => {

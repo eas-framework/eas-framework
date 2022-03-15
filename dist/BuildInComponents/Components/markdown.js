@@ -77,18 +77,12 @@ export default async function BuildCode(type, dataTag, BetweenTagData, InsertCom
     const theme = await createAutoTheme(dataTag.remove('code-theme') || markDownPlugin?.codeTheme || 'atom-one');
     if (haveHighlight) {
         const cssLink = '/serv/md/code-theme/' + theme + '.css';
-        if (!session.styleURLSet.find(x => x.url === cssLink))
-            session.styleURLSet.push({
-                url: cssLink
-            });
+        session.style(cssLink);
     }
     dataTag.addClass('markdown-body');
     const style = parseTagDataStringBoolean(dataTag, 'theme', markDownPlugin?.theme ?? 'auto');
     const cssLink = '/serv/md/theme/' + style + '.css';
-    if (style != 'none' && !session.styleURLSet.find(x => x.url === cssLink))
-        session.styleURLSet.push({
-            url: cssLink
-        });
+    style != 'none' && session.style(cssLink);
     if (dataTag.length)
         buildHTML.Plus$ `<div${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${renderHTML}</div>`;
     else

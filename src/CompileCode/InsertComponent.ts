@@ -4,11 +4,12 @@ import { NoTrackStringCode, CreateFilePath, PathTypes, AddDebugInfo } from './XM
 import { AllBuildIn, IsInclude, StartCompiling } from '../BuildInComponents/index';
 import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/StringTracker';
 import AddPlugin from '../Plugins/Index';
-import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, SessionInfo } from './XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject } from './XMLHelpers/CompileTypes';
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
 import pathNode from 'path';
-import ParseBasePage from './XMLHelpers/PageBase';
+import ParseBasePage from './CompileScript/PageBase';
+import { SessionBuild } from './Session';
 
 interface DefaultValues {
     value: StringTracker,
@@ -264,7 +265,7 @@ export default class InsertComponent extends InsertComponentBase {
         return this.addDefaultValues(foundSetters, fileData);
     }
 
-    async buildTagBasic(fileData: StringTracker, tagData: tagDataObjectArray, path: string, pathName: string, FullPath: string, SmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo, BetweenTagData?: StringTracker) {
+    async buildTagBasic(fileData: StringTracker, tagData: tagDataObjectArray, path: string, pathName: string, FullPath: string, SmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild, BetweenTagData?: StringTracker) {
         fileData = await this.PluginBuild.BuildComponent(fileData, path, pathName, sessionInfo);
 
         fileData = this.parseComponentProps(tagData, fileData);
@@ -280,7 +281,7 @@ export default class InsertComponent extends InsertComponentBase {
         return fileData;
     }
 
-    async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }: { sessionInfo: SessionInfo, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule, dependenceObject: StringNumberMap, isDebug: boolean }) {
+    async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }: { sessionInfo: SessionBuild, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule, dependenceObject: StringNumberMap, isDebug: boolean }) {
         const data = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
 
         let fileData: StringTracker, SearchInComment = true, AllPathTypes: PathTypes = {}, addStringInfo: string;
@@ -320,8 +321,8 @@ export default class InsertComponent extends InsertComponentBase {
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
 
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            const baseData = new ParseBasePage(allData);
-            await baseData.loadSettings(AllPathTypes.FullPath, AllPathTypes.SmallPath, this.isTs(), dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath, true);
+            const baseData = new ParseBasePage(allData, isDebug,  this.isTs());
+            await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath);
 
             fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;
@@ -333,7 +334,7 @@ export default class InsertComponent extends InsertComponentBase {
             fileData = await this.buildTagBasic(fileData, data, path, pathName, BuildIn ? type.eq : FullPath, BuildIn ? type.eq : SmallPath, isDebug, dependenceObject, buildScript, sessionInfo, BetweenTagData);
 
             if (addStringInfo)
-                fileData.AddTextBefore(addStringInfo);
+                fileData.AddTextBeforeNoTrack(addStringInfo);
         }
 
         return fileData;
@@ -365,7 +366,7 @@ export default class InsertComponent extends InsertComponentBase {
         return startData;
     }
 
-    async StartReplace(data: StringTracker, pathName: string, path: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<StringTracker> {
+    async StartReplace(data: StringTracker, pathName: string, path: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<StringTracker> {
         let find: number;
 
         const promiseBuild: (StringTracker | Promise<StringTracker>)[] = [];
@@ -461,7 +462,7 @@ export default class InsertComponent extends InsertComponentBase {
         return code;
     }
 
-    async Insert(data: StringTracker, path: string, pathName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo) {
+    async Insert(data: StringTracker, path: string, pathName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild) {
 
         //removing html comment tags
         data = data.replace(/<!--[\w\W]+?-->/, '');

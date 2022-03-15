@@ -1,15 +1,16 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { StringNumberMap, BuildInComponent, tagDataObjectArray } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import sass from 'sass';
 import { pathToFileURL } from "url";
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import EasyFs from '../../../OutputInput/EasyFs';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug';
 import MinCss from '../../../CompileCode/CssMinimizer';
-import { SessionInfo } from '../../../CompileCode/XMLHelpers/CompileTypes';
-import { getTypes } from '../../../RunTimeBuild/SearchFileSystem';
+import { BasicSettings, getTypes } from '../../../RunTimeBuild/SearchFileSystem';
+import { SessionBuild } from '../../../CompileCode/Session';
+import { parseTagDataStringBoolean } from '../serv-connect/index';
 
-export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionInfo): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
     let outStyle = BetweenTagData.eq;
 
@@ -58,10 +59,11 @@ export default async function BuildCode(language: string, path: string, pathName
         });
     }
 
+    const pushStyle = sessionInfo.addScriptStyle('style', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath : BetweenTagData.extractInfo());
     if (result?.sourceMap)
-        sessionInfo.style.addSourceMapWithStringTracker(result.sourceMap, BetweenTagData, outStyle);
+        pushStyle.addSourceMapWithStringTracker(result.sourceMap, BetweenTagData, outStyle, BetweenTagData.extractInfo());
     else
-        sessionInfo.style.addStringTracker(BetweenTagData, { text: outStyle });
+        pushStyle.addStringTracker(BetweenTagData, { text: outStyle });
 
     return {
         compiledString: new StringTracker()

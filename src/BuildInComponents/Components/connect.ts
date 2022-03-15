@@ -1,6 +1,7 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import type { tagDataObjectArray, BuildInComponent, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
+import type { tagDataObjectArray, BuildInComponent } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { compileValues, makeValidationJSON, parseTagDataStringBoolean } from './serv-connect/index';
+import { SessionBuild } from '../../CompileCode/Session';
 
 const serveScript = '/serv/connect.js';
 
@@ -8,7 +9,7 @@ function template(name: string) {
     return `function ${name}(...args){return connector("${name}", args)}`;
 }
 
-export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, isDebug: boolean, { SomePlugins }, sessionInfo: SessionInfo): Promise<BuildInComponent> {
+export default async function BuildCode(LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, isDebug: boolean, { SomePlugins }, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const name = dataTag.getValue('name'),
         sendTo = dataTag.getValue('sendTo'),
         validator: string = dataTag.getValue('validate'),
@@ -18,13 +19,9 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
     if (message === null)
         message = isDebug && !SomePlugins("SafeDebug");
 
-    if (!sessionInfo.scriptURLSet.find(x => x.url == serveScript))
-        sessionInfo.scriptURLSet.push({
-            url: serveScript,
-            attributes: { async: null }
-        });
+        sessionInfo.script(serveScript, { async: null })
 
-    sessionInfo.script.addText(template(name));
+    sessionInfo.addScriptStyle('script', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath: type.extractInfo()).addText(template(name)); // add script
 
     sessionInfo.connectorArray.push({
         type: 'connect',
@@ -41,7 +38,7 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
     }
 }
 
-export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionInfo) {
+export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild) {
     if (!sessionInfo.connectorArray.length)
         return pageData;
 
@@ -73,7 +70,7 @@ export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionIn
     if (pageData.includes("@ConnectHere"))
         pageData = pageData.replacer(/@ConnectHere(;?)/, () => new StringTracker(null, addScript));
     else
-        pageData.AddTextAfter(addScript);
+        pageData.AddTextAfterNoTrack(addScript);
 
     return pageData;
 }

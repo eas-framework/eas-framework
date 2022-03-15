@@ -2,21 +2,17 @@ import path from 'path';
 import { BuildJS, BuildJSX, BuildTS, BuildTSX } from './ForStatic/Script.js';
 import BuildSvelte from './ForStatic/Svelte.js';
 import { BuildStyleSass } from './ForStatic/Style.js';
-import { getTypes, SystemData, getDirname, BasicSettings, workingDirectory } from '../RunTimeBuild/SearchFileSystem.js';
+import { getTypes, getDirname, BasicSettings, workingDirectory } from '../RunTimeBuild/SearchFileSystem.js';
 import EasyFs from '../OutputInput/EasyFs.js';
 import { GetPlugin } from '../CompileCode/InsertModels.js';
 import fs from 'fs';
 import promptly from 'promptly';
 import { argv } from 'process';
+import StoreJSON from '../OutputInput/StoreJSON.js';
 const SupportedTypes = ['js', 'svelte', 'ts', 'jsx', 'tsx', 'css', 'sass', 'scss'];
-const locStaticFiles = SystemData + '/StaticFiles.json';
-const StaticFiles = JSON.parse(fs.readFileSync(locStaticFiles, 'utf8') || '{}');
-function updateDep(path, deps) {
-    StaticFiles[path] = deps;
-    EasyFs.writeJsonFile(locStaticFiles, StaticFiles);
-}
+const StaticFilesInfo = new StoreJSON('StaticFiles');
 async function CheckDependencyChange(path) {
-    const o = StaticFiles[path];
+    const o = StaticFilesInfo.store[path];
     for (const i in o) {
         let p = i;
         if (i == 'thisFile') {
@@ -55,7 +51,7 @@ export default async function BuildFile(SmallPath, isDebug, fullCompilePath) {
             fullCompilePath += '.js';
     }
     if (isDebug && await EasyFs.existsFile(fullCompilePath)) {
-        updateDep(SmallPath, dependencies);
+        StaticFilesInfo.update(SmallPath, dependencies);
         return true;
     }
     if (!isDebug)
@@ -77,7 +73,7 @@ const getStaticFilesType = [{
         type: 'js'
     },
     {
-        ext: '.pub.module.js',
+        ext: '.pub.mjs',
         type: 'js'
     },
     {

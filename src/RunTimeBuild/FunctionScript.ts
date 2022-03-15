@@ -1,6 +1,6 @@
 import path from 'path';
 import EasyFs from '../OutputInput/EasyFs';
-import { BasicSettings, getTypes, CheckDependencyChange } from './SearchFileSystem';
+import { BasicSettings, getTypes } from './SearchFileSystem';
 import { FastCompile } from './SearchPages';
 import { print } from '../OutputInput/Console';
 import { Request, Response } from '@tinyhttp/app';
@@ -11,6 +11,7 @@ import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.cjs';
 import { CutTheLast, SplitFirst } from '../StringMethods/Splitting';
 import RequireFile from './ImportFileRuntime';
 import { PrintIfNew } from '../OutputInput/PrintNew';
+import { CheckDependencyChange } from '../OutputInput/StoreDeps';
 
 const Export = {
     PageLoadRam: {},

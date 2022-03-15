@@ -5,7 +5,7 @@
 
     var cool = 9;
 }
- 
+
 <@body/>
 <p>Welcome to the new B@@eyond Website!</p>
 <p>Today date: @(new Date().toString())</p>

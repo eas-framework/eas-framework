@@ -1,6 +1,6 @@
 import path from 'path';
 import EasyFs from '../OutputInput/EasyFs.js';
-import { BasicSettings, getTypes, CheckDependencyChange } from './SearchFileSystem.js';
+import { BasicSettings, getTypes } from './SearchFileSystem.js';
 import { FastCompile } from './SearchPages.js';
 import { print } from '../OutputInput/Console.js';
 import { handelConnectorService } from '../BuildInComponents/index.js';
@@ -9,6 +9,7 @@ import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.cjs';
 import { SplitFirst } from '../StringMethods/Splitting.js';
 import RequireFile from './ImportFileRuntime.js';
 import { PrintIfNew } from '../OutputInput/PrintNew.js';
+import { CheckDependencyChange } from '../OutputInput/StoreDeps.js';
 const Export = {
     PageLoadRam: {},
     PageRam: true

@@ -83,6 +83,11 @@ pub fn razor_to_ejs(text: &str) -> String {
 }
 
 #[wasm_bindgen]
+pub fn razor_to_ejs_min(text: &str, name: &str) -> String {
+    razor::builder::output_mini_json(text, name)
+}
+
+#[wasm_bindgen]
 pub fn ejs_parse(text: &str, start: &str, end: &str) -> String {
     ejs::builder::output_json(text, start, end)
 }

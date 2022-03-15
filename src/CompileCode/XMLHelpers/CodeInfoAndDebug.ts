@@ -62,8 +62,8 @@ async function NoTrackStringCode(code:StringTracker, path: string, isDebug: bool
    
     const newCodeStringTracker = JSParser.RestoreTrack(NewCode, code.DefaultInfoText);
 
-    newCodeStringTracker.AddTextBefore('<%!{');
-    newCodeStringTracker.AddTextAfter('}%>');
+    newCodeStringTracker.AddTextBeforeNoTrack('<%!{');
+    newCodeStringTracker.AddTextAfterNoTrack('}%>');
 
     return newCodeStringTracker;
 }

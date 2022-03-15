@@ -1,4 +1,3 @@
-import { StringNumberMap } from '../CompileCode/XMLHelpers/CompileTypes';
 declare function getDirname(url: string): string;
 declare const SystemData: string;
 declare const workingDirectory: string;
@@ -36,8 +35,4 @@ declare const BasicSettings: {
 };
 declare function filesInDirectory(path: any, output: any, pathMore?: string): Promise<void>;
 declare function DeleteInDirectory(path: any): Promise<void>;
-declare const PagesInfo: any;
-declare function UpdatePageDependency(path: string, o: any): Promise<void>;
-declare function ClearPagesDependency(): void;
-declare function CheckDependencyChange(path: string, dependencies?: StringNumberMap): Promise<boolean>;
-export { getDirname, SystemData, workingDirectory, filesInDirectory, DeleteInDirectory, getTypes, BasicSettings, PagesInfo, ClearPagesDependency, UpdatePageDependency, CheckDependencyChange };
+export { getDirname, SystemData, workingDirectory, filesInDirectory, DeleteInDirectory, getTypes, BasicSettings };

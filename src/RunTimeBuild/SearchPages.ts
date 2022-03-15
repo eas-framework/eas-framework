@@ -5,17 +5,17 @@ import { ClearWarning } from '../OutputInput/PrintNew'
 import * as SearchFileSystem from './SearchFileSystem';
 import ReqScript from '../ImportFiles/Script';
 import StaticFiles from '../ImportFiles/StaticFiles';
-import { SessionInfo } from '../CompileCode/XMLHelpers/CompileTypes';
 import path from 'path';
 import CompileState from './CompileState';
-import { newSession } from '../CompileCode/Session';
+import { SessionBuild } from '../CompileCode/Session';
+import { CheckDependencyChange, pageDeps } from '../OutputInput/StoreDeps';
 
 export function RemoveEndType(string: string) {
     return string.substring(0, string.lastIndexOf('.'));
 }
 Components.RemoveEndType = RemoveEndType;
 
-async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, hasSessionInfo?: SessionInfo, nestedPage?: string, nestedPageData?: string) {
+async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
     const dependenceObject: any = {
         thisPage: await EasyFs.stat(FullFilePath, 'mtimeMs')
@@ -24,12 +24,12 @@ async function compileFile(filePath: string, arrayType: string[], isDebug?: bool
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
     const ExcluUrl = (nestedPage ? nestedPage + '<line>' : '') + arrayType[2] + '/' + filePath;
 
-    const sessionInfo: SessionInfo = hasSessionInfo ?? newSession(ExcluUrl, arrayType[2], isDebug && !GetPlugin("SafeDebug"));
+    const sessionInfo = hasSessionInfo ?? new SessionBuild(arrayType[2] + '/' + filePath, arrayType[2], isDebug && !GetPlugin("SafeDebug"));
     const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(nestedPage), nestedPageData, sessionInfo);
 
     if (!nestedPage) {
         await EasyFs.writeFile(FullPathCompile, <string>CompiledData);
-        await SearchFileSystem.UpdatePageDependency(RemoveEndType(ExcluUrl), dependenceObject);
+        pageDeps.update(RemoveEndType(ExcluUrl), dependenceObject);
     }
 
     return { CompiledData, dependenceObject, sessionInfo };
@@ -58,7 +58,7 @@ async function FilesInFolder(arrayType: string[], path: string, state: CompileSt
         else {
             if (isFileType(SearchFileSystem.BasicSettings.pageTypesArray, n)) {
                 state.addPage(connect);
-                if (await SearchFileSystem.CheckDependencyChange(arrayType[2] + '/' + connect)) //check if not already compile from a 'in-file' call
+                if (await CheckDependencyChange(arrayType[2] + '/' + connect)) //check if not already compile from a 'in-file' call
                     await compileFile(connect, arrayType, false);
             } else if (arrayType == SearchFileSystem.getTypes.Static && isFileType(SearchFileSystem.BasicSettings.ReqFileTypesArray, n)) {
                 state.addImport(connect);
@@ -87,7 +87,7 @@ async function CreateCompile(t: string, state: CompileState) {
 /**
  * when page call other page;
  */
-async function FastCompileInFile(path: string, arrayType: string[], sessionInfo?: SessionInfo, nestedPage?: string, nestedPageData?: string) {
+async function FastCompileInFile(path: string, arrayType: string[], sessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string) {
     await EasyFs.makePathReal(path, arrayType[1]);
     return await compileFile(path, arrayType, true, sessionInfo, nestedPage, nestedPageData);
 }
@@ -103,7 +103,8 @@ export async function compileAll() {
     let state = await CompileState.checkLoad()
 
     if (state) return () => RequireScripts(state.scripts)
-    SearchFileSystem.ClearPagesDependency();
+    pageDeps.clear();
+    
     state = new CompileState()
 
     const activateArray = [await CreateCompile(SearchFileSystem.getTypes.Static[2], state), await CreateCompile(SearchFileSystem.getTypes.Logs[2], state), ClearWarning];

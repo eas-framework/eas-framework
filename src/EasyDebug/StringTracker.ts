@@ -251,12 +251,47 @@ export default class StringTracker {
     }
 
     /**
+     * add text at the *end* of the string without tracking
+     * @param text 
+     */
+    public AddTextAfterNoTrack(text: string) {
+        for (const char of text) {
+            this.DataArray.push({
+                text: char,
+                info: '',
+                line: 0,
+                char: 0
+            });
+        }
+        return this;
+    }
+
+    /**
      * add text at the *start* of the string
      * @param text 
      * @param info 
      */
     public AddTextBefore(text: string, info?: string, line?: number, char?: number) {
         this.AddTextAction(text, "unshift", info, line, char);
+        return this;
+    }
+
+    /**
+ * add text at the *start* of the string
+ * @param text 
+ */
+    public AddTextBeforeNoTrack(text: string) {
+        const copy = [];
+        for (const char of text) {
+            copy.push({
+                text: char,
+                info: '',
+                line: 0,
+                char: 0
+            });
+        }
+        
+        this.DataArray.unshift(...copy);
         return this;
     }
 
@@ -384,16 +419,16 @@ export default class StringTracker {
      * @param index 
      * @returns 
      */
-    private charLength(index: number){
-        if(index <= 0){
+    private charLength(index: number) {
+        if (index <= 0) {
             return index;
         }
 
         let count = 0;
-        for(const char of this.DataArray){
+        for (const char of this.DataArray) {
             count++;
             index -= char.text.length;
-            if(index <= 0)
+            if (index <= 0)
                 return count;
         }
     }
@@ -706,12 +741,12 @@ export default class StringTracker {
      * Extract error info form error message
      */
     public debugLine({ message, loc, line, col, sassStack }: { sassStack?: string, message: string, loc?: { line: number, column: number }, line?: number, col?: number }): string {
-        if(sassStack){
+        if (sassStack) {
             const loc = sassStack.match(/[0-9]+:[0-9]+/)[0].split(':').map(x => Number(x));
             line = loc[0];
             col = loc[1];
         }
-        
+
         let searchLine = this.getLine(line ?? loc?.line ?? 1), column = col ?? loc?.column ?? 0;
         if (searchLine.startsWith('//')) {
             searchLine = this.getLine((line ?? loc?.line) - 1);

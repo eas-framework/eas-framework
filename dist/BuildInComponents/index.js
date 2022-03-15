@@ -25,7 +25,7 @@ export function StartCompiling(path, pathName, LastSmallPath, type, dataTag, Bet
             reData = page(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo);
             break;
         case "connect":
-            reData = connect(type, dataTag, BetweenTagData, isDebug, InsertComponent, sessionInfo);
+            reData = connect(LastSmallPath, type, dataTag, BetweenTagData, isDebug, InsertComponent, sessionInfo);
             break;
         case "form":
             reData = form(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo);
@@ -37,7 +37,7 @@ export function StartCompiling(path, pathName, LastSmallPath, type, dataTag, Bet
             reData = head(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo);
             break;
         case "svelte":
-            reData = svelte(path, LastSmallPath, isDebug, dataTag, dependenceObject, sessionInfo);
+            reData = svelte(path, LastSmallPath, isDebug, type, dataTag, dependenceObject, sessionInfo);
             break;
         case "markdown":
             reData = markdown(type, dataTag, BetweenTagData, InsertComponent, sessionInfo, dependenceObject);

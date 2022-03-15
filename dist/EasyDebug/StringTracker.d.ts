@@ -90,11 +90,21 @@ export default class StringTracker {
      */
     AddTextAfter(text: string, info?: string, line?: number, char?: number): this;
     /**
+     * add text at the *end* of the string without tracking
+     * @param text
+     */
+    AddTextAfterNoTrack(text: string): this;
+    /**
      * add text at the *start* of the string
      * @param text
      * @param info
      */
     AddTextBefore(text: string, info?: string, line?: number, char?: number): this;
+    /**
+ * add text at the *start* of the string
+ * @param text
+ */
+    AddTextBeforeNoTrack(text: string): this;
     /**
      * Add Text File Tracking
      * @param text

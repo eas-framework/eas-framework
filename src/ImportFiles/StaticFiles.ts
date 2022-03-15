@@ -9,20 +9,14 @@ import { GetPlugin } from '../CompileCode/InsertModels';
 import fs from 'fs';
 import promptly from 'promptly';
 import { argv } from 'process';
+import StoreJSON from '../OutputInput/StoreJSON';
 
 const SupportedTypes = ['js', 'svelte', 'ts', 'jsx', 'tsx', 'css', 'sass', 'scss'];
 
-const locStaticFiles = SystemData + '/StaticFiles.json';
-
-const StaticFiles = JSON.parse(fs.readFileSync(locStaticFiles, 'utf8') || '{}');
-
-function updateDep(path: string, deps: { [key: string]: number }) {
-    StaticFiles[path] = deps;
-    EasyFs.writeJsonFile(locStaticFiles, StaticFiles);
-}
+const StaticFilesInfo = new StoreJSON('StaticFiles');
 
 async function CheckDependencyChange(path: string) {
-    const o = StaticFiles[path];
+    const o = StaticFilesInfo.store[path];
 
     for (const i in o) {
         let p = i;
@@ -69,7 +63,7 @@ export default async function BuildFile(SmallPath: string, isDebug: boolean, ful
     }
 
     if (isDebug && await EasyFs.existsFile(fullCompilePath)) {
-        updateDep(SmallPath, dependencies);
+        StaticFilesInfo.update(SmallPath, dependencies);
         return true;
     }
 
@@ -101,7 +95,7 @@ const getStaticFilesType: buildIn[] = [{
     type: 'js'
 },
 {
-    ext: '.pub.module.js',
+    ext: '.pub.mjs',
     type: 'js'
 },
 {

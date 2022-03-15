@@ -5,18 +5,19 @@
 var i = 3;
 </script>
 <style lang="sass">
+    @@import './style.sass'
+
     div
         font-size: 20px
 
 
-        .. ddd
+        //.. ddd
 </style>
 <@body/>
 
 <p>cool</p>
 <script>
-
-    import {} from './'
+debugger
 </script>
 
 <connect name="getData" sendTo="getWord" validate="1:3"/>

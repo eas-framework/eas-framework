@@ -3,8 +3,8 @@ const builtInConnection = ['email', 'string', 'text', ...numbers, ...booleans];
 const emailValidator = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 const builtInConnectionRegex = {
     "string-length-range": [
-        /^[0-9]+:[0-9]+$/,
-        (validator) => validator.split(':').map(x => Number(x)),
+        /^[0-9]+-[0-9]+$/,
+        (validator) => validator.split('-').map(x => Number(x)),
         ([min, max], text) => text.length >= min && text.length <= max,
         "string"
     ],
@@ -104,13 +104,13 @@ export function parseValues(args, validatorArray) {
     return parsed;
 }
 export function parseTagDataStringBoolean(data, find, defaultData = null) {
-    const have = data.remove(find);
-    if (have === 'true' || !have && data.have(find))
-        return true;
-    if (have === 'false')
+    const have = data.have(find), value = data.remove(find);
+    if (have && value != 'false')
+        return value || have;
+    if (value === 'false')
         return false;
     if (!have)
         return defaultData;
-    return have;
+    return value;
 }
 //# sourceMappingURL=index.js.map

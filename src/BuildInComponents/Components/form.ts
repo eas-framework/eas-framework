@@ -1,10 +1,11 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, BuildInComponent, SessionInfo, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
 import { compileValues, makeValidationJSON, parseValues, parseTagDataStringBoolean } from './serv-connect/index';
 import { SplitFirst } from '../../StringMethods/Splitting';
+import { SessionBuild } from '../../CompileCode/Session';
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
     const sendTo = dataTag.remove('sendTo').trim();
 
@@ -67,7 +68,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 }
 
 
-export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionInfo) {
+export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild) {
     if (!sessionInfo.connectorArray.length)
         return pageData;
 

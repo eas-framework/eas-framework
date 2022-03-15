@@ -9,6 +9,8 @@
             "request": "launch",
             "name": "Launch Program",
             "program": "${workspaceFolder}/tests/core/index.js",
+            "args": ["allowSourceDebug"], // allow source debug in browser
+            "smartStep": true,
             "outFiles": ["${workspaceFolder}/dist/**/*.js"],
             "skipFiles": [
                 "<node_internals>/**",

@@ -2,21 +2,21 @@ import { transform } from "sucrase";
 import { minify } from "terser";
 import { PrintIfNew } from "../OutputInput/PrintNew.js";
 import EasyFs from "../OutputInput/EasyFs.js";
-import { BasicSettings, PagesInfo, UpdatePageDependency, SystemData } from "../RunTimeBuild/SearchFileSystem.js";
+import { BasicSettings, SystemData } from "../RunTimeBuild/SearchFileSystem.js";
 import EasySyntax from "../CompileCode/transform/EasySyntax.js";
 import JSParser from "../CompileCode/JSParser.js";
 import path from "path";
 import { isTs } from "../CompileCode/InsertModels.js";
-import StringTracker from "../EasyDebug/StringTracker.js";
 //@ts-ignore-next-line
 import ImportWithoutCache from './ImportWithoutCache.cjs';
 import { v4 as uuid } from 'uuid';
+import { pageDeps } from "../OutputInput/StoreDeps.js";
 async function ReplaceBefore(code, defineData) {
     code = await EasySyntax.BuildAndExportImports(code, defineData);
     return code;
 }
-function template(code, isDebug, dir, file) {
-    return `${isDebug ? "require('source-map-support').install();" : ''}var __dirname="${JSParser.fixTextSimpleQuotes(dir)}",__filename="${JSParser.fixTextSimpleQuotes(file)}";module.exports = (async (require)=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
+function template(code, isDebug, dir, file, params) {
+    return `${isDebug ? "require('source-map-support').install();" : ''}var __dirname="${JSParser.fixTextSimpleQuotes(dir)}",__filename="${JSParser.fixTextSimpleQuotes(file)}";module.exports = (async (require${params ? ',' + params : ''})=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
 }
 /**
  *
@@ -24,21 +24,21 @@ function template(code, isDebug, dir, file) {
  * @param type
  * @returns
  */
-async function BuildScript(filePath, savePath, isTypescript, isDebug) {
-    const sourceMapFile = savePath.split(/\/|\\/).pop();
+async function BuildScript(filePath, savePath, isTypescript, isDebug, { params, haveSourceMap, fileCode } = {}) {
+    const sourceMapFile = savePath && savePath.split(/\/|\\/).pop();
     const Options = {
         transforms: ["imports"],
-        sourceMapOptions: {
+        sourceMapOptions: haveSourceMap ? {
             compiledFilename: sourceMapFile,
-        },
-        filePath: path.relative(path.dirname(savePath), filePath),
+        } : undefined,
+        filePath: haveSourceMap ? savePath && path.relative(path.dirname(savePath), filePath) : undefined,
     }, define = {
         debug: "" + isDebug,
     };
     if (isTypescript) {
         Options.transforms.push("typescript");
     }
-    let Result = await ReplaceBefore(await EasyFs.readFile(filePath), define), sourceMap;
+    let Result = await ReplaceBefore(fileCode || await EasyFs.readFile(filePath), define), sourceMap;
     try {
         const { code, sourceMap: map } = transform(Result, Options);
         Result = code;
@@ -50,10 +50,10 @@ async function BuildScript(filePath, savePath, isTypescript, isDebug) {
             text: `${err.message}, on file -> ${filePath}`,
         });
     }
-    Result = template(new StringTracker(filePath, Result).eq, isDebug, path.dirname(filePath), filePath);
+    Result = template(Result, isDebug, path.dirname(filePath), filePath, params);
     if (isDebug) {
-        Result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," +
-            Buffer.from(sourceMap).toString("base64");
+        if (haveSourceMap)
+            Result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(sourceMap).toString("base64");
     }
     else {
         try {
@@ -99,7 +99,7 @@ export default async function LoadImport(importFrom, InStaticPath, typeArray, is
     else if (SavedModules[SavedModulesPath] instanceof Promise)
         await SavedModules[SavedModulesPath];
     //build paths
-    const reBuild = !PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true));
+    const reBuild = !pageDeps.store[SavedModulesPath] || pageDeps.store[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true));
     if (reBuild) {
         TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs", true);
         if (TimeCheck == null) {
@@ -112,7 +112,7 @@ export default async function LoadImport(importFrom, InStaticPath, typeArray, is
             return null;
         }
         await BuildScriptSmallPath(InStaticPath, typeArray, isDebug);
-        await UpdatePageDependency(SavedModulesPath, TimeCheck);
+        pageDeps.update(SavedModulesPath, TimeCheck);
     }
     if (useDeps) {
         useDeps[InStaticPath] = { thisFile: TimeCheck };
@@ -164,5 +164,27 @@ export async function RequireCjsScript(content) {
     const model = await ImportWithoutCache(tempFile);
     EasyFs.unlink(tempFile);
     return model;
+}
+export async function paramsImport(globalPrams, scriptLocation, inStaticLocationRelative, typeArray, isTypeScript, isDebug, fileCode, sourceMapComment) {
+    await EasyFs.makePathReal(inStaticLocationRelative, typeArray[1]);
+    const fullSaveLocation = scriptLocation + ".cjs";
+    const Result = await BuildScript(scriptLocation, undefined, isTypeScript, isDebug, { params: globalPrams, haveSourceMap: false, fileCode });
+    await EasyFs.makePathReal(path.dirname(fullSaveLocation));
+    await EasyFs.writeFile(fullSaveLocation, Result + sourceMapComment);
+    function requireMap(p) {
+        if (path.isAbsolute(p))
+            p = path.normalize(p).substring(path.normalize(typeArray[0]).length);
+        else {
+            if (p[0] == ".") {
+                const dirPath = path.dirname(inStaticLocationRelative);
+                p = (dirPath != "/" ? dirPath + "/" : "") + p;
+            }
+            else if (p[0] != "/")
+                return import(p);
+        }
+        return LoadImport(inStaticLocationRelative, p, typeArray, isDebug);
+    }
+    const MyModule = await ImportWithoutCache(fullSaveLocation);
+    return async (...arr) => await MyModule(requireMap, ...arr);
 }
 //# sourceMappingURL=Script.js.map

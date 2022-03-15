@@ -2,10 +2,11 @@ import StringTracker from '../../../EasyDebug/StringTracker';
 import { tagDataObjectArray, StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import scriptWithServer from './server';
 import scriptWithClient from './client';
-import { SessionInfo, BuildScriptWithoutModule } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { BuildScriptWithoutModule } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { SessionBuild } from '../../../CompileCode/Session';
 
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
     if (dataTag.have('src'))
         return {
@@ -19,5 +20,5 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         return scriptWithServer(language, path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent);
     }
 
-    return scriptWithClient(language, dataTag, BetweenTagData, pathName, InsertComponent, sessionInfo);
+    return scriptWithClient(language, dataTag, LastSmallPath, BetweenTagData, pathName, InsertComponent, sessionInfo);
 }

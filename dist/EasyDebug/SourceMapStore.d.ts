@@ -2,8 +2,8 @@ import StringTracker from './StringTracker';
 import { SourceMapGenerator, RawSourceMap } from "source-map-js";
 export declare abstract class SourceMapBasic {
     protected filePath: string;
-    private httpSource;
-    private isCss;
+    protected httpSource: boolean;
+    protected isCss: boolean;
     protected map: SourceMapGenerator;
     protected fileDirName: string;
     protected lineCount: number;
@@ -12,7 +12,7 @@ export declare abstract class SourceMapBasic {
     mapAsURLComment(): string;
 }
 export default class SourceMapStore extends SourceMapBasic {
-    private debug;
+    protected debug: boolean;
     private storeString;
     private actionLoad;
     constructor(filePath: string, debug?: boolean, isCss?: boolean, httpSource?: boolean);
@@ -23,9 +23,10 @@ export default class SourceMapStore extends SourceMapBasic {
     private _addStringTracker;
     addText(text: string): void;
     private _addText;
-    addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string): Promise<void>;
+    addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string, source?: string): Promise<void>;
     private _addSourceMapWithStringTracker;
     private buildAll;
+    mapAsURLComment(): string;
     createDataWithMap(): string;
-    concat(data: SourceMapStore): void;
+    clone(): SourceMapStore;
 }

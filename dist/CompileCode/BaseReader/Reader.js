@@ -45,7 +45,7 @@ export class InsertComponentBase {
     printErrors(text, errors) {
         if (!this.printNew)
             return;
-        for (const i of JSON.parse(errors)) {
+        for (const i of JSON.parse(errors).reverse()) {
             this.printNew({
                 text: `\nWarning, you didn't write right this tag: "${i.type_name}", used in: ${text.at(Number(i.index)).lineInfo}\n(the system will auto close it)`,
                 errorName: "close-tag"
@@ -65,6 +65,9 @@ export class InsertComponentBase {
 }
 export async function RazorToEJS(text) {
     return JSON.parse(await pool.exec('RazorToEJS', [text]));
+}
+export async function RazorToEJSMini(text, find) {
+    return JSON.parse(await pool.exec('RazorToEJSMini', [text, find]));
 }
 export async function EJSParser(text, start, end) {
     return JSON.parse(await pool.exec('EJSParser', [text, start, end]));

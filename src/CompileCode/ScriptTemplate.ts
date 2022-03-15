@@ -2,10 +2,10 @@ import StringTracker from '../EasyDebug/StringTracker';
 import { SourceMapGenerator } from "source-map-js";
 import path from 'path';
 import { finalizeBuild } from '../BuildInComponents/index';
-import { SessionInfo } from '../CompileCode/XMLHelpers/CompileTypes';
 import JSParser from './JSParser';
 import { SourceMapBasic } from '../EasyDebug/SourceMapStore';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
+import { SessionBuild } from './Session';
 
 class createPageSourceMap extends SourceMapBasic {
     constructor(filePath: string) {
@@ -19,15 +19,20 @@ class createPageSourceMap extends SourceMapBasic {
         for (let index = 0; index < length; index++) {
             const { text, line, info } = DataArray[index];
 
-            if (text == '\n' && !(waitNextLine = false) && ++this.lineCount || waitNextLine)
+            if (text == '\n') {
+                this.lineCount++;
+                waitNextLine = false;
                 continue;
+            }
 
-            if (line && info && (waitNextLine = true))
+            if (!waitNextLine && line && info) {
+                waitNextLine = true;
                 this.map.addMapping({
                     original: { line, column: 0 },
                     generated: { line: this.lineCount, column: 0 },
                     source: connectPath + this.getSource(info)
                 });
+            }
         }
     }
 }
@@ -41,15 +46,15 @@ export class PageTemplate extends JSParser {
         return storeMap.mapAsURLComment();
     }
 
-    private static async AddPageTemplate(text: StringTracker, isDebug: boolean, fullPath: string, fullPathCompile: string, sessionInfo: SessionInfo) {
+    private static async AddPageTemplate(text: StringTracker, isDebug: boolean, fullPath: string, fullPathCompile: string, sessionInfo: SessionBuild) {
 
         text = await finalizeBuild(text, sessionInfo, fullPathCompile);
 
         if (isDebug) {
-            text.AddTextBefore(`try {\n`);
+            text.AddTextBeforeNoTrack(`try {\n`);
         }
 
-        text.AddTextBefore(`
+        text.AddTextBeforeNoTrack(`
         module.exports = (_require, _include, _transfer, private_var, handelConnector) => {
             return (async function (page) {
                 const __filename = "${JSParser.fixTextSimpleQuotes(fullPath)}", __dirname = "${JSParser.fixTextSimpleQuotes(path.dirname(fullPath))}";
@@ -68,7 +73,7 @@ export class PageTemplate extends JSParser {
 
 
         if (isDebug) {
-            text.AddTextAfter(`\n}
+            text.AddTextAfterNoTrack(`\n}
                 catch(e){
                     run_script_name += ' -> <line>' + e.stack.split(/\\n( )*at /)[2];
                     out_run_script.text += '${PageTemplate.printError(`<p>Error path: ' + run_script_name.replace(/<line>/gi, '<br/>') + '</p><p>Error message: ' + e.message + '</p>`)}';
@@ -80,7 +85,7 @@ export class PageTemplate extends JSParser {
                 }`);
         }
 
-        text.AddTextAfter(`}});}`);
+        text.AddTextAfterNoTrack(`}});}`);
 
         if (isDebug) {
             text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile, BasicSettings.fullWebSitePath));
@@ -89,7 +94,7 @@ export class PageTemplate extends JSParser {
         return text;
     }
 
-    static async BuildPage(text: StringTracker, path: string, isDebug: boolean, fullPathCompile: string, sessionInfo: SessionInfo) {
+    static async BuildPage(text: StringTracker, path: string, isDebug: boolean, fullPathCompile: string, sessionInfo: SessionBuild) {
         const builtCode = await PageTemplate.RunAndExport(text, path, isDebug);
 
         return PageTemplate.AddPageTemplate(builtCode, isDebug, path, fullPathCompile, sessionInfo);
@@ -101,19 +106,19 @@ export class PageTemplate extends JSParser {
         }
         return text;
     }
-    
-    static InPageTemplate(text: StringTracker, dataObject: any, fullPath: string){
-        text.AddTextBefore(`<%!{
+
+    static InPageTemplate(text: StringTracker, dataObject: any, fullPath: string) {
+        text.AddTextBeforeNoTrack(`<%!{
             const _page = page;
             {
-            const page = {..._page${dataObject ? ','+dataObject: ''}};
+            const page = {..._page${dataObject ? ',' + dataObject : ''}};
             const __filename = "${JSParser.fixTextSimpleQuotes(fullPath)}", __dirname = "${JSParser.fixTextSimpleQuotes(path.dirname(fullPath))}";
             const require = (p) => _require(__filename, __dirname, page, p);
             const include = (p, withObject) => _include(__filename, __dirname, page, p, withObject);
             const transfer = (p, preserveForm, withObject) => (out_run_script = {text: ''}, _transfer(p, preserveForm, withObject, __filename, __dirname, page));
                 {%>`);
 
-        text.AddTextAfter('<%!}}}%>');
+        text.AddTextAfterNoTrack('<%!}}}%>');
 
         return text;
     }

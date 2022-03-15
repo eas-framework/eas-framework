@@ -1,9 +1,9 @@
 import StringTracker from '../../EasyDebug/StringTracker.js';
-import { BasicSettings, CheckDependencyChange, getTypes } from '../../RunTimeBuild/SearchFileSystem.js';
+import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem.js';
 import EasyFs from '../../OutputInput/EasyFs.js';
 import { PrintIfNew } from '../../OutputInput/PrintNew.js';
 import path_node from 'path';
-import { extendsSession } from '../../CompileCode/Session.js';
+import { CheckDependencyChange } from '../../OutputInput/StoreDeps.js';
 function InFolderPagePath(inputPath, fullPath) {
     if (inputPath[0] == '.') {
         if (inputPath[1] == '/') {
@@ -48,7 +48,7 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
         const { CompiledData, dependenceObject: dependence, sessionInfo: newSession } = await InsertComponent.CompileInFile(SmallPathWithoutFolder, getTypes.Static, null, pathName, dataTag.remove('object'));
         dependence[SmallPath] = dependence.thisPage;
         delete dependence.thisPage;
-        extendsSession(sessionInfo, newSession);
+        sessionInfo.extends(newSession);
         cacheMap[SmallPathWithoutFolder] = { CompiledData, dependence, newSession };
         Object.assign(dependenceObject, dependence);
         ReturnData = CompiledData;
@@ -56,7 +56,7 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
     else {
         const { CompiledData, dependence, newSession } = cacheMap[SmallPathWithoutFolder];
         Object.assign(dependenceObject, dependence);
-        extendsSession(sessionInfo, newSession);
+        sessionInfo.extends(newSession);
         ReturnData = CompiledData;
     }
     return {

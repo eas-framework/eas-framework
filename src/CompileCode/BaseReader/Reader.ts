@@ -52,7 +52,7 @@ export class InsertComponentBase {
     private printErrors(text: StringTracker, errors: string) {
         if (!this.printNew) return;
 
-        for (const i of JSON.parse(errors)) {
+        for (const i of JSON.parse(errors).reverse()) {
             this.printNew({
                 text: `\nWarning, you didn't write right this tag: "${i.type_name}", used in: ${text.at(Number(i.index)).lineInfo}\n(the system will auto close it)`,
                 errorName: "close-tag"
@@ -78,6 +78,10 @@ type ParseBlocks = { name: string, start: number, end: number }[]
 
 export async function RazorToEJS(text: string): Promise<ParseBlocks> {
     return JSON.parse(await pool.exec('RazorToEJS', [text]));
+}
+
+export async function RazorToEJSMini(text: string, find: string): Promise<number[]> {
+    return JSON.parse(await pool.exec('RazorToEJSMini', [text,find]));
 }
 
 

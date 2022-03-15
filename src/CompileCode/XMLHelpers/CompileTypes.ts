@@ -23,49 +23,13 @@ export type StringNumberMap = {[key: string]: number}
 
 export type StringAnyMap = {[key: string]: any};
 
-export type setDataHTMLTag = {
-    url: string,
-    attributes?: StringAnyMap
-}
-
-export type SessionInfo = {
-    connectorArray: {
-        type: string,
-        name: string,
-        sendTo: string,
-        validator: string[],
-        order?: string[],
-        notValid?: string,
-        message?: string | boolean,
-        responseSafe?: boolean
-    }[],
-    scriptURLSet: setDataHTMLTag[]
-    styleURLSet: setDataHTMLTag[]
-    style: SourceMapStore
-    script: SourceMapStore
-    scriptModule: SourceMapStore,
-    headHTML: string,
-    typeName: string,
-    cache: {
-        style: string[]
-        script: string[]
-        scriptModule: string[]
-    },
-    cacheComponent: {
-        [key: string]: null | {
-            mtimeMs?: number,
-            value?: string
-        }
-    }
-}
-
 
 export interface BuildInComponent {
     compiledString: StringTracker,
     checkComponents?: boolean
 }
 
-export type CompileInFileFunc = (path: string, arrayType: string[], debugFromPage: string, sessionInfo: SessionInfo) => Promise<{CompiledData:StringTracker, dependenceObject:any}>;
+export type CompileInFileFunc = (path: string, arrayType: string[], debugFromPage: string) => Promise<{CompiledData:StringTracker, dependenceObject:any}>;
 
 export type BuildScriptWithoutModule = (code: StringTracker) => Promise<string>;
 

@@ -1,17 +1,14 @@
-import fs, {Dirent} from 'fs';
+import {Dirent} from 'fs';
 import EasyFs from '../OutputInput/EasyFs';
 import {cwd} from 'process';
 import path from 'path';
 import {fileURLToPath} from 'url'
-import { StringNumberMap } from '../CompileCode/XMLHelpers/CompileTypes';
 
 function getDirname(url: string){
     return path.dirname(fileURLToPath(url));
 }
 
 const SystemData = path.join(getDirname(import.meta.url), '/../SystemData');
-
-const PagesInfoPath = SystemData + '/PagesInfo.json';
 
 let WebSiteFolder_ = "WebSite";
 
@@ -135,37 +132,6 @@ async function DeleteInDirectory(path) {
     }
 }
 
-const PagesInfo = JSON.parse(fs.readFileSync(PagesInfoPath, 'utf8') || '{}');
-
-async function UpdatePageDependency(path:string, o:any) {
-    PagesInfo[path] = o;
-    await EasyFs.writeFile(PagesInfoPath, JSON.stringify(PagesInfo));
-}
-
-function ClearPagesDependency() {
-    for (const i in PagesInfo) {
-        PagesInfo[i] = undefined;
-        delete PagesInfo[i];
-    }
-}
-
-async function CheckDependencyChange(path:string, dependencies: StringNumberMap = PagesInfo[path]) {
-    for (const i in dependencies) {
-        let p = i;
-
-        if (i == 'thisPage') {
-            p = path + "." + BasicSettings.pageTypes.page;
-        }
-
-        const FilePath = fullWebSitePath_  + p;
-        if (await EasyFs.stat(FilePath, 'mtimeMs', true) != dependencies[i]) {
-            return true;
-        }
-    }
-    
-    return !dependencies;
-}
-
 export {
     getDirname,
     SystemData,
@@ -173,9 +139,5 @@ export {
     filesInDirectory,
     DeleteInDirectory,
     getTypes,
-    BasicSettings,
-    PagesInfo,
-    ClearPagesDependency,
-    UpdatePageDependency,
-    CheckDependencyChange
+    BasicSettings
 }

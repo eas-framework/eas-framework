@@ -11,6 +11,6 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
         dataTag.remove('server');
         return scriptWithServer(language, path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent);
     }
-    return scriptWithClient(language, dataTag, BetweenTagData, pathName, InsertComponent, sessionInfo);
+    return scriptWithClient(language, dataTag, LastSmallPath, BetweenTagData, pathName, InsertComponent, sessionInfo);
 }
 //# sourceMappingURL=index.js.map

@@ -1,6 +1,6 @@
 import AddSyntax from './Syntax/Index';
 import StringTracker from '../EasyDebug/StringTracker';
-import {SessionInfo} from '../CompileCode/XMLHelpers/CompileTypes';
+import { SessionBuild } from '../CompileCode/Session';
 
 export default class AddPlugin {
 	public SettingsObject: any;
@@ -9,7 +9,11 @@ export default class AddPlugin {
         this.SettingsObject = SettingsObject
     }
 
-    async BuildBasic(text: StringTracker, OData:string |any, path:string, pathName: string, sessionInfo: SessionInfo) {
+    private get defaultSyntax(){
+        return this.SettingsObject.BasicCompilationSyntax.concat(this.SettingsObject.AddCompileSyntax);
+    }
+
+    async BuildBasic(text: StringTracker, OData:string |any, path:string, pathName: string, sessionInfo: SessionBuild) {
 
         //add Syntax
 
@@ -39,8 +43,8 @@ export default class AddPlugin {
      * @param pathName file location without start folder (small path)
      * @returns compiled code
      */
-    async BuildPage(text: StringTracker, path: string, pathName: string, sessionInfo: SessionInfo): Promise<StringTracker>{
-        text = await this.BuildBasic(text, this.SettingsObject.AddCompileSyntax, path, pathName, sessionInfo);
+    async BuildPage(text: StringTracker, path: string, pathName: string, sessionInfo: SessionBuild): Promise<StringTracker>{
+        text = await this.BuildBasic(text, this.defaultSyntax, path, pathName, sessionInfo);
         return text;
     }
 
@@ -51,8 +55,8 @@ export default class AddPlugin {
      * @param pathName file location without start folder (small path)
      * @returns compiled code
      */
-    async BuildComponent(text: StringTracker, path: string, pathName: string, sessionInfo: SessionInfo): Promise<StringTracker>{
-        text = await this.BuildBasic(text, this.SettingsObject.AddCompileSyntax, path, pathName, sessionInfo);
+    async BuildComponent(text: StringTracker, path: string, pathName: string, sessionInfo: SessionBuild): Promise<StringTracker>{
+        text = await this.BuildBasic(text, this.defaultSyntax, path, pathName, sessionInfo);
         return text;
     }
 }

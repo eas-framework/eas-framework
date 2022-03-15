@@ -1,6 +1,7 @@
 import { SourceMapGenerator, SourceMapConsumer } from "source-map-js";
 import path from 'path';
-import { BasicSettings } from '../RunTimeBuild/SearchFileSystem.js';
+import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem.js';
+import { fileURLToPath } from "url";
 export class SourceMapBasic {
     constructor(filePath, httpSource = true, isCss = false) {
         this.filePath = filePath;
@@ -21,10 +22,9 @@ export class SourceMapBasic {
                 source += '.source';
             else
                 source += '?source=true';
+            return path.join('/', source.replace(/\\/gi, '/'));
         }
-        else
-            source = path.relative(this.fileDirName, source);
-        return path.join('/', source.replace(/\\/gi, '/'));
+        return path.relative(this.fileDirName, BasicSettings.fullWebSitePath + source);
     }
     mapAsURLComment() {
         let mapString = `sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(this.map.toString()).toString("base64")}`;
@@ -55,14 +55,19 @@ export default class SourceMapStore extends SourceMapBasic {
         let waitNextLine = false;
         for (let index = 0; index < length; index++) {
             const { text, line, info } = DataArray[index];
-            if (text == '\n' && !(waitNextLine = false) || waitNextLine)
+            if (text == '\n') {
+                this.lineCount++;
+                waitNextLine = false;
                 continue;
-            if (line && info && (waitNextLine = true))
+            }
+            if (!waitNextLine && line && info) {
+                waitNextLine = true;
                 this.map.addMapping({
                     original: { line, column: 0 },
-                    generated: { line: ++this.lineCount, column: 0 },
+                    generated: { line: this.lineCount, column: 0 },
                     source: this.getSource(info)
                 });
+            }
         }
         this.storeString += text;
     }
@@ -74,7 +79,11 @@ export default class SourceMapStore extends SourceMapBasic {
             this.lineCount += text.split('\n').length - 1;
         this.storeString += text;
     }
-    async addSourceMapWithStringTracker(fromMap, track, text) {
+    async addSourceMapWithStringTracker(fromMap, track, text, source) {
+        source && (fromMap.sources[fromMap.sources.length - 1] = source);
+        for (let i = 0; i < fromMap.sources.length - 1; i++) {
+            fromMap.sources[i] = path.relative(getTypes.Static[0], fileURLToPath(fromMap.sources[i]));
+        }
         this.actionLoad.push({ name: 'addSourceMapWithStringTracker', data: [fromMap, track, text] });
     }
     async _addSourceMapWithStringTracker(fromMap, track, text) {
@@ -115,14 +124,20 @@ export default class SourceMapStore extends SourceMapBasic {
             }
         }
     }
+    mapAsURLComment() {
+        this.buildAll();
+        return super.mapAsURLComment();
+    }
     createDataWithMap() {
         this.buildAll();
         if (!this.debug)
             return this.storeString;
-        return this.storeString + this.mapAsURLComment();
+        return this.storeString + super.mapAsURLComment();
     }
-    concat(data) {
-        this.actionLoad.push(...data.actionLoad);
+    clone() {
+        const copy = new SourceMapStore(this.filePath, this.debug, this.isCss, this.httpSource);
+        copy.actionLoad.push(...this.actionLoad);
+        return copy;
     }
 }
 //# sourceMappingURL=SourceMapStore.js.map

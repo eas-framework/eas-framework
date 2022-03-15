@@ -3,9 +3,10 @@ import { BuildInComponent, tagDataObjectArray } from '../../../CompileCode/XMLHe
 import { Options as TransformOptions, transform } from 'sucrase';
 import { minify } from "terser";
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
-import { SessionInfo } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { SessionBuild } from '../../../CompileCode/Session';
+import { parseTagDataStringBoolean } from '../serv-connect/index';
 
-export default async function BuildCode(language: string, tagData: tagDataObjectArray, BetweenTagData: StringTracker, pathName: string, InsertComponent: any, sessionInfo: SessionInfo): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, tagData: tagDataObjectArray, LastSmallPath: string, BetweenTagData: StringTracker, pathName: string, InsertComponent: any, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const BetweenTagDataEq = BetweenTagData.eq, BetweenTagDataEqAsTrim = BetweenTagDataEq.trim(), isModel = tagData.getValue('type') == 'module', isModelStringCache = isModel ? 'scriptModule': 'script';
 
     if (sessionInfo.cache[isModelStringCache].includes(BetweenTagDataEqAsTrim))
@@ -58,11 +59,8 @@ export default async function BuildCode(language: string, tagData: tagDataObject
         });
     }
 
-
-    if (isModel)
-        sessionInfo.scriptModule.addStringTracker(BetweenTagData, {text: resultCode});
-    else
-        sessionInfo.script.addStringTracker(BetweenTagData, {text: resultCode});
+    const pushStyle = sessionInfo.addScriptStyle(isModel ? 'module': 'script', parseTagDataStringBoolean(tagData, 'page') ? LastSmallPath : BetweenTagData.extractInfo());
+    pushStyle.addStringTracker(BetweenTagData, {text: resultCode});
 
     return {
         compiledString: new StringTracker()

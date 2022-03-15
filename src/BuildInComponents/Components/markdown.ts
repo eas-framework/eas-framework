@@ -1,5 +1,5 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, setDataHTMLTag, BuildInComponent, SessionInfo, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import markdown from 'markdown-it'
 import hljs from 'highlight.js';
 import { parseTagDataStringBoolean } from './serv-connect/index';
@@ -12,6 +12,7 @@ import slugify from '@sindresorhus/slugify';
 import markdownItAttrs from 'markdown-it-attrs';
 import markdownItAbbr from 'markdown-it-abbr'
 import MinCss from '../../CompileCode/CssMinimizer';
+import { SessionBuild } from '../../CompileCode/Session';
 
 function codeWithCopy(md: any) {
 
@@ -31,7 +32,7 @@ function codeWithCopy(md: any) {
     md.renderer.rules.fence = renderCode(md.renderer.rules.fence);
 }
 
-export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: any, session: SessionInfo, dependenceObject: StringNumberMap): Promise<BuildInComponent> {
+export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: any, session: SessionBuild, dependenceObject: StringNumberMap): Promise<BuildInComponent> {
     const markDownPlugin = InsertComponent.GetPlugin('markdown');
 
     const hljsClass = parseTagDataStringBoolean(dataTag, 'hljs-class', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
@@ -93,21 +94,14 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
 
     if (haveHighlight) {
         const cssLink = '/serv/md/code-theme/' + theme + '.css';
-        if (!session.styleURLSet.find(x => x.url === cssLink))
-            session.styleURLSet.push({
-                url: cssLink
-            });
+        session.style(cssLink);
     }
 
     dataTag.addClass('markdown-body');
 
     const style = parseTagDataStringBoolean(dataTag, 'theme', markDownPlugin?.theme ?? 'auto');
-
     const cssLink = '/serv/md/theme/' + style + '.css';
-    if (style != 'none' && !session.styleURLSet.find(x => x.url === cssLink))
-        session.styleURLSet.push({
-            url: cssLink
-        });
+    style != 'none' && session.style(cssLink)
 
     if (dataTag.length)
         buildHTML.Plus$`<div${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${renderHTML}</div>`;

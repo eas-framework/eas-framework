@@ -1,8 +1,10 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWithoutModule, SessionInfo } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import JSParser from '../../CompileCode/JSParser'
 import { minify } from "terser";
 import { PrintIfNew } from '../../OutputInput/PrintNew';
+import { SessionBuild } from '../../CompileCode/Session';
+import { parseTagDataStringBoolean } from './serv-connect/index';
 
 function replaceForClient(BetweenTagData: string, exportInfo: string) {
     BetweenTagData = BetweenTagData.replace(`"use strict";Object.defineProperty(exports, "__esModule", {value: true});`, exportInfo);
@@ -24,15 +26,11 @@ async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name
     }\n${name}.exports = {};`
 }
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionInfo): Promise<BuildInComponent> {
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
     BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, (x: StringTracker) => x.eq, sessionInfo);
 
-    if (!sessionInfo.scriptURLSet.find(x => x.url == serveScript))
-        sessionInfo.scriptURLSet.push({
-            url: serveScript,
-            attributes: { async: null }
-        });
+    sessionInfo.script(serveScript, {async: null});
 
     let scriptInfo = await template(
         BuildScriptWithoutModule,
@@ -57,7 +55,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         }
     }
 
-    sessionInfo.script.addText(scriptInfo);
+    sessionInfo.addScriptStyle('script', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath: type.extractInfo()).addText(scriptInfo); // add script
 
     return {
         compiledString: new StringTracker()

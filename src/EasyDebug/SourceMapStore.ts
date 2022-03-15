@@ -1,14 +1,14 @@
 import StringTracker from './StringTracker';
 import { SourceMapGenerator, RawSourceMap, SourceMapConsumer } from "source-map-js";
 import path from 'path';
-import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
-
+import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem';
+import {fileURLToPath} from "url";
 export abstract class SourceMapBasic {
     protected map: SourceMapGenerator;
     protected fileDirName: string;
     protected lineCount = 0;
 
-    constructor(protected filePath: string, private httpSource = true, private isCss = false) {
+    constructor(protected filePath: string, protected httpSource = true, protected isCss = false) {
         this.map = new SourceMapGenerator({
             file: filePath.split(/\/|\\/).pop()
         });
@@ -27,10 +27,10 @@ export abstract class SourceMapBasic {
                 source += '.source';
             else
                 source += '?source=true';
-        } else
-            source = path.relative(this.fileDirName, source);
+            return path.join('/', source.replace(/\\/gi, '/'));
+        }
 
-        return path.join('/', source.replace(/\\/gi, '/'));
+        return path.relative(this.fileDirName, BasicSettings.fullWebSitePath + source);
     }
 
     mapAsURLComment() {
@@ -49,7 +49,7 @@ export default class SourceMapStore extends SourceMapBasic {
     private storeString = '';
     private actionLoad: { name: string, data: any[] }[] = [];
 
-    constructor(filePath: string, private debug = true, isCss = false, httpSource = true) {
+    constructor(filePath: string, protected debug = true, isCss = false, httpSource = true) {
         super(filePath, httpSource, isCss);
     }
 
@@ -71,15 +71,20 @@ export default class SourceMapStore extends SourceMapBasic {
         for (let index = 0; index < length; index++) {
             const { text, line, info } = DataArray[index];
 
-            if (text == '\n' && !(waitNextLine = false) || waitNextLine)
+            if (text == '\n') {
+                this.lineCount++;
+                waitNextLine = false;
                 continue;
+            }
 
-            if (line && info && (waitNextLine = true))
+            if (!waitNextLine && line && info) {
+                waitNextLine = true;
                 this.map.addMapping({
                     original: { line, column: 0 },
-                    generated: { line: ++this.lineCount, column: 0 },
+                    generated: { line: this.lineCount, column: 0 },
                     source: this.getSource(info)
                 });
+            }
         }
 
         this.storeString += text;
@@ -96,7 +101,11 @@ export default class SourceMapStore extends SourceMapBasic {
         this.storeString += text;
     }
 
-    async addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string) {
+    async addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string, source?: string) {
+        source && (fromMap.sources[fromMap.sources.length-1] = source);
+        for(let i = 0; i < fromMap.sources.length -1; i++){
+            fromMap.sources[i] = path.relative(getTypes.Static[0],fileURLToPath(fromMap.sources[i]));
+        }
         this.actionLoad.push({ name: 'addSourceMapWithStringTracker', data: [fromMap, track, text] });
     }
 
@@ -143,15 +152,23 @@ export default class SourceMapStore extends SourceMapBasic {
         }
     }
 
+    mapAsURLComment() {
+        this.buildAll();
+
+        return super.mapAsURLComment()
+    }
+
     createDataWithMap() {
         this.buildAll();
         if (!this.debug)
             return this.storeString;
 
-        return this.storeString + this.mapAsURLComment();
+        return this.storeString + super.mapAsURLComment();
     }
 
-    concat(data: SourceMapStore){
-        this.actionLoad.push(...data.actionLoad);
+    clone() {
+        const copy = new SourceMapStore(this.filePath, this.debug, this.isCss, this.httpSource);
+        copy.actionLoad.push(...this.actionLoad)
+        return copy;
     }
 }

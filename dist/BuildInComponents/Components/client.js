@@ -2,6 +2,7 @@ import StringTracker from '../../EasyDebug/StringTracker.js';
 import JSParser from '../../CompileCode/JSParser.js';
 import { minify } from "terser";
 import { PrintIfNew } from '../../OutputInput/PrintNew.js';
+import { parseTagDataStringBoolean } from './serv-connect/index.js';
 function replaceForClient(BetweenTagData, exportInfo) {
     BetweenTagData = BetweenTagData.replace(`"use strict";Object.defineProperty(exports, "__esModule", {value: true});`, exportInfo);
     return BetweenTagData;
@@ -17,11 +18,7 @@ async function template(BuildScriptWithoutModule, name, params, selector, mainCo
 }
 export default async function BuildCode(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo) {
     BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, (x) => x.eq, sessionInfo);
-    if (!sessionInfo.scriptURLSet.find(x => x.url == serveScript))
-        sessionInfo.scriptURLSet.push({
-            url: serveScript,
-            attributes: { async: null }
-        });
+    sessionInfo.script(serveScript, { async: null });
     let scriptInfo = await template(BuildScriptWithoutModule, dataTag.getValue('name'), dataTag.getValue('params'), dataTag.getValue('selector'), BetweenTagData, pathName, isDebug && !InsertComponent.SomePlugins("SafeDebug"));
     const minScript = InsertComponent.SomePlugins("MinJS") || InsertComponent.SomePlugins("MinAll");
     if (minScript) {
@@ -35,7 +32,7 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
             });
         }
     }
-    sessionInfo.script.addText(scriptInfo);
+    sessionInfo.addScriptStyle('script', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath : type.extractInfo()).addText(scriptInfo); // add script
     return {
         compiledString: new StringTracker()
     };

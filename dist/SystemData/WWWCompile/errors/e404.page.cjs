@@ -14,19 +14,9 @@ require('source-map-support').install();module.exports = (_require, _include, _t
                 {try {
 
 run_script_code=`run_script_name=\`WWW/errors/e404.page\`;`;
-//!WWW/errors/e404.page<line>/Users/idoio/Documents/beyond-easy/tests/core/Website/Models/Website.mode:0:41
+//!/Users/idoio/Documents/beyond-easy/tests/core/Website/:0:0
 run_script_name=`WWW/errors/e404.page`;
-run_script_code=`
-
-`;
-//!WWW/errors/e404.page<line>/Users/idoio/Documents/beyond-easy/tests/core/Website/Models/Website.mode:1:3
-
-//!WWW/errors/e404.page<line>/Users/idoio/Documents/beyond-easy/tests/core/Website/Models/Website.mode:1:3
-
-//!WWW/errors/e404.page<line>/Users/idoio/Documents/beyond-easy/tests/core/Website/Models/Website.mode:1:3
-
-out_run_script.text+=`
-<!DOCTYPE html>
+out_run_script.text+=`<!DOCTYPE html>
 <html lang="en" me=more>
     <head>
         <meta charset="UTF-8"/>
@@ -36,7 +26,10 @@ out_run_script.text+=`
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
         
         
-    <script src="/errors/e404-ZTQwN.pub.js" defer></script></head>
+        
+
+/Users/idoio/Documents/beyond-easy/dist/SystemData/WWWCompile/Website.mode.comp.js
+    <script src="/V1dXL.pub.js" defer></script></head>
     <body>
         <header>
             <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
@@ -84,4 +77,4 @@ out_run_script.text+=`
                     console.error("Error runing this code: '" + run_script_code + "'");
                     console.error("Error stack: " + e.stack);
                 }}});}
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9pZG9pby9Eb2N1bWVudHMvYmV5b25kLWVhc3kvdGVzdHMvY29yZS9XZWJzaXRlLy9Nb2RlbHMvV2Vic2l0ZS5tb2RlIiwiL1VzZXJzL2lkb2lvL0RvY3VtZW50cy9iZXlvbmQtZWFzeS90ZXN0cy9jb3JlL1dlYnNpdGUvL1dXVy9lcnJvcnMvZTQwNC5wYWdlIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTs7QUFFQTs7QUFFQTtBQUNBOzs7Ozs7Ozs7Ozs7Ozs7QUFWQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFHQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQzVDQTtBRDZDQTtBQUNBO0FBQ0E7QUFDQTtBQW5EQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQSIsImZpbGUiOiJlNDA0LnBhZ2UuY2pzIn0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9pZG9pby9Eb2N1bWVudHMvYmV5b25kLWVhc3kvdGVzdHMvY29yZS9XZWJzaXRlLy4uLy4uLy4uLy4uL3Rlc3RzL2NvcmUvV2Vic2l0ZS9Nb2RlbHMvV2Vic2l0ZS5tb2RlIiwiL1VzZXJzL2lkb2lvL0RvY3VtZW50cy9iZXlvbmQtZWFzeS90ZXN0cy9jb3JlL1dlYnNpdGUvLi4vLi4vLi4vLi4vdGVzdHMvY29yZS9XZWJzaXRlL1dXVy9lcnJvcnMvZTQwNC5wYWdlIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUdBO0FBQ0E7OztBQUdBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQzVDQTtBRDZDQTtBQUNBO0FBQ0E7QUFDQSIsImZpbGUiOiJlNDA0LnBhZ2UuY2pzIn0=

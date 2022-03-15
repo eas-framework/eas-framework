@@ -4,17 +4,13 @@ const serveScript = '/serv/connect.js';
 function template(name) {
     return `function ${name}(...args){return connector("${name}", args)}`;
 }
-export default async function BuildCode(type, dataTag, BetweenTagData, isDebug, { SomePlugins }, sessionInfo) {
+export default async function BuildCode(LastSmallPath, type, dataTag, BetweenTagData, isDebug, { SomePlugins }, sessionInfo) {
     const name = dataTag.getValue('name'), sendTo = dataTag.getValue('sendTo'), validator = dataTag.getValue('validate'), notValid = dataTag.remove('notValid');
     let message = parseTagDataStringBoolean(dataTag, 'message'); // show error message
     if (message === null)
         message = isDebug && !SomePlugins("SafeDebug");
-    if (!sessionInfo.scriptURLSet.find(x => x.url == serveScript))
-        sessionInfo.scriptURLSet.push({
-            url: serveScript,
-            attributes: { async: null }
-        });
-    sessionInfo.script.addText(template(name));
+    sessionInfo.script(serveScript, { async: null });
+    sessionInfo.addScriptStyle('script', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath : type.extractInfo()).addText(template(name)); // add script
     sessionInfo.connectorArray.push({
         type: 'connect',
         name,
@@ -54,7 +50,7 @@ export function addFinalizeBuild(pageData, sessionInfo) {
     if (pageData.includes("@ConnectHere"))
         pageData = pageData.replacer(/@ConnectHere(;?)/, () => new StringTracker(null, addScript));
     else
-        pageData.AddTextAfter(addScript);
+        pageData.AddTextAfterNoTrack(addScript);
     return pageData;
 }
 export async function handelConnector(thisPage, connectorArray) {

@@ -2,7 +2,8 @@ import StringTracker from '../../../EasyDebug/StringTracker.js';
 import { transform } from 'sucrase';
 import { minify } from "terser";
 import { PrintIfNew } from '../../../OutputInput/PrintNew.js';
-export default async function BuildCode(language, tagData, BetweenTagData, pathName, InsertComponent, sessionInfo) {
+import { parseTagDataStringBoolean } from '../serv-connect/index.js';
+export default async function BuildCode(language, tagData, LastSmallPath, BetweenTagData, pathName, InsertComponent, sessionInfo) {
     const BetweenTagDataEq = BetweenTagData.eq, BetweenTagDataEqAsTrim = BetweenTagDataEq.trim(), isModel = tagData.getValue('type') == 'module', isModelStringCache = isModel ? 'scriptModule' : 'script';
     if (sessionInfo.cache[isModelStringCache].includes(BetweenTagDataEqAsTrim))
         return {
@@ -48,10 +49,8 @@ export default async function BuildCode(language, tagData, BetweenTagData, pathN
             text: BetweenTagData.debugLine(err)
         });
     }
-    if (isModel)
-        sessionInfo.scriptModule.addStringTracker(BetweenTagData, { text: resultCode });
-    else
-        sessionInfo.script.addStringTracker(BetweenTagData, { text: resultCode });
+    const pushStyle = sessionInfo.addScriptStyle(isModel ? 'module' : 'script', parseTagDataStringBoolean(tagData, 'page') ? LastSmallPath : BetweenTagData.extractInfo());
+    pushStyle.addStringTracker(BetweenTagData, { text: resultCode });
     return {
         compiledString: new StringTracker()
     };

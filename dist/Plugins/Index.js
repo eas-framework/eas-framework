@@ -3,6 +3,9 @@ export default class AddPlugin {
     constructor(SettingsObject) {
         this.SettingsObject = SettingsObject;
     }
+    get defaultSyntax() {
+        return this.SettingsObject.BasicCompilationSyntax.concat(this.SettingsObject.AddCompileSyntax);
+    }
     async BuildBasic(text, OData, path, pathName, sessionInfo) {
         //add Syntax
         if (!OData) {
@@ -27,7 +30,7 @@ export default class AddPlugin {
      * @returns compiled code
      */
     async BuildPage(text, path, pathName, sessionInfo) {
-        text = await this.BuildBasic(text, this.SettingsObject.AddCompileSyntax, path, pathName, sessionInfo);
+        text = await this.BuildBasic(text, this.defaultSyntax, path, pathName, sessionInfo);
         return text;
     }
     /**
@@ -38,7 +41,7 @@ export default class AddPlugin {
      * @returns compiled code
      */
     async BuildComponent(text, path, pathName, sessionInfo) {
-        text = await this.BuildBasic(text, this.SettingsObject.AddCompileSyntax, path, pathName, sessionInfo);
+        text = await this.BuildBasic(text, this.defaultSyntax, path, pathName, sessionInfo);
         return text;
     }
 }

@@ -202,12 +202,44 @@ export default class StringTracker {
         return this;
     }
     /**
+     * add text at the *end* of the string without tracking
+     * @param text
+     */
+    AddTextAfterNoTrack(text) {
+        for (const char of text) {
+            this.DataArray.push({
+                text: char,
+                info: '',
+                line: 0,
+                char: 0
+            });
+        }
+        return this;
+    }
+    /**
      * add text at the *start* of the string
      * @param text
      * @param info
      */
     AddTextBefore(text, info, line, char) {
         this.AddTextAction(text, "unshift", info, line, char);
+        return this;
+    }
+    /**
+ * add text at the *start* of the string
+ * @param text
+ */
+    AddTextBeforeNoTrack(text) {
+        const copy = [];
+        for (const char of text) {
+            copy.push({
+                text: char,
+                info: '',
+                line: 0,
+                char: 0
+            });
+        }
+        this.DataArray.unshift(...copy);
         return this;
     }
     /**

@@ -5,7 +5,8 @@ import { PrintIfNew } from '../../../OutputInput/PrintNew.js';
 import EasyFs from '../../../OutputInput/EasyFs.js';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug.js';
 import { getTypes } from '../../../RunTimeBuild/SearchFileSystem.js';
-export default async function BuildCode(language, path, pathName, LastSmallPath, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo) {
+import { parseTagDataStringBoolean } from '../serv-connect/index.js';
+export default async function BuildCode(language, path, pathName, LastSmallPath, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo) {
     let outStyle = BetweenTagData.eq;
     const outStyleAsTrim = outStyle.trim();
     if (sessionInfo.cache.style.includes(outStyleAsTrim))
@@ -46,10 +47,11 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
             type: expression?.status == 5 ? 'warn' : 'error'
         });
     }
+    const pushStyle = sessionInfo.addScriptStyle('style', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath : BetweenTagData.extractInfo());
     if (result?.sourceMap)
-        sessionInfo.style.addSourceMapWithStringTracker(result.sourceMap, BetweenTagData, outStyle);
+        pushStyle.addSourceMapWithStringTracker(result.sourceMap, BetweenTagData, outStyle, BetweenTagData.extractInfo());
     else
-        sessionInfo.style.addStringTracker(BetweenTagData, { text: outStyle });
+        pushStyle.addStringTracker(BetweenTagData, { text: outStyle });
     return {
         compiledString: new StringTracker()
     };

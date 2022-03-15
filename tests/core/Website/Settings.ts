@@ -7,7 +7,7 @@ export default {
     },
 
     compile: {
-        compileSyntax: ["Razor", "TypeScript"],
+        compileSyntax: ["TypeScript"],
         ignoreError: [], //"close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" | "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning"
         plugins: [], // "MinAll" | "MinHTML" | "MinCss" | "MinSass" | "MinJS" | "MinTS" | "MinJSX" | "MinTSX"...
     },
@@ -35,7 +35,7 @@ export default {
         validPath: [(url, req, res) => url.substring(3, 5) != 'hi'] // check url path, if one of the methods return false, then the server returns a 404
     }, 
     serveLimits: {
-        cacheDays: 3,
+        cacheDays: 0,
         fileLimitMB: 10,
         requestLimitMB: 4,
         cookiesExpiresDays: 1,

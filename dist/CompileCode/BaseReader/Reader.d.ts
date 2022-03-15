@@ -35,5 +35,6 @@ declare type ParseBlocks = {
     end: number;
 }[];
 export declare function RazorToEJS(text: string): Promise<ParseBlocks>;
+export declare function RazorToEJSMini(text: string, find: string): Promise<number[]>;
 export declare function EJSParser(text: string, start: string, end: string): Promise<ParseBlocks>;
 export {};

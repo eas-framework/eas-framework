@@ -1,10 +1,11 @@
 import EasyFs from '../OutputInput/EasyFs.js';
 import { print } from '../OutputInput/Console.js';
-import { getTypes, BasicSettings, CheckDependencyChange, PagesInfo } from './SearchFileSystem.js';
+import { getTypes, BasicSettings } from './SearchFileSystem.js';
 import { FastCompile as FastCompile } from './SearchPages.js';
 import { GetFile as GetStaticFile, serverBuild } from '../ImportFiles/StaticFiles.js';
 import * as FuncScript from './FunctionScript.js';
 import MakeApiCall from './ApiCall.js';
+import { CheckDependencyChange, pageDeps } from '../OutputInput/StoreDeps.js';
 const { Export } = FuncScript;
 const Settings = {
     CacheDays: 1,
@@ -20,7 +21,7 @@ async function LoadPageToRam(url) {
     }
 }
 async function LoadAllPagesToRam() {
-    for (const i in PagesInfo) {
+    for (const i in pageDeps.store) {
         if (!ExtensionInArray(i, BasicSettings.ReqFileTypesArray))
             await LoadPageToRam(i);
     }
@@ -239,7 +240,7 @@ async function DynamicPage(Request, Response, url, arrayType = getTypes.Static, 
     const FileInfo = await isURLPathAFile(Request, url, arrayType, code);
     const makeDeleteArray = makeDeleteRequestFilesArray(Request);
     if (FileInfo.file) {
-        Response.setHeader("Cache-Control", "max-age=" + (Settings.CacheDays * 24 * 60 * 60));
+        Settings.CacheDays && Response.setHeader("Cache-Control", "max-age=" + (Settings.CacheDays * 24 * 60 * 60));
         await GetStaticFile(url, Settings.DevMode, Request, Response);
         deleteRequestFiles(makeDeleteArray);
         return;

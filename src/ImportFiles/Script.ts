@@ -1,16 +1,8 @@
-import {
-  Options as TransformOptions,
-  transform
-} from "sucrase";
+import { Options as TransformOptions, transform } from "sucrase";
 import { minify } from "terser";
 import { PrintIfNew } from "../OutputInput/PrintNew";
 import EasyFs from "../OutputInput/EasyFs";
-import {
-  BasicSettings,
-  PagesInfo,
-  UpdatePageDependency,
-  SystemData
-} from "../RunTimeBuild/SearchFileSystem";
+import { BasicSettings, SystemData } from "../RunTimeBuild/SearchFileSystem";
 import EasySyntax from "../CompileCode/transform/EasySyntax";
 import JSParser from "../CompileCode/JSParser";
 import path from "path";
@@ -20,6 +12,7 @@ import StringTracker from "../EasyDebug/StringTracker";
 import ImportWithoutCache from './ImportWithoutCache.cjs';
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
+import { pageDeps } from "../OutputInput/StoreDeps";
 
 async function ReplaceBefore(
   code: string,
@@ -29,10 +22,10 @@ async function ReplaceBefore(
   return code;
 }
 
-function template(code: string, isDebug: boolean, dir: string, file: string) {
+function template(code: string, isDebug: boolean, dir: string, file: string, params?: string) {
   return `${isDebug ? "require('source-map-support').install();" : ''}var __dirname="${JSParser.fixTextSimpleQuotes(dir)
     }",__filename="${JSParser.fixTextSimpleQuotes(file)
-    }";module.exports = (async (require)=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
+    }";module.exports = (async (require${params ? ',' + params : ''})=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
 }
 
 /**
@@ -41,16 +34,16 @@ function template(code: string, isDebug: boolean, dir: string, file: string) {
  * @param type
  * @returns
  */
-async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean,): Promise<string> {
+async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, haveSourceMap, fileCode }: { params?: string, haveSourceMap?: boolean, fileCode?: string } = {}): Promise<string> {
 
-  const sourceMapFile = savePath.split(/\/|\\/).pop();
+  const sourceMapFile = savePath && savePath.split(/\/|\\/).pop();
 
   const Options: TransformOptions = {
     transforms: ["imports"],
-    sourceMapOptions: {
+    sourceMapOptions: haveSourceMap ? {
       compiledFilename: sourceMapFile,
-    },
-    filePath: path.relative(path.dirname(savePath), filePath),
+    }: undefined,
+    filePath: haveSourceMap ? savePath && path.relative(path.dirname(savePath), filePath): undefined,
 
   },
     define = {
@@ -62,7 +55,7 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
   }
 
   let Result = await ReplaceBefore(
-    await EasyFs.readFile(filePath),
+    fileCode || await EasyFs.readFile(filePath),
     define,
   ),
     sourceMap: string;
@@ -79,15 +72,16 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
   }
 
   Result = template(
-    new StringTracker(filePath, Result).eq,
+    Result,
     isDebug,
     path.dirname(filePath),
     filePath,
+    params
   );
 
   if (isDebug) {
-    Result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," +
-      Buffer.from(sourceMap).toString("base64");
+    if (haveSourceMap)
+      Result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(sourceMap).toString("base64");
   } else {
     try {
       Result = (await minify(Result, { module: false })).code;
@@ -149,7 +143,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
     await SavedModules[SavedModulesPath];
 
   //build paths
-  const reBuild = !PagesInfo[SavedModulesPath] || PagesInfo[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true));
+  const reBuild = !pageDeps.store[SavedModulesPath] || pageDeps.store[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true));
 
   if (reBuild) {
     TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs", true);
@@ -163,7 +157,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
       return null;
     }
     await BuildScriptSmallPath(InStaticPath, typeArray, isDebug);
-    await UpdatePageDependency(SavedModulesPath, TimeCheck);
+    pageDeps.update(SavedModulesPath, TimeCheck);
   }
 
   if (useDeps) {
@@ -239,4 +233,39 @@ export async function RequireCjsScript(content: string) {
   EasyFs.unlink(tempFile);
 
   return model;
+}
+
+export async function paramsImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, fileCode: string,  sourceMapComment: string) {
+  await EasyFs.makePathReal(inStaticLocationRelative, typeArray[1]);
+
+  const fullSaveLocation = scriptLocation + ".cjs";
+
+  const Result = await BuildScript(
+    scriptLocation,
+    undefined,
+    isTypeScript,
+    isDebug,
+    {params: globalPrams, haveSourceMap: false, fileCode}
+  );
+
+  await EasyFs.makePathReal(path.dirname(fullSaveLocation));
+  await EasyFs.writeFile(fullSaveLocation, Result + sourceMapComment);
+
+  function requireMap(p: string) {
+    if (path.isAbsolute(p))
+      p = path.normalize(p).substring(path.normalize(typeArray[0]).length);
+    else {
+      if (p[0] == ".") {
+        const dirPath = path.dirname(inStaticLocationRelative);
+        p = (dirPath != "/" ? dirPath + "/" : "") + p;
+      }
+      else if (p[0] != "/")
+        return import(p);
+    }
+
+    return LoadImport(inStaticLocationRelative, p, typeArray, isDebug);
+  }
+
+  const MyModule = await ImportWithoutCache(fullSaveLocation);
+  return async (...arr: any[]) => await MyModule(requireMap, ...arr);
 }

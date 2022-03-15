@@ -6,6 +6,6 @@ export default async function BuildCode(path, pathName, LastSmallPath, type, dat
         dataTag.remove('server');
         return styleWithServer(language, path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent);
     }
-    return styleWithClient(language, path, pathName, LastSmallPath, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo);
+    return styleWithClient(language, path, pathName, LastSmallPath, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo);
 }
 //# sourceMappingURL=index.js.map

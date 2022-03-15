@@ -1,14 +1,18 @@
 import StringTracker from "../../EasyDebug/StringTracker";
-import { StringNumberMap } from './CompileTypes';
+import { StringNumberMap } from '../XMLHelpers/CompileTypes';
+import { SessionBuild } from "../Session";
 export default class ParseBasePage {
+    code?: StringTracker;
+    debug?: boolean;
+    isTs?: boolean;
     clearData: StringTracker;
     scriptFile: StringTracker;
     valueArray: {
         key: string;
         value: StringTracker;
     }[];
-    constructor(code?: StringTracker);
-    loadSettings(pagePath: string, smallPath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string, isComponent?: boolean): Promise<void>;
+    constructor(code?: StringTracker, debug?: boolean, isTs?: boolean);
+    loadSettings(sessionInfo: SessionBuild, pagePath: string, smallPath: string, dependenceObject: StringNumberMap, pageName: string): Promise<void>;
     private parseBase;
     private rebuild;
     static rebuildBaseInheritance(code: StringTracker): StringTracker;
