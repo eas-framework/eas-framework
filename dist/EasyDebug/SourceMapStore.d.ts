@@ -23,7 +23,8 @@ export default class SourceMapStore extends SourceMapBasic {
     private _addStringTracker;
     addText(text: string): void;
     private _addText;
-    addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string, source?: string): Promise<void>;
+    static fixURLSourceMap(map: RawSourceMap): RawSourceMap;
+    addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string): Promise<void>;
     private _addSourceMapWithStringTracker;
     private buildAll;
     mapAsURLComment(): string;

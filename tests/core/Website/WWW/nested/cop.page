@@ -1,0 +1,28 @@
+@[model='^boo/web' title=very]
+<@body/>
+<Bo folder="^boo">Hi</Bo>
+<script lang="ts">
+    let m: string;
+    m = "cool";
+</script>
+@{
+    1==1
+}
+@compile {
+    import {func} from '../change';
+    write(func())
+    write(__filename)
+}
+<style lang="sass">
+@@import './style.sass'
+div
+    font-size: 20px
+
+
+        //.. ddd
+</style>
+    <div>rrrr</div>
+    hello @(2+2)
+    hello
+    
+    :i:

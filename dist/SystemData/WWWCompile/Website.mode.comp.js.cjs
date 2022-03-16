@@ -1,4 +1,4 @@
-require('source-map-support').install();var __dirname="/Users/idoio/Documents/beyond-easy/dist/SystemData/WWWCompile",__filename="/Users/idoio/Documents/beyond-easy/dist/SystemData/WWWCompile/Website.mode.comp.js";module.exports = (async (require,script,style,define,store)=>{var module={exports:{}},exports=module.exports;"use strict";const __writeArray = []
+require('source-map-support').install();var __dirname="/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW",__filename="/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/Website.mode";module.exports = (async (require,script,style,define,store,page__filename,page__dirname)=>{var module={exports:{}},exports=module.exports;"use strict";const __writeArray = []
         var __write;
 
         function write(text){

@@ -58,7 +58,7 @@ export default class SourceMapStore extends SourceMapBasic {
     }
 
     addStringTracker(track: StringTracker, { text: text = track.eq } = {}) {
-        this.actionLoad.push({ name: 'addStringTracker', data: [track, text] });
+        this.actionLoad.push({ name: 'addStringTracker', data: [track, {text}] });
     }
 
     private _addStringTracker(track: StringTracker, { text: text = track.eq } = {}) {
@@ -101,11 +101,14 @@ export default class SourceMapStore extends SourceMapBasic {
         this.storeString += text;
     }
 
-    async addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string, source?: string) {
-        source && (fromMap.sources[fromMap.sources.length-1] = source);
-        for(let i = 0; i < fromMap.sources.length -1; i++){
-            fromMap.sources[i] = path.relative(getTypes.Static[0],fileURLToPath(fromMap.sources[i]));
+    static fixURLSourceMap(map: RawSourceMap){
+        for(let i = 0; i < map.sources.length; i++){
+            map.sources[i] = path.relative(getTypes.Static[0],fileURLToPath(map.sources[i]));
         }
+        return map;
+    }
+
+    async addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string) {
         this.actionLoad.push({ name: 'addSourceMapWithStringTracker', data: [fromMap, track, text] });
     }
 

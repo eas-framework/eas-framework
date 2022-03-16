@@ -7,9 +7,10 @@ function getDirname(url) {
 }
 const SystemData = path.join(getDirname(import.meta.url), '/../SystemData');
 let WebSiteFolder_ = "WebSite";
-const StaticName = 'WWW', LogsName = 'Logs';
+const StaticName = 'WWW', LogsName = 'Logs', ModulesName = 'node_modules';
 const StaticCompile = SystemData + `/${StaticName}Compile/`;
 const CompileLogs = SystemData + `/${LogsName}Compile/`;
+const CompileModule = SystemData + `/${ModulesName}Compile/`;
 const workingDirectory = cwd() + '/';
 function GetFullWebSitePath() {
     return path.join(workingDirectory, WebSiteFolder_, '/');
@@ -28,6 +29,11 @@ const getTypes = {
         GetSource(LogsName),
         CompileLogs,
         LogsName
+    ],
+    node_modules: [
+        GetSource('node_modules'),
+        CompileModule,
+        ModulesName
     ],
     get [StaticName]() {
         return getTypes.Static;

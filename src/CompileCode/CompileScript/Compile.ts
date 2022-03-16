@@ -1,3 +1,4 @@
+import path from "path";
 import SourceMapStore from "../../EasyDebug/SourceMapStore";
 import StringTracker from "../../EasyDebug/StringTracker";
 import { paramsImport } from "../../ImportFiles/Script";
@@ -34,13 +35,16 @@ export default class CRunTime {
     }
 
     private methods(){
+        const page__filename = BasicSettings.fullWebSitePath + this.smallPath;
         return {
-            string: 'script,style,define,store',
+            string: 'script,style,define,store,page__filename,page__dirname',
             funcs: [
                 this.sessionInfo.script.bind(this.sessionInfo),
                 this.sessionInfo.style.bind(this.sessionInfo),
                 (key: any, value: any) => this.define[String(key)] = value,
-                this.sessionInfo.compileRunTimeStore
+                this.sessionInfo.compileRunTimeStore,
+                page__filename,
+                path.dirname(page__filename)
             ]
         }
     }
@@ -53,15 +57,15 @@ export default class CRunTime {
         if(parser.values.length == 1 && parser.values[0].type === 'text') return this.script;
 
         const [type, filePath] =SplitFirst('/', this.smallPath), typeArray = getTypes[type] ?? getTypes.Static, 
-        compilePath = typeArray[1] + filePath + '.comp.js',
-        inStaticPath = BasicSettings.fullWebSitePath + this.smallPath;
+        compilePath = typeArray[1] + filePath + '.comp.js';
+        await EasyFs.makePathReal(filePath, typeArray[1]);
 
         const template = this.templateScript(parser.values.filter(x => x.type != 'text').map(x => x.text));
         const sourceMap = new SourceMapStore(compilePath, this.debug, false, false)
         sourceMap.addStringTracker(template);
         const {funcs, string} = this.methods()
 
-        const toImport = await paramsImport(string,compilePath, inStaticPath, typeArray, this.isTs, this.debug, template.eq, sourceMap.mapAsURLComment());
+        const toImport = await paramsImport(string,compilePath, filePath, typeArray, this.isTs, this.debug, template.eq, sourceMap.mapAsURLComment());
         const buildStrings: {text: string}[] = await toImport(...funcs);
         
 

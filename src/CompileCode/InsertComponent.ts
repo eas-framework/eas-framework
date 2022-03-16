@@ -30,7 +30,7 @@ export default class InsertComponent extends InsertComponentBase {
 
     constructor(PluginBuild: AddPlugin) {
         super(PrintIfNew);
-        this.dirFolder = 'Components/';
+        this.dirFolder = 'Components';
         this.PluginBuild = PluginBuild;
         this.regexSearch = new RegExp(`<([\\p{Lu}_\\-:0-9]|${AllBuildIn.join('|')})`, 'u')
     }

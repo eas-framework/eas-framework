@@ -12,7 +12,7 @@ class createPageSourceMap extends SourceMapBasic {
         super(filePath, false);
     }
 
-    addMappingFromTrack(track: StringTracker, connectPath: string) {
+    addMappingFromTrack(track: StringTracker) {
         const DataArray = track.getDataArray(), length = DataArray.length;
         let waitNextLine = true;
 
@@ -30,18 +30,19 @@ class createPageSourceMap extends SourceMapBasic {
                 this.map.addMapping({
                     original: { line, column: 0 },
                     generated: { line: this.lineCount, column: 0 },
-                    source: connectPath + this.getSource(info)
+                    source: this.getSource(info)
                 });
             }
         }
+
     }
 }
 
 export class PageTemplate extends JSParser {
 
-    private static CreateSourceMap(text: StringTracker, filePath: string, connectPath: string): string {
+    private static CreateSourceMap(text: StringTracker, filePath: string): string {
         const storeMap = new createPageSourceMap(filePath);
-        storeMap.addMappingFromTrack(text, connectPath);
+        storeMap.addMappingFromTrack(text);
 
         return storeMap.mapAsURLComment();
     }
@@ -88,7 +89,7 @@ export class PageTemplate extends JSParser {
         text.AddTextAfterNoTrack(`}});}`);
 
         if (isDebug) {
-            text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile, BasicSettings.fullWebSitePath));
+            text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile));
         }
 
         return text;

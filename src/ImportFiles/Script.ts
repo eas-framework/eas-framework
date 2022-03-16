@@ -34,7 +34,7 @@ function template(code: string, isDebug: boolean, dir: string, file: string, par
  * @param type
  * @returns
  */
-async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, haveSourceMap, fileCode }: { params?: string, haveSourceMap?: boolean, fileCode?: string } = {}): Promise<string> {
+async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, haveSourceMap, fileCode, templatePath = filePath }: { templatePath?: string, params?: string, haveSourceMap?: boolean, fileCode?: string } = {}): Promise<string> {
 
   const sourceMapFile = savePath && savePath.split(/\/|\\/).pop();
 
@@ -74,8 +74,8 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
   Result = template(
     Result,
     isDebug,
-    path.dirname(filePath),
-    filePath,
+    path.dirname(templatePath),
+    templatePath,
     params
   );
 
@@ -143,10 +143,10 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
     await SavedModules[SavedModulesPath];
 
   //build paths
-  const reBuild = !pageDeps.store[SavedModulesPath] || pageDeps.store[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true));
+  const reBuild = !pageDeps.store[SavedModulesPath] || pageDeps.store[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true, null));
 
   if (reBuild) {
-    TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs", true);
+    TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs", true, null);
     if (TimeCheck == null) {
       PrintIfNew({
         type: 'warn',
@@ -239,13 +239,14 @@ export async function paramsImport(globalPrams: string, scriptLocation: string, 
   await EasyFs.makePathReal(inStaticLocationRelative, typeArray[1]);
 
   const fullSaveLocation = scriptLocation + ".cjs";
+  const templatePath = typeArray[0]+inStaticLocationRelative;
 
   const Result = await BuildScript(
     scriptLocation,
     undefined,
     isTypeScript,
     isDebug,
-    {params: globalPrams, haveSourceMap: false, fileCode}
+    {params: globalPrams, haveSourceMap: false, fileCode, templatePath}
   );
 
   await EasyFs.makePathReal(path.dirname(fullSaveLocation));
@@ -263,7 +264,7 @@ export async function paramsImport(globalPrams: string, scriptLocation: string, 
         return import(p);
     }
 
-    return LoadImport(inStaticLocationRelative, p, typeArray, isDebug);
+    return LoadImport(templatePath, p, typeArray, isDebug);
   }
 
   const MyModule = await ImportWithoutCache(fullSaveLocation);

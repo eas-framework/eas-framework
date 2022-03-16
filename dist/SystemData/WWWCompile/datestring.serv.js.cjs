@@ -1,2 +1,0 @@
-require('source-map-support').install();var __dirname="/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW",__filename="/Users/idoio/Documents/beyond-easy/tests/core/Website/WWW/datestring.serv.js";module.exports = (async (require)=>{var module={exports:{}},exports=module.exports;"use strict";Object.defineProperty(exports, "__esModule", {value: true});exports. default = () => new Date().toLocaleTimeString() + 'poop';
-return module.exports;});

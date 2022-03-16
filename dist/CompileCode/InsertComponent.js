@@ -11,7 +11,7 @@ export default class InsertComponent extends InsertComponentBase {
     constructor(PluginBuild) {
         super(PrintIfNew);
         this.RemoveEndType = (text) => text;
-        this.dirFolder = 'Components/';
+        this.dirFolder = 'Components';
         this.PluginBuild = PluginBuild;
         this.regexSearch = new RegExp(`<([\\p{Lu}_\\-:0-9]|${AllBuildIn.join('|')})`, 'u');
     }

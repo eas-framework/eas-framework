@@ -9,6 +9,7 @@ import MinCss from '../../../CompileCode/CssMinimizer';
 import { BasicSettings, getTypes } from '../../../RunTimeBuild/SearchFileSystem';
 import { SessionBuild } from '../../../CompileCode/Session';
 import { parseTagDataStringBoolean } from '../serv-connect/index';
+import SourceMapStore from '../../../EasyDebug/SourceMapStore';
 
 export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
@@ -48,7 +49,8 @@ export default async function BuildCode(language: string, path: string, pathName
             importer: {
                 findFileUrl: importSass
             },
-            logger: sass.Logger.silent
+            logger: sass.Logger.silent,
+            url: pathToFileURL(BasicSettings.fullWebSitePath + BetweenTagData.extractInfo())
         });
         outStyle = result?.css ?? outStyle;
     } catch (expression) {
@@ -60,8 +62,9 @@ export default async function BuildCode(language: string, path: string, pathName
     }
 
     const pushStyle = sessionInfo.addScriptStyle('style', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath : BetweenTagData.extractInfo());
+    
     if (result?.sourceMap)
-        pushStyle.addSourceMapWithStringTracker(result.sourceMap, BetweenTagData, outStyle, BetweenTagData.extractInfo());
+        pushStyle.addSourceMapWithStringTracker(SourceMapStore.fixURLSourceMap(result.sourceMap), BetweenTagData, outStyle);
     else
         pushStyle.addStringTracker(BetweenTagData, { text: outStyle });
 

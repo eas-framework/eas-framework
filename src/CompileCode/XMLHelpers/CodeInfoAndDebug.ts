@@ -4,6 +4,7 @@ import JSParser from './../JSParser';
 import StringTracker from '../../EasyDebug/StringTracker';
 import { BuildScriptWithoutModule } from './CompileTypes';
 import EasyFs from '../../OutputInput/EasyFs';
+import { SplitFirst } from '../../StringMethods/Splitting';
 
 async function ParseTextCode(code:StringTracker, path:string) {
     const parser = new JSParser(code, path, '<#{debug}', '{debug}#>', 'debug info');
@@ -81,6 +82,11 @@ export async function AddDebugInfo(pageName:string, FullPath:string, SmallPath:s
 export function CreateFilePathOnePath(filePath: string, inputPath: string, folder:string, pageType:string, pathType = 0) {
     if (pageType && !inputPath.endsWith('.' + pageType)) {
         inputPath = `${inputPath}.${pageType}`;
+    }
+
+    if(inputPath[0] == '^'){ // load from packages
+        const [packageName, inPath] = SplitFirst('/',  inputPath.substring(1));
+        return (pathType == 0 ? workingDirectory: '') + `node_modules/${packageName}/${folder}/${inPath}`;
     }
 
     if (inputPath[0] == '.') {

@@ -4,8 +4,9 @@ import { pathToFileURL } from "url";
 import { PrintIfNew } from '../../../OutputInput/PrintNew.js';
 import EasyFs from '../../../OutputInput/EasyFs.js';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug.js';
-import { getTypes } from '../../../RunTimeBuild/SearchFileSystem.js';
+import { BasicSettings, getTypes } from '../../../RunTimeBuild/SearchFileSystem.js';
 import { parseTagDataStringBoolean } from '../serv-connect/index.js';
+import SourceMapStore from '../../../EasyDebug/SourceMapStore.js';
 export default async function BuildCode(language, path, pathName, LastSmallPath, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo) {
     let outStyle = BetweenTagData.eq;
     const outStyleAsTrim = outStyle.trim();
@@ -36,7 +37,8 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
             importer: {
                 findFileUrl: importSass
             },
-            logger: sass.Logger.silent
+            logger: sass.Logger.silent,
+            url: pathToFileURL(BasicSettings.fullWebSitePath + BetweenTagData.extractInfo())
         });
         outStyle = result?.css ?? outStyle;
     }
@@ -49,7 +51,7 @@ export default async function BuildCode(language, path, pathName, LastSmallPath,
     }
     const pushStyle = sessionInfo.addScriptStyle('style', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath : BetweenTagData.extractInfo());
     if (result?.sourceMap)
-        pushStyle.addSourceMapWithStringTracker(result.sourceMap, BetweenTagData, outStyle, BetweenTagData.extractInfo());
+        pushStyle.addSourceMapWithStringTracker(SourceMapStore.fixURLSourceMap(result.sourceMap), BetweenTagData, outStyle);
     else
         pushStyle.addStringTracker(BetweenTagData, { text: outStyle });
     return {

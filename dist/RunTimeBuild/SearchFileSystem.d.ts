@@ -4,6 +4,7 @@ declare const workingDirectory: string;
 declare const getTypes: {
     Static: string[];
     Logs: string[];
+    node_modules: string[];
     readonly WWW: string[];
 };
 declare const BasicSettings: {

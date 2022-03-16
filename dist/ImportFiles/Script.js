@@ -24,7 +24,7 @@ function template(code, isDebug, dir, file, params) {
  * @param type
  * @returns
  */
-async function BuildScript(filePath, savePath, isTypescript, isDebug, { params, haveSourceMap, fileCode } = {}) {
+async function BuildScript(filePath, savePath, isTypescript, isDebug, { params, haveSourceMap, fileCode, templatePath = filePath } = {}) {
     const sourceMapFile = savePath && savePath.split(/\/|\\/).pop();
     const Options = {
         transforms: ["imports"],
@@ -50,7 +50,7 @@ async function BuildScript(filePath, savePath, isTypescript, isDebug, { params, 
             text: `${err.message}, on file -> ${filePath}`,
         });
     }
-    Result = template(Result, isDebug, path.dirname(filePath), filePath, params);
+    Result = template(Result, isDebug, path.dirname(templatePath), templatePath, params);
     if (isDebug) {
         if (haveSourceMap)
             Result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(sourceMap).toString("base64");
@@ -99,9 +99,9 @@ export default async function LoadImport(importFrom, InStaticPath, typeArray, is
     else if (SavedModules[SavedModulesPath] instanceof Promise)
         await SavedModules[SavedModulesPath];
     //build paths
-    const reBuild = !pageDeps.store[SavedModulesPath] || pageDeps.store[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true));
+    const reBuild = !pageDeps.store[SavedModulesPath] || pageDeps.store[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true, null));
     if (reBuild) {
-        TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs", true);
+        TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs", true, null);
         if (TimeCheck == null) {
             PrintIfNew({
                 type: 'warn',
@@ -168,7 +168,8 @@ export async function RequireCjsScript(content) {
 export async function paramsImport(globalPrams, scriptLocation, inStaticLocationRelative, typeArray, isTypeScript, isDebug, fileCode, sourceMapComment) {
     await EasyFs.makePathReal(inStaticLocationRelative, typeArray[1]);
     const fullSaveLocation = scriptLocation + ".cjs";
-    const Result = await BuildScript(scriptLocation, undefined, isTypeScript, isDebug, { params: globalPrams, haveSourceMap: false, fileCode });
+    const templatePath = typeArray[0] + inStaticLocationRelative;
+    const Result = await BuildScript(scriptLocation, undefined, isTypeScript, isDebug, { params: globalPrams, haveSourceMap: false, fileCode, templatePath });
     await EasyFs.makePathReal(path.dirname(fullSaveLocation));
     await EasyFs.writeFile(fullSaveLocation, Result + sourceMapComment);
     function requireMap(p) {
@@ -182,7 +183,7 @@ export async function paramsImport(globalPrams, scriptLocation, inStaticLocation
             else if (p[0] != "/")
                 return import(p);
         }
-        return LoadImport(inStaticLocationRelative, p, typeArray, isDebug);
+        return LoadImport(templatePath, p, typeArray, isDebug);
     }
     const MyModule = await ImportWithoutCache(fullSaveLocation);
     return async (...arr) => await MyModule(requireMap, ...arr);

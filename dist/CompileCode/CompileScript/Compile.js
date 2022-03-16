@@ -1,6 +1,8 @@
+import path from "path";
 import SourceMapStore from "../../EasyDebug/SourceMapStore.js";
 import StringTracker from "../../EasyDebug/StringTracker.js";
 import { paramsImport } from "../../ImportFiles/Script.js";
+import EasyFs from "../../OutputInput/EasyFs.js";
 import { ConvertSyntaxMini } from "../../Plugins/Syntax/RazorSyntax.js";
 import { BasicSettings, getTypes } from "../../RunTimeBuild/SearchFileSystem.js";
 import { SplitFirst } from "../../StringMethods/Splitting.js";
@@ -31,13 +33,16 @@ export default class CRunTime {
         return build;
     }
     methods() {
+        const page__filename = BasicSettings.fullWebSitePath + this.smallPath;
         return {
-            string: 'script,style,define,store',
+            string: 'script,style,define,store,page__filename,page__dirname',
             funcs: [
                 this.sessionInfo.script.bind(this.sessionInfo),
                 this.sessionInfo.style.bind(this.sessionInfo),
                 (key, value) => this.define[String(key)] = value,
-                this.sessionInfo.compileRunTimeStore
+                this.sessionInfo.compileRunTimeStore,
+                page__filename,
+                path.dirname(page__filename)
             ]
         };
     }
@@ -47,21 +52,19 @@ export default class CRunTime {
         await parser.findScripts();
         if (parser.values.length == 1 && parser.values[0].type === 'text')
             return this.script;
-        const [type, filePath] = SplitFirst('/', this.smallPath), typeArray = getTypes[type] ?? getTypes.Static, compilePath = typeArray[1] + filePath + '.comp.js', inStaticPath = BasicSettings.fullWebSitePath + this.smallPath;
+        const [type, filePath] = SplitFirst('/', this.smallPath), typeArray = getTypes[type] ?? getTypes.Static, compilePath = typeArray[1] + filePath + '.comp.js';
+        await EasyFs.makePathReal(filePath, typeArray[1]);
         const template = this.templateScript(parser.values.filter(x => x.type != 'text').map(x => x.text));
         const sourceMap = new SourceMapStore(compilePath, this.debug, false, false);
         sourceMap.addStringTracker(template);
         const { funcs, string } = this.methods();
-        const toImport = await paramsImport(string, compilePath, inStaticPath, typeArray, this.isTs, this.debug, template.eq, sourceMap.mapAsURLComment());
+        const toImport = await paramsImport(string, compilePath, filePath, typeArray, this.isTs, this.debug, template.eq, sourceMap.mapAsURLComment());
         const buildStrings = await toImport(...funcs);
         const build = new StringTracker();
         for (const i of parser.values) {
             if (i.type == 'text') {
                 build.Plus(i.text);
                 continue;
-            }
-            else if (this.debug) {
-                build.Plus(i.text.eq.split('\n').map(x => '').join('\n'));
             }
             build.AddTextAfterNoTrack(buildStrings.pop().text);
         }
