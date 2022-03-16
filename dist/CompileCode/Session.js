@@ -43,7 +43,8 @@ export class SessionBuild {
     static createName(text) {
         let length = 0;
         let key;
-        while (key == null || StaticFilesInfo.have(key)) {
+        const values = Object.values(StaticFilesInfo.store);
+        while (key == null || values.includes(key)) {
             key = Base64Id(text, 5 + length).substring(length);
             length++;
         }
