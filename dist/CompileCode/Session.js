@@ -2,7 +2,6 @@ import SourceMapStore from "../EasyDebug/SourceMapStore.js";
 import StoreJSON from "../OutputInput/StoreJSON.js";
 import { getTypes } from "../RunTimeBuild/SearchFileSystem.js";
 import Base64Id from '../StringMethods/Id.js';
-import { SplitFirst } from "../StringMethods/Splitting.js";
 import EasyFs from "../OutputInput/EasyFs.js";
 const StaticFilesInfo = new StoreJSON('ShortScriptNames');
 export class SessionBuild {
@@ -48,13 +47,13 @@ export class SessionBuild {
             key = Base64Id(text, 5 + length).substring(length);
             length++;
         }
-        return key + '.pub';
+        return key;
     }
     addHeadTags() {
         const isLogs = this.typeName == getTypes.Logs[2];
         const saveLocation = isLogs ? getTypes.Logs[1] : getTypes.Static[1], addQuery = isLogs ? '?t=l' : '';
         for (const i of this.inScriptStyle) {
-            let url = SplitFirst('/', StaticFilesInfo.have(i.path, () => SessionBuild.createName(i.path))).pop();
+            let url = StaticFilesInfo.have(i.path, () => SessionBuild.createName(i.path)) + '.pub';
             switch (i.type) {
                 case 'script':
                     url += '.js';
