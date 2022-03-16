@@ -41,6 +41,7 @@ export declare class SessionBuild {
     style(url: string, attributes?: StringAnyMap): void;
     script(url: string, attributes?: StringAnyMap): void;
     addScriptStyle(type: 'script' | 'style' | 'module', smallPath?: string): SourceMapStore;
+    private static createName;
     private addHeadTags;
     buildHead(): string;
     extends(from: SessionBuild): void;

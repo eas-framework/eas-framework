@@ -75,11 +75,24 @@ export class SessionBuild {
         return data.value
     }
 
+
+    private static createName(text: string){
+        let length = 0;
+        let key: string;
+
+        while(key == null || StaticFilesInfo.have(key)){
+            key = Base64Id(text, 5 + length).substring(length);
+            length++;
+        }
+
+        return key+ '.pub';
+    }
+
     private addHeadTags() {
         const isLogs = this.typeName == getTypes.Logs[2]
         const saveLocation = isLogs ? getTypes.Logs[1] : getTypes.Static[1], addQuery = isLogs ? '?t=l' : ''
-        for (const i of this.inScriptStyle) {
-            let url = SplitFirst('/', StaticFilesInfo.have(i.path, () => Base64Id(i.path, 5) + '.pub')).pop();
+        for (const i of this.inScriptStyle) {            
+            let url = SplitFirst('/', StaticFilesInfo.have(i.path, () => SessionBuild.createName(i.path))).pop();
 
             switch (i.type) {
                 case 'script':
