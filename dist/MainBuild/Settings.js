@@ -11,13 +11,13 @@ import bodyParser from 'body-parser';
 import { StartRequire, GetSettings } from './ImportModule.js';
 import { Settings as PrintIfNewSettings } from '../OutputInput/PrintNew.js';
 import MemorySession from 'memorystore';
+import { debugSiteMap } from '../RunTimeBuild/SiteMap.js';
 const CookiesSecret = uuidv4().substring(0, 32), SessionSecret = uuidv4(), MemoryStore = MemorySession(session), CookiesMiddleware = cookieParser(CookiesSecret), CookieEncrypterMiddleware = cookieEncrypter(CookiesSecret, {}), CookieSettings = { httpOnly: true, signed: true, maxAge: 86400000 * 30 };
 fileByUrl.Settings.Cookies = CookiesMiddleware;
 fileByUrl.Settings.CookieEncrypter = CookieEncrypterMiddleware;
 fileByUrl.Settings.CookieSettings = CookieSettings;
 let DevMode_ = true, compilationScan, SessionStore;
 let formidableServer, bodyParserServer;
-;
 const serveLimits = {
     sessionTotalRamMB: 150,
     sessionTimeMinutes: 40,
@@ -40,7 +40,7 @@ export const Export = {
             return;
         DevMode_ = value;
         if (!value) {
-            compilationScan = BuildServer.compileAll();
+            compilationScan = BuildServer.compileAll(Export);
             process.env.NODE_ENV = "production";
         }
         fileByUrl.Settings.DevMode = value;
@@ -119,11 +119,12 @@ export const Export = {
         }
     },
     routing: {
-        rules: [],
+        rules: {},
         urlStop: [],
         validPath: baseValidPath,
         ignoreTypes: baseRoutingIgnoreTypes,
         ignorePaths: [],
+        sitemap: true,
         get errorPages() {
             return fileByUrl.Settings.ErrorPages;
         },
@@ -268,6 +269,9 @@ export async function requireSettings() {
     //need to down lasted so it won't interfere with 'importOnLoad'
     if (!copyJSON(Export.general, Settings.general, ['pageInRam'], 'only') && Settings.development) {
         pageInRamActivate = await compilationScan;
+    }
+    if (Export.development && Export.routing.sitemap) { // on production this will be checked after creating state
+        await debugSiteMap(Export);
     }
 }
 export function buildFirstLoad() {

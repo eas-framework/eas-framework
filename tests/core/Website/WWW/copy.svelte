@@ -4,11 +4,16 @@
 </script>
 
 <div class="copy-color">
-    text {word}
+    <p>text {word}</p>
 </div>
 
-<style>
-    .copy-color {
-        color: rgb(19, 184, 196);
-    }
+<style lang="sass">
+    @import '/style.sass'
+
+    b 
+        color: #13b8c4
+    
+    .copy-color 
+        color: rgb(19, 184, 196)
+    
 </style>

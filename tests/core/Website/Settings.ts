@@ -30,6 +30,9 @@ export default {
 
             }
         },
+        sitemap: {
+            file: 'SmaP.serv.ts'
+        },
         ignoreTypes: ["json"], // ignore file extension (auto ignore common server files)
         ignorePaths: ["/Private"],
         validPath: [(url, req, res) => url.substring(3, 5) != 'hi'] // check url path, if one of the methods return false, then the server returns a 404

@@ -24,7 +24,7 @@ function template(code, isDebug, dir, file, params) {
  * @param type
  * @returns
  */
-async function BuildScript(filePath, savePath, isTypescript, isDebug, { params, haveSourceMap, fileCode, templatePath = filePath } = {}) {
+async function BuildScript(filePath, savePath, isTypescript, isDebug, { params, haveSourceMap = isDebug, fileCode, templatePath = filePath } = {}) {
     const sourceMapFile = savePath && savePath.split(/\/|\\/).pop();
     const Options = {
         transforms: ["imports"],

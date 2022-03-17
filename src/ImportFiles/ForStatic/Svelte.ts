@@ -10,7 +10,8 @@ import { dirname, extname } from 'path';
 import sass from 'sass';
 import {v4 as uuid} from 'uuid';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
+import { createImporter, sassStyle, sassSyntax } from '../../BuildInComponents/Components/style/sass';
 
 export async function preprocess(fullPath: string, smallPath: string, dependenceObject:StringNumberMap = {}, makeAbsolute?: (path: string) => string, svelteExt = ''){
     const content = await EasyFs.readFile(fullPath);
@@ -18,19 +19,17 @@ export async function preprocess(fullPath: string, smallPath: string, dependence
     const addStyle = [];
     const { code, dependencies, map } =  await svelte.preprocess(content, {
         async style({ content, attributes, filename }) {
-            const outputStyle = (['sass', 'scss'].includes(<string>attributes.lang) ? SomePlugins("MinSass", "MinAll") : SomePlugins("MinCss", "MinAll")) ? 'compressed' : 'expanded';
-
-
+            
             try {
                 const { css, loadedUrls } = await sass.compileStringAsync(content, {
-                    syntax: attributes.lang == 'sass' ? 'indented' : 'scss',
-                    style: outputStyle,
-                    loadPaths: [dirname(fullPath)],
+                    syntax: sassSyntax(<any>attributes.lang),
+                    style: sassStyle(<string>attributes.lang, SomePlugins),
+                    importer: createImporter(fullPath),
                     logger: sass.Logger.silent
                 });
 
                 return {
-                    code: css.toString(),
+                    code: css,
                     dependencies: loadedUrls.map(x => fileURLToPath(<any>x))
                 };
             } catch (err) {
@@ -42,7 +41,7 @@ export async function preprocess(fullPath: string, smallPath: string, dependence
             }
 
             return {
-                code: content
+                code: ''
             }
         },
         async script({ content, attributes }) {
@@ -84,6 +83,9 @@ export async function preprocess(fullPath: string, smallPath: string, dependence
                     errorName: 'compilation-error',
                     text: `${err.message}, on file -> ${fullPath}:${err?.loc?.line ?? 0}:${err?.loc?.column ?? 0}`
                 });
+                return {
+                    code: ''
+                }
             }
 
             tokenCode = tokenCode.replace(/\/\*uuid-([\w\W]+?)\*\//gmi, (substring: string, ...args: any) => {
@@ -167,9 +169,11 @@ export async function registerExtension(filePath: string, smallPath: string, dep
 
     if (isDebug) {
         warnings.forEach(warning => {
-            console.warn(`\nSvelte Warning in ${warning.filename}:`);
-            console.warn(warning.message);
-            console.warn(warning.frame);
+            PrintIfNew({
+                errorName: warning.code,
+                type: 'warn',
+                text: warning.message + '\n' + warning.frame
+            });
         });
     }
 

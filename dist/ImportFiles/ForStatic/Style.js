@@ -3,46 +3,27 @@ import { PrintIfNew } from '../../OutputInput/PrintNew.js';
 import EasyFs from '../../OutputInput/EasyFs.js';
 import { SomePlugins } from '../../CompileCode/InsertModels.js';
 import path from 'path';
-import { pathToFileURL } from "url";
-import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem.js';
+import { fileURLToPath, pathToFileURL } from "url";
+import { getTypes } from '../../RunTimeBuild/SearchFileSystem.js';
+import { createImporter, sassAndSource, sassStyle, sassSyntax } from '../../BuildInComponents/Components/style/sass.js';
 export async function BuildStyleSass(inputPath, type, isDebug) {
     const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
-    const outputStyle = (['sass', 'scss'].includes(type) ? SomePlugins("MinSass", "MinAll") : SomePlugins("MinCss", "MinAll")) ? 'compressed' : 'expanded';
     const dependenceObject = {
         thisFile: await EasyFs.stat(fullPath, 'mtimeMs')
     };
-    const pathDir = path.dirname(fullPath);
-    async function importSass(url, done) {
-        let connectUrl = path.join(pathDir, url);
-        if (!path.extname(url)) {
-            connectUrl += '.' + type;
-        }
-        if (!await EasyFs.existsFile(connectUrl)) {
-            PrintIfNew({
-                text: `Sass import not found, on file -> ${url} at ${inputPath}`,
-                errorName: 'sass-import-not-found',
-                type: 'error'
-            });
-            return;
-        }
-        dependenceObject[path.relative(BasicSettings.fullWebSitePath, connectUrl)] = await EasyFs.stat(connectUrl, 'mtimeMs');
-        return pathToFileURL(connectUrl);
-    }
-    const fileData = await EasyFs.readFile(fullPath);
+    const fileData = await EasyFs.readFile(fullPath), fileDataDirname = path.dirname(fullPath);
     try {
         const result = await sass.compileStringAsync(fileData, {
             sourceMap: isDebug,
-            syntax: type == 'sass' ? 'indented' : 'scss',
-            style: outputStyle,
-            importer: {
-                findFileUrl: importSass,
-            },
-            logger: sass.Logger.silent
+            syntax: sassSyntax(type),
+            style: sassStyle(type, SomePlugins),
+            logger: sass.Logger.silent,
+            importer: createImporter(fullPath),
         });
-        let data = result.css.toString();
+        let data = result.css;
         if (isDebug && result.sourceMap) {
-            result.sourceMap.sources[0] = inputPath;
-            result.sourceMap.sources = result.sourceMap.sources.map(x => x.split(/\/|\\/).pop() + '?source=true');
+            sassAndSource(result.sourceMap, pathToFileURL(fileData).href);
+            result.sourceMap.sources = result.sourceMap.sources.map(x => path.relative(fileDataDirname, fileURLToPath(x)) + '?source=true');
             data += `\r\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(JSON.stringify(result.sourceMap)).toString("base64")}*/`;
         }
         await EasyFs.makePathReal(inputPath, getTypes.Static[1]);

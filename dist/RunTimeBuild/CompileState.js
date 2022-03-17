@@ -4,19 +4,29 @@ import EasyFs from "../OutputInput/EasyFs.js";
 import { SystemData } from "./SearchFileSystem.js";
 export default class CompileState {
     constructor() {
-        this.state = { update: 0, pageArray: [], importArray: [] };
+        this.state = { update: 0, pageArray: [], importArray: [], fileArray: [] };
         this.state.update = getSettingsDate();
     }
     get scripts() {
         return this.state.importArray;
     }
-    addPage(path) {
-        if (!this.state.pageArray.includes(path))
-            this.state.pageArray.push(path);
+    get pages() {
+        return this.state.pageArray;
+    }
+    get files() {
+        return this.state.fileArray;
+    }
+    addPage(path, type) {
+        if (!this.state.pageArray.find(x => x[0] == path && x[1] == type))
+            this.state.pageArray.push([path, type]);
     }
     addImport(path) {
         if (!this.state.importArray.includes(path))
             this.state.importArray.push(path);
+    }
+    addFile(path) {
+        if (!this.state.fileArray.includes(path))
+            this.state.fileArray.push(path);
     }
     export() {
         return EasyFs.writeJsonFile(CompileState.filePath, this.state);

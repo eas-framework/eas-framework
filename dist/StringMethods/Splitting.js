@@ -14,4 +14,9 @@ export function trimType(type, string) {
         string = string.substring(0, string.length - type.length);
     return string;
 }
+export function substringStart(start, string) {
+    if (string.startsWith(start))
+        return string.substring(start.length);
+    return string;
+}
 //# sourceMappingURL=Splitting.js.map

@@ -8,6 +8,7 @@ import { BasicSettings, getTypes } from "../../RunTimeBuild/SearchFileSystem";
 import { SplitFirst } from "../../StringMethods/Splitting";
 import JSParser from "../JSParser";
 import { SessionBuild } from "../Session";
+import { StringAnyMap } from "../XMLHelpers/CompileTypes";
 
 export default class CRunTime {
     define = {}
@@ -34,22 +35,23 @@ export default class CRunTime {
         return build;
     }
 
-    private methods(){
+    private methods(attributes?: StringAnyMap){
         const page__filename = BasicSettings.fullWebSitePath + this.smallPath;
         return {
-            string: 'script,style,define,store,page__filename,page__dirname',
+            string: 'script,style,define,store,page__filename,page__dirname,attributes',
             funcs: [
                 this.sessionInfo.script.bind(this.sessionInfo),
                 this.sessionInfo.style.bind(this.sessionInfo),
                 (key: any, value: any) => this.define[String(key)] = value,
                 this.sessionInfo.compileRunTimeStore,
                 page__filename,
-                path.dirname(page__filename)
+                path.dirname(page__filename),
+                attributes
             ]
         }
     }
 
-    async compile(){
+    async compile(attributes?: StringAnyMap){
         this.script = await ConvertSyntaxMini(this.script, "@compile", "*");
         const parser = new JSParser(this.script, this.smallPath, '<%*', '%>');
         await parser.findScripts();
@@ -63,7 +65,7 @@ export default class CRunTime {
         const template = this.templateScript(parser.values.filter(x => x.type != 'text').map(x => x.text));
         const sourceMap = new SourceMapStore(compilePath, this.debug, false, false)
         sourceMap.addStringTracker(template);
-        const {funcs, string} = this.methods()
+        const {funcs, string} = this.methods(attributes)
 
         const toImport = await paramsImport(string,compilePath, filePath, typeArray, this.isTs, this.debug, template.eq, sourceMap.mapAsURLComment());
         const buildStrings: {text: string}[] = await toImport(...funcs);

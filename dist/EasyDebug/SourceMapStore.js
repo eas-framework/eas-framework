@@ -1,7 +1,8 @@
 import { SourceMapGenerator, SourceMapConsumer } from "source-map-js";
 import path from 'path';
-import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem.js';
+import { BasicSettings } from '../RunTimeBuild/SearchFileSystem.js';
 import { fileURLToPath } from "url";
+import { SplitFirst } from '../StringMethods/Splitting.js';
 export class SourceMapBasic {
     constructor(filePath, httpSource = true, isCss = false) {
         this.filePath = filePath;
@@ -17,11 +18,10 @@ export class SourceMapBasic {
     getSource(source) {
         source = source.split('<line>').pop().trim();
         if (this.httpSource) {
-            source = path.relative(BasicSettings.fullWebSitePath, source);
             if (BasicSettings.pageTypesArray.includes(path.extname(source).substring(1)))
                 source += '.source';
             else
-                source += '?source=true';
+                source = SplitFirst('/', source).pop() + '?source=true';
             return path.join('/', source.replace(/\\/gi, '/'));
         }
         return path.relative(this.fileDirName, BasicSettings.fullWebSitePath + source);
@@ -81,7 +81,7 @@ export default class SourceMapStore extends SourceMapBasic {
     }
     static fixURLSourceMap(map) {
         for (let i = 0; i < map.sources.length; i++) {
-            map.sources[i] = path.relative(getTypes.Static[0], fileURLToPath(map.sources[i]));
+            map.sources[i] = BasicSettings.relative(fileURLToPath(map.sources[i]));
         }
         return map;
     }

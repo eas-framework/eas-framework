@@ -10,7 +10,6 @@ import ParseBasePage from './CompileScript/PageBase.js';
 export default class InsertComponent extends InsertComponentBase {
     constructor(PluginBuild) {
         super(PrintIfNew);
-        this.RemoveEndType = (text) => text;
         this.dirFolder = 'Components';
         this.PluginBuild = PluginBuild;
         this.regexSearch = new RegExp(`<([\\p{Lu}_\\-:0-9]|${AllBuildIn.join('|')})`, 'u');
@@ -22,8 +21,8 @@ export default class InsertComponent extends InsertComponentBase {
             }
         }
     }
-    tagData(text, a = []) {
-        const tokenArray = [];
+    tagData(text) {
+        const tokenArray = [], a = [], mapAttributes = {};
         text = text.trim().replacer(/(<%)([\w\W]+?)(%>)/, data => {
             tokenArray.push(data[2]);
             return data[1].Plus(data[3]);
@@ -57,18 +56,22 @@ export default class InsertComponent extends InsertComponentBase {
                         value = text.substr(i + 1, endIndex);
                         nextChar = new StringTracker();
                     }
+                    const n = unToken(attrName), v = unToken(value);
+                    mapAttributes[n.eq] = v.eq;
                     a.push({
-                        n: unToken(attrName),
-                        char: nextChar,
-                        v: unToken(value)
+                        n,
+                        v,
+                        char: nextChar
                     });
                     i += 1 + endIndex;
                     break;
                 }
                 else if (char == ' ' || i == fastText.length - 1 && ++i) {
+                    const n = unToken(text.substring(0, i));
                     a.push({
-                        n: unToken(text.substring(0, i))
+                        n: n
                     });
+                    mapAttributes[n.eq] = true;
                     break;
                 }
             }
@@ -98,7 +101,7 @@ export default class InsertComponent extends InsertComponentBase {
                 c = ' ' + c;
             item.v.AddTextAfter(c);
         };
-        return a;
+        return { data: a, mapAttributes };
     }
     findIndexSearchTag(query, tag) {
         const all = query.split('.');
@@ -212,7 +215,7 @@ export default class InsertComponent extends InsertComponentBase {
         return fileData;
     }
     async insertTagData(path, pathName, LastSmallPath, type, dataTag, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }) {
-        const data = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
+        const { data, mapAttributes } = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
         let fileData, SearchInComment = true, AllPathTypes = {}, addStringInfo;
         if (BuildIn) { //check if it build in component
             const { compiledString, checkComponents } = await StartCompiling(path, pathName, LastSmallPath, type, data, BetweenTagData ?? new StringTracker(), dependenceObject, isDebug, this, buildScript, sessionInfo);
@@ -242,7 +245,7 @@ export default class InsertComponent extends InsertComponentBase {
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs;
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
             const baseData = new ParseBasePage(allData, isDebug, this.isTs());
-            await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath);
+            await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath, mapAttributes);
             fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;
         }

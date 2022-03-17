@@ -24,7 +24,7 @@ export async function GetSettings(filePath, isDebug) {
     else {
         filePath += '.js';
     }
-    const changeTime = await EasyFs.stat(filePath, 'mtimeMs', true);
+    const changeTime = await EasyFs.stat(filePath, 'mtimeMs', true, null);
     if (changeTime == lastSettingsImport || !changeTime)
         return null;
     lastSettingsImport = changeTime;

@@ -1,5 +1,5 @@
 import StringTracker from "../../EasyDebug/StringTracker";
-import { StringNumberMap } from '../XMLHelpers/CompileTypes';
+import { StringAnyMap, StringNumberMap } from '../XMLHelpers/CompileTypes';
 import { SessionBuild } from "../Session";
 export default class ParseBasePage {
     code?: StringTracker;
@@ -12,7 +12,7 @@ export default class ParseBasePage {
         value: StringTracker;
     }[];
     constructor(code?: StringTracker, debug?: boolean, isTs?: boolean);
-    loadSettings(sessionInfo: SessionBuild, pagePath: string, smallPath: string, dependenceObject: StringNumberMap, pageName: string): Promise<void>;
+    loadSettings(sessionInfo: SessionBuild, pagePath: string, smallPath: string, dependenceObject: StringNumberMap, pageName: string, attributes?: StringAnyMap): Promise<void>;
     private parseBase;
     private rebuild;
     static rebuildBaseInheritance(code: StringTracker): StringTracker;

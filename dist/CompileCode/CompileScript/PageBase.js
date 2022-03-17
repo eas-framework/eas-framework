@@ -16,9 +16,9 @@ export default class ParseBasePage {
         this.scriptFile = new StringTracker();
         this.valueArray = [];
     }
-    async loadSettings(sessionInfo, pagePath, smallPath, dependenceObject, pageName) {
+    async loadSettings(sessionInfo, pagePath, smallPath, dependenceObject, pageName, attributes) {
         const run = new CRunTime(this.code, sessionInfo, smallPath, this.debug, this.isTs);
-        this.code = await run.compile();
+        this.code = await run.compile(attributes);
         this.parseBase(this.code);
         await this.loadCodeFile(pagePath, smallPath, this.isTs, dependenceObject, pageName);
         this.loadDefine(run.define);

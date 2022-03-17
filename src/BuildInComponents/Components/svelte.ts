@@ -27,6 +27,8 @@ async function ssrHTML(dataTag: tagDataObjectArray, FullPath: string, smallPath:
     const mode = await ImportWithoutCache(buildPath, isDebug);
 
     for (const i in newDeps) {
+        if(['sass', 'scss', 'css'].includes(path.extname(i).substring(1)))
+            continue;
         clearModule(resolve(getTypes.Static[1] + i.substring(getTypes.Static[2].length + 1) + '.ssr.cjs'));
     }
 

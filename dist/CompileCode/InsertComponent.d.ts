@@ -1,6 +1,6 @@
 import StringTracker, { StringTrackerDataInfo } from '../EasyDebug/StringTracker';
 import AddPlugin from '../Plugins/Index';
-import { tagDataObjectArray, StringNumberMap, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject } from './XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, StringAnyMap } from './XMLHelpers/CompileTypes';
 import { InsertComponentBase } from './BaseReader/Reader';
 import { SessionBuild } from './Session';
 interface DefaultValues {
@@ -11,7 +11,6 @@ export default class InsertComponent extends InsertComponentBase {
     dirFolder: string;
     PluginBuild: AddPlugin;
     CompileInFile: CompileInFileFunc;
-    RemoveEndType: (text: string) => string;
     MicroPlugins: StringArrayOrObject;
     GetPlugin: (name: string) => any;
     SomePlugins: (...names: string[]) => boolean;
@@ -19,7 +18,10 @@ export default class InsertComponent extends InsertComponentBase {
     private regexSearch;
     constructor(PluginBuild: AddPlugin);
     FindSpecialTagByStart(string: string): string[];
-    tagData(text: StringTracker, a?: tagDataObjectArray): tagDataObjectArray;
+    tagData(text: StringTracker): {
+        data: tagDataObjectArray;
+        mapAttributes: StringAnyMap;
+    };
     findIndexSearchTag(query: string, tag: StringTracker): number;
     ReBuildTagData(stringInfo: StringTrackerDataInfo, dataTagSplitter: tagDataObjectArray): StringTracker;
     CheckMinHTML(code: StringTracker): StringTracker;

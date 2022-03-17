@@ -3,6 +3,7 @@ import { CreateFilePath } from '../../CompileCode/XMLHelpers/CodeInfoAndDebug.js
 import { getTypes } from '../../RunTimeBuild/SearchFileSystem.js';
 import { relative } from 'path';
 import Base64Id from '../../StringMethods/Id.js';
+import path from 'path';
 import { registerExtension, capitalize } from '../../ImportFiles/ForStatic/Svelte.js';
 //@ts-ignore-next-line
 import ImportWithoutCache, { resolve, clearModule } from '../../ImportFiles/ImportWithoutCache.cjs';
@@ -17,6 +18,8 @@ async function ssrHTML(dataTag, FullPath, smallPath, dependenceObject, sessionIn
     Object.assign(dependenceObject, newDeps);
     const mode = await ImportWithoutCache(buildPath, isDebug);
     for (const i in newDeps) {
+        if (['sass', 'scss', 'css'].includes(path.extname(i).substring(1)))
+            continue;
         clearModule(resolve(getTypes.Static[1] + i.substring(getTypes.Static[2].length + 1) + '.ssr.cjs'));
     }
     const { html, head } = mode.default.render(getV('props'), getV('options'));

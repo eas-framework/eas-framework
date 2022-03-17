@@ -5,12 +5,13 @@ import * as Greenlock from 'greenlock-express';
 import { App as TinyApp } from '@tinyhttp/app';
 import type {Request, Response} from './Types';
 import compression from 'compression';
-import {Export as Settings, requireSettings, GreenLockSite, buildFirstLoad, pageInRamActivateFunc} from './Settings'
+import {Export as Settings, requireSettings, buildFirstLoad, pageInRamActivateFunc} from './Settings'
 import * as fileByUrl from '../RunTimeBuild/GetPages';
 import EasyFs from '../OutputInput/EasyFs';
 import { print } from '../OutputInput/Console';
 import { DeleteInDirectory, workingDirectory, SystemData, BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import formidable from 'formidable';
+import { GreenLockSite } from './SettingsTypes';
 
 async function getPageData(req: Request, res: Response) {
     if (Settings.development) {

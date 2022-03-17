@@ -7,7 +7,7 @@ import EasySyntax from "../CompileCode/transform/EasySyntax";
 import JSParser from "../CompileCode/JSParser";
 import path from "path";
 import { isTs } from "../CompileCode/InsertModels";
-import StringTracker from "../EasyDebug/StringTracker";
+
 //@ts-ignore-next-line
 import ImportWithoutCache from './ImportWithoutCache.cjs';
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
@@ -34,7 +34,7 @@ function template(code: string, isDebug: boolean, dir: string, file: string, par
  * @param type
  * @returns
  */
-async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, haveSourceMap, fileCode, templatePath = filePath }: { templatePath?: string, params?: string, haveSourceMap?: boolean, fileCode?: string } = {}): Promise<string> {
+async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, haveSourceMap = isDebug, fileCode, templatePath = filePath }: { templatePath?: string, params?: string, haveSourceMap?: boolean, fileCode?: string } = {}): Promise<string> {
 
   const sourceMapFile = savePath && savePath.split(/\/|\\/).pop();
 
@@ -104,7 +104,7 @@ function CheckTs(FilePath: string) {
   return FilePath.endsWith(".ts");
 }
 
-export async function BuildScriptSmallPath(InStaticPath: string, typeArray: string[], isDebug = false,) {
+export async function BuildScriptSmallPath(InStaticPath: string, typeArray: string[], isDebug = false) {
   await EasyFs.makePathReal(InStaticPath, typeArray[1]);
 
   return await BuildScript(

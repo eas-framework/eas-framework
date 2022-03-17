@@ -8,10 +8,9 @@ import path from 'path';
 import CompileState from './CompileState.js';
 import { SessionBuild } from '../CompileCode/Session.js';
 import { CheckDependencyChange, pageDeps } from '../OutputInput/StoreDeps.js';
-export function RemoveEndType(string) {
-    return string.substring(0, string.lastIndexOf('.'));
-}
-Components.RemoveEndType = RemoveEndType;
+import { argv } from 'process';
+import { createSiteMap } from './SiteMap.js';
+import { isFileType, RemoveEndType } from './FileTypes.js';
 async function compileFile(filePath, arrayType, isDebug, hasSessionInfo, nestedPage, nestedPageData) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
     const dependenceObject = {
@@ -27,15 +26,6 @@ async function compileFile(filePath, arrayType, isDebug, hasSessionInfo, nestedP
     }
     return { CompiledData, dependenceObject, sessionInfo };
 }
-function isFileType(types, name) {
-    name = name.toLowerCase();
-    for (const type of types) {
-        if (name.endsWith('.' + type)) {
-            return true;
-        }
-    }
-    return false;
-}
 async function FilesInFolder(arrayType, path, state) {
     const allInFolder = await EasyFs.readdir(arrayType[0] + path, { withFileTypes: true });
     for (const i of allInFolder) {
@@ -46,15 +36,16 @@ async function FilesInFolder(arrayType, path, state) {
         }
         else {
             if (isFileType(SearchFileSystem.BasicSettings.pageTypesArray, n)) {
-                state.addPage(connect);
+                state.addPage(connect, arrayType[2]);
                 if (await CheckDependencyChange(arrayType[2] + '/' + connect)) //check if not already compile from a 'in-file' call
                     await compileFile(connect, arrayType, false);
             }
             else if (arrayType == SearchFileSystem.getTypes.Static && isFileType(SearchFileSystem.BasicSettings.ReqFileTypesArray, n)) {
                 state.addImport(connect);
-                await ReqScript('Production Loader', connect, arrayType, false);
+                await ReqScript('Production Loader - ' + arrayType[2], connect, arrayType, false);
             }
             else {
+                state.addFile(connect);
                 await StaticFiles(connect, false);
             }
         }
@@ -82,8 +73,8 @@ export async function FastCompile(path, arrayType) {
     await FastCompileInFile(path, arrayType);
     ClearWarning();
 }
-export async function compileAll() {
-    let state = await CompileState.checkLoad();
+export async function compileAll(Export) {
+    let state = !argv.includes('rebuild') && await CompileState.checkLoad();
     if (state)
         return () => RequireScripts(state.scripts);
     pageDeps.clear();
@@ -93,6 +84,7 @@ export async function compileAll() {
         for (const i of activateArray) {
             await i();
         }
+        await createSiteMap(Export, state);
         state.export();
     };
 }

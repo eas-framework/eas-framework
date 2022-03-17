@@ -4,7 +4,7 @@ import { NoTrackStringCode, CreateFilePath, PathTypes, AddDebugInfo } from './XM
 import { AllBuildIn, IsInclude, StartCompiling } from '../BuildInComponents/index';
 import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/StringTracker';
 import AddPlugin from '../Plugins/Index';
-import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject } from './XMLHelpers/CompileTypes';
+import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, BuildScriptWithoutModule, StringArrayOrObject, StringAnyMap } from './XMLHelpers/CompileTypes';
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
 import pathNode from 'path';
@@ -20,7 +20,6 @@ export default class InsertComponent extends InsertComponentBase {
     public dirFolder: string;
     public PluginBuild: AddPlugin;
     public CompileInFile: CompileInFileFunc;
-    public RemoveEndType = (text: string) => text;
     public MicroPlugins: StringArrayOrObject;
     public GetPlugin: (name: string) => any;
     public SomePlugins: (...names: string[]) => boolean;
@@ -43,8 +42,8 @@ export default class InsertComponent extends InsertComponentBase {
         }
     }
 
-    tagData(text: StringTracker, a: tagDataObjectArray = []): tagDataObjectArray {
-        const tokenArray = [];
+    tagData(text: StringTracker): {data:tagDataObjectArray, mapAttributes: StringAnyMap} {
+        const tokenArray = [], a: tagDataObjectArray = [], mapAttributes: StringAnyMap = {};
 
         text = text.trim().replacer(/(<%)([\w\W]+?)(%>)/, data => {
             tokenArray.push(data[2]);
@@ -84,18 +83,22 @@ export default class InsertComponent extends InsertComponentBase {
                         nextChar = new StringTracker();
                     }
 
+                    const n = unToken(attrName), v = unToken(value);
+                    mapAttributes[n.eq] = v.eq;
                     a.push({
-                        n: unToken(attrName),
-                        char: nextChar,
-                        v: unToken(value)
+                        n,
+                        v,
+                        char: nextChar
                     });
                     i += 1 + endIndex;
                     break;
 
                 } else if (char == ' ' || i == fastText.length - 1 && ++i) {
+                    const n = unToken(text.substring(0, i));
                     a.push({
-                        n: unToken(text.substring(0, i))
+                        n: n
                     });
+                    mapAttributes[n.eq] = true;
                     break;
                 }
 
@@ -129,7 +132,7 @@ export default class InsertComponent extends InsertComponentBase {
                 c = ' ' + c;
             item.v.AddTextAfter(c);
         }
-        return a;
+        return {data: a, mapAttributes};
     }
 
     findIndexSearchTag(query: string, tag: StringTracker) {
@@ -282,7 +285,7 @@ export default class InsertComponent extends InsertComponentBase {
     }
 
     async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }: { sessionInfo: SessionBuild, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule, dependenceObject: StringNumberMap, isDebug: boolean }) {
-        const data = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
+        const {data, mapAttributes} = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
 
         let fileData: StringTracker, SearchInComment = true, AllPathTypes: PathTypes = {}, addStringInfo: string;
 
@@ -322,7 +325,7 @@ export default class InsertComponent extends InsertComponentBase {
 
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
             const baseData = new ParseBasePage(allData, isDebug,  this.isTs());
-            await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath);
+            await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath, mapAttributes);
 
             fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;

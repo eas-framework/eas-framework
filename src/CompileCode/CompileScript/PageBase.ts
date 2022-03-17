@@ -19,9 +19,9 @@ export default class ParseBasePage {
     constructor(public code?: StringTracker, public debug?: boolean, public isTs?: boolean) {
     }
 
-    async loadSettings(sessionInfo: SessionBuild, pagePath: string, smallPath: string, dependenceObject: StringNumberMap, pageName: string) {
+    async loadSettings(sessionInfo: SessionBuild, pagePath: string, smallPath: string, dependenceObject: StringNumberMap, pageName: string, attributes?: StringAnyMap) {
         const run = new CRunTime(this.code, sessionInfo, smallPath, this.debug, this.isTs);
-        this.code = await run.compile();
+        this.code = await run.compile(attributes);
 
         this.parseBase(this.code);
         await this.loadCodeFile(pagePath, smallPath, this.isTs, dependenceObject, pageName);

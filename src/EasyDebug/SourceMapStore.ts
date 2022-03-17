@@ -3,6 +3,7 @@ import { SourceMapGenerator, RawSourceMap, SourceMapConsumer } from "source-map-
 import path from 'path';
 import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem';
 import {fileURLToPath} from "url";
+import { SplitFirst } from '../StringMethods/Splitting';
 export abstract class SourceMapBasic {
     protected map: SourceMapGenerator;
     protected fileDirName: string;
@@ -21,12 +22,10 @@ export abstract class SourceMapBasic {
         source = source.split('<line>').pop().trim();
 
         if (this.httpSource) {
-            source = path.relative(BasicSettings.fullWebSitePath, source);
-
             if (BasicSettings.pageTypesArray.includes(path.extname(source).substring(1)))
                 source += '.source';
             else
-                source += '?source=true';
+                source = SplitFirst('/', source).pop() + '?source=true';
             return path.join('/', source.replace(/\\/gi, '/'));
         }
 
@@ -103,7 +102,7 @@ export default class SourceMapStore extends SourceMapBasic {
 
     static fixURLSourceMap(map: RawSourceMap){
         for(let i = 0; i < map.sources.length; i++){
-            map.sources[i] = path.relative(getTypes.Static[0],fileURLToPath(map.sources[i]));
+            map.sources[i] = BasicSettings.relative(fileURLToPath(map.sources[i]));
         }
         return map;
     }

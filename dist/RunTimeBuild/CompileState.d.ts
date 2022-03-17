@@ -3,8 +3,11 @@ export default class CompileState {
     static filePath: string;
     constructor();
     get scripts(): string[];
-    addPage(path: string): void;
+    get pages(): string[][];
+    get files(): string[];
+    addPage(path: string, type: string): void;
     addImport(path: string): void;
+    addFile(path: string): void;
     export(): Promise<boolean>;
     static checkLoad(): Promise<CompileState>;
 }
