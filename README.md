@@ -11,7 +11,7 @@ EAS stands for Embedded Active Server
 
 ### Install
 ```bash
-npm i eas-framework
+npm i @eas-framework/server
 ```
 
 
