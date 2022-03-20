@@ -1,7 +1,7 @@
 import path from "path";
 import SourceMapStore from "../../EasyDebug/SourceMapStore";
 import StringTracker from "../../EasyDebug/StringTracker";
-import { paramsImport } from "../../ImportFiles/Script";
+import { compileImport } from "../../ImportFiles/Script";
 import EasyFs from "../../OutputInput/EasyFs";
 import { ConvertSyntaxMini } from "../../Plugins/Syntax/RazorSyntax";
 import { BasicSettings, getTypes } from "../../RunTimeBuild/SearchFileSystem";
@@ -51,26 +51,7 @@ export default class CRunTime {
         }
     }
 
-    async compile(attributes?: StringAnyMap){
-        this.script = await ConvertSyntaxMini(this.script, "@compile", "*");
-        const parser = new JSParser(this.script, this.smallPath, '<%*', '%>');
-        await parser.findScripts();
-
-        if(parser.values.length == 1 && parser.values[0].type === 'text') return this.script;
-
-        const [type, filePath] =SplitFirst('/', this.smallPath), typeArray = getTypes[type] ?? getTypes.Static, 
-        compilePath = typeArray[1] + filePath + '.comp.js';
-        await EasyFs.makePathReal(filePath, typeArray[1]);
-
-        const template = this.templateScript(parser.values.filter(x => x.type != 'text').map(x => x.text));
-        const sourceMap = new SourceMapStore(compilePath, this.debug, false, false)
-        sourceMap.addStringTracker(template);
-        const {funcs, string} = this.methods(attributes)
-
-        const toImport = await paramsImport(string,compilePath, filePath, typeArray, this.isTs, this.debug, template.eq, sourceMap.mapAsURLComment());
-        const buildStrings: {text: string}[] = await toImport(...funcs);
-        
-
+    private rebuildCode(parser: JSParser, buildStrings: {text: string}[]){
         const build = new StringTracker();
 
         for(const i of parser.values){
@@ -83,5 +64,44 @@ export default class CRunTime {
         }
 
         return build;
+    }
+
+    async compile(attributes?: StringAnyMap): Promise<StringTracker>{
+        /* load from cache */
+        const haveCache = this.sessionInfo.cacheCompileScript[this.smallPath];
+        if(haveCache)
+             return (await haveCache)();
+        let doForAll: (resolve: () => StringTracker | Promise<StringTracker>) => void;
+        this.sessionInfo.cacheCompileScript[this.smallPath] = new Promise(r => doForAll = r);
+
+        /* run the script */
+        this.script = await ConvertSyntaxMini(this.script, "@compile", "*");
+        const parser = new JSParser(this.script, this.smallPath, '<%*', '%>');
+        await parser.findScripts();
+
+        if(parser.values.length == 1 && parser.values[0].type === 'text'){
+            const resolve = () => this.script;
+            doForAll(resolve);
+            this.sessionInfo.cacheCompileScript[this.smallPath] = resolve;
+            return this.script;
+        }
+
+        const [type, filePath] =SplitFirst('/', this.smallPath), typeArray = getTypes[type] ?? getTypes.Static, 
+        compilePath = typeArray[1] + filePath + '.comp.js';
+        await EasyFs.makePathReal(filePath, typeArray[1]);
+
+        const template = this.templateScript(parser.values.filter(x => x.type != 'text').map(x => x.text));
+        const sourceMap = new SourceMapStore(compilePath, this.debug, false, false)
+        sourceMap.addStringTracker(template);
+        const {funcs, string} = this.methods(attributes)
+
+        const toImport = await compileImport(string,compilePath, filePath, typeArray, this.isTs, this.debug, template.eq, sourceMap.mapAsURLComment());
+
+        const execute = async () => this.rebuildCode(parser, await toImport(...funcs));
+        this.sessionInfo.cacheCompileScript[this.smallPath] = execute; // save this to cache
+        const thisFirst = await execute();
+        doForAll(execute)
+
+        return thisFirst;
     }
 }

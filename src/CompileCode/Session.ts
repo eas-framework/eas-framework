@@ -50,6 +50,7 @@ export class SessionBuild {
         script: [],
         scriptModule: []
     }
+    cacheCompileScript = {}
     cacheComponent: cacheComponent = {}
     compileRunTimeStore: StringAnyMap = {}
 

@@ -12,10 +12,6 @@
         Session.count++;
     }
     var en = debug
-
-}
-@compile {
-    1==1
 }
 @Query
 <client name="more" params="name,cool">

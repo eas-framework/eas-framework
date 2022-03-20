@@ -28,13 +28,17 @@ function template(code: string, isDebug: boolean, dir: string, file: string, par
     }";module.exports = (async (require${params ? ',' + params : ''})=>{var module={exports:{}},exports=module.exports;${code}\nreturn module.exports;});`;
 }
 
+
 /**
- *
- * @param text
- * @param type
- * @returns
+ * It takes a file path, and returns the compiled code.
+ * @param {string} filePath - The path to the file that you want to compile.
+ * @param {string | null} savePath - The path to save the compiled file to.
+ * @param {boolean} isTypescript - boolean
+ * @param {boolean} isDebug - boolean,
+ * @param  - filePath: The path to the file you want to compile.
+ * @returns The result of the script.
  */
-async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, haveSourceMap = isDebug, fileCode, templatePath = filePath }: { templatePath?: string, params?: string, haveSourceMap?: boolean, fileCode?: string } = {}): Promise<string> {
+async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, haveSourceMap = isDebug, fileCode, templatePath = filePath, codeMinify = true }: { codeMinify?: boolean, templatePath?: string, params?: string, haveSourceMap?: boolean, fileCode?: string } = {}): Promise<string> {
 
   const sourceMapFile = savePath && savePath.split(/\/|\\/).pop();
 
@@ -82,7 +86,7 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
   if (isDebug) {
     if (haveSourceMap)
       Result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(sourceMap).toString("base64");
-  } else {
+  } else if(codeMinify){
     try {
       Result = (await minify(Result, { module: false })).code;
     } catch (err) {
@@ -235,7 +239,24 @@ export async function RequireCjsScript(content: string) {
   return model;
 }
 
-export async function paramsImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, fileCode: string,  sourceMapComment: string) {
+/**
+ * It takes a fake script location, a file location, a type array, and a boolean for whether or not it's
+ * a TypeScript file. It then compiles the script and returns a function that will run the module
+ * This is for RunTime Compile Scripts
+ * @param {string} globalPrams - string, scriptLocation: string, inStaticLocationRelative: string,
+ * typeArray: string[], isTypeScript: boolean, isDebug: boolean, fileCode: string,  sourceMapComment:
+ * string
+ * @param {string} scriptLocation - The location of the script to be compiled.
+ * @param {string} inStaticLocationRelative - The relative path to the file from the static folder.
+ * @param {string[]} typeArray - [string, string]
+ * @param {boolean} isTypeScript - boolean, isDebug: boolean, fileCode: string,  sourceMapComment:
+ * string
+ * @param {boolean} isDebug - If true, the code will be compiled with debug information.
+ * @param {string} fileCode - The code that will be compiled and saved to the file.
+ * @param {string} sourceMapComment - string
+ * @returns A function that returns a promise.
+ */
+export async function compileImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, fileCode: string,  sourceMapComment: string) {
   await EasyFs.makePathReal(inStaticLocationRelative, typeArray[1]);
 
   const fullSaveLocation = scriptLocation + ".cjs";
@@ -246,7 +267,7 @@ export async function paramsImport(globalPrams: string, scriptLocation: string, 
     undefined,
     isTypeScript,
     isDebug,
-    {params: globalPrams, haveSourceMap: false, fileCode, templatePath}
+    {params: globalPrams, haveSourceMap: false, fileCode, templatePath, codeMinify: false}
   );
 
   await EasyFs.makePathReal(path.dirname(fullSaveLocation));

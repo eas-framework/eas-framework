@@ -6,6 +6,7 @@
   "scripts": {
     "postinstall": "node dist/scripts/install.js",
     "build": "node build",
+    "build:ts": "tsc --project production.tsconfig.json",
     "commit": "node build/commit.js",
     "production": "node build/production.js",
     "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
@@ -77,7 +78,8 @@
     "@typescript-eslint/eslint-plugin": "^5.3.0",
     "@typescript-eslint/parser": "^5.3.0",
     "esbuild": "^0.14.27",
-    "fs-extra": "^10.0.0"
+    "fs-extra": "^10.0.0",
+    "typescript": "^4.6.2"
   },
   "homepage": "https://gitlab.com/eas-framework/eas-framework#readme"
 }
