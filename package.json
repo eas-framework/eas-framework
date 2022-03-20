@@ -1,5 +1,5 @@
 {
-  "name": "eas-framework",
+  "name": "@eas-framework/server",
   "version": "1.0.0",
   "description": "Node.js framework, with a lot of built in features",
   "main": "dist/index.js",
