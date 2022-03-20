@@ -21,14 +21,15 @@
     "backend",
     "http",
     "framework",
-    "Razor",
-    "Sqlite"
+    "razor",
+    "sqlite",
+    "aspx"
   ],
   "type": "module",
   "author": "ido.pluto",
   "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/ido.pluto/eas-framework/issues"
+    "url": "https://gitlab.com/eas-framework/eas-framework/issues"
   },
   "dependencies": {
     "@sindresorhus/slugify": "^2.1.0",
@@ -78,5 +79,5 @@
     "esbuild": "^0.14.27",
     "fs-extra": "^10.0.0"
   },
-  "homepage": "https://gitlab.com/ido.pluto/eas-framework#readme"
+  "homepage": "https://gitlab.com/eas-framework/eas-framework#readme"
 }
