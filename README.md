@@ -26,4 +26,4 @@ A lot of build-in components - make you write less.
 npm i eas-framework
 ```
 
-Full documentation on the [official website](eas-framework.ml)
+Full documentation on the [official website](https://eas-framework.ml)
