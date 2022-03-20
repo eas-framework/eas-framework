@@ -1,8 +1,10 @@
 # EAS Framework - Easy as Possible 
 
+![Logo](https://eas-framework.ml/EASFrameworke.png)
+
 ## About
-EAS-Framework is a Node.js framework, with a lot of built in features.
-Is similar to ASPX, includes hot-reloads, and fast build speed
+EAS-Framework is a Node.js website framework, with a lot of built in features.
+Is similar to ASPX, includes 🔥 hot-reloads, and ⚡ super fast
 
 
 EAS stands for Embedded Active Server
