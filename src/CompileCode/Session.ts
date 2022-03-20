@@ -38,6 +38,7 @@ export type inTagCache = {
 
 const StaticFilesInfo = new StoreJSON('ShortScriptNames');
 
+/* The SessionBuild class is used to build the head of the page */
 export class SessionBuild {
     connectorArray: connectorArray = []
     private scriptURLSet: setDataHTMLTag[] = []

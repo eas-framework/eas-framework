@@ -2,6 +2,7 @@ import { StringAnyMap } from "../CompileCode/XMLHelpers/CompileTypes";
 import { SystemData } from "../RunTimeBuild/SearchFileSystem";
 import EasyFs from "./EasyFs";
 
+/* It's a JSON file manager */
 export default class StoreJSON {
     private savePath: string;
     store: StringAnyMap = {};
@@ -24,6 +25,12 @@ export default class StoreJSON {
         this.store[key] = value;
     }
 
+    /**
+     * If the key is in the store, return the value. If not, create a new value, store it, and return it
+     * @param {string} key - The key to look up in the store.
+     * @param [create] - A function that returns a string.
+     * @returns The value of the key in the store.
+     */
     have(key: string, create?: () => string) {
         let item = this.store[key];
         if (item || !create) return item;
@@ -34,8 +41,8 @@ export default class StoreJSON {
         return item;
     }
 
-    clear(){
-        for(const i in this.store){
+    clear() {
+        for (const i in this.store) {
             this.store[i] = undefined
             delete this.store[i]
         }

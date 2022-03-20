@@ -217,6 +217,17 @@ async function BuildPageURL(arrayType: string[], url: string, smallPath: string,
     }
 }
 
+/**
+ * This function is used to load the dynamic page
+ * @param {string[]} arrayType - The array of types that the page is.
+ * @param {string} url - The url that was requested.
+ * @param {string} fullPageUrl - The full path to the page.
+ * @param {string} smallPath - The path to the page file.
+ * @param {number} code - The status code of the page.
+ * @returns The DynamicFunc is the function that will be called to generate the page.
+ * The code is the status code that will be returned.
+ * The fullPageUrl is the full path to the page.
+ */
 async function GetDynamicPage(arrayType: string[], url: string, fullPageUrl: string, smallPath: string, code: number) {
     const SetNewURL = async () => {
         const build = await BuildPageURL(arrayType, url, smallPath, code);
@@ -290,6 +301,21 @@ async function MakePageResponse(DynamicResponse: any, Response: Response | any) 
     }
 }
 
+/**
+ * The function is called when a request is made to a page. 
+ * It will check if the page exists, and if it does, it will return the page. 
+ * If it does not exist, it will return a 404 page
+ * @param {Request | any} Request - The request object.
+ * @param {Response} Response - The response object.
+ * @param {string[]} arrayType - an array of strings that contains the paths
+ * loaded.
+ * @param {string} url - The url of the page that was requested.
+ * @param {{ file: boolean, fullPageUrl: string }} FileInfo - the file info of the page that is being activated.
+ * @param {number} code - number
+ * @param nextPrase - A function that returns a promise. This function is called after the dynamic page
+ * is loaded.
+ * @returns Nothing.
+ */
 async function ActivatePage(Request: Request | any, Response: Response, arrayType: string[], url: string, FileInfo: any, code: number, nextPrase: () => Promise<any>) {
     const { DynamicFunc, fullPageUrl, code: newCode } = await GetDynamicPage(arrayType, url, FileInfo.fullPageUrl, FileInfo.fullPageUrl + '/' + url, code);
 

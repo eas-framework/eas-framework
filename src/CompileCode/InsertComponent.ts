@@ -42,7 +42,13 @@ export default class InsertComponent extends InsertComponentBase {
         }
     }
 
-    tagData(text: StringTracker): {data:tagDataObjectArray, mapAttributes: StringAnyMap} {
+    /**
+     * It takes a string of HTML and returns an array of objects that contain the name of the attribute,
+     * the value of the attribute, and the character that comes after the attribute
+     * @param {StringTracker} text - The text to parse.
+     * @returns The return value is an object with two properties:
+     */
+    tagData(text: StringTracker): { data: tagDataObjectArray, mapAttributes: StringAnyMap } {
         const tokenArray = [], a: tagDataObjectArray = [], mapAttributes: StringAnyMap = {};
 
         text = text.trim().replacer(/(<%)([\w\W]+?)(%>)/, data => {
@@ -132,7 +138,7 @@ export default class InsertComponent extends InsertComponentBase {
                 c = ' ' + c;
             item.v.AddTextAfter(c);
         }
-        return {data: a, mapAttributes};
+        return { data: a, mapAttributes };
     }
 
     findIndexSearchTag(query: string, tag: StringTracker) {
@@ -285,7 +291,7 @@ export default class InsertComponent extends InsertComponentBase {
     }
 
     async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }: { sessionInfo: SessionBuild, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule, dependenceObject: StringNumberMap, isDebug: boolean }) {
-        const {data, mapAttributes} = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
+        const { data, mapAttributes } = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
 
         let fileData: StringTracker, SearchInComment = true, AllPathTypes: PathTypes = {}, addStringInfo: string;
 
@@ -324,7 +330,7 @@ export default class InsertComponent extends InsertComponentBase {
             dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
 
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            const baseData = new ParseBasePage(allData, isDebug,  this.isTs());
+            const baseData = new ParseBasePage(allData, isDebug, this.isTs());
             await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath, mapAttributes);
 
             fileData = baseData.scriptFile.Plus(baseData.clearData);

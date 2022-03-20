@@ -77,17 +77,17 @@ interface buildIn {
     type: string;
     inServer?: string;
 }
-const __dirname = getDirname(import.meta.url);
 
+const staticFiles = SystemData + '/../static/client/';
 const getStatic: buildIn[] = [{
     path: "serv/temp.js",
     type: "js",
-    inServer: __dirname + "/client/buildTemplate.js"
+    inServer: staticFiles + "buildTemplate.js"
 },
 {
     path: "serv/connect.js",
     type: "js",
-    inServer: __dirname + "/client/makeConnection.js"
+    inServer: staticFiles + "makeConnection.js"
 }];
 
 const getStaticFilesType: buildIn[] = [{
@@ -145,6 +145,15 @@ async function askDebuggingWithSource() {
 }
 
 const safeFolders = [getTypes.Static[2], getTypes.Logs[2], 'Models', 'Components'];
+/**
+ * If the user is in debug mode, and the file is a source file, and the user commend line argument have allowSourceDebug
+ * then return the full path to the file
+ * @param {boolean} isDebug - is the current page a debug page?
+ * @param {string} filePath - The path of the file that was clicked.
+ * @param {boolean} checked - If this path already been checked
+ * the file.
+ * @returns The type of the file and the path to the file.
+ */
 async function unsafeDebug(isDebug: boolean, filePath: string, checked: boolean) {
     if (!isDebug || GetPlugin("SafeDebug") || path.extname(filePath) != '.source' || !safeFolders.includes(filePath.split(/\/|\\/).shift()) || !await askDebuggingWithSource())
         return;

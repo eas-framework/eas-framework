@@ -10,6 +10,7 @@ type CState = {
     fileArray: string[]
 }
 
+/* This class is used to store the state of the project */
 export default class CompileState {
     private state: CState = { update: 0, pageArray: [], importArray: [], fileArray: [] }
     static filePath = path.join(SystemData, "CompileState.json")

@@ -9,7 +9,7 @@ import path from "path";
 import { isTs } from "../CompileCode/InsertModels";
 
 //@ts-ignore-next-line
-import ImportWithoutCache from './ImportWithoutCache.cjs';
+import ImportWithoutCache from '../redirectCJS';
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
 import { pageDeps } from "../OutputInput/StoreDeps";

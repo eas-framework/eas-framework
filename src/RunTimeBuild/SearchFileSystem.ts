@@ -8,7 +8,7 @@ function getDirname(url: string){
     return path.dirname(fileURLToPath(url));
 }
 
-const SystemData = path.join(getDirname(import.meta.url), '/../SystemData');
+const SystemData = path.join(getDirname(import.meta.url), '/SystemData');
 
 let WebSiteFolder_ = "WebSite";
 
@@ -29,6 +29,7 @@ function GetSource(name) {
     return  GetFullWebSitePath() + name + '/'
 }
 
+/* A object that contains all the paths of the files in the project. */
 const getTypes = {
     Static: [
         GetSource(StaticName),
@@ -55,6 +56,7 @@ const pageTypes = {
     model: "mode",
     component: "inte"
 }
+
 
 const BasicSettings = {
     pageTypes,
@@ -109,20 +111,6 @@ BasicSettings.pageTypesArray = Object.values(BasicSettings.pageTypes);
 BasicSettings.pageCodeFileArray = Object.values(BasicSettings.pageCodeFile).flat();
 BasicSettings.ReqFileTypesArray = Object.values(BasicSettings.ReqFileTypes);
 
-async function filesInDirectory(path, output, pathMore = "") {
-    const allInFolder = await EasyFs.readdir(path + pathMore, { withFileTypes: true });
-    for (const i of (<Dirent[]>allInFolder)) {
-        const n = i.name;
-        if (i.isDirectory()) {
-            const dir = pathMore + n + '/';
-            await filesInDirectory(path, output, dir);
-        }
-        else {
-            output(pathMore, n);
-        }
-    }
-}
-
 async function DeleteInDirectory(path) {
     const allInFolder = await EasyFs.readdir(path, { withFileTypes: true });
     for (const i of (<Dirent[]>allInFolder)) {
@@ -142,7 +130,6 @@ export {
     getDirname,
     SystemData,
     workingDirectory,
-    filesInDirectory,
     DeleteInDirectory,
     getTypes,
     BasicSettings

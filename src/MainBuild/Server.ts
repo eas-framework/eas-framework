@@ -1,27 +1,23 @@
-import http from 'http';
-import http2 from 'http2';
-import * as createCert from 'selfsigned';
-import * as Greenlock from 'greenlock-express';
 import { App as TinyApp } from '@tinyhttp/app';
 import type {Request, Response} from './Types';
 import compression from 'compression';
 import {Export as Settings, requireSettings, buildFirstLoad, pageInRamActivateFunc} from './Settings'
 import * as fileByUrl from '../RunTimeBuild/GetPages';
-import EasyFs from '../OutputInput/EasyFs';
 import { print } from '../OutputInput/Console';
-import { DeleteInDirectory, workingDirectory, SystemData, BasicSettings } from '../RunTimeBuild/SearchFileSystem';
+import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import formidable from 'formidable';
-import { GreenLockSite } from './SettingsTypes';
+import { UpdateGreenLock } from './ListenGreenLock';
 
-async function getPageData(req: Request, res: Response) {
+
+async function requestAndSettings(req: Request, res: Response) {
     if (Settings.development) {
         await requireSettings();
     }
 
-    return await getPageDataByUrl(req, res);
+    return await changeURLRules(req, res);
 }
 
-async function getPageDataByUrl(req: Request, res: Response) {
+async function changeURLRules(req: Request, res: Response) {
     let url = fileByUrl.urlFix(req.url);
 
     
@@ -30,7 +26,7 @@ async function getPageDataByUrl(req: Request, res: Response) {
             if (i.endsWith('/')) {
                 i = i.substring(0, i.length - 1);
             }
-            return await getPageWithoutRules(req, res, i);
+            return await filerURLRules(req, res, i);
         }
     }
 
@@ -40,10 +36,10 @@ async function getPageDataByUrl(req: Request, res: Response) {
         url = await Settings.routing.rules[RuleIndex](url, req, res);
     }
 
-    await getPageWithoutRules(req, res, url);
+    await filerURLRules(req, res, url);
 }
 
-async function getPageWithoutRules(req: Request, res: Response, url: string) {
+async function filerURLRules(req: Request, res: Response, url: string) {
     let notValid: any = Settings.routing.ignorePaths.find(i => url.startsWith(i)) || Settings.routing.ignoreTypes.find(i => url.endsWith('.'+i));
     
     if(!notValid) {
@@ -65,6 +61,10 @@ async function getPageWithoutRules(req: Request, res: Response, url: string) {
 
 let appOnline
 
+/**
+ * It starts the server and then calls StartListing
+ * @param [Server] - The server object that is passed in by the caller.
+ */
 async function StartApp(Server?) {
     const app = new TinyApp();
     if (!Settings.serve.http2) {
@@ -86,10 +86,15 @@ async function StartApp(Server?) {
     console.log("App listing at port: " + Settings.serve.port);
 }
 
+/**
+ * If the request is a POST request, then parse the request body, then send it to routing settings
+ * @param {Request} req - The incoming request.
+ * @param {Response} res - Response
+ */
 async function ParseRequest(req: Request, res: Response) {
     if (req.method == 'POST') {
         if (req.headers['content-type']?.startsWith?.('application/json')) {
-            Settings.middleware.bodyParser(req, res, () => getPageData(req, res));
+            Settings.middleware.bodyParser(req, res, () => requestAndSettings(req, res));
         } else {
             new formidable.IncomingForm(Settings.middleware.formidable).parse(req, (err, fields, files) => {
                 if (err) {
@@ -97,146 +102,11 @@ async function ParseRequest(req: Request, res: Response) {
                 }
                 req.fields = fields;
                 req.files = files;
-                getPageData(req, res);
+                requestAndSettings(req, res);
             });
         }
     } else {
-        getPageData(req, res);
-    }
-}
-//CreateInNotExits = {name, value}
-async function TouchSystemFolder(foName: string, CreateInNotExits: {name: string, value: string, exits?: any}) {
-    let fopath = workingDirectory + "/SystemSave/";
-
-    await EasyFs.mkdirIfNotExists(fopath);
-
-    fopath += foName;
-
-    await EasyFs.mkdirIfNotExists(fopath);
-
-    if (CreateInNotExits) {
-        fopath += '/';
-        const filePath = fopath + CreateInNotExits.name;
-
-        if (!await EasyFs.existsFile(filePath)) {
-            await EasyFs.writeFile(filePath, CreateInNotExits.value);
-        } else if (CreateInNotExits.exits) {
-            await EasyFs.writeFile(filePath, await CreateInNotExits.exits(await EasyFs.readFile(filePath, 'utf8'), filePath, fopath));
-        }
-    }
-}
-
-async function GetDemoCertificate() {
-    let Certificate;
-    const CertificatePath = SystemData + '/Certificate.json';
-
-    if (await EasyFs.existsFile(CertificatePath)) {
-        Certificate = EasyFs.readJsonFile(CertificatePath);
-    } else {
-        Certificate = await new Promise(res => {
-            createCert.generate(null, { days: 36500 }, (err, keys) => {
-                if (err) throw err;
-                res({
-                    key: keys.private,
-                    cert: keys.cert
-                });
-            });
-        });
-
-        EasyFs.writeJsonFile(CertificatePath, Certificate);
-    }
-    return Certificate;
-}
-
-async function UpdateGreenloak(app) {
-
-    if (!(Settings.serve.http2 || Settings.serve.greenLock?.agreeToTerms)) {
-        return await DefualtListen(app);
-    }
-
-    if (!Settings.serve.greenLock.agreeToTerms) {
-        const server = http2.createSecureServer({ ...await GetDemoCertificate(), allowHTTP1: true }, app.attach);
-
-        return {
-            server,
-            listen(port) {
-                server.listen(port);
-            },
-            stop() {
-                server.close();
-            }
-        }
-    }
-
-    await TouchSystemFolder("greenlock", {
-        name: "config.json", value: JSON.stringify({
-            sites: Settings.serve.greenLock.sites
-        }),
-        async exits(file, _, folder) {
-            file = JSON.parse(file);
-            for (const i in file.sites) {
-                const e = file.sites[i];
-                let have;
-                for (const b of <GreenLockSite[]> Settings.serve.greenLock.sites) {
-                    if (b.subject == e.subject) {
-                        have = true;
-                        if (b.altnames.length != e.altnames.length || b.altnames.some(v => e.altnames.includes(v))) {
-                            e.altnames = b.altnames;
-                            delete e.renewAt;
-                        }
-                        break;
-                    }
-                }
-                if (!have) {
-                    file.sites.splice(i, i);
-                    const path = folder + "live/" + e.subject;
-
-                    if (await EasyFs.exists(path)) {
-                        await DeleteInDirectory(path);
-                        await EasyFs.rmdir(path);
-                    }
-                }
-            }
-
-            const newSites = Settings.serve.greenLock.sites.filter((x) => !file.sites.find(b => b.subject == x.subject));
-
-            file.sites.push(...newSites);
-
-            return JSON.stringify(file);
-        }
-    });
-
-    const packageInfo = await EasyFs.readJsonFile(workingDirectory + "package.json");
-
-    const greenlockObject:any = await new Promise(res => Greenlock.init({
-        packageRoot: workingDirectory,
-        configDir: "SystemSave/greenlock",
-        packageAgent: Settings.serve.greenLock.agent || packageInfo.name + '/' + packageInfo.version,
-        maintainerEmail: Settings.serve.greenLock.email,
-        cluster: Settings.serve.greenLock.cluster,
-        staging: Settings.serve.greenLock.staging
-    }).ready(res));
-
-    function CreateServer(type, func, options?) {
-        let ClosehttpServer = () => { };
-        const server = greenlockObject[type](options, func);
-        const listen = (port) => {
-            const httpServer = greenlockObject.httpServer();
-            ClosehttpServer = () => httpServer.close();
-            return Promise.all([new Promise(res => server.listen(443, "0.0.0.0", res)), new Promise(res => httpServer.listen(port, "0.0.0.0", res))]);
-        };
-        const close = () => { server.close(); ClosehttpServer(); };
-        return {
-            server,
-            listen,
-            close
-        }
-    }
-
-    if (Settings.serve.http2) {
-        return CreateServer('http2Server', app.attach, { allowHTTP1: true });
-    } else {
-        return CreateServer('httpsServer', app.attach);
+        requestAndSettings(req, res);
     }
 }
 
@@ -252,22 +122,7 @@ async function StartListing(app, Server) {
     return listen;
 }
 
-function DefualtListen(app) {
-    const server = http.createServer(app.attach);
-    return {
-        server,
-        listen(port) {
-            return new Promise(res => {
-                server.listen(port, <any>res);
-            });
-        },
-        close() {
-            server.close();
-        }
-    }
-}
-
-export default async function StartServer({ SitePath = 'Website', HttpServer = UpdateGreenloak } = {}) {
+export default async function StartServer({ SitePath = 'Website', HttpServer = UpdateGreenLock } = {}) {
     BasicSettings.WebSiteFolder = SitePath;
     buildFirstLoad();
     await requireSettings();

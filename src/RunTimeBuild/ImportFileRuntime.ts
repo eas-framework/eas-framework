@@ -14,6 +14,14 @@ type RequireFiles = {
 
 const CacheRequireFiles = {};
 
+/**
+ * It makes a map of dependencies.
+ * @param {StringAnyMap} dependencies - The old dependencies object
+ * @param {string[]} typeArray - The array of base paths
+ * @param [basePath] - The path to the file that is being compiled.
+ * @param cache - A cache of the last time a file was modified.
+ * @returns A map of dependencies.
+ */
 async function makeDependencies(dependencies: StringAnyMap, typeArray: string[], basePath = '', cache = {}) {
     const dependenciesMap: StringAnyMap = {};
     const promiseAll = [];
@@ -34,6 +42,12 @@ async function makeDependencies(dependencies: StringAnyMap, typeArray: string[],
     return dependenciesMap;
 }
 
+/**
+ * If the old dependencies and the new dependencies are the same, return true
+ * @param {StringAnyMap} oldDeps - The old dependency map.
+ * @param {StringAnyMap} newDeps - The new dependencies.
+ * @returns The return value is a boolean value indicating whether the dependencies are the same.
+ */
 function compareDependenciesSame(oldDeps: StringAnyMap, newDeps: StringAnyMap) {
     for (const name in oldDeps) {
         if (name == 'thisFile') {
@@ -47,6 +61,14 @@ function compareDependenciesSame(oldDeps: StringAnyMap, newDeps: StringAnyMap) {
     return true;
 }
 
+/**
+ * Given two dependency trees, return an array of the names of the modules that have changed
+ * @param {StringAnyMap} oldDeps - The old dependencies.
+ * @param {StringAnyMap} newDeps - The new dependencies.
+ * @param [parent] - The name of the parent module.
+ * @returns The return value is an array of strings. Each string represents a change in the dependency
+ * tree.
+ */
 function getChangeArray(oldDeps: StringAnyMap, newDeps: StringAnyMap, parent = ''): string[] {
     const changeArray = [];
 
@@ -74,6 +96,16 @@ function getChangeArray(oldDeps: StringAnyMap, newDeps: StringAnyMap, parent = '
     return changeArray;
 }
 
+/**
+ * It imports a file and returns the model.
+ * @param {string} filePath - The path to the file that you want to import.
+ * @param {string} __filename - The filename of the file that is currently being executed.
+ * @param {string} __dirname - The directory of the file that is currently being executed.
+ * @param {string[]} typeArray - paths types.
+ * @param LastRequire - A map of all the files that have been required so far.
+ * @param {boolean} isDebug - boolean
+ * @returns The model that is being imported.
+ */
 export default async function RequireFile(filePath: string, __filename: string, __dirname: string, typeArray: string[], LastRequire: { [key: string]: RequireFiles }, isDebug: boolean) {
     const ReqFile = LastRequire[filePath];
 

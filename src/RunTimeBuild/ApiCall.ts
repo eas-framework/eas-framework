@@ -16,6 +16,12 @@ type apiInfo = {
 
 const apiStaticMap: { [key: string]: apiInfo } = {};
 
+/**
+ * Given a url, return the static path and data info if the url is in the static map
+ * @param {string} url - The url that the user is requesting.
+ * @param {number} pathSplit - the number of slashes in the url.
+ * @returns The return value is an object with two properties:
+ */
 function getApiFromMap(url: string, pathSplit: number) {
     const keys = Object.keys(apiStaticMap);
     for (const i of keys) {
@@ -30,6 +36,11 @@ function getApiFromMap(url: string, pathSplit: number) {
     return {};
 }
 
+/**
+ * Find the API file for a given URL
+ * @param {string} url - The url of the API.
+ * @returns The path to the API file.
+ */
 async function findApiPath(url: string) {
 
     while (url.length) {
@@ -146,6 +157,16 @@ async function parseURLData(validate: any, value: any, Request: any, Response: a
     return [error, pushData];
 }
 
+/**
+ * It takes the URL data and parses it into an object.
+ * @param {any} obj - the object that contains the URL definition
+ * @param {string} urlFrom - The URL that was passed to the server.
+ * @param {any} defineObject - All the definitions that has been found
+ * @param {any} Request - The request object.
+ * @param {any} Response - The response object.
+ * @param makeMassage - Create an error message
+ * @returns A string or an object with an error property.
+ */
 async function makeDefinition(obj: any, urlFrom: string, defineObject: any, Request: any, Response: any, makeMassage: (e: any) => string) {
     if (!obj.define)
         return urlFrom;
@@ -179,6 +200,17 @@ async function makeDefinition(obj: any, urlFrom: string, defineObject: any, Requ
 
     return urlFrom;
 }
+/**
+ * The function will parse the url and find the best match for the url
+ * @param {any} fileModule - the module that contains the method that you want to call.
+ * @param {any} Request - The request object.
+ * @param {any} Response - The response object.
+ * @param {string} urlFrom - the url that the user requested.
+ * @param {boolean} isDebug - boolean,
+ * @param nextPrase - () => Promise<any>
+ * @returns a boolean value. If the function returns true, the request is processed. If the function
+ * returns false, the request is not processed.
+ */
 async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: string, isDebug: boolean, nextPrase: () => Promise<any>) {
     const allowErrorInfo = !GetPlugin("SafeDebug") && isDebug, makeMassage = (e: any) => (isDebug ? print.error(e) : null) + (allowErrorInfo ? `, message: ${e.message}` : '');
     const method = Request.method;

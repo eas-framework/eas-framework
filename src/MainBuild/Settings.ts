@@ -307,7 +307,7 @@ export async function requireSettings() {
     }
 
     if(Export.development && Export.routing.sitemap){ // on production this will be checked after creating state
-        await debugSiteMap(Export);
+        debugSiteMap(Export);
     }
 }
 

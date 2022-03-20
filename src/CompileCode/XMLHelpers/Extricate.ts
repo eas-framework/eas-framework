@@ -39,6 +39,18 @@ interface SearchCutOutput {
     found?: SearchCutData[]
 }
 
+/**
+ * It searches for a specific tag and returns the data inside of it.
+ * @param {StringTracker} data - The string you want to search through.
+ * @param {RegExp} findArray - The regular expression to search for.
+ * @param {string} sing - The string that you want to search for.
+ * @param [bigTag=true] - If true, the function will search for the end of the tag. If false, it will
+ * search for the next instance of the tag.
+ * @param output - The output of the search.
+ * @param {SearchCutData[]} returnArray - An array of objects that contain the tag name, the data
+ * inside the tag, and the location of the tag in the original string.
+ * @returns A string of the data that was found, and an array of the data that was found.
+ */
 function searchForCut(data:StringTracker, findArray:RegExp, sing:string, bigTag = true, output = new StringTracker(), returnArray: SearchCutData[] = []): SearchCutOutput {
     const dataCopy = data;
     const be = data.search(findArray);

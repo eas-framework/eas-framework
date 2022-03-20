@@ -6,13 +6,9 @@
   "scripts": {
     "postinstall": "node dist/scripts/install.js",
     "build": "node build",
-    "writeGitLabCi": "node build/writeGitLabCi.js",
-    "build:ts": "tsc --project tsconfig.json",
-    "build:ts:production": "tsc --project production.tsconfig.json",
-    "push": "node build/gitPush.js",
-    "buildAndPush": "node build/buildProduction.js",
+    "commit": "node build/commit.js",
+    "production": "node build/production.js",
     "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
-    "test:pro": "node --inspect=127.0.0.1:9229 tests/core/index.js",
     "test:compile": "node --trace-warnings --inspect=127.0.0.1:9229 tests/compile.js",
     "test": "npm run build && npm run test:dist"
   },
@@ -61,7 +57,7 @@
     "sql.js": "^1.6.2",
     "sucrase": "^3.20.3",
     "svelte": "^3.44.1",
-    "terser": "^5.9.0",
+    "terser": "^5.12.1",
     "uuid": "^8.3.2",
     "workerpool": "^6.1.5"
   },
@@ -79,13 +75,8 @@
     "@types/workerpool": "^6.1.0",
     "@typescript-eslint/eslint-plugin": "^5.3.0",
     "@typescript-eslint/parser": "^5.3.0",
-    "eslint": "^8.2.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "fs-extra": "^10.0.0",
-    "madge": "^5.0.1",
-    "prettier": "2.4.1",
-    "typescript": "^4.4.4"
+    "esbuild": "^0.14.27",
+    "fs-extra": "^10.0.0"
   },
   "homepage": "https://gitlab.com/ido.pluto/eas-framework#readme"
 }

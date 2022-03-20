@@ -1,13 +1,12 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { find_end_of_def, find_end_of_q, find_end_block, ejs_parse } from './RustBind/index.js';
-import * as Settings from './Settings';
-import { getDirname } from '../../RunTimeBuild/SearchFileSystem';
+import { find_end_of_def, find_end_of_q, find_end_block } from '../../static/wasm/component/index.js';
+import * as Settings from '../../static/wasm/component/Settings.js';
+import { getDirname, SystemData } from '../../RunTimeBuild/SearchFileSystem';
 import workerPool from 'workerpool';
 import { cpus } from 'os';
 
-const __dirname = getDirname(import.meta.url);
 const cpuLength = Math.max(1, Math.floor(cpus().length / 2));
-const pool = workerPool.pool(__dirname + '/RustBind/workerInsertComponent.js', { maxWorkers: cpuLength });
+const pool = workerPool.pool(SystemData + '/../static/wasm/component/workerInsertComponent.js', { maxWorkers: cpuLength });
 
 export class BaseReader {
     /**

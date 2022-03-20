@@ -9,7 +9,7 @@ import path from 'path';
 import { registerExtension, capitalize } from '../../ImportFiles/ForStatic/Svelte';
 import { rebuildFile } from '../../ImportFiles/StaticFiles';
 //@ts-ignore-next-line
-import ImportWithoutCache, { resolve, clearModule } from '../../ImportFiles/ImportWithoutCache.cjs';
+import ImportWithoutCache, { resolve, clearModule } from '../../redirectCJS';
 import { SessionBuild } from '../../CompileCode/Session';
 import { parseTagDataStringBoolean } from './serv-connect/index';
 

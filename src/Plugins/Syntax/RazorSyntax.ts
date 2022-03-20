@@ -35,6 +35,13 @@ export default async function ConvertSyntax(text: StringTracker, options?: any) 
     return build;
 }
 
+/**
+ * ConvertSyntaxMini takes the code and a search string and convert curly brackets
+ * @param {StringTracker} text - The string to be converted.
+ * @param {string} find - The string to search for.
+ * @param {string} addEJS - The string to add to the start of the ejs.
+ * @returns A string.
+ */
 export async function ConvertSyntaxMini(text: StringTracker, find: string, addEJS: string) {
     const values = await RazorToEJSMini(text.eq, find);
     const build = new StringTracker();

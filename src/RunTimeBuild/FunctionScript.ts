@@ -7,7 +7,7 @@ import { Request, Response } from '@tinyhttp/app';
 import { Files } from 'formidable';
 import { handelConnectorService } from '../BuildInComponents/index';
 //@ts-ignore-next-line
-import ImportWithoutCache from '../ImportFiles/ImportWithoutCache.cjs';
+import ImportWithoutCache from '../redirectCJS';
 import { CutTheLast, SplitFirst } from '../StringMethods/Splitting';
 import RequireFile from './ImportFileRuntime';
 import { PrintIfNew } from '../OutputInput/PrintNew';
@@ -18,6 +18,17 @@ const Export = {
     PageRam: true
 }
 
+/**
+ * It loads a page and returns the model.
+ * @param {string} filePath - The path to the file you want to import.
+ * @param {string} __filename - The filename of the file that is currently being executed.
+ * @param {string} __dirname - The directory of the file that is currently being executed.
+ * @param {string[]} typeArray - The typeArray is an array of strings that contains the path to the
+ * file.
+ * @param LastRequire - A dictionary of all the files that have been required so far.
+ * @param {any} DataObject - The data object that is passed to the page.
+ * @returns A function that returns the page.
+ */
 async function RequirePage(filePath: string, __filename: string, __dirname: string, typeArray: string[], LastRequire: { [key: string]: any }, DataObject: any) {
     const ReqFilePath = LastRequire[filePath];
     const resModel = () => ReqFilePath.model(DataObject);
@@ -105,6 +116,12 @@ function getFullPathCompile(url: string) {
     return typeArray[1] + SplitInfo[1] + "." + BasicSettings.pageTypes.page + '.cjs';
 }
 
+/**
+ * It loads a page.
+ * @param {string} url - The URL of the page to load.
+ * @param ext - The extension of the file.
+ * @returns A function that takes a data object and returns a string.
+ */
 async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
     const SplitInfo = SplitFirst('/', url);
 
@@ -149,6 +166,12 @@ async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
         return (DataObject: any) => DataObject.out_run_script.text += `<div style="color:red;text-align:left;font-size:16px;"><p>Error path: ${debug__filename}</p><p>Error message: ${e.message}</p></div>`;
     }
 }
+/**
+ * It takes a function that prepare a page, and returns a function that loads a page
+ * @param LoadPageFunc - A function that takes in a page to execute on
+ * @param {string} run_script_name - The name of the script to run.
+ * @returns a function that returns a promise.
+ */
 
 function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: string) {
     const PageVar = {};

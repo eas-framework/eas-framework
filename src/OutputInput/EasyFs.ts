@@ -27,10 +27,21 @@ function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue:
     });
 }
 
+/**
+ * If the file exists, return true
+ * @param {string} path - The path to the file you want to check.
+ * @param {any} [ifTrueReturn=true] - any = true
+ * @returns A boolean value.
+ */
 async function existsFile(path: string, ifTrueReturn: any = true): Promise<boolean>{
     return (await stat(path, null, true)).isFile?.() && ifTrueReturn;
 }
 
+/**
+ * It creates a directory.
+ * @param {string} path - The path to the directory you want to create.
+ * @returns A promise.
+ */
 function mkdir(path: string): Promise<boolean>{
     return new Promise(res => {
         fs.mkdir(path, (err) => {
@@ -42,6 +53,11 @@ function mkdir(path: string): Promise<boolean>{
     });
 }
 
+/**
+ * `rmdir` is a function that takes a string and returns a promise that resolves to a boolean
+ * @param {string} path - The path to the directory to be removed.
+ * @returns A promise.
+ */
 function rmdir(path: string): Promise<boolean>{
     return new Promise(res => {
         fs.rmdir(path, (err) => {
@@ -53,6 +69,11 @@ function rmdir(path: string): Promise<boolean>{
     });
 }
 
+/**
+ * `unlink` is a function that takes a string and returns a promise that resolves to a boolean
+ * @param {string} path - The path to the file you want to delete.
+ * @returns A promise.
+ */
 function unlink(path: string): Promise<boolean>{
     return new Promise(res => {
         fs.unlink(path, (err) => {
@@ -64,6 +85,11 @@ function unlink(path: string): Promise<boolean>{
     });
 }
 
+/**
+ * If the path exists, delete it
+ * @param {string} path - The path to the file or directory to be unlinked.
+ * @returns A boolean value.
+ */
 async function unlinkIfExists(path: string): Promise<boolean>{
     if(await exists(path)){
         return await unlink(path);
@@ -71,6 +97,13 @@ async function unlinkIfExists(path: string): Promise<boolean>{
     return false;
 }
 
+/**
+ * `readdir` is a function that takes a path and an options object, and returns a promise that resolves
+ * to an array of strings
+ * @param {string} path - The path to the directory you want to read.
+ * @param options - {
+ * @returns A promise that resolves to an array of strings.
+ */
 function readdir(path: string, options = {}): Promise<string[] | Buffer[] | Dirent[]>{
     return new Promise(res => {
         fs.readdir(path, options, (err, files) => {
@@ -82,12 +115,23 @@ function readdir(path: string, options = {}): Promise<string[] | Buffer[] | Dire
     });
 }
 
+/**
+ * If the path does not exist, create it
+ * @param {string} path - The path to the directory you want to create.
+ * @returns A boolean value indicating whether the directory was created or not.
+ */
 async function mkdirIfNotExists(path: string): Promise<boolean>{
     if(!await exists(path))
         return await mkdir(path);
     return false;
 }
 
+/**
+ * Write a file to the file system
+ * @param {string} path - The path to the file you want to write to.
+ * @param {string | NodeJS.ArrayBufferView} content - The content to write to the file.
+ * @returns A promise.
+ */
 function writeFile(path: string, content:  string | NodeJS.ArrayBufferView): Promise<boolean>{
     return new Promise(res => {
         fs.writeFile(path, content, (err) => {
@@ -99,6 +143,13 @@ function writeFile(path: string, content:  string | NodeJS.ArrayBufferView): Pro
     });
 }
 
+/**
+ * `writeJsonFile` is a function that takes a path and a content and writes the content to the file at
+ * the path
+ * @param {string} path - The path to the file you want to write to.
+ * @param {any} content - The content to write to the file.
+ * @returns A boolean value.
+ */
 async function writeJsonFile(path: string, content: any): Promise<boolean> {
     try {
         return await writeFile(path, JSON.stringify(content));
@@ -109,6 +160,13 @@ async function writeJsonFile(path: string, content: any): Promise<boolean> {
     return false;
 }
 
+/**
+ * `readFile` is a function that takes a path and an optional encoding and returns a promise that
+ * resolves to the contents of the file at the given path
+ * @param {string} path - The path to the file you want to read.
+ * @param [encoding=utf8] - The encoding of the file. Defaults to utf8.
+ * @returns A promise.
+ */
 function readFile(path:string, encoding = 'utf8'): Promise<string|any>{
     return new Promise(res => {
         fs.readFile(path, <any>encoding, (err, data) => {
@@ -120,6 +178,12 @@ function readFile(path:string, encoding = 'utf8'): Promise<string|any>{
     });
 }
 
+/**
+ * It reads a JSON file and returns the parsed JSON object.
+ * @param {string} path - The path to the file you want to read.
+ * @param {string} [encoding] - The encoding to use when reading the file. Defaults to utf8.
+ * @returns A promise that resolves to an object.
+ */
 async function readJsonFile(path:string, encoding?:string): Promise<any>{
     try {
         return JSON.parse(await readFile(path, encoding));
@@ -130,10 +194,15 @@ async function readJsonFile(path:string, encoding?:string): Promise<any>{
     return {};
 }
 
-async function makePathReal(p:string, basic = '') {
+/**
+ * If the path doesn't exist, create it
+ * @param p - The path to the file that needs to be created.
+ * @param [base] - The base path to the file.
+ */
+async function makePathReal(p:string, base = '') {
     p = path.dirname(p);
 
-    if (!await exists(basic + p)) {
+    if (!await exists(base + p)) {
         const all = p.split(/\\|\//);
 
         let pString = '';
@@ -143,7 +212,7 @@ async function makePathReal(p:string, basic = '') {
             }
             pString += i;
 
-            await mkdirIfNotExists(basic + pString);
+            await mkdirIfNotExists(base + pString);
         }
     }
 }
