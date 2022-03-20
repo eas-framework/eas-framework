@@ -1,6 +1,23 @@
+
+[site-url]: https://eas-framework.ml
+[npm-url]: https://npmjs.com/package/@eas-framework/server
+[npm-img]: https://img.shields.io/npm/dt/@eas-framework/server
+[site-badge]: https://img.shields.io/badge/website-open-blue
+[donate-badge]: https://img.shields.io/badge/donate-DEV-blue
+
 # EAS Framework - Easy as Possible 
 
+<div align="center">
+
 ![Logo](https://eas-framework.ml/EASFrameworke.png)
+[![website][site-badge]][site-url]
+[![npm][npm-img]][npm-url]
+[![pipeline status](https://gitlab.com/eas-framework/eas-framework/badges/master/pipeline.svg)](https://gitlab.com/eas-framework/eas-framework/-/commits/master)
+[![coverage report](https://gitlab.com/eas-framework/eas-framework/badges/master/coverage.svg)](https://gitlab.com/eas-framework/eas-framework/-/commits/master)
+[![Latest Release](https://gitlab.com/eas-framework/eas-framework/-/badges/release.svg)](https://gitlab.com/eas-framework/eas-framework/-/releases)
+</div>
+
+
 
 ## About
 EAS-Framework is a Node.js website framework similar, with a lot of built in features.
@@ -13,7 +30,6 @@ EAS stands for Embedded Active Server
 ```bash
 npm i @eas-framework/server
 ```
-
 
 ### What in there?
 A lot of build-in components - make you write less.
@@ -28,4 +44,5 @@ A lot of build-in components - make you write less.
 - ✨ Easy data binding with connectors - special components built in
 - 🚀 Simple and easy to use in all means!
 
-Full documentation on the [official website](https://eas-framework.ml)
+## Docs
+You can see the documentation [here](https://eas-framework.ml/docs).
