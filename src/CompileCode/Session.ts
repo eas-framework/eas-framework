@@ -1,10 +1,11 @@
 import SourceMapStore from "../EasyDebug/SourceMapStore";
 import StoreJSON from "../OutputInput/StoreJSON";
-import { getTypes } from "../RunTimeBuild/SearchFileSystem";
-import { StringAnyMap } from "./XMLHelpers/CompileTypes";
+import { BasicSettings, getTypes } from "../RunTimeBuild/SearchFileSystem";
+import { StringAnyMap, StringMap, StringNumberMap, tagDataObjectArray } from "./XMLHelpers/CompileTypes";
 import Base64Id from '../StringMethods/Id';
-import { SplitFirst } from "../StringMethods/Splitting";
 import EasyFs from "../OutputInput/EasyFs";
+import StringTracker from "../EasyDebug/StringTracker";
+import { parseTagDataStringBoolean } from "../BuildInComponents/Components/serv-connect";
 
 
 export type setDataHTMLTag = {
@@ -50,11 +51,17 @@ export class SessionBuild {
         script: [],
         scriptModule: []
     }
-    cacheCompileScript = {}
+    cacheCompileScript: any = {}
     cacheComponent: cacheComponent = {}
     compileRunTimeStore: StringAnyMap = {}
+    dependencies: StringNumberMap = {}
+    recordNames: string[] = []
 
-    constructor(public defaultPath: string, public typeName: string, public debug: boolean) {
+    get safeDebug() {
+        return this.debug && this._safeDebug;
+    }
+
+    constructor(public smallPath: string, public fullPath: string, public typeName: string, public debug: boolean, private _safeDebug: boolean) {
     }
 
     style(url: string, attributes?: StringAnyMap) {
@@ -67,23 +74,42 @@ export class SessionBuild {
         this.scriptURLSet.push({ url, attributes });
     }
 
-    addScriptStyle(type: 'script' | 'style' | 'module', smallPath = this.defaultPath) {
+    record(name: string) {
+        if (!this.recordNames.includes(name))
+            this.recordNames.push(name);
+    }
+
+    async dependence(smallPath: string, fullPath = BasicSettings.fullWebSitePath + smallPath) {
+        if (this.dependencies[smallPath]) return;
+
+        const haveDep = await EasyFs.stat(fullPath, 'mtimeMs', true, null); // check page changed date, for dependenceObject;
+        if (haveDep) {
+            this.dependencies[smallPath] = haveDep
+            return true;
+        }
+    }
+
+    addScriptStyle(type: 'script' | 'style' | 'module', smallPath = this.smallPath) {
         let data = this.inScriptStyle.find(x => x.type == type && x.path == smallPath);
         if (!data) {
-            data = { type, path: smallPath, value: new SourceMapStore(smallPath, this.debug, type == 'style', true) }
+            data = { type, path: smallPath, value: new SourceMapStore(smallPath, this.safeDebug, type == 'style', true) }
             this.inScriptStyle.push(data);
         }
 
         return data.value
     }
 
+    addScriptStylePage(type: 'script' | 'style' | 'module', dataTag: tagDataObjectArray, info: StringTracker) {
+        return this.addScriptStyle(type, parseTagDataStringBoolean(dataTag, 'page') ? this.smallPath : info.extractInfo());
+    }
 
-    private static createName(text: string){
+
+    private static createName(text: string) {
         let length = 0;
         let key: string;
 
         const values = Object.values(StaticFilesInfo.store);
-        while(key == null || values.includes(key)){
+        while (key == null || values.includes(key)) {
             key = Base64Id(text, 5 + length).substring(length);
             length++;
         }
@@ -94,17 +120,17 @@ export class SessionBuild {
     private addHeadTags() {
         const isLogs = this.typeName == getTypes.Logs[2]
         for (const i of this.inScriptStyle) {
-            const saveLocation = i.path == this.defaultPath && isLogs ? getTypes.Logs[1] : getTypes.Static[1], addQuery = isLogs ? '?t=l' : '';
+            const saveLocation = i.path == this.smallPath && isLogs ? getTypes.Logs[1] : getTypes.Static[1], addQuery = isLogs ? '?t=l' : '';
             let url = StaticFilesInfo.have(i.path, () => SessionBuild.createName(i.path)) + '.pub';
 
             switch (i.type) {
                 case 'script':
                     url += '.js';
-                    this.script('/' + url + addQuery, {defer: null})
+                    this.script('/' + url + addQuery, { defer: null })
                     break;
                 case 'module':
                     url += '.mjs';
-                    this.script('/' + url + addQuery, {type: 'module'})
+                    this.script('/' + url + addQuery, { type: 'module' })
                     break;
                 case 'style':
                     url += '.css';
@@ -118,7 +144,7 @@ export class SessionBuild {
 
     buildHead() {
         this.addHeadTags();
-        
+
         const makeAttributes = (i: setDataHTMLTag) => i.attributes ? ' ' + Object.keys(i.attributes).map(x => i.attributes[x] ? x + `="${i.attributes[x]}"` : x).join(' ') : '';
 
         const addTypeInfo = this.typeName == getTypes.Logs[2] ? '?t=l' : '';
@@ -140,11 +166,17 @@ export class SessionBuild {
             this.inScriptStyle.push({ ...i, value: i.value.clone() })
         }
 
+        const copyObjects = ['cacheCompileScript', 'cacheComponent', 'dependencies'];
+
+        for (const c of copyObjects) {
+            Object.assign(this[c], from[c]);
+        }
+
+        this.recordNames.push(...from.recordNames.filter(x => !this.recordNames.includes(x)));
+
         this.headHTML += from.headHTML;
         this.cache.style.push(...from.cache.style);
         this.cache.script.push(...from.cache.script);
         this.cache.scriptModule.push(...from.cache.scriptModule);
-
-        Object.assign(this.cacheComponent, from.cacheComponent);
     }
 }

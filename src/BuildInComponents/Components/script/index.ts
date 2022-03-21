@@ -4,9 +4,10 @@ import scriptWithServer from './server';
 import scriptWithClient from './client';
 import { BuildScriptWithoutModule } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { SessionBuild } from '../../../CompileCode/Session';
+import InsertComponent from '../../../CompileCode/InsertComponent';
 
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
     if (dataTag.have('src'))
         return {
@@ -17,7 +18,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
     if (dataTag.have('server')) {
         dataTag.remove('server');
-        return scriptWithServer(language, path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent);
+        return scriptWithServer(language, path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent);
     }
 
     return scriptWithClient(language, dataTag, LastSmallPath, BetweenTagData, pathName, InsertComponent, sessionInfo);

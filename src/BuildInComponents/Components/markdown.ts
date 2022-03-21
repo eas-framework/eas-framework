@@ -13,6 +13,7 @@ import markdownItAttrs from 'markdown-it-attrs';
 import markdownItAbbr from 'markdown-it-abbr'
 import MinCss from '../../CompileCode/CssMinimizer';
 import { SessionBuild } from '../../CompileCode/Session';
+import InsertComponent from '../../CompileCode/InsertComponent';
 
 function codeWithCopy(md: any) {
 
@@ -32,7 +33,7 @@ function codeWithCopy(md: any) {
     md.renderer.rules.fence = renderCode(md.renderer.rules.fence);
 }
 
-export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: any, session: SessionBuild, dependenceObject: StringNumberMap): Promise<BuildInComponent> {
+export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, session: SessionBuild): Promise<BuildInComponent> {
     const markDownPlugin = InsertComponent.GetPlugin('markdown');
 
     const hljsClass = parseTagDataStringBoolean(dataTag, 'hljs-class', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
@@ -85,7 +86,7 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
             filePath += '.serv.md'
         const fullPath = path.join(BasicSettings.fullWebSitePath, filePath);
         markdownCode = await EasyFs.readFile(fullPath); //get markdown from file
-        dependenceObject[filePath] = await EasyFs.stat(fullPath, 'mtimeMs');
+        await session.dependence(filePath, fullPath)
     }
 
     const renderHTML = md.render(markdownCode), buildHTML = new StringTracker(type.DefaultInfoText);

@@ -13,7 +13,7 @@ import ImportWithoutCache, { resolve, clearModule } from '../../ImportFiles/redi
 import { SessionBuild } from '../../CompileCode/Session';
 import { parseTagDataStringBoolean } from './serv-connect/index';
 
-async function ssrHTML(dataTag: tagDataObjectArray, FullPath: string, smallPath: string, dependenceObject: StringNumberMap, sessionInfo: SessionBuild, isDebug: boolean) {
+async function ssrHTML(dataTag: tagDataObjectArray, FullPath: string, smallPath: string,sessionInfo: SessionBuild) {
     const getV = (name: string) => {
         const gv = (name: string) => dataTag.getValue(name).trim(),
             value = gv('ssr' + capitalize(name)) || gv(name);
@@ -21,8 +21,8 @@ async function ssrHTML(dataTag: tagDataObjectArray, FullPath: string, smallPath:
         return value ? eval(`(${value.charAt(0) == '{' ? value : `{${value}}`})`) : {};
     };
     const newDeps = {};
-    const buildPath = await registerExtension(FullPath, smallPath, newDeps, isDebug);
-    Object.assign(dependenceObject, newDeps);
+    const buildPath = await registerExtension(FullPath, smallPath, newDeps, sessionInfo.debug);
+    Object.assign(sessionInfo.dependencies, newDeps);
 
     const mode = await ImportWithoutCache(buildPath);
 
@@ -38,7 +38,7 @@ async function ssrHTML(dataTag: tagDataObjectArray, FullPath: string, smallPath:
 }
 
 
-export default async function BuildCode(path: string, LastSmallPath: string, isDebug: boolean, type: StringTracker, dataTag: tagDataObjectArray, dependenceObject: StringNumberMap, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(path: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const { SmallPath, FullPath } = CreateFilePath(path, LastSmallPath, dataTag.remove('from'), getTypes.Static[2], 'svelte');
     const inWebPath = relative(getTypes.Static[2], SmallPath).replace(/\\/gi, '/');
 
@@ -50,7 +50,7 @@ export default async function BuildCode(path: string, LastSmallPath: string, isD
             return value ? `,${name}:${value.charAt(0) == '{' ? value : `{${value}}`}` : '';
         }, selector = dataTag.remove('selector');
 
-    const ssr = !selector && dataTag.have('ssr') ? await ssrHTML(dataTag, FullPath, SmallPath, dependenceObject, sessionInfo, isDebug) : '';
+    const ssr = !selector && dataTag.have('ssr') ? await ssrHTML(dataTag, FullPath, SmallPath, sessionInfo) : '';
 
 
     sessionInfo.addScriptStyle('module', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath : type.extractInfo()).addText(

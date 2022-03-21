@@ -203,7 +203,7 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
             }
         }
 
-        function echo(arr: string[], params: any[]) {
+        function echo(arr: string[], ...params: any[]) {
             for (const i in params) {
                 out_run_script.text += arr[i];
                 writeSafe(params[i]);

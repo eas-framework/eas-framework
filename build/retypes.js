@@ -16,7 +16,7 @@ types = types.replace(/(declare module ")(.*)(")/gi, (_, g1, path, g2) => {
     return g1 + name + '/' + path + g2;
 })
 
-types = types.replace(/( from ")(.*?)(")/gi, (all, g1, path, g2) => {
+types = types.replace(/(")(.*?)(")/gi, (all, g1, path, g2) => {
     if(!cache.includes(path)) return all;
     
     return g1 + name + '/' + path + g2;

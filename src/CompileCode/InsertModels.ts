@@ -7,7 +7,6 @@ import AddPlugin from '../Plugins/Index';
 import { CreateFilePath, ParseDebugLine, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug';
 import * as extricate from './XMLHelpers/Extricate';
 import StringTracker from '../EasyDebug/StringTracker';
-import { StringNumberMap } from './XMLHelpers/CompileTypes';
 import BuildScript from './transform/Script';
 import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings';
 import ParseBasePage from './CompileScript/PageBase';
@@ -36,10 +35,10 @@ Components.isTs = isTs;
 
 BuildScriptSettings.plugins = Settings.plugins;
 
-async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath: string, pageName: string, LastSmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, sessionInfo: SessionBuild): Promise<StringTracker> {
+async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath: string, pageName: string, LastSmallPath: string, sessionInfo: SessionBuild): Promise<StringTracker> {
 
-    const baseData = new ParseBasePage(data, isDebug, isTs());
-    await baseData.loadSettings(sessionInfo, pagePath, LastSmallPath, dependenceObject, pageName);
+    const baseData = new ParseBasePage(data, isTs());
+    await baseData.loadSettings(sessionInfo, pagePath, LastSmallPath, pageName);
 
     const modelName = baseData.popAny('model')?.eq;
 
@@ -56,7 +55,7 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
         return new StringTracker(data.DefaultInfoText, PageTemplate.printError(ErrorMessage));
     }
 
-    dependenceObject[SmallPath] = await EasyFs.stat(FullPath, 'mtimeMs'); // check page changed date, for dependenceObject
+    await sessionInfo.dependence(SmallPath, FullPath); // check page changed date, for dependenceObject
 
     const baseModelData = await AddDebugInfo(pageName, FullPath, SmallPath); // read model
     let modelData = ParseBasePage.rebuildBaseInheritance(baseModelData.allData);
@@ -104,30 +103,28 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
 
     modelBuild.Plus(modelData);
 
-    return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), FullPath, pageName, SmallPath, isDebug, dependenceObject, sessionInfo);
+    return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), FullPath, pageName, SmallPath, sessionInfo);
 }
 
-export async function Insert(data: string, fullPathCompile: string, pagePath: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, nestedPage?: boolean, nestedPageData?: string, sessionInfo?: SessionBuild) {
-    const BuildScriptWithPrams = (code: StringTracker, RemoveToModule = true): Promise<string> => BuildScript(code, isTs(), isDebug, RemoveToModule);
+export async function Insert(data: string, fullPathCompile: string, nestedPage?: boolean, nestedPageData?: string, sessionInfo?: SessionBuild) {
+    const BuildScriptWithPrams = (code: StringTracker, RemoveToModule = true): Promise<string> => BuildScript(code, isTs(), sessionInfo.debug, RemoveToModule);
 
-    let DebugString = new StringTracker(smallPath, data);
+    let DebugString = new StringTracker(sessionInfo.smallPath, data);
+    DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), sessionInfo.fullPath, sessionInfo.smallPath, sessionInfo.smallPath, sessionInfo);
 
-    DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), pagePath, smallPath, smallPath, isDebug, dependenceObject, sessionInfo);
+    DebugString = await PluginBuild.BuildPage(DebugString, sessionInfo.fullPath, sessionInfo.smallPath, sessionInfo);
+    DebugString = await Components.Insert(DebugString, sessionInfo.smallPath, BuildScriptWithPrams, sessionInfo); // add components
 
-    DebugString = await PluginBuild.BuildPage(DebugString, pagePath, smallPath, sessionInfo);
-
-    DebugString = await Components.Insert(DebugString, pagePath, smallPath, smallPath, isDebug, dependenceObject, BuildScriptWithPrams, sessionInfo); // add components
-
-    DebugString = await ParseDebugLine(DebugString, smallPath);
+    DebugString = await ParseDebugLine(DebugString, sessionInfo.smallPath);
 
     if (nestedPage) { // return StringTracker, because this import was from page
-        return PageTemplate.InPageTemplate(DebugString, nestedPageData, pagePath);
+        return PageTemplate.InPageTemplate(DebugString, nestedPageData, sessionInfo.fullPath);
     }
 
-    DebugString = await PageTemplate.BuildPage(DebugString, pagePath, isDebug, fullPathCompile, sessionInfo);
+    DebugString = await PageTemplate.BuildPage(DebugString, fullPathCompile, sessionInfo);
 
     let DebugStringAsBuild = await BuildScriptWithPrams(DebugString);
-    DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, isDebug);
+    DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, sessionInfo.debug);
 
     return DebugStringAsBuild;
 }

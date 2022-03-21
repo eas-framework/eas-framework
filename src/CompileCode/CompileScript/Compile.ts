@@ -12,7 +12,7 @@ import { StringAnyMap } from "../XMLHelpers/CompileTypes";
 
 export default class CRunTime {
     define = {}
-    constructor(public script: StringTracker, public sessionInfo: SessionBuild, public smallPath: string, public debug: boolean, public isTs: boolean){
+    constructor(public script: StringTracker, public sessionInfo: SessionBuild, public smallPath: string, public isTs: boolean){
 
     }
 
@@ -91,11 +91,11 @@ export default class CRunTime {
         await EasyFs.makePathReal(filePath, typeArray[1]);
 
         const template = this.templateScript(parser.values.filter(x => x.type != 'text').map(x => x.text));
-        const sourceMap = new SourceMapStore(compilePath, this.debug, false, false)
+        const sourceMap = new SourceMapStore(compilePath, this.sessionInfo.debug, false, false)
         sourceMap.addStringTracker(template);
         const {funcs, string} = this.methods(attributes)
 
-        const toImport = await compileImport(string,compilePath, filePath, typeArray, this.isTs, this.debug, template.eq, sourceMap.mapAsURLComment());
+        const toImport = await compileImport(string,compilePath, filePath, typeArray, this.isTs, this.sessionInfo.debug, template.eq, sourceMap.mapAsURLComment());
 
         const execute = async () => this.rebuildCode(parser, await toImport(...funcs));
         this.sessionInfo.cacheCompileScript[this.smallPath] = execute; // save this to cache

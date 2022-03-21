@@ -1,0 +1,9 @@
+{
+    "foo": {
+        "titles": [{
+            "id": "cool",
+            "text": "cool"
+        }],
+        "text": "cool\n    More text"
+    }
+}

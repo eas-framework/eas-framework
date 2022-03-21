@@ -11,9 +11,11 @@ export default class StoreJSON {
         this.savePath = `${SystemData}/${filePath}.json`;
         autoLoad && this.loadFile();
 
-        this.save = this.save.bind(this);
-        process.on('SIGINT', this.save)
-        process.on('exit', this.save);
+        process.on('SIGINT', () => {
+            this.save();
+            setTimeout(() => process.exit);
+        });
+        process.on('exit', this.save.bind(this));
     }
 
     async loadFile() {

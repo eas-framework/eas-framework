@@ -11,42 +11,51 @@ import head, { addFinalizeBuild as addFinalizeBuildHead } from './Components/hea
 import connect, { addFinalizeBuild as addFinalizeBuildConnect, handelConnector as handelConnectorConnect } from './Components/connect';
 import form, { addFinalizeBuild as addFinalizeBuildForm, handelConnector as handelConnectorForm } from './Components/form';
 import { SessionBuild } from '../CompileCode/Session';
+import InsertComponent from '../CompileCode/InsertComponent';
+import record, { updateRecords, perCompile as perCompileRecord, postCompile as postCompileRecord } from './Components/record';
+import search from './Components/search';
 
-export const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown"];
+export const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown", "record", "search"];
 
-export function StartCompiling(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export function StartCompiling(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     let reData: Promise<BuildInComponent>;
 
     switch (type.eq.toLowerCase()) {
         case "client":
-            reData = client(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            reData = client(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            break;
+        case "record":
+            reData = record(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            break;
+        case "search":
+            reData = search(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "script":
-            reData = script(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            reData = script(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, BuildScriptWithoutModule, sessionInfo);
             break;
         case "style":
-            reData = style(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo);
+            reData = style(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "page":
-            reData = page(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, sessionInfo);
+            reData = page(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "connect":
-            reData = connect(LastSmallPath, type, dataTag, BetweenTagData, isDebug, InsertComponent, sessionInfo);
+            reData = connect(LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "form":
-            reData = form(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            reData = form(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, BuildScriptWithoutModule, sessionInfo);
             break;
         case "isolate":
             reData = isolate(BetweenTagData);
             break;
         case "head":
-            reData = head(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, dependenceObject, isDebug, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            reData = head(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, BuildScriptWithoutModule, sessionInfo);
             break;
         case "svelte":
-            reData = svelte(path, LastSmallPath, isDebug, type, dataTag, dependenceObject, sessionInfo);
+            reData = svelte(path, LastSmallPath, type, dataTag, sessionInfo);
             break;
         case "markdown":
-            reData = markdown(type, dataTag, BetweenTagData, InsertComponent, sessionInfo, dependenceObject);
+            reData = markdown(type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         default:
             console.error("Component is not build yet");
@@ -60,6 +69,8 @@ export function IsInclude(tagname: string) {
 }
 
 export async function finalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild, fullCompilePath: string) {
+    updateRecords(sessionInfo);
+
     pageData = addFinalizeBuildConnect(pageData, sessionInfo);
     pageData = addFinalizeBuildForm(pageData, sessionInfo);
     pageData = pageData.replace(/@ConnectHere(;?)/gi, '').replace(/@ConnectHereForm(;?)/gi, '');
@@ -73,4 +84,12 @@ export function handelConnectorService(type: string, thisPage: any, connectorArr
         return handelConnectorConnect(thisPage, connectorArray);
     else
         return handelConnectorForm(thisPage, connectorArray);
+}
+
+export async function perCompile() {
+    perCompileRecord()
+}
+
+export async function postCompile() {
+    postCompileRecord()
 }

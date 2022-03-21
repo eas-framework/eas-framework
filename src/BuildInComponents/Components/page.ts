@@ -6,6 +6,8 @@ import { PrintIfNew } from '../../OutputInput/PrintNew';
 import path_node from 'path';
 import { SessionBuild } from '../../CompileCode/Session';
 import { CheckDependencyChange } from '../../OutputInput/StoreDeps';
+import { FastCompileInFile } from '../../RunTimeBuild/SearchPages';
+import InsertComponent from '../../CompileCode/InsertComponent';
 
 function InFolderPagePath(inputPath: string, fullPath:string){
     if (inputPath[0] == '.') {
@@ -32,8 +34,8 @@ function InFolderPagePath(inputPath: string, fullPath:string){
     return inputPath;
 }
 
-const cacheMap: { [key: string]: {CompiledData: StringTracker, dependence: StringNumberMap, newSession: SessionBuild}} = {};
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+const cacheMap: { [key: string]: {CompiledData: StringTracker, newSession: SessionBuild}} = {};
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const filepath = dataTag.getValue("from");
 
     const SmallPathWithoutFolder = InFolderPagePath(filepath, path);
@@ -54,20 +56,19 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
     let ReturnData: StringTracker;
 
     const haveCache = cacheMap[SmallPathWithoutFolder];
-    if (!haveCache || await CheckDependencyChange(null, haveCache.dependence)) {
-        const { CompiledData, dependenceObject: dependence , sessionInfo: newSession} = await InsertComponent.CompileInFile(SmallPathWithoutFolder, getTypes.Static, null, pathName, dataTag.remove('object'));
-        dependence[SmallPath] = dependence.thisPage;
-        delete dependence.thisPage;
+    if (!haveCache || await CheckDependencyChange(null, haveCache.newSession.dependencies)) {
+        const { CompiledData, sessionInfo: newSession} = await FastCompileInFile(SmallPathWithoutFolder, getTypes.Static, null, pathName, dataTag.remove('object'));
+        newSession.dependencies[SmallPath] = newSession.dependencies.thisPage;
+        delete newSession.dependencies.thisPage;
 
         sessionInfo.extends(newSession)
 
-        cacheMap[SmallPathWithoutFolder] = {CompiledData, dependence, newSession};
-        Object.assign(dependenceObject, dependence);
-        ReturnData = CompiledData;
+        cacheMap[SmallPathWithoutFolder] = {CompiledData:<StringTracker>CompiledData, newSession};
+        ReturnData =<StringTracker>CompiledData;
     } else {
-        const { CompiledData, dependence, newSession } = cacheMap[SmallPathWithoutFolder];
+        const { CompiledData, newSession } = cacheMap[SmallPathWithoutFolder];
    
-        Object.assign(dependenceObject, dependence);
+        Object.assign(sessionInfo.dependencies, newSession.dependencies);
         sessionInfo.extends(newSession)
 
         ReturnData = CompiledData;

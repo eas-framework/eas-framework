@@ -5,10 +5,11 @@ import EasyFs from '../../OutputInput/EasyFs';
 import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem';
 import Base64Id from '../../StringMethods/Id';
 import { SessionBuild , setDataHTMLTag} from '../../CompileCode/Session';
+import InsertComponent from '../../CompileCode/InsertComponent';
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker,  InsertComponent: InsertComponent, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     return {
-        compiledString: new StringTracker(type.DefaultInfoText).Plus$`<head${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)
+        compiledString: new StringTracker(type.DefaultInfoText).Plus$`<head${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, buildScript, sessionInfo)
             }@DefaultInsertBundle</head>`,
         checkComponents: false
     }

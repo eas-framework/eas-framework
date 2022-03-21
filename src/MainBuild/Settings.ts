@@ -95,6 +95,7 @@ export const Export: ExportSettings = {
         importOnLoad: [],
         set pageInRam(value) {
             if(fileByUrl.Settings.PageRam != value){
+                fileByUrl.Settings.PageRam = value;
                 pageInRamActivate = async () => (await compilationScan)?.()
                 return
             }

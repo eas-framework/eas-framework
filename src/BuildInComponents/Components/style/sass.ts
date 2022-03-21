@@ -6,6 +6,8 @@ import { PrintIfNew } from "../../../OutputInput/PrintNew";
 import { StringNumberMap } from "../../../CompileCode/XMLHelpers/CompileTypes";
 import EasyFs from "../../../OutputInput/EasyFs";
 import { RawSourceMap } from "source-map-js";
+import { SessionBuild } from "../../../CompileCode/Session";
+import InsertComponent from "../../../CompileCode/InsertComponent";
 
 
 export function createImporter(originalPath: string) {
@@ -45,7 +47,7 @@ export function sassAndSource(sourceMap: RawSourceMap, source: string){
     }
 }
 
-export async function compileSass(language: string, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, InsertComponent: any, isDebug: boolean, outStyle = BetweenTagData.eq) {
+export async function compileSass(language: string, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild, outStyle = BetweenTagData.eq) {
     const thisPage = BasicSettings.fullWebSitePath + BetweenTagData.extractInfo(),
         thisPageURL = pathToFileURL(thisPage),
         compressed = minifyPluginSass(language, InsertComponent.SomePlugins);
@@ -53,7 +55,7 @@ export async function compileSass(language: string, BetweenTagData: StringTracke
     let result: sass.CompileResult;
     try {
         result = await sass.compileStringAsync(outStyle, {
-            sourceMap: isDebug,
+            sourceMap: sessionInfo.debug,
             syntax: sassSyntax(<any>language),
             style: compressed ? 'compressed' : 'expanded',
             importer: createImporter(thisPage),
@@ -71,7 +73,7 @@ export async function compileSass(language: string, BetweenTagData: StringTracke
     if (result?.loadedUrls) {
         for (const file of result.loadedUrls) {
             const FullPath = fileURLToPath(<any>file);
-            dependenceObject[BasicSettings.relative(FullPath)] = await EasyFs.stat(FullPath, 'mtimeMs');
+            await sessionInfo.dependence(BasicSettings.relative(FullPath), FullPath)
         }
     }
 

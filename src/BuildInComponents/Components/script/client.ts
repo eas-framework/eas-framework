@@ -5,8 +5,9 @@ import { minify } from "terser";
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import { SessionBuild } from '../../../CompileCode/Session';
 import { parseTagDataStringBoolean } from '../serv-connect/index';
+import InsertComponent from '../../../CompileCode/InsertComponent';
 
-export default async function BuildCode(language: string, tagData: tagDataObjectArray, LastSmallPath: string, BetweenTagData: StringTracker, pathName: string, InsertComponent: any, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, tagData: tagDataObjectArray, LastSmallPath: string, BetweenTagData: StringTracker, pathName: string, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const BetweenTagDataEq = BetweenTagData.eq, BetweenTagDataEqAsTrim = BetweenTagDataEq.trim(), isModel = tagData.getValue('type') == 'module', isModelStringCache = isModel ? 'scriptModule': 'script';
 
     if (sessionInfo.cache[isModelStringCache].includes(BetweenTagDataEqAsTrim))

@@ -274,7 +274,7 @@ export default class InsertComponent extends InsertComponentBase {
         return this.addDefaultValues(foundSetters, fileData);
     }
 
-    async buildTagBasic(fileData: StringTracker, tagData: tagDataObjectArray, path: string, pathName: string, FullPath: string, SmallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild, BetweenTagData?: StringTracker) {
+    async buildTagBasic(fileData: StringTracker, tagData: tagDataObjectArray, path: string, pathName: string, FullPath: string, SmallPath: string, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild, BetweenTagData?: StringTracker) {
         fileData = await this.PluginBuild.BuildComponent(fileData, path, pathName, sessionInfo);
 
         fileData = this.parseComponentProps(tagData, fileData);
@@ -283,20 +283,20 @@ export default class InsertComponent extends InsertComponentBase {
 
         pathName = pathName + ' -> ' + SmallPath;
 
-        fileData = await this.StartReplace(fileData, pathName, FullPath, SmallPath, isDebug, dependenceObject, buildScript, sessionInfo);
+        fileData = await this.StartReplace(fileData, pathName, FullPath, SmallPath, buildScript, sessionInfo);
 
-        fileData = await NoTrackStringCode(fileData, `${pathName} ->\n${SmallPath}`, isDebug, buildScript);
+        fileData = await NoTrackStringCode(fileData, `${pathName} ->\n${SmallPath}`, sessionInfo.debug, buildScript);
 
         return fileData;
     }
 
-    async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, dependenceObject, isDebug, buildScript, sessionInfo }: { sessionInfo: SessionBuild, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule, dependenceObject: StringNumberMap, isDebug: boolean }) {
+    async insertTagData(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, buildScript, sessionInfo }: { sessionInfo: SessionBuild, BetweenTagData?: StringTracker, buildScript: BuildScriptWithoutModule}) {
         const { data, mapAttributes } = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
 
         let fileData: StringTracker, SearchInComment = true, AllPathTypes: PathTypes = {}, addStringInfo: string;
 
         if (BuildIn) {//check if it build in component
-            const { compiledString, checkComponents } = await StartCompiling(path, pathName, LastSmallPath, type, data, BetweenTagData ?? new StringTracker(), dependenceObject, isDebug, this, buildScript, sessionInfo);
+            const { compiledString, checkComponents } = await StartCompiling(path, pathName, LastSmallPath, type, data, BetweenTagData ?? new StringTracker(), this, buildScript, sessionInfo);
             fileData = compiledString;
             SearchInComment = checkComponents;
         } else {
@@ -321,26 +321,26 @@ export default class InsertComponent extends InsertComponentBase {
                     });
                 }
 
-                return this.ReBuildTag(type, dataTag, data, BetweenTagData, BetweenTagData => this.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo));
+                return this.ReBuildTag(type, dataTag, data, BetweenTagData, BetweenTagData => this.StartReplace(BetweenTagData, pathName, path, LastSmallPath, buildScript, sessionInfo));
             }
 
             if (!sessionInfo.cacheComponent[AllPathTypes.SmallPath]?.mtimeMs)
                 sessionInfo.cacheComponent[AllPathTypes.SmallPath] = { mtimeMs: await EasyFs.stat(AllPathTypes.FullPath, 'mtimeMs') }; // add to dependenceObject
 
-            dependenceObject[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
+            sessionInfo.dependencies[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
 
             const { allData, stringInfo } = await AddDebugInfo(pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            const baseData = new ParseBasePage(allData, isDebug, this.isTs());
-            await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, dependenceObject, pathName + ' -> ' + AllPathTypes.SmallPath, mapAttributes);
+            const baseData = new ParseBasePage(allData, this.isTs());
+            await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, pathName + ' -> ' + AllPathTypes.SmallPath, mapAttributes);
 
             fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = stringInfo;
         }
 
-        if (SearchInComment && BetweenTagData) {
+        if (SearchInComment && (fileData.length > 0 || BetweenTagData)) {
             const { SmallPath, FullPath } = AllPathTypes;
 
-            fileData = await this.buildTagBasic(fileData, data, path, pathName, BuildIn ? type.eq : FullPath, BuildIn ? type.eq : SmallPath, isDebug, dependenceObject, buildScript, sessionInfo, BetweenTagData);
+            fileData = await this.buildTagBasic(fileData, data, path, pathName, BuildIn ? type.eq : FullPath, BuildIn ? type.eq : SmallPath, buildScript, sessionInfo, BetweenTagData);
 
             if (addStringInfo)
                 fileData.AddTextBeforeNoTrack(addStringInfo);
@@ -375,7 +375,7 @@ export default class InsertComponent extends InsertComponentBase {
         return startData;
     }
 
-    async StartReplace(data: StringTracker, pathName: string, path: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<StringTracker> {
+    async StartReplace(data: StringTracker, pathName: string, path: string, smallPath: string, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<StringTracker> {
         let find: number;
 
         const promiseBuild: (StringTracker | Promise<StringTracker>)[] = [];
@@ -417,7 +417,7 @@ export default class InsertComponent extends InsertComponentBase {
             if (startFrom.at(findEndOfSmallTag - 1).eq == '/') {//small tag
                 promiseBuild.push(
                     this.CheckMinHTML(cutStartData),
-                    this.insertTagData(path, pathName, smallPath, tagType, inTag, { dependenceObject, buildScript, isDebug, sessionInfo })
+                    this.insertTagData(path, pathName, smallPath, tagType, inTag, {  buildScript, sessionInfo })
                 );
 
                 data = NextTextTag;
@@ -448,7 +448,7 @@ export default class InsertComponent extends InsertComponentBase {
 
             promiseBuild.push(
                 this.CheckMinHTML(cutStartData),
-                this.insertTagData(path, pathName, smallPath, tagType, inTag, { BetweenTagData, dependenceObject, buildScript, isDebug, sessionInfo })
+                this.insertTagData(path, pathName, smallPath, tagType, inTag, { BetweenTagData, buildScript, sessionInfo })
             );
 
             data = NextDataAfterClose;
@@ -471,12 +471,12 @@ export default class InsertComponent extends InsertComponentBase {
         return code;
     }
 
-    async Insert(data: StringTracker, path: string, pathName: string, smallPath: string, isDebug: boolean, dependenceObject: StringNumberMap, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild) {
+    async Insert(data: StringTracker, pathName: string, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild) {
 
         //removing html comment tags
         data = data.replace(/<!--[\w\W]+?-->/, '');
 
-        data = await this.StartReplace(data, pathName, path, smallPath, isDebug, dependenceObject, buildScript, sessionInfo);
+        data = await this.StartReplace(data, pathName, sessionInfo.fullPath, sessionInfo.smallPath, buildScript, sessionInfo);
 
         //if there is a reader, replacing him with 'codebase'
         data = data.replace(/<\:reader+( )*\/>/gi, '<%typeof page.codebase == "function" ? page.codebase(): write(page.codebase)%>') // replace for importing pages / components

@@ -104,4 +104,3 @@ export function build_stream(text) {
         wasm.__wbindgen_free(r0, r1);
     }
 }
-

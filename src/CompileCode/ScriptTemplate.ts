@@ -47,18 +47,18 @@ export class PageTemplate extends JSParser {
         return storeMap.mapAsURLComment();
     }
 
-    private static async AddPageTemplate(text: StringTracker, isDebug: boolean, fullPath: string, fullPathCompile: string, sessionInfo: SessionBuild) {
+    private static async AddPageTemplate(text: StringTracker, fullPathCompile: string, sessionInfo: SessionBuild) {
 
         text = await finalizeBuild(text, sessionInfo, fullPathCompile);
 
-        if (isDebug) {
+        if (sessionInfo.debug) {
             text.AddTextBeforeNoTrack(`try {\n`);
         }
 
         text.AddTextBeforeNoTrack(`
         module.exports = (_require, _include, _transfer, private_var, handelConnector) => {
             return (async function (page) {
-                const __filename = "${JSParser.fixTextSimpleQuotes(fullPath)}", __dirname = "${JSParser.fixTextSimpleQuotes(path.dirname(fullPath))}";
+                const __filename = "${JSParser.fixTextSimpleQuotes(sessionInfo.fullPath)}", __dirname = "${JSParser.fixTextSimpleQuotes(path.dirname(sessionInfo.fullPath))}";
                 const require = (p) => _require(__filename, __dirname, page, p);
                 const include = (p, withObject) => _include(__filename, __dirname, page, p, withObject);
         
@@ -73,7 +73,7 @@ export class PageTemplate extends JSParser {
 
 
 
-        if (isDebug) {
+        if (sessionInfo.debug) {
             text.AddTextAfterNoTrack(`\n}
                 catch(e){
                     run_script_name += ' -> <line>' + e.stack.split(/\\n( )*at /)[2];
@@ -88,17 +88,17 @@ export class PageTemplate extends JSParser {
 
         text.AddTextAfterNoTrack(`}});}`);
 
-        if (isDebug) {
+        if (sessionInfo.debug) {
             text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile));
         }
 
         return text;
     }
 
-    static async BuildPage(text: StringTracker, path: string, isDebug: boolean, fullPathCompile: string, sessionInfo: SessionBuild) {
-        const builtCode = await PageTemplate.RunAndExport(text, path, isDebug);
+    static async BuildPage(text: StringTracker, fullPathCompile: string, sessionInfo: SessionBuild) {
+        const builtCode = await PageTemplate.RunAndExport(text, sessionInfo.fullPath, sessionInfo.debug);
 
-        return PageTemplate.AddPageTemplate(builtCode, isDebug, path, fullPathCompile, sessionInfo);
+        return PageTemplate.AddPageTemplate(builtCode, fullPathCompile, sessionInfo);
     }
 
     static AddAfterBuild(text: string, isDebug: boolean) {

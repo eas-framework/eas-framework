@@ -1,10 +1,10 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import JSParser from '../../CompileCode/JSParser'
 import { minify } from "terser";
 import { PrintIfNew } from '../../OutputInput/PrintNew';
 import { SessionBuild } from '../../CompileCode/Session';
-import { parseTagDataStringBoolean } from './serv-connect/index';
+import InsertComponent from '../../CompileCode/InsertComponent';
 
 function replaceForClient(BetweenTagData: string, exportInfo: string) {
     BetweenTagData = BetweenTagData.replace(`"use strict";Object.defineProperty(exports, "__esModule", {value: true});`, exportInfo);
@@ -26,9 +26,9 @@ async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name
     }\n${name}.exports = {};`
 }
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
-    BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, (x: StringTracker) => x.eq, sessionInfo);
+    BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, (x: StringTracker) => x.eq, sessionInfo);
 
     sessionInfo.script(serveScript, {async: null});
 
@@ -39,7 +39,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         dataTag.getValue('selector'),
         BetweenTagData,
         pathName,
-        isDebug && !InsertComponent.SomePlugins("SafeDebug")
+        sessionInfo.debug && !InsertComponent.SomePlugins("SafeDebug")
     );
 
     const minScript = InsertComponent.SomePlugins("MinJS") || InsertComponent.SomePlugins("MinAll");
@@ -55,7 +55,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         }
     }
 
-    sessionInfo.addScriptStyle('script', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath: type.extractInfo()).addText(scriptInfo); // add script
+    sessionInfo.addScriptStylePage('script', dataTag, type).addText(scriptInfo); // add script
 
     return {
         compiledString: new StringTracker()

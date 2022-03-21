@@ -1,9 +1,2 @@
-/About
-/change
-/cond
-/empty
-/foo
 /index
-/load
-/try
-/nested/cop
+/server/import/index

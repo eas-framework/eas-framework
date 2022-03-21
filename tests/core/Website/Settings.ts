@@ -3,7 +3,7 @@ export default {
 
     general: {
         pageInRam: true,
-        importOnLoad: ["OnStart.serv.ts"]
+        // importOnLoad: ["OnStart.serv.ts"]
     },
 
     compile: {
@@ -24,18 +24,18 @@ export default {
             "/User/Files"
         ],
         errorPages: {
-            notFound: {
-                code: 404,
-                path: "errors/e404"
-            },
-            serverError: {
-                code: 500,
-                path: "errors/e500"
+            // notFound: {
+            //     code: 404,
+            //     path: "errors/e404"
+            // },
+            // serverError: {
+            //     code: 500,
+            //     path: "errors/e500"
 
-            }
+            // }
         },
         sitemap: {
-            file: 'SmaP.serv.ts'
+            // file: 'SmaP.serv.ts'
         },
         ignoreTypes: ["json"], // ignore file extension (auto ignore common server files)
         ignorePaths: ["/Private"],

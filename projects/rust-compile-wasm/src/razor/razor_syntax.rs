@@ -75,14 +75,14 @@ impl Razor {
         None
     }
 
-    fn skip_it(&mut self, text: &BetterString, index: usize, word_len: usize, add_index: usize) {
+    fn skip_it(&mut self, text: &BetterString, split_index: usize, add_index: usize, space: usize) {
         self.values.push(RazorBlock {
             name: TEXT.to_string(),
             start: add_index,
-            end: index + add_index + word_len
+            end: split_index + add_index
         });
 
-        self.builder(&text.substring_start(index + 2), add_index + index + 2);
+        self.builder(&text.substring_start(split_index +space), add_index + split_index +space);
     }
 
     fn syntax_end(&mut self, index: usize) {
@@ -309,7 +309,7 @@ impl Razor {
 
         if RAZOR_CHAR.eq(&text.at(index + 1)) {
             // escape character @@
-            self.skip_it(text, index, 1, add_index);
+            self.skip_it(&text, index+1, add_index, 1);
             return;
         }
 
@@ -348,7 +348,9 @@ impl Razor {
         });
 
         add_index +=  index + 1;
-        let next_text = text.substring_start(index + 1);
+
+        let next_text_with_sign = text.substring_start(index );
+        let next_text = next_text_with_sign.substring_start( 1);
         let first_word_index = Razor::find_first_word(&next_text);
 
         if first_word_index != None {
@@ -357,7 +359,7 @@ impl Razor {
             let first_word_string = first_word.to_string();
 
             if NOT_RAZOR_WORDS.contains(&first_word_string) {
-                self.skip_it(&next_text, index, first_word.len(), add_index);
+                self.skip_it(&next_text_with_sign, first_word.len()+1, add_index-1, 0);
                 return;
             }
 

@@ -4,14 +4,15 @@ import { v4 as uuid } from 'uuid';
 import { compileValues, makeValidationJSON, parseValues, parseTagDataStringBoolean } from './serv-connect/index';
 import { SplitFirst } from '../../StringMethods/Splitting';
 import { SessionBuild } from '../../CompileCode/Session';
+import InsertComponent from '../../CompileCode/InsertComponent';
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, buildScript: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
     const sendTo = dataTag.remove('sendTo').trim();
 
     if (!sendTo)  // special action not found
         return {
-            compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)
+            compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, buildScript, sessionInfo)
                 }</form>`,
             checkComponents: false
         }
@@ -21,7 +22,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
 
     let message = parseTagDataStringBoolean(dataTag, 'message'); // show error message
     if (message === null)
-        message = isDebug && !InsertComponent.SomePlugins("SafeDebug");
+        message = sessionInfo.debug && !InsertComponent.SomePlugins("SafeDebug");
 
     let order = [];
 
@@ -59,7 +60,7 @@ export default async function BuildCode(path: string, pathName: string, LastSmal
         `<%!
 @?ConnectHereForm(${sendTo});
 %><form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>
-    <input type="hidden" name="connectorFormCall" value="${name}"/>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, isDebug, dependenceObject, buildScript, sessionInfo)}</form>`;
+    <input type="hidden" name="connectorFormCall" value="${name}"/>${await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, buildScript, sessionInfo)}</form>`;
 
     return {
         compiledString,

@@ -19,7 +19,7 @@ async function copyFiles(code){
 
     const __dirname = path.resolve();
    
-    const toPath = __dirname + '/../../src/CompileCode/BaseReader/RustBind/';
+    const toPath = __dirname + '/../../src/static/wasm/component/';
     const fromPath = __dirname + '/pkg/';
 
     promises.copyFile(fromPath + 'rust_assembly_bg.wasm', toPath + 'build.wasm');
@@ -27,11 +27,11 @@ async function copyFiles(code){
 
     let content = await promises.readFile(fromPath + 'rust_assembly_bg.js', 'utf8');
 
-    content = "import {promises} from 'fs';\nimport path from 'path';\n" +content;
+    content = "import {promises} from 'fs';\nimport { fileURLToPath } from 'url';\n" +content;
    
     content = content.replace("import * as wasm from './rust_assembly_bg.wasm';", 
-`import {fileURLToPath} from 'url';
-const wasmModule = new WebAssembly.Module(await promises.readFile(path.dirname(fileURLToPath(import.meta.url))+'/build.wasm'));
+`const loadPath = typeof esbuild !== 'undefined' ? '/../static/wasm/component/': '/../';
+const wasmModule = new WebAssembly.Module(await promises.readFile(fileURLToPath(import.meta.url + loadPath + 'build.wasm')));
 const wasmInstance = new WebAssembly.Instance(wasmModule, {});
 const wasm = wasmInstance.exports;`);
 

@@ -18,15 +18,15 @@ export default class ParseBasePage {
     public scriptFile = new StringTracker();
 
     public valueArray: { key: string, value: StringTracker }[] = []
-    constructor(public code?: StringTracker, public debug?: boolean, public isTs?: boolean) {
+    constructor(public code?: StringTracker, public isTs?: boolean) {
     }
 
-    async loadSettings(sessionInfo: SessionBuild, pagePath: string, smallPath: string, dependenceObject: StringNumberMap, pageName: string, attributes?: StringAnyMap) {
-        const run = new CRunTime(this.code, sessionInfo, smallPath, this.debug, this.isTs);
+    async loadSettings(sessionInfo: SessionBuild, pagePath: string, smallPath: string, pageName: string, attributes?: StringAnyMap) {
+        const run = new CRunTime(this.code, sessionInfo, smallPath, this.isTs);
         this.code = await run.compile(attributes);
 
         this.parseBase(this.code);
-        await this.loadCodeFile(pagePath, smallPath, this.isTs, dependenceObject, pageName);
+        await this.loadCodeFile(pagePath, smallPath, this.isTs, sessionInfo, pageName);
         
         this.loadDefine({...settings.define, ...run.define});
     }
@@ -132,7 +132,7 @@ export default class ParseBasePage {
         if (have) have.value = value;
     }
 
-    private async loadCodeFile(pagePath: string, pageSmallPath: string, isTs: boolean, dependenceObject: StringNumberMap, pageName: string) {
+    private async loadCodeFile(pagePath: string, pageSmallPath: string, isTs: boolean, sessionInfo: SessionBuild, pageName: string) {
         let haveCode = this.popAny('codefile')?.eq;
         if (!haveCode) return;
 
@@ -154,11 +154,8 @@ export default class ParseBasePage {
             haveCode = path.join(path.dirname(pagePath), haveCode)
 
         const SmallPath = BasicSettings.relative(haveCode);
-
-        const fileState = await EasyFs.stat(haveCode, 'mtimeMs', true, null); // check page changed date, for dependenceObject
-        if (fileState != null) {
-            dependenceObject[SmallPath] = fileState;
-
+        
+        if (await sessionInfo.dependence(SmallPath,haveCode)) {
             const baseModelData = await AddDebugInfo(pageName, haveCode, SmallPath); // read model
             baseModelData.allData.AddTextBeforeNoTrack('<%');
             baseModelData.allData.AddTextAfterNoTrack('%>');

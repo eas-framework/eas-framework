@@ -10,8 +10,9 @@ import { SessionBuild } from '../../../CompileCode/Session';
 import { parseTagDataStringBoolean } from '../serv-connect/index';
 import SourceMapStore from '../../../EasyDebug/SourceMapStore';
 import { compileSass } from './sass';
+import InsertComponent from '../../../CompileCode/InsertComponent';
 
-export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const outStyleAsTrim = BetweenTagData.eq.trim();
     if (sessionInfo.cache.style.includes(outStyleAsTrim))
         return {
@@ -19,7 +20,7 @@ export default async function BuildCode(language: string, path: string, pathName
         };
     sessionInfo.cache.style.push(outStyleAsTrim);
 
-    const { result, outStyle } = await compileSass(language, BetweenTagData, dependenceObject, InsertComponent, isDebug);
+    const { result, outStyle } = await compileSass(language, BetweenTagData, InsertComponent, sessionInfo);
 
     const pushStyle = sessionInfo.addScriptStyle('style', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath : BetweenTagData.extractInfo());
 

@@ -13,25 +13,26 @@ import { ExportSettings } from '../MainBuild/SettingsTypes';
 import { argv } from 'process';
 import { createSiteMap } from './SiteMap';
 import { isFileType, RemoveEndType } from './FileTypes';
+import { perCompile, postCompile } from '../BuildInComponents';
 
 async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
-    const dependenceObject: any = {
-        thisPage: await EasyFs.stat(FullFilePath, 'mtimeMs')
-    };
+
 
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
     const ExcluUrl = (nestedPage ? nestedPage + '<line>' : '') + arrayType[2] + '/' + filePath;
 
-    const sessionInfo = hasSessionInfo ?? new SessionBuild(arrayType[2] + '/' + filePath, arrayType[2], isDebug && !GetPlugin("SafeDebug"));
-    const CompiledData = await Insert(html, FullPathCompile, FullFilePath, ExcluUrl, isDebug, dependenceObject, Boolean(nestedPage), nestedPageData, sessionInfo);
+    const sessionInfo = hasSessionInfo ?? new SessionBuild(arrayType[2] + '/' + filePath, FullFilePath, arrayType[2], isDebug, GetPlugin("SafeDebug"));
+    await sessionInfo.dependence('thisPage', FullFilePath);
+
+    const CompiledData = await Insert(html, FullPathCompile, Boolean(nestedPage), nestedPageData, sessionInfo);
 
     if (!nestedPage) {
         await EasyFs.writeFile(FullPathCompile, <string>CompiledData);
-        pageDeps.update(RemoveEndType(ExcluUrl), dependenceObject);
+        pageDeps.update(RemoveEndType(ExcluUrl), sessionInfo.dependencies);
     }
 
-    return { CompiledData, dependenceObject, sessionInfo };
+    return { CompiledData, sessionInfo };
 }
 
 async function FilesInFolder(arrayType: string[], path: string, state: CompileState) {
@@ -74,12 +75,10 @@ async function CreateCompile(t: string, state: CompileState) {
 /**
  * when page call other page;
  */
-async function FastCompileInFile(path: string, arrayType: string[], sessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string) {
+export async function FastCompileInFile(path: string, arrayType: string[], sessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string) {
     await EasyFs.makePathReal(path, arrayType[1]);
     return await compileFile(path, arrayType, true, sessionInfo, nestedPage, nestedPageData);
 }
-
-Components.CompileInFile = <any>FastCompileInFile;
 
 export async function FastCompile(path: string, arrayType: string[]) {
     await FastCompileInFile(path, arrayType);
@@ -94,6 +93,8 @@ export async function compileAll(Export: ExportSettings) {
     
     state = new CompileState()
 
+    perCompile();
+
     const activateArray = [await CreateCompile(SearchFileSystem.getTypes.Static[2], state), await CreateCompile(SearchFileSystem.getTypes.Logs[2], state), ClearWarning];
 
     return async () => {
@@ -102,5 +103,6 @@ export async function compileAll(Export: ExportSettings) {
         }
         await createSiteMap(Export, state);
         state.export()
+        postCompile()
     }
 }

@@ -4,8 +4,9 @@ import { Options as TransformOptions, transform } from 'sucrase';
 import { minify } from "terser";
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import { EnableGlobalReplace } from '../../../CompileCode/JSParser';
+import InsertComponent from '../../../CompileCode/InsertComponent';
 
-export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, dependenceObject: StringNumberMap, isDebug: boolean, InsertComponent: any): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent): Promise<BuildInComponent> {
 
     let result = '', ResCode = BetweenTagData;
 

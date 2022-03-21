@@ -28,7 +28,7 @@ async function makeDependencies(dependencies: StringAnyMap, typeArray: string[],
     for (const [filePath, value] of Object.entries(dependencies)) {
         promiseAll.push((async () => {
             if (filePath == 'thisFile') {
-                if(!cache[basePath])
+                if (!cache[basePath])
                     cache[basePath] = await EasyFs.stat(typeArray[0] + basePath, 'mtimeMs', true);
                 dependenciesMap['thisFile'] = cache[basePath];
             } else {
@@ -135,8 +135,8 @@ export default async function RequireFile(filePath: string, __filename: string, 
 
             if (filePath[1] == '/')
                 filePath = filePath.substring(2);
-                
-            filePath = path.join(path.relative(__dirname, typeArray[0]), filePath);
+
+            filePath = path.join(path.relative(typeArray[0], __dirname), filePath);
         } else if (filePath[0] != '/')
             static_modules = true;
 
@@ -173,7 +173,7 @@ export default async function RequireFile(filePath: string, __filename: string, 
                 type: 'warn',
                 errorName: 'import-not-exists',
                 text: `Import '${filePath}' does not exists from '${__filename}'`
-              })
+            })
         }
     }
 
