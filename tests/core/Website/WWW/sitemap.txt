@@ -2,6 +2,7 @@
 /change
 /cond
 /empty
+/foo
 /index
 /load
 /try

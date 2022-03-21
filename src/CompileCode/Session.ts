@@ -93,8 +93,8 @@ export class SessionBuild {
 
     private addHeadTags() {
         const isLogs = this.typeName == getTypes.Logs[2]
-        const saveLocation = isLogs ? getTypes.Logs[1] : getTypes.Static[1], addQuery = isLogs ? '?t=l' : ''
         for (const i of this.inScriptStyle) {
+            const saveLocation = i.path == this.defaultPath && isLogs ? getTypes.Logs[1] : getTypes.Static[1], addQuery = isLogs ? '?t=l' : '';
             let url = StaticFilesInfo.have(i.path, () => SessionBuild.createName(i.path)) + '.pub';
 
             switch (i.type) {
