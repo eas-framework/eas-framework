@@ -9,10 +9,11 @@ import path from "path";
 import { isTs } from "../CompileCode/InsertModels";
 
 //@ts-ignore-next-line
-import ImportWithoutCache from '../redirectCJS';
+import ImportWithoutCache from './redirectCJS';
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
 import { pageDeps } from "../OutputInput/StoreDeps";
+import CustomImport, { customTypes } from "./CustomImport";
 
 async function ReplaceBefore(
   code: string,
@@ -46,8 +47,8 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
     transforms: ["imports"],
     sourceMapOptions: haveSourceMap ? {
       compiledFilename: sourceMapFile,
-    }: undefined,
-    filePath: haveSourceMap ? savePath && path.relative(path.dirname(savePath), filePath): undefined,
+    } : undefined,
+    filePath: haveSourceMap ? savePath && path.relative(path.dirname(savePath), filePath) : undefined,
 
   },
     define = {
@@ -86,7 +87,7 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
   if (isDebug) {
     if (haveSourceMap)
       Result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(sourceMap).toString("base64");
-  } else if(codeMinify){
+  } else if (codeMinify) {
     try {
       Result = (await minify(Result, { module: false })).code;
     } catch (err) {
@@ -132,12 +133,20 @@ export function AddExtension(FilePath: string) {
 
 const SavedModules = {};
 
+/**
+ * LoadImport is a function that takes a path to a file, and returns the module that is at that path
+ * @param {string} importFrom - The path to the file that created this import.
+ * @param {string} InStaticPath - The path to the file that you want to import.
+ * @param {StringAnyMap} [useDeps] - This is a map of dependencies that will be used by the page.
+ * @param {string[]} withoutCache - an array of paths that will not be cached.
+ * @returns The module that was imported.
+ */
 export default async function LoadImport(importFrom: string, InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache: string[] = []) {
   let TimeCheck: any;
 
   InStaticPath = path.join(AddExtension(InStaticPath).toLowerCase());
-  const SavedModulesPath = path.join(typeArray[2], InStaticPath),
-    filePath = typeArray[0] + InStaticPath;
+  const extension = path.extname(InStaticPath).substring(1), thisCustom = customTypes.includes(extension) || !['js', 'ts'].includes(extension);
+  const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = path.join(typeArray[0],InStaticPath);
 
   //wait if this module is on process, if not declare this as on process module
   let processEnd: (v?: any) => void;
@@ -148,6 +157,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
 
   //build paths
   const reBuild = !pageDeps.store[SavedModulesPath] || pageDeps.store[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true, null));
+
 
   if (reBuild) {
     TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs", true, null);
@@ -160,7 +170,8 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
       SavedModules[SavedModulesPath] = null
       return null;
     }
-    await BuildScriptSmallPath(InStaticPath, typeArray, isDebug);
+    if (!thisCustom) // only if not custom build
+      await BuildScriptSmallPath(InStaticPath, typeArray, isDebug);
     pageDeps.update(SavedModulesPath, TimeCheck);
   }
 
@@ -190,11 +201,14 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
     return LoadImport(filePath, p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
   }
 
-  const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
-
-  let MyModule = await ImportWithoutCache(requirePath);
-
-  MyModule = await MyModule(requireMap);
+  let MyModule: any;
+  if(thisCustom){
+    MyModule = await CustomImport(filePath, extension, requireMap);
+  } else {
+    const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
+    MyModule = await ImportWithoutCache(requirePath);
+    MyModule = await MyModule(requireMap);
+  }
 
   SavedModules[SavedModulesPath] = MyModule;
   processEnd?.();
@@ -256,18 +270,18 @@ export async function RequireCjsScript(content: string) {
  * @param {string} sourceMapComment - string
  * @returns A function that returns a promise.
  */
-export async function compileImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, fileCode: string,  sourceMapComment: string) {
+export async function compileImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, fileCode: string, sourceMapComment: string) {
   await EasyFs.makePathReal(inStaticLocationRelative, typeArray[1]);
 
   const fullSaveLocation = scriptLocation + ".cjs";
-  const templatePath = typeArray[0]+inStaticLocationRelative;
+  const templatePath = typeArray[0] + inStaticLocationRelative;
 
   const Result = await BuildScript(
     scriptLocation,
     undefined,
     isTypeScript,
     isDebug,
-    {params: globalPrams, haveSourceMap: false, fileCode, templatePath, codeMinify: false}
+    { params: globalPrams, haveSourceMap: false, fileCode, templatePath, codeMinify: false }
   );
 
   await EasyFs.makePathReal(path.dirname(fullSaveLocation));

@@ -1,6 +1,9 @@
 <@model>Website</@model>
 <@title>Home Page</@title>
 <@head/>
+@{
+    console.log(true)
+}
 <script>
 var i = 3;
 </script>

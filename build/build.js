@@ -10,7 +10,7 @@ const filesToCopy = ['static', 'SystemData'];
 console.log('Copying js files...');
 
 for(const i of filesToCopy){
-    fsExtra.copy(copyFrom + i, copyTo + i);
+    await fsExtra.copy(copyFrom + i, copyTo + i);
 }
 
 /* js to ts */

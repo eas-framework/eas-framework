@@ -77,7 +77,7 @@ export class ReBuildCodeString extends ReBuildCodeBasic {
     private CreateDataCode() {
         for (const i of this.ParseArray) {
             if (i.is_skip) {
-                this.DataCode.text += `<|${i.type_name ?? ''}|>`;
+                this.DataCode.text += `<|${this.DataCode.inputs.length}|${i.type_name ?? ''}|>`;
                 this.DataCode.inputs.push(i.text);
             } else {
                 this.DataCode.text += i.text;
@@ -91,31 +91,9 @@ export class ReBuildCodeString extends ReBuildCodeBasic {
      * @returns the builded code
      */
     BuildCode() {
-
-        let counter = -1;
-        let newString = "";
-        for (let value of this.DataCode.text.split(/<\|[\w]*\|>/)) {
-
-            let AddString = "", IsDefault = false;
-            switch (value.substring(value.length - 2)) {
-                case '+.':
-                    AddString = this.DataCode.inputs[counter];
-                    break;
-                case '-.':
-                    ++counter;
-                    break;
-                default:
-                    AddString = this.DataCode.inputs[++counter];
-                    IsDefault = true;
-                    break;
-            }
-
-            if (!IsDefault) {
-                value = value.substring(0, value.length - 2);
-            }
-
-            newString += value + (AddString ?? '');
-        }
+        const newString = this.DataCode.text.replace(/<\|([0-9]+)\|[\w]*\|>/gi, (_, g1) => {
+            return this.DataCode.inputs[g1];
+        });
 
         return super.ReplaceAll(newString, '<|-|>', '<||>');
     }

@@ -10,6 +10,10 @@ export default {
         compileSyntax: ["TypeScript"],
         ignoreError: [], //"close-tag" | "querys-not-found" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" | "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning"
         plugins: [], // "MinAll" | "MinHTML" | "MinCss" | "MinSass" | "MinJS" | "MinTS" | "MinJSX" | "MinTSX"...
+        define: { // global define
+            name: 'cool',
+            version: 20
+        }
     },
 
     routing: {

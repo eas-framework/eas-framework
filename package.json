@@ -1,8 +1,9 @@
 {
   "name": "@eas-framework/server",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Node.js framework, with a lot of built in features",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "postinstall": "node dist/scripts/install.js",
     "build": "node build",
@@ -68,6 +69,7 @@
     "@types/compression": "^1.7.2",
     "@types/express-session": "^1.17.4",
     "@types/formidable": "^2.0.0",
+    "@types/fs-extra": "^9.0.13",
     "@types/markdown-it": "^12.2.3",
     "@types/markdown-it-attrs": "^4.1.0",
     "@types/node": "^16.11.6",

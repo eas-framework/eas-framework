@@ -1,0 +1,4 @@
+@{
+    import thisPackage from '../../../../package.json'
+    thisPackage.homepage = 10
+}

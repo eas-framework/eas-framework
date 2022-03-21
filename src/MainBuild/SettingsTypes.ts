@@ -74,6 +74,7 @@ interface GlobalSettings {
         ignoreError?: ("close-tag" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" |
             "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning" | "markdown-parser")[],
         plugins?: pluginsOptions[]
+        define: {[key: string]: string | number | boolean | null}
     },
     routing?: {
         rules?: {[key: string]: ((url: string, req?: Request, res?: Response<any>) => string | Promise<string>)},

@@ -1,6 +1,6 @@
 import StringTracker, { StringTrackerDataInfo } from '../EasyDebug/StringTracker';
 import { BaseReader, EJSParser } from './BaseReader/Reader';
-import { ParseTextStream, ReBuildCodeString } from './ScriptReader/EasyScript';
+import { ParseTextStream, ReBuildCodeString } from './transform/EasyScript';
 
 interface JSParserValues {
     type: 'text' | 'script' | 'no-track',

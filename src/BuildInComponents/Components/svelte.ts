@@ -9,7 +9,7 @@ import path from 'path';
 import { registerExtension, capitalize } from '../../ImportFiles/ForStatic/Svelte';
 import { rebuildFile } from '../../ImportFiles/StaticFiles';
 //@ts-ignore-next-line
-import ImportWithoutCache, { resolve, clearModule } from '../../redirectCJS';
+import ImportWithoutCache, { resolve, clearModule } from '../../ImportFiles/redirectCJS';
 import { SessionBuild } from '../../CompileCode/Session';
 import { parseTagDataStringBoolean } from './serv-connect/index';
 
@@ -24,7 +24,7 @@ async function ssrHTML(dataTag: tagDataObjectArray, FullPath: string, smallPath:
     const buildPath = await registerExtension(FullPath, smallPath, newDeps, isDebug);
     Object.assign(dependenceObject, newDeps);
 
-    const mode = await ImportWithoutCache(buildPath, isDebug);
+    const mode = await ImportWithoutCache(buildPath);
 
     for (const i in newDeps) {
         if(['sass', 'scss', 'css'].includes(path.extname(i).substring(1)))

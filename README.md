@@ -10,6 +10,7 @@
 <div align="center">
 
 ![Logo](https://eas-framework.ml/EASFrameworke.png)
+
 [![website][site-badge]][site-url]
 [![npm][npm-img]][npm-url]
 [![pipeline status](https://gitlab.com/eas-framework/eas-framework/badges/master/pipeline.svg)](https://gitlab.com/eas-framework/eas-framework/-/commits/master)
@@ -20,7 +21,7 @@
 
 
 ## About
-EAS-Framework is a Node.js website framework similar, with a lot of built in features.
+EAS-Framework is a Node.js framework for SSR websites, with a lot of built in features.
 Is similar to ASPX, includes 🔥 hot-reloads, and ⚡ super fast builds
 
 

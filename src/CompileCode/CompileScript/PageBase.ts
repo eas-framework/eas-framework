@@ -10,6 +10,8 @@ import { PrintIfNew } from "../../OutputInput/PrintNew";
 import CRunTime from "./Compile";
 import { SessionBuild } from "../Session";
 
+export const settings = {define: {}};
+
 const stringAttributes = ['\'', '"', '`'];
 export default class ParseBasePage {
     public clearData: StringTracker
@@ -26,7 +28,7 @@ export default class ParseBasePage {
         this.parseBase(this.code);
         await this.loadCodeFile(pagePath, smallPath, this.isTs, dependenceObject, pageName);
         
-        this.loadDefine(run.define);
+        this.loadDefine({...settings.define, ...run.define});
     }
 
     private parseBase(code: StringTracker) {

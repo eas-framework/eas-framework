@@ -14,6 +14,7 @@ import { Settings as PrintIfNewSettings } from '../OutputInput/PrintNew';
 import MemorySession from 'memorystore';
 import { ExportSettings } from './SettingsTypes';
 import { debugSiteMap } from '../RunTimeBuild/SiteMap';
+import { settings as defineSettings } from '../CompileCode/CompileScript/PageBase';
 
 const
     CookiesSecret = uuidv4().substring(0, 32),
@@ -132,6 +133,12 @@ export const Export: ExportSettings = {
         },
         get plugins() {
             return InsertModelsSettings.plugins;
+        },
+        get define(){
+            return defineSettings.define
+        },
+        set define(value) {
+            defineSettings.define = value;
         }
     },
     routing: {
