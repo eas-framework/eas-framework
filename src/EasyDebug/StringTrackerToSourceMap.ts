@@ -2,8 +2,8 @@ import StringTracker from '../EasyDebug/StringTracker';
 import { SourceMapBasic } from '../EasyDebug/SourceMapStore';
 
 class createPageSourceMap extends SourceMapBasic {
-    constructor(filePath: string) {
-        super(filePath, false);
+    constructor(filePath: string, httpSource = false, relative = false) {
+        super(filePath, httpSource, relative);
         this.lineCount = 1;
     }
 
@@ -31,6 +31,13 @@ class createPageSourceMap extends SourceMapBasic {
         }
 
     }
+}
+
+export function outputMap(text: StringTracker, filePath: string, httpSource?: boolean, relative?: boolean){
+    const storeMap = new createPageSourceMap(filePath, httpSource, relative);
+    storeMap.addMappingFromTrack(text);
+
+    return storeMap.getRowSourceMap();
 }
 
 export function outputWithMap(text: StringTracker, filePath: string){

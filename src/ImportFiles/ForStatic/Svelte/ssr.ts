@@ -19,7 +19,11 @@ export default async function registerExtension(filePath: string, smallPath: str
         dev: sessionInfo.debug,
     };
 
-    const {svelteFiles, code, map, dependencies} = await preprocess(filePath, smallPath,'.ssr.cjs');
+    const inStaticFile = path.relative(getTypes.Static[2], smallPath);
+    const fullCompilePath = getTypes.Static[1] + inStaticFile;
+
+    const fullImportPath = fullCompilePath + '.ssr.cjs';
+    const {svelteFiles, code, map, dependencies} = await preprocess(filePath, smallPath,fullImportPath,false,'.ssr.cjs');
     Object.assign(sessionInfo.dependencies,dependencies);
     options.sourcemap = map;
 
@@ -42,10 +46,6 @@ export default async function registerExtension(filePath: string, smallPath: str
         });
     }
 
-    const inStaticFile = path.relative(getTypes.Static[2], smallPath);
-    const fullCompilePath = getTypes.Static[1] + inStaticFile;
-
-    const fullImportPath = fullCompilePath + '.ssr.cjs';
     await EasyFs.writeFile(fullImportPath, js.code);
 
     if (css.code) {

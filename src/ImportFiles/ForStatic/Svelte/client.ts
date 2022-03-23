@@ -11,8 +11,9 @@ export default async function BuildScript(inStaticPath: string, isDebug: boolean
 
     const { code, dependencies, map } = await preprocess(fullPath, getTypes.Static[2] + '/' + inStaticPath);
 
+    const filename = fullPath.split(/\/|\//).pop();
     const { js, css } = svelte.compile(code, {
-        filename: fullPath,
+        filename,
         dev: isDebug,
         sourcemap: map,
         css: false,
@@ -34,7 +35,7 @@ export default async function BuildScript(inStaticPath: string, isDebug: boolean
     }
 
     if (isDebug) {
-        js.map.sources[0] = fullPath.split(/\/|\//).pop() + '?source=true';
+        js.map.sources[0].substring(1);
         js.code += '\n//# sourceMappingURL=' + js.map.toUrl();
 
         if (css.code) {

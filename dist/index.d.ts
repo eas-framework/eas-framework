@@ -238,11 +238,13 @@ declare module "@eas-framework/server/RunTimeBuild/SearchFileSystem" {
 declare module "@eas-framework/server/StringMethods/Splitting" {
     interface globalString<T> {
         indexOf(string: string): number;
+        lastIndexOf(string: string): number;
         startsWith(string: string): boolean;
         substring(start: number, end?: number): T;
     }
     export function SplitFirst<T extends globalString<T>>(type: string, string: T): T[];
     export function CutTheLast(type: string, string: string): string;
+    export function Extension<T extends globalString<T>>(string: T): T;
     export function trimType(type: string, string: string): string;
     export function substringStart<T extends globalString<T>>(start: string, string: T): T;
 }
@@ -252,12 +254,14 @@ declare module "@eas-framework/server/EasyDebug/SourceMapStore" {
     export abstract class SourceMapBasic {
         protected filePath: string;
         protected httpSource: boolean;
+        protected relative: boolean;
         protected isCss: boolean;
         protected map: SourceMapGenerator;
         protected fileDirName: string;
         protected lineCount: number;
-        constructor(filePath: string, httpSource?: boolean, isCss?: boolean);
+        constructor(filePath: string, httpSource?: boolean, relative?: boolean, isCss?: boolean);
         protected getSource(source: string): string;
+        getRowSourceMap(): RawSourceMap;
         mapAsURLComment(): string;
     }
     export default class SourceMapStore extends SourceMapBasic {
@@ -283,6 +287,7 @@ declare module "@eas-framework/server/EasyDebug/SourceMapStore" {
 }
 declare module "@eas-framework/server/EasyDebug/StringTrackerToSourceMap" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
+    export function outputMap(text: StringTracker, filePath: string, httpSource?: boolean, relative?: boolean): import("source-map-js").RawSourceMap;
     export function outputWithMap(text: StringTracker, filePath: string): string;
 }
 declare module "@eas-framework/server/EasyDebug/StringTracker" {
@@ -466,9 +471,11 @@ declare module "@eas-framework/server/EasyDebug/StringTracker" {
         private RegexInString;
         split(separator: string | RegExp, limit?: number): StringTracker[];
         repeat(count: number): StringTracker;
+        static join(arr: StringTracker[]): StringTracker;
         private replaceWithTimes;
         replace(searchValue: string | RegExp, replaceValue: StringTracker | string): StringTracker;
         replacer(searchValue: RegExp, func: (data: ArrayMatch) => StringTracker): StringTracker;
+        replacerAsync(searchValue: RegExp, func: (data: ArrayMatch) => Promise<StringTracker>): Promise<StringTracker>;
         replaceAll(searchValue: string | RegExp, replaceValue: StringTracker | string): StringTracker;
         matchAll(searchValue: string | RegExp): StringTracker[];
         match(searchValue: string | RegExp): ArrayMatch | StringTracker[];
@@ -489,6 +496,7 @@ declare module "@eas-framework/server/EasyDebug/StringTracker" {
             col?: number;
         }): string;
         StringWithTack(fullSaveLocation: string): string;
+        StringTack(fullSaveLocation: string, httpSource?: boolean, relative?: boolean): import("source-map-js").RawSourceMap;
     }
 }
 declare module "@eas-framework/server/CompileCode/BaseReader/Reader" {
@@ -676,9 +684,10 @@ declare module "@eas-framework/server/BuildInComponents/Components/serv-connect/
 }
 declare module "@eas-framework/server/EasyDebug/SourceMapLoad" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    export default function SourceMapToStringTracker(code: string, sourceMap: string): StringTracker;
-    export function mergeInfoStringTracker(original: StringTracker, generated: StringTracker): void;
-    export function backToOriginal(original: StringTracker, code: string, sourceMap: string): StringTracker;
+    import { RawSourceMap } from "source-map-js";
+    export default function SourceMapToStringTracker(code: string, sourceMap: string | RawSourceMap): StringTracker;
+    export function backToOriginal(original: StringTracker, code: string, sourceMap: string | RawSourceMap): StringTracker;
+    export function backToOriginalSss(original: StringTracker, code: string, sourceMap: string | RawSourceMap, mySource: string): StringTracker;
 }
 declare module "@eas-framework/server/OutputInput/PrintNew" {
     export interface PreventLog {
@@ -935,9 +944,9 @@ declare module "@eas-framework/server/BuildInComponents/Components/isolate" {
 }
 declare module "@eas-framework/server/ImportFiles/ForStatic/Svelte/preprocess" {
     import { StringNumberMap } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
-    export function preprocess(fullPath: string, smallPath: string, svelteExt?: string): Promise<{
+    export function preprocess(fullPath: string, smallPath: string, savePath?: string, httpSource?: boolean, svelteExt?: string): Promise<{
         code: string;
-        map: string | object;
+        map: import("source-map-js").RawSourceMap;
         dependencies: StringNumberMap;
         svelteFiles: string[];
     }>;
@@ -1632,6 +1641,16 @@ declare module "@eas-framework/server" {
     export const AsyncImport: (path: string, importFrom?: string) => Promise<any>;
     export const Server: typeof server;
     export { Settings, LocalSql, dump };
+}
+declare module "@eas-framework/server/ImportFiles/ForStatic/Svelte/preprocess-old" {
+    import { StringNumberMap } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    export function preprocess(fullPath: string, smallPath: string, svelteExt?: string): Promise<{
+        code: string;
+        map: string | object;
+        dependencies: StringNumberMap;
+        svelteFiles: string[];
+    }>;
+    export function Capitalize(name: string): string;
 }
 declare module "@eas-framework/server/scripts/build-scripts" { }
 declare module "@eas-framework/server/scripts/install" { }

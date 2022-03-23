@@ -157,8 +157,18 @@ export const Export: ExportSettings = {
         }
     },
     serveLimits: {
-        cacheDays: 3,
-        cookiesExpiresDays: 1,
+        get cacheDays(){
+            return fileByUrl.Settings.CacheDays;
+        },
+        set cacheDays(value){
+            fileByUrl.Settings.CacheDays = value;
+        },
+        get cookiesExpiresDays(){
+            return CookieSettings.maxAge / 86400000;
+        },
+        set cookiesExpiresDays(value){
+            CookieSettings.maxAge = value * 86400000;
+        },
         set sessionTotalRamMB(value: number) {
             if(serveLimits.sessionTotalRamMB == value) return
             serveLimits.sessionTotalRamMB = value;

@@ -1,5 +1,5 @@
 import { BasicSettings } from "../RunTimeBuild/SearchFileSystem";
-import { outputWithMap } from "./StringTrackerToSourceMap";
+import { outputMap, outputWithMap } from "./StringTrackerToSourceMap";
 
 export interface StringTrackerDataInfo {
     text?: string,
@@ -637,6 +637,14 @@ export default class StringTracker {
         return newString;
     }
 
+    public static join(arr: StringTracker[]){
+        let all = new StringTracker();
+        for(const i of arr){
+            all.AddClone(i);
+        }
+        return all;
+    }
+
     private replaceWithTimes(searchValue: string | RegExp, replaceValue: StringTracker | string, limit?: number) {
         const allSplited = this.StringIndexer(searchValue, limit);
         let newString = new StringTracker();
@@ -672,6 +680,27 @@ export default class StringTracker {
         while (SplitToReplace) {
             newText.Plus(copy.substring(0, SplitToReplace.index));
             newText.Plus(func(SplitToReplace));
+
+            copy = copy.substring(SplitToReplace.index + SplitToReplace[0].length);
+            ReMatch();
+        }
+        newText.Plus(copy);
+
+        return newText;
+    }
+
+    public async replacerAsync(searchValue: RegExp, func: (data: ArrayMatch) => Promise<StringTracker>) {
+        let copy = this.Clone(), SplitToReplace: ArrayMatch;
+        function ReMatch() {
+            SplitToReplace = copy.match(searchValue);
+        }
+        ReMatch();
+
+        const newText = new StringTracker(copy.StartInfo);
+
+        while (SplitToReplace) {
+            newText.Plus(copy.substring(0, SplitToReplace.index));
+            newText.Plus(await func(SplitToReplace));
 
             copy = copy.substring(SplitToReplace.index + SplitToReplace[0].length);
             ReMatch();
@@ -726,7 +755,7 @@ export default class StringTracker {
 
             const findIndex = nextMath.indexOf(e);
             ResultArray.push(nextMath.substr(findIndex, e.length));
-            nextMath = nextMath.substring(findIndex + e.length);
+            nextMath = nextMath.substring(findIndex);
         }
 
         return ResultArray;
@@ -761,5 +790,9 @@ export default class StringTracker {
 
     public StringWithTack(fullSaveLocation: string){
         return outputWithMap(this, fullSaveLocation)
+    }
+
+    public StringTack(fullSaveLocation: string, httpSource?: boolean, relative?: boolean){
+        return outputMap(this, fullSaveLocation, httpSource, relative)
     }
 }

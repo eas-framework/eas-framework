@@ -178,7 +178,7 @@ async function svelteStyle(filePath: string, checked: boolean, isDebug: boolean)
             inServer: fullPath
         }
 
-    if (isDebug && exists) {
+    if (isDebug && !exists) {
         await BuildFile(baseFilePath, isDebug, getTypes.Static[1] + baseFilePath)
         return svelteStyle(filePath, checked, false);
     }

@@ -2,6 +2,7 @@ import StringTracker from '../EasyDebug/StringTracker';
 
 interface globalString<T> {
     indexOf(string: string): number;
+    lastIndexOf(string: string): number;
     startsWith(string: string): boolean;
     substring(start: number, end?: number): T;
 }
@@ -17,6 +18,10 @@ export function SplitFirst<T extends globalString<T>>(type: string, string: T): 
 
 export function CutTheLast(type: string, string: string) {
     return string.substring(0, string.lastIndexOf(type));
+}
+
+export function Extension<T extends globalString<T>>(string: T) {
+    return string.substring(string.lastIndexOf('.'));
 }
 
 export function trimType(type: string, string: string) {

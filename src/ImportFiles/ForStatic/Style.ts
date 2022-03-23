@@ -25,6 +25,13 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
             importer: createImporter(fullPath),
         });
 
+        if (result?.loadedUrls) {
+            for (const file of result.loadedUrls) {
+                const FullPath = fileURLToPath(<any>file);
+                dependenceObject[BasicSettings.relative(FullPath)] = await EasyFs.stat(fullPath, 'mtimeMs', true, null);
+            }
+        }
+
         let data = result.css;
 
         if (isDebug && result.sourceMap) {

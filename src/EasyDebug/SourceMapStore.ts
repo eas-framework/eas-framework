@@ -9,7 +9,7 @@ export abstract class SourceMapBasic {
     protected fileDirName: string;
     protected lineCount = 0;
 
-    constructor(protected filePath: string, protected httpSource = true, protected isCss = false) {
+    constructor(protected filePath: string, protected httpSource = true, protected relative = false, protected isCss = false) {
         this.map = new SourceMapGenerator({
             file: filePath.split(/\/|\\/).pop()
         });
@@ -26,10 +26,14 @@ export abstract class SourceMapBasic {
                 source += '.source';
             else
                 source = SplitFirst('/', source).pop() + '?source=true';
-            return path.join('/', source.replace(/\\/gi, '/'));
+            return path.normalize((this.relative ? '': '/') + source.replace(/\\/gi, '/'));
         }
 
         return path.relative(this.fileDirName, BasicSettings.fullWebSitePath + source);
+    }
+
+    getRowSourceMap(): RawSourceMap{
+        return (<any>this.map).toJSON()
     }
 
     mapAsURLComment() {
@@ -49,7 +53,7 @@ export default class SourceMapStore extends SourceMapBasic {
     private actionLoad: { name: string, data: any[] }[] = [];
 
     constructor(filePath: string, protected debug = true, isCss = false, httpSource = true) {
-        super(filePath, httpSource, isCss);
+        super(filePath, httpSource, false, isCss);
     }
 
     notEmpty() {
