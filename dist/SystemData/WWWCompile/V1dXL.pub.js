@@ -1,0 +1,5 @@
+var i = 4;
+console.log(8);
+debugger;
+
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9XV1cvc2VydmVyL2ltcG9ydC9pbmRleC5wYWdlLnNvdXJjZSJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFNSSxJQUFJLElBQUk7QUFFUixRQUFRLElBQUksQ0FBQztBQUNiIiwiZmlsZSI6ImluZGV4LnBhZ2UifQ==

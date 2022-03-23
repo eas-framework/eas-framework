@@ -1,4 +1,5 @@
 import { BasicSettings } from "../RunTimeBuild/SearchFileSystem";
+import { outputWithMap } from "./StringTrackerToSourceMap";
 
 export interface StringTrackerDataInfo {
     text?: string,
@@ -38,7 +39,7 @@ export default class StringTracker {
     }
 
 
-    private static get emptyInfo(): StringTrackerDataInfo {
+    static get emptyInfo(): StringTrackerDataInfo {
         return {
             info: '',
             line: 0,
@@ -431,6 +432,8 @@ export default class StringTracker {
             if (index <= 0)
                 return count;
         }
+
+        return count;
     }
 
     public indexOf(text: string) {
@@ -740,19 +743,23 @@ export default class StringTracker {
     /**
      * Extract error info form error message
      */
-    public debugLine({ message, loc, line, col, sassStack }: { sassStack?: string, message: string, loc?: { line: number, column: number }, line?: number, col?: number }): string {
+    public debugLine({ message, text, location, line, col, sassStack }: { sassStack?: string, message?: string, text?: string, location?: { line: number, column: number }, line?: number, col?: number }): string {
         if (sassStack) {
             const loc = sassStack.match(/[0-9]+:[0-9]+/)[0].split(':').map(x => Number(x));
             line = loc[0];
             col = loc[1];
         }
 
-        let searchLine = this.getLine(line ?? loc?.line ?? 1), column = col ?? loc?.column ?? 0;
+        let searchLine = this.getLine(line ?? location?.line ?? 1), column = col ?? location?.column ?? 0;
         if (searchLine.startsWith('//')) {
-            searchLine = this.getLine((line ?? loc?.line) - 1);
+            searchLine = this.getLine((line ?? location?.line) - 1);
             column = 0;
         }
         const data = searchLine.DefaultInfoText;
-        return `${message}, on file -> ${BasicSettings.fullWebSitePath}${data.info.split('<line>').shift()}:${data.line}:${column}`;
+        return `${text || message}, on file -> ${BasicSettings.fullWebSitePath}${data.info.split('<line>').shift()}:${data.line}:${column}`;
+    }
+
+    public StringWithTack(fullSaveLocation: string){
+        return outputWithMap(this, fullSaveLocation)
     }
 }

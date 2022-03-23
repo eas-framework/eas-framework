@@ -1,5 +1,5 @@
 import EasyFs from '../OutputInput/EasyFs';
-import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem';
+import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import { print } from '../OutputInput/Console';
 import InsertComponent from './InsertComponent';
 import { PageTemplate } from './ScriptTemplate';
@@ -106,14 +106,12 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
     return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), FullPath, pageName, SmallPath, sessionInfo);
 }
 
-export async function Insert(data: string, fullPathCompile: string, nestedPage?: boolean, nestedPageData?: string, sessionInfo?: SessionBuild) {
-    const BuildScriptWithPrams = (code: StringTracker, RemoveToModule = true): Promise<string> => BuildScript(code, isTs(), sessionInfo.debug, RemoveToModule);
-
+export async function Insert(data: string, fullPathCompile: string, nestedPage: boolean, nestedPageData: string, sessionInfo: SessionBuild) {
     let DebugString = new StringTracker(sessionInfo.smallPath, data);
     DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), sessionInfo.fullPath, sessionInfo.smallPath, sessionInfo.smallPath, sessionInfo);
 
     DebugString = await PluginBuild.BuildPage(DebugString, sessionInfo.fullPath, sessionInfo.smallPath, sessionInfo);
-    DebugString = await Components.Insert(DebugString, sessionInfo.smallPath, BuildScriptWithPrams, sessionInfo); // add components
+    DebugString = await Components.Insert(DebugString, sessionInfo.smallPath, sessionInfo); // add components
 
     DebugString = await ParseDebugLine(DebugString, sessionInfo.smallPath);
 
@@ -122,9 +120,8 @@ export async function Insert(data: string, fullPathCompile: string, nestedPage?:
     }
 
     DebugString = await PageTemplate.BuildPage(DebugString, fullPathCompile, sessionInfo);
+    DebugString = await sessionInfo.BuildScriptWithPrams(DebugString);
+    DebugString= PageTemplate.AddAfterBuild(DebugString, sessionInfo.debug);
 
-    let DebugStringAsBuild = await BuildScriptWithPrams(DebugString);
-    DebugStringAsBuild = PageTemplate.AddAfterBuild(DebugStringAsBuild, sessionInfo.debug);
-
-    return DebugStringAsBuild;
+    return DebugString;
 }

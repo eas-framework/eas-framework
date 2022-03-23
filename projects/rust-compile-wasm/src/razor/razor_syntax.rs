@@ -267,7 +267,7 @@ impl Razor {
                     vec![char, if char == '(' { ')' } else { ']' }],
                 ) as usize
                     + 1;
-            } else if !char.is_alphabetic() && char != '_' && char != '$' && ((char == '?' && text.at(i + 1) != '.')
+            } else if !char.is_alphabetic() && (!char.is_ascii_digit() || escape_script_usize == i) && char != '_' && char != '$' && ((char == '?' && text.at(i + 1) != '.')
                     || (char == '.' && !text.at(i + 1).is_alphabetic())
                     || char != '.' && char != '?')
             {

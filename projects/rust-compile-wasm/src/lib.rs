@@ -4,7 +4,7 @@ mod actions;
 mod html_search;
 pub mod razor;
 pub mod ejs;
-mod better_string;
+pub mod better_string;
 use better_string::b_string::BetterString;
 use html_search::builder::InsertComponent;
 
@@ -56,15 +56,18 @@ pub fn insert_component(skip_special_tag: &str, simple_skip: &str) {
     comp.simple_skip = simple.iter().map(|x| BetterString::new(x)).collect();
 }
 
-#[wasm_bindgen]
-pub fn find_end_of_def(text: &str, end_type: &str) -> i32{
+fn parse_end_type(end_type: &str) -> Vec<BetterString>{
     let end_t: Vec<String> = serde_json::from_str(end_type).unwrap();
     let as_better: Vec<BetterString>= end_t.iter().map(|x| BetterString::new(x)).collect();
+    as_better
+}
 
-
+#[wasm_bindgen]
+pub fn find_end_of_def(text: &str, end_type: &str) -> i32{
     let mut copy: Vec<&BetterString>  = vec![];
+    let vec_better = parse_end_type(end_type);
 
-    for i in as_better.iter() {
+    for i in vec_better.iter() {
         copy.push(&i);
     }
 

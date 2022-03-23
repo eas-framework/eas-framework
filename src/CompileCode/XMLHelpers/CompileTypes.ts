@@ -30,6 +30,6 @@ export interface BuildInComponent {
 
 export type CompileInFileFunc = (path: string, arrayType: string[], debugFromPage: string) => Promise<{CompiledData:StringTracker, dependenceObject:any}>;
 
-export type BuildScriptWithoutModule = (code: StringTracker) => Promise<string> | string;
+export type BuildScriptWithoutModule = (code: StringTracker) => Promise<StringTracker> | StringTracker;
 
 export type StringArrayOrObject = (string | {[key: string]: string})[];

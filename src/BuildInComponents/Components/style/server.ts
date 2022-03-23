@@ -5,7 +5,7 @@ import { compileSass } from './sass';
 import { SessionBuild } from '../../../CompileCode/Session';
 import InsertComponent from '../../../CompileCode/InsertComponent';
 
-export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(language: string,pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
     const SaveServerCode = new EnableGlobalReplace();
     await SaveServerCode.load(BetweenTagData.trimStart(), pathName);

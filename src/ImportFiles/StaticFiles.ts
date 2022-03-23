@@ -1,6 +1,6 @@
 import path from 'path';
 import { BuildJS, BuildJSX, BuildTS, BuildTSX } from './ForStatic/Script';
-import BuildSvelte from './ForStatic/Svelte';
+import BuildSvelte from './ForStatic/Svelte/client';
 import { BuildStyleSass } from './ForStatic/Style';
 import { getTypes, SystemData, getDirname, BasicSettings, workingDirectory } from '../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../OutputInput/EasyFs';

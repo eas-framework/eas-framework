@@ -2,9 +2,9 @@ import path from 'path';
 import { BasicSettings, workingDirectory, getTypes } from '../../RunTimeBuild/SearchFileSystem';
 import JSParser from './../JSParser';
 import StringTracker from '../../EasyDebug/StringTracker';
-import { BuildScriptWithoutModule } from './CompileTypes';
 import EasyFs from '../../OutputInput/EasyFs';
 import { SplitFirst } from '../../StringMethods/Splitting';
+import { SessionBuild } from '../Session';
 
 async function ParseTextCode(code:StringTracker, path:string) {
     const parser = new JSParser(code, path, '<#{debug}', '{debug}#>', 'debug info');
@@ -55,18 +55,8 @@ async function ParseDebugLine(code:StringTracker, path:string) {
     return parser.ReBuildText();
 }
 
-async function NoTrackStringCode(code:StringTracker, path: string, isDebug: boolean, buildScript: BuildScriptWithoutModule) {
-    code = await ParseScriptCode(code, path);
-    code = await JSParser.RunAndExport(code, path, isDebug);
-
-    const NewCode = await buildScript(code);
-   
-    const newCodeStringTracker = JSParser.RestoreTrack(NewCode, code.DefaultInfoText);
-
-    newCodeStringTracker.AddTextBeforeNoTrack('<%!{');
-    newCodeStringTracker.AddTextAfterNoTrack('}%>');
-
-    return newCodeStringTracker;
+async function ParseDebugInfo(code:StringTracker, path: string) {
+    return await ParseScriptCode(code, path);
 }
 
 export async function AddDebugInfo(pageName:string, FullPath:string, SmallPath:string, cache: {value?: string} = {}){
@@ -110,7 +100,7 @@ export interface PathTypes {
     FullPathCompile?: string
 }
 
-function CreateFilePath(filePath:string, smallPath:string, inputPath:string, folder:string, pageType: string): PathTypes {
+function CreateFilePath(filePath:string, smallPath:string, inputPath:string, folder:string, pageType: string) {
     return {
         SmallPath: CreateFilePathOnePath(smallPath, inputPath, folder, pageType, 2),
         FullPath: CreateFilePathOnePath(filePath, inputPath, folder, pageType),
@@ -120,5 +110,5 @@ function CreateFilePath(filePath:string, smallPath:string, inputPath:string, fol
 export {
     ParseDebugLine,
     CreateFilePath,
-    NoTrackStringCode
+    ParseDebugInfo
 };

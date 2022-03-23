@@ -13,7 +13,7 @@ export class BaseReader {
      * Find the end of quotation marks, skipping things like escaping: "\\""
      * @return the index of end
      */
-    static findEntOfQ(text: string, qType: string) {
+    static findEntOfQ(text: string, qType: string): number {
         return find_end_of_q(text, qType);
     }
 
@@ -21,7 +21,7 @@ export class BaseReader {
      * Find char skipping data inside quotation marks
      * @return the index of end
      */
-    static findEndOfDef(text: string, EndType: string[] | string) {
+    static findEndOfDef(text: string, EndType: string[] | string): number {
         if (!Array.isArray(EndType)) {
             EndType = [EndType];
         }
@@ -37,7 +37,7 @@ export class BaseReader {
      * it will return the 18 -> "} next"
      *  @return the index of end
      */
-    static FindEndOfBlock(text: string, open: string, end: string) {
+    static FindEndOfBlock(text: string, open: string, end: string): number {
         return find_end_block(text, open + end);
     }
 }

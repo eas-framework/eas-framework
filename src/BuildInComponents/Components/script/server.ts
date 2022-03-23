@@ -1,14 +1,16 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { tagDataObjectArray, StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
-import { Options as TransformOptions, transform } from 'sucrase';
-import { minify } from "terser";
+import { TransformOptions, transform } from 'esbuild-wasm';
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import { EnableGlobalReplace } from '../../../CompileCode/JSParser';
 import InsertComponent from '../../../CompileCode/InsertComponent';
+import { GetPlugin, SomePlugins } from '../../../CompileCode/InsertModels';
+import { ESBuildPrintErrorStringTracker, ESBuildPrintWarningsStringTracker } from '../../../CompileCode/esbuild/printMessage';
+import SourceMapToStringTracker from '../../../EasyDebug/SourceMapLoad';
 
-export default async function BuildCode(language: string, path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent): Promise<BuildInComponent> {
 
-    let result = '', ResCode = BetweenTagData;
+    let ResCode = BetweenTagData;
 
     const SaveServerCode = new EnableGlobalReplace("serv");
     await SaveServerCode.load(BetweenTagData, pathName);
@@ -16,47 +18,35 @@ export default async function BuildCode(language: string, path: string, pathName
     const BetweenTagDataExtracted = await SaveServerCode.StartBuild();
 
     const AddOptions: TransformOptions = {
-        transforms: [],
-        ...InsertComponent.GetPlugin("transformOptions")
+        sourcefile: BetweenTagData.extractInfo(),
+        minify: SomePlugins("Min" + language.toUpperCase()) || SomePlugins("MinAll"),
+        sourcemap: 'external',
+        ...GetPlugin("transformOptions")
     };
 
     try {
         switch (language) {
             case 'ts':
-                AddOptions.transforms.push('typescript');
+                AddOptions.loader = 'ts';
                 break;
 
             case 'jsx':
-                AddOptions.transforms.push('jsx');
-                Object.assign(AddOptions, InsertComponent.GetPlugin("JSXOptions") ?? {});
+                AddOptions.loader = 'jsx';
+                Object.assign(AddOptions, GetPlugin("JSXOptions") ?? {});
                 break;
 
             case 'tsx':
-                AddOptions.transforms.push('typescript');
-                AddOptions.transforms.push('jsx');
-                Object.assign(AddOptions, InsertComponent.GetPlugin("TSXOptions") ?? {});
+                AddOptions.loader = 'tsx';
+                Object.assign(AddOptions, GetPlugin("TSXOptions") ?? {});
                 break;
         }
 
-        result = transform(BetweenTagDataExtracted, AddOptions).code;
-
-        if (InsertComponent.SomePlugins("Min" + language.toUpperCase()) || InsertComponent.SomePlugins("MinAll")){
-            try {
-                result = (await minify(result, { module: false, format: { comments: 'all' } })).code;
-            } catch (err) {
-                PrintIfNew({
-                    errorName: 'minify',
-                    text: BetweenTagData.debugLine(err)
-                })
-            }
-        }
-
-        ResCode = SaveServerCode.RestoreCode(new StringTracker(BetweenTagData.StartInfo, result));
+        const {map, code, warnings} = await transform(BetweenTagDataExtracted, AddOptions);
+        ESBuildPrintWarningsStringTracker(BetweenTagData, warnings);
+        
+        ResCode = SaveServerCode.RestoreCode(SourceMapToStringTracker(code, map));
     } catch (err) {
-        PrintIfNew({
-            errorName: 'compilation-error',
-            text: BetweenTagData.debugLine(err)
-        });
+        ESBuildPrintErrorStringTracker(BetweenTagData, err)
     }
 
 

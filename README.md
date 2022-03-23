@@ -22,7 +22,7 @@
 
 ## About
 EAS-Framework is a Node.js framework for SSR websites, with a lot of built in features.
-Is similar to ASPX, includes 🔥 hot-reloads, and ⚡ super fast builds
+Is similar to ASPX, includes 🔥 hot-reloads, and ⚡ blazingly fast builds
 
 
 EAS stands for Embedded Active Server

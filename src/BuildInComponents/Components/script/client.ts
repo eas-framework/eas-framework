@@ -1,14 +1,15 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { BuildInComponent, tagDataObjectArray } from '../../../CompileCode/XMLHelpers/CompileTypes';
-import { Options as TransformOptions, transform } from 'sucrase';
-import { minify } from "terser";
+import { TransformOptions, transform } from 'esbuild-wasm';
 import { PrintIfNew } from '../../../OutputInput/PrintNew';
 import { SessionBuild } from '../../../CompileCode/Session';
 import { parseTagDataStringBoolean } from '../serv-connect/index';
 import InsertComponent from '../../../CompileCode/InsertComponent';
+import { GetPlugin, SomePlugins } from '../../../CompileCode/InsertModels';
+import { ESBuildPrintErrorStringTracker, ESBuildPrintWarningsStringTracker } from '../../../CompileCode/esbuild/printMessage';
 
-export default async function BuildCode(language: string, tagData: tagDataObjectArray, LastSmallPath: string, BetweenTagData: StringTracker, pathName: string, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
-    const BetweenTagDataEq = BetweenTagData.eq, BetweenTagDataEqAsTrim = BetweenTagDataEq.trim(), isModel = tagData.getValue('type') == 'module', isModelStringCache = isModel ? 'scriptModule': 'script';
+export default async function BuildCode(language: string, tagData: tagDataObjectArray, BetweenTagData: StringTracker,  sessionInfo: SessionBuild): Promise<BuildInComponent> {
+    const BetweenTagDataEq = BetweenTagData.eq, BetweenTagDataEqAsTrim = BetweenTagDataEq.trim(), isModel = tagData.getValue('type') == 'module', isModelStringCache = isModel ? 'scriptModule' : 'script';
 
     if (sessionInfo.cache[isModelStringCache].includes(BetweenTagDataEqAsTrim))
         return {
@@ -16,52 +17,49 @@ export default async function BuildCode(language: string, tagData: tagDataObject
         };
     sessionInfo.cache[isModelStringCache].push(BetweenTagDataEqAsTrim);
 
-    let resultCode = '';
+    let resultCode = '', resultMap: string;
 
     const AddOptions: TransformOptions = {
-        transforms: [],
-        ...InsertComponent.GetPlugin("transformOptions")
+        sourcefile: BetweenTagData.extractInfo(),
+        minify: SomePlugins("Min" + language.toUpperCase()) || SomePlugins("MinAll"),
+        sourcemap: sessionInfo.debug ? 'external' : false,
+        ...GetPlugin("transformOptions")
     };
 
     try {
         switch (language) {
             case 'ts':
-                AddOptions.transforms.push('typescript');
+                AddOptions.loader = 'ts';
                 break;
 
             case 'jsx':
-                AddOptions.transforms.push('jsx');
-                Object.assign(AddOptions, InsertComponent.GetPlugin("JSXOptions") ?? {});
+                AddOptions.loader = 'jsx';
+                Object.assign(AddOptions, GetPlugin("JSXOptions") ?? {});
                 break;
 
             case 'tsx':
-                AddOptions.transforms.push('typescript');
-                AddOptions.transforms.push('jsx');
-                Object.assign(AddOptions, InsertComponent.GetPlugin("TSXOptions") ?? {});
+                AddOptions.loader = 'tsx';
+                Object.assign(AddOptions, GetPlugin("TSXOptions") ?? {});
                 break;
         }
 
-        resultCode = transform(BetweenTagData.eq, AddOptions).code;
+        const { map, code, warnings } = await transform(BetweenTagData.eq, AddOptions);
+        ESBuildPrintWarningsStringTracker(BetweenTagData, warnings);
 
-        if (InsertComponent.SomePlugins("Min" + language.toUpperCase()) || InsertComponent.SomePlugins("MinAll")){
-            try {
-                resultCode = (await minify(resultCode, { module: false, format: { comments: 'all' } })).code;
-            } catch (err) {
-                PrintIfNew({
-                    errorName: 'minify',
-                    text: BetweenTagData.debugLine(err)
-                });
-            }
-        }
+        resultCode = code;
+        resultMap = map;
     } catch (err) {
-        PrintIfNew({
-            errorName: 'compilation-error',
-            text: BetweenTagData.debugLine(err)
-        });
+        ESBuildPrintErrorStringTracker(BetweenTagData, err)
     }
 
-    const pushStyle = sessionInfo.addScriptStyle(isModel ? 'module': 'script', parseTagDataStringBoolean(tagData, 'page') ? LastSmallPath : BetweenTagData.extractInfo());
-    pushStyle.addStringTracker(BetweenTagData, {text: resultCode});
+
+    const pushStyle = sessionInfo.addScriptStylePage(isModel ? 'module' : 'script', tagData, BetweenTagData);
+
+    if (resultMap) {
+        pushStyle.addSourceMapWithStringTracker(JSON.parse(resultMap), BetweenTagData, resultCode);
+    } else {
+        pushStyle.addText(resultCode);
+    }
 
     return {
         compiledString: new StringTracker()

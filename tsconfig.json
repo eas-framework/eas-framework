@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
-        "strict": true,
-        "out": "dist/index.js",
+        "strict": false,
         "target": "es2020",
         "declarationDir": "dist",
         "module": "esnext",

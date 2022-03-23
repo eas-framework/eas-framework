@@ -1,49 +1,26 @@
-import { PrintIfNew } from '../../OutputInput/PrintNew';
 import { SomePlugins, GetPlugin } from '../../CompileCode/InsertModels';
-import { Options as TransformOptions, transform } from 'sucrase';
-import { minify } from "terser";
+import { TransformOptions, transform } from 'esbuild-wasm';
 import { getTypes } from '../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../OutputInput/EasyFs';
+import { ESBuildPrintError, ESBuildPrintWarnings } from '../../CompileCode/esbuild/printMessage';
 
-async function BuildScript(inputPath: string, type: string, isDebug: boolean, moreOptions?: TransformOptions, haveDifferentSource = true) {
+async function BuildScript(inputPath: string, type: string, isDebug: boolean, moreOptions?: TransformOptions) {
+    const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
     const AddOptions: TransformOptions = {
-        transforms: [],
-        sourceMapOptions: {
-            compiledFilename: '/' + inputPath,
-        },
-        filePath: inputPath,
+        sourcefile: inputPath + '?source=true',
+        sourcemap: isDebug ? 'inline': false,
+        minify: SomePlugins("Min" + type.toUpperCase()) || SomePlugins("MinAll"),
         ...GetPlugin("transformOptions"), ...moreOptions
     };
 
-    const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
     let result = await EasyFs.readFile(fullPath);
 
     try {
-        const { code, sourceMap } = transform(result, AddOptions);
+        const { code, warnings } = await transform(result, AddOptions);
         result = code;
-
-        if (isDebug && haveDifferentSource) {
-            sourceMap.sources = sourceMap.sources.map(x => x.split(/\/|\\/).pop() + '?source=true');
-
-            result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," +
-                Buffer.from(JSON.stringify(sourceMap)).toString("base64");
-        }
+        ESBuildPrintWarnings(fullPath, warnings);
     } catch (err) {
-        PrintIfNew({
-            errorName: 'compilation-error',
-            text: `${err.message}, on file -> ${fullPath}:${err?.loc?.line ?? 0}:${err?.loc?.column ?? 0}`
-        });
-    }
-
-    if (SomePlugins("Min" + type.toUpperCase()) || SomePlugins("MinAll")) {
-        try {
-            result = (await minify(result, { module: false })).code;
-        } catch (err) {
-            PrintIfNew({
-                errorName: 'minify',
-                text: `${err.message} on file -> ${fullPath}`
-            })
-        }
+        ESBuildPrintError(fullPath, err);
     }
 
     await EasyFs.makePathReal(inputPath, getTypes.Static[1]);
@@ -55,17 +32,17 @@ async function BuildScript(inputPath: string, type: string, isDebug: boolean, mo
 }
 
 export function BuildJS(inStaticPath: string, isDebug: boolean) {
-    return BuildScript(inStaticPath, 'js', isDebug, undefined, false);
+    return BuildScript(inStaticPath, 'js', isDebug, undefined);
 }
 
 export function BuildTS(inStaticPath: string, isDebug: boolean) {
-    return BuildScript(inStaticPath, 'ts', isDebug, { transforms: ['typescript'] });
+    return BuildScript(inStaticPath, 'ts', isDebug, { loader: 'ts' });
 }
 
 export function BuildJSX(inStaticPath: string, isDebug: boolean) {
-    return BuildScript(inStaticPath, 'jsx', isDebug, { ...(GetPlugin("JSXOptions") ?? {}), transforms: ['jsx'] });
+    return BuildScript(inStaticPath, 'jsx', isDebug, { ...(GetPlugin("JSXOptions") ?? {}), loader: 'jsx' });
 }
 
 export function BuildTSX(inStaticPath: string, isDebug: boolean) {
-    return BuildScript(inStaticPath, 'tsx', isDebug, { transforms: ['typescript', 'jsx'], ...(GetPlugin("TSXOptions") ?? {}) });
+    return BuildScript(inStaticPath, 'tsx', isDebug, { loader: 'tsx', ...(GetPlugin("TSXOptions") ?? {}) });
 }

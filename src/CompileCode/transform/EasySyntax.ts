@@ -1,5 +1,6 @@
 import { customTypes } from '../../ImportFiles/CustomImport';
-import { ParseTextStream, ReBuildCodeString } from './EasyScript';
+import { BaseReader } from '../BaseReader/Reader';
+import { EndOfBlock, EndOfDefSkipBlock, ParseTextStream, ReBuildCodeString } from './EasyScript';
 
 export default class EasySyntax {
     private Build: ReBuildCodeString;
@@ -137,7 +138,92 @@ export default class EasySyntax {
         }));
     }
 
-    BuildImports(defineData: { [key: string]: string }) {
+    private async exportVariable(){
+        let newString = this.Build.CodeBuildText;
+        let match: RegExpMatchArray;
+
+        function Rematch() {
+            match = newString.match(/(export[ \n]+)(var|let|const)[ \n]+([\p{L}\$_][\p{L}0-9\$_]*)/u);
+        }
+
+        Rematch();
+
+        while (match) {
+            const beforeMatch = newString.substring(0, match.index);
+            const removeExport = match[0].substring(match[1].length);
+            const afterMatch = newString.substring(match.index + match[0].length);
+           
+            let closeIndex = await EndOfDefSkipBlock(afterMatch,[';', '\n']);
+
+            if(closeIndex == -1){
+                closeIndex = afterMatch.length
+            }
+
+            const beforeClose = afterMatch.substring(0, closeIndex), afterClose = afterMatch.substring(closeIndex);
+
+            newString = `${beforeMatch + removeExport+ beforeClose};exports.${match[3]}=${match[3]}${afterClose}`;
+
+            Rematch();
+        }
+
+        this.Build.CodeBuildText = newString;
+    }
+
+    private async exportBlock(){
+        let newString = this.Build.CodeBuildText;
+        let match: RegExpMatchArray;
+
+        function Rematch() {
+            match = newString.match(/(export[ \n]+)(default[ \n]+)?([^ \n])/u);
+        }
+
+        Rematch();
+
+        while (match) {
+            let beforeMatch = newString.substring(0, match.index);
+            let removeExport = match[0].substring(match[1].length + (match[2] || '').length);
+           
+            const firstChar = match[3][0], isDefault = Boolean(match[2]);
+            if(firstChar== '{'){
+                let afterMatch = newString.substring(match.index + match[0].length);
+
+                if(isDefault){
+                    newString = beforeMatch + 'exports.default=' + removeExport + afterMatch;
+                } else {
+                    const endIndex = await EndOfBlock(afterMatch, ['{', '}']);
+                    beforeMatch += `Object.assign(exports, ${removeExport + afterMatch.substring(0, endIndex+1)})`;
+                    newString = beforeMatch + afterMatch.substring(endIndex+1);
+                }
+            } else {
+                let afterMatch = newString.substring(match.index + match[0].length-1);
+                removeExport = removeExport.slice(0, -1);
+
+                let closeIndex = await EndOfDefSkipBlock(afterMatch,[';', '\n']);
+                if(closeIndex == -1){
+                    closeIndex = afterMatch.trimEnd().length
+                }
+
+                const beforeClose = afterMatch.substring(0, closeIndex);
+                const blockMatch = beforeClose.match(/(function|class)[ |\n]+([\p{L}\$_][\p{L}0-9\$_]*)?/u);
+
+                if(blockMatch?.[2]){       
+                    const afterClose = afterMatch.substring(closeIndex);
+        
+                    newString = `${beforeMatch + removeExport+ beforeClose}exports.${isDefault ? 'default': blockMatch[2]}=${blockMatch[2]}${afterClose}`;
+                } else if(isDefault){
+                    newString = beforeMatch + 'exports.default=' + removeExport + afterMatch;
+                } else {
+                    newString = `${beforeMatch}exports.${beforeClose.split(/ |\n/, 1).pop()}=${removeExport+ afterMatch}`;
+                }
+            }
+
+            Rematch();
+        }
+
+        this.Build.CodeBuildText = newString;
+    }
+
+    async BuildImports(defineData?: { [key: string]: string }) {
         this.BuildImportType('import', 'require');
         this.BuildImportType('export', 'require', this.actionStringExport);
         this.BuildImportType('include');
@@ -147,17 +233,22 @@ export default class EasySyntax {
         this.BuildInOneWord('include');
 
         this.BuildInAsFunction('import', 'require');
-        this.Define(defineData);
+
+        //esm to cjs - export
+        await this.exportVariable();
+        await this.exportBlock();
+
+        defineData && this.Define(defineData);
     }
 
     BuiltString() {
         return this.Build.BuildCode();
     }
 
-    static async BuildAndExportImports(code: string, defineData: { [key: string]: string } = {}) {
+    static async BuildAndExportImports(code: string, defineData?: { [key: string]: string }) {
         const builder = new EasySyntax();
         await builder.load(` ${code} `);
-        builder.BuildImports(defineData);
+        await builder.BuildImports(defineData);
 
         code = builder.BuiltString();
         return code.substring(1, code.length - 1);

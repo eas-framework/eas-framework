@@ -16,6 +16,14 @@ export async function ParseTextStream(text: string): Promise<SplitText[]> {
     return JSON.parse(await parse_stream.exec('build_stream', [text]));
 }
 
+export async function EndOfDefSkipBlock(text: string, types: string[]): Promise<number> {
+    return await parse_stream.exec('find_end_of_def_skip_block', [text, JSON.stringify(types)]);
+}
+
+export async function EndOfBlock(text: string, types: string[]): Promise<number> {
+    return await parse_stream.exec('end_of_block', [text, types.join('')]);
+}
+
 abstract class BaseEntityCode {
     ReplaceAll(text: string, find: string, replace: string) {
         let newText = "";

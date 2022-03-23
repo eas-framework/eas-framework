@@ -4,8 +4,8 @@
 # Welcome to EAS Testing Website
 
 Testings Types:
-* Compile Time
-* Run Time
-* Static Files
-* Settings and Routing
+* [Compile Time](./compile/index)
+* [Run Time](./server/index)
+* [Static Files](./static/index)
+* [Settings and Routing](./routing/index)
 </markdown>

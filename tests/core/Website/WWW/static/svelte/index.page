@@ -1,0 +1,3 @@
+@[model='../server' title="Svelte"]
+<@body/>
+<svelte from="./from1" props={count: 5}/>

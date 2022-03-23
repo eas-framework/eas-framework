@@ -1,51 +1,11 @@
 import StringTracker from '../EasyDebug/StringTracker';
-import { SourceMapGenerator } from "source-map-js";
 import path from 'path';
 import { finalizeBuild } from '../BuildInComponents/index';
 import JSParser from './JSParser';
-import { SourceMapBasic } from '../EasyDebug/SourceMapStore';
-import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import { SessionBuild } from './Session';
 
-class createPageSourceMap extends SourceMapBasic {
-    constructor(filePath: string) {
-        super(filePath, false);
-    }
-
-    addMappingFromTrack(track: StringTracker) {
-        const DataArray = track.getDataArray(), length = DataArray.length;
-        let waitNextLine = true;
-
-        for (let index = 0; index < length; index++) {
-            const { text, line, info } = DataArray[index];
-
-            if (text == '\n') {
-                this.lineCount++;
-                waitNextLine = false;
-                continue;
-            }
-
-            if (!waitNextLine && line && info) {
-                waitNextLine = true;
-                this.map.addMapping({
-                    original: { line, column: 0 },
-                    generated: { line: this.lineCount, column: 0 },
-                    source: this.getSource(info)
-                });
-            }
-        }
-
-    }
-}
 
 export class PageTemplate extends JSParser {
-
-    private static CreateSourceMap(text: StringTracker, filePath: string): string {
-        const storeMap = new createPageSourceMap(filePath);
-        storeMap.addMappingFromTrack(text);
-
-        return storeMap.mapAsURLComment();
-    }
 
     private static async AddPageTemplate(text: StringTracker, fullPathCompile: string, sessionInfo: SessionBuild) {
 
@@ -88,10 +48,6 @@ export class PageTemplate extends JSParser {
 
         text.AddTextAfterNoTrack(`}});}`);
 
-        if (sessionInfo.debug) {
-            text.Plus(PageTemplate.CreateSourceMap(text, fullPathCompile));
-        }
-
         return text;
     }
 
@@ -101,9 +57,9 @@ export class PageTemplate extends JSParser {
         return PageTemplate.AddPageTemplate(builtCode, fullPathCompile, sessionInfo);
     }
 
-    static AddAfterBuild(text: string, isDebug: boolean) {
+    static AddAfterBuild(text: StringTracker, isDebug: boolean) {
         if (isDebug) {
-            text = "require('source-map-support').install();" + text;
+            text.AddTextBeforeNoTrack("require('source-map-support').install();");
         }
         return text;
     }

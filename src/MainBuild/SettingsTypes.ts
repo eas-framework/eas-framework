@@ -1,4 +1,4 @@
-import { Options as TransformOptions } from 'sucrase';
+import {  TransformOptions } from 'esbuild-wasm';
 import { Request, Response, NextFunction } from '@tinyhttp/app';
 import * as fileByUrl from '../RunTimeBuild/GetPages';
 

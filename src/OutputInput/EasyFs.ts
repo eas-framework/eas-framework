@@ -34,7 +34,7 @@ function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue:
  * @returns A boolean value.
  */
 async function existsFile(path: string, ifTrueReturn: any = true): Promise<boolean>{
-    return (await stat(path, null, true)).isFile?.() && ifTrueReturn;
+    return (await stat(path, undefined, true)).isFile?.() && ifTrueReturn;
 }
 
 /**

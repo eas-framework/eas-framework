@@ -138,7 +138,7 @@ impl BetterString {
         let mut i = 0;
         for current in 0..self.length {
             let c = self.chars[current];
-            if c.is_whitespace() || c == '\t' || c == '\r' || c == '\n' {
+            if c.is_whitespace() {
                 i += 1;
             } else {
                 break;

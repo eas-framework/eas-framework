@@ -1,66 +1,47 @@
-import { Options as TransformOptions, transform } from 'sucrase';
-import { minify } from "terser";
+import {TransformOptions, transform } from 'esbuild-wasm';
+import { backToOriginal } from '../../EasyDebug/SourceMapLoad';
 import StringTracker from '../../EasyDebug/StringTracker';
-import { PrintIfNew } from '../../OutputInput/PrintNew';
+import { ESBuildPrintErrorStringTracker, ESBuildPrintWarningsStringTracker } from '../esbuild/printMessage';
+import JSParser from '../JSParser';
+import { SessionBuild } from '../Session';
 import EasySyntax from './EasySyntax';
 
-async function ReplaceBefore(code: string, defineData?: { [key: string]: string }) {
-    code = await EasySyntax.BuildAndExportImports(code, defineData);
-    return code;
-}
-
 function ErrorTemplate(info: string){
-    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += '<p style="color:red;text-align:left;font-size:16px;">Syntax Error: ${info.replaceAll('\n', '<br/>')}</p>'`;
+    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += "<p style=\\"color:red;text-align:left;font-size:16px;\\">Syntax Error: ${JSParser.fixTextSimpleQuotes(info.replaceAll('\n', '<br/>'))}</p>"`;
 }
 
-function ReplaceAfter(code: string){
-    return code.replace('"use strict";', '').replace('Object.defineProperty(exports, "__esModule", {value: true});', '');
-}
 /**
  * 
  * @param text 
  * @param type 
  * @returns 
  */
-export default async function BuildScript(text: StringTracker, isTypescript: boolean, isDebug: boolean, removeToModule: boolean): Promise<string> {
+export default async function BuildScript(text: StringTracker, isTypescript: boolean, sessionInfo: SessionBuild): Promise<StringTracker> {
     text = text.trim();
 
     const Options: TransformOptions = {
-        transforms: ['imports'],
-    }, define = {
-        debug: '' + isDebug
+        format: 'cjs',
+        loader: isTypescript ? 'ts': 'js',
+        sourcemap: sessionInfo.debug,
+        sourcefile: sessionInfo.smallPath,
+        define: {
+            debug: '' + sessionInfo.debug
+        }
     };
-    if (isTypescript) {
-        Options.transforms.push('typescript');
-    }
 
-    let Result = { code: '' };
+    let result: StringTracker
 
     try {
-        Result = transform(await ReplaceBefore(text.eq, define), Options);
-        Result.code = ReplaceAfter(Result.code);
-
+        const {code, map, warnings} = await transform(await EasySyntax.BuildAndExportImports(text.eq), Options);
+        ESBuildPrintWarningsStringTracker(text, warnings);
+        result = map ? backToOriginal(text, code, map): new StringTracker(null, code);
     } catch (err) {
+        ESBuildPrintErrorStringTracker(text, err);
         const errorMessage = text.debugLine(err);
-        PrintIfNew({
-            errorName: 'compilation-error',
-            text: errorMessage
-        });
 
-        if(isDebug)
-            Result.code = ErrorTemplate(errorMessage);
+        if(sessionInfo.debug)
+            result = new StringTracker(null, ErrorTemplate(errorMessage));
     }
 
-    if (!isDebug && !removeToModule) {
-        try {
-            Result.code = (await minify(Result.code, { module: false })).code;
-        } catch (err) {
-            PrintIfNew({
-                errorName: 'minify',
-                text: text.debugLine(err)
-            })
-        }
-    }
-
-    return Result.code;
+    return result;
 }

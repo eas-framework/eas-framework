@@ -29,11 +29,11 @@ export function makeRecordPath(defaultName: string, dataTag: tagDataObjectArray,
     };
 }
 
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(pathName: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
-    BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, path, LastSmallPath, (x: StringTracker) => x.eq, sessionInfo);
+    BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, sessionInfo);
 
-    const parser = new JSParser(BetweenTagData, path)
+    const parser = new JSParser(BetweenTagData, BetweenTagData.extractInfo())
     await parser.findScripts();
 
     let html = '';

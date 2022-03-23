@@ -1,2 +1,6 @@
 /index
+/server/index
+/static/index
 /server/import/index
+/static/svelte/index
+/static/svelte/ssr

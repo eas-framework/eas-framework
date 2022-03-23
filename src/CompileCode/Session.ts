@@ -6,6 +6,8 @@ import Base64Id from '../StringMethods/Id';
 import EasyFs from "../OutputInput/EasyFs";
 import StringTracker from "../EasyDebug/StringTracker";
 import { parseTagDataStringBoolean } from "../BuildInComponents/Components/serv-connect";
+import { isTs } from "./InsertModels";
+import BuildScript from "./transform/Script";
 
 
 export type setDataHTMLTag = {
@@ -61,7 +63,8 @@ export class SessionBuild {
         return this.debug && this._safeDebug;
     }
 
-    constructor(public smallPath: string, public fullPath: string, public typeName: string, public debug: boolean, private _safeDebug: boolean) {
+    constructor(public smallPath: string, public fullPath: string, public typeName?: string, public debug?: boolean, private _safeDebug?: boolean) {
+        this.BuildScriptWithPrams = this.BuildScriptWithPrams.bind(this);
     }
 
     style(url: string, attributes?: StringAnyMap) {
@@ -178,5 +181,10 @@ export class SessionBuild {
         this.cache.style.push(...from.cache.style);
         this.cache.script.push(...from.cache.script);
         this.cache.scriptModule.push(...from.cache.scriptModule);
+    }
+
+    //basic methods
+    BuildScriptWithPrams(code: StringTracker){
+        return BuildScript(code, isTs(), this);  
     }
 }

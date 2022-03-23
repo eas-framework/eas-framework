@@ -9,14 +9,14 @@ import { CheckDependencyChange } from '../../OutputInput/StoreDeps';
 import { FastCompileInFile } from '../../RunTimeBuild/SearchPages';
 import InsertComponent from '../../CompileCode/InsertComponent';
 
-function InFolderPagePath(inputPath: string, fullPath:string){
+function InFolderPagePath(inputPath: string, smallPath:string){
     if (inputPath[0] == '.') {
         if (inputPath[1] == '/') {
             inputPath = inputPath.substring(2);
         } else {
             inputPath = inputPath.substring(1);
         }
-        let folder = path_node.dirname(fullPath).substring(getTypes.Static[0].length);
+        let folder = path_node.dirname(smallPath);
 
         if(folder){
             folder += '/';
@@ -35,10 +35,10 @@ function InFolderPagePath(inputPath: string, fullPath:string){
 }
 
 const cacheMap: { [key: string]: {CompiledData: StringTracker, newSession: SessionBuild}} = {};
-export default async function BuildCode(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const filepath = dataTag.getValue("from");
 
-    const SmallPathWithoutFolder = InFolderPagePath(filepath, path);
+    const SmallPathWithoutFolder = InFolderPagePath(filepath, type.extractInfo());
 
     const FullPath = getTypes.Static[0] + SmallPathWithoutFolder, SmallPath = getTypes.Static[2] + '/' + SmallPathWithoutFolder;
 

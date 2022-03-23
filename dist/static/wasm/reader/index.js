@@ -104,3 +104,32 @@ export function build_stream(text) {
         wasm.__wbindgen_free(r0, r1);
     }
 }
+
+/**
+* @param {string} text
+* @param {string} end_type
+* @returns {number}
+*/
+export function find_end_of_def_skip_block(text, end_type) {
+    var ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len0 = WASM_VECTOR_LEN;
+    var ptr1 = passStringToWasm0(end_type, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len1 = WASM_VECTOR_LEN;
+    var ret = wasm.find_end_of_def_skip_block(ptr0, len0, ptr1, len1);
+    return ret;
+};
+
+/**
+* @param {string} text
+* @param {string} end_type
+* @returns {number}
+*/
+export function end_of_block(text, end_type) {
+    var ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len0 = WASM_VECTOR_LEN;
+    var ptr1 = passStringToWasm0(end_type, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len1 = WASM_VECTOR_LEN;
+    var ret = wasm.end_of_block(ptr0, len0, ptr1, len1);
+    return ret;
+};
+

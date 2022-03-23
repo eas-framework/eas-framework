@@ -1,5 +1,5 @@
 import StringTracker from '../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWithoutModule } from '../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, BuildInComponent } from '../CompileCode/XMLHelpers/CompileTypes';
 import client from './Components/client';
 import script from './Components/script/index';
 import style from './Components/style/index';
@@ -17,42 +17,42 @@ import search from './Components/search';
 
 export const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown", "record", "search"];
 
-export function StartCompiling(path: string, pathName: string, LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, BuildScriptWithoutModule: BuildScriptWithoutModule, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export function StartCompiling(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     let reData: Promise<BuildInComponent>;
 
     switch (type.eq.toLowerCase()) {
         case "client":
-            reData = client(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            reData = client(pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "record":
-            reData = record(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            reData = record( pathName, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "search":
-            reData = search(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            reData = search( pathName, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "script":
-            reData = script(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            reData = script( pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "style":
-            reData = style(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            reData = style( pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "page":
-            reData = page(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            reData = page(pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "connect":
-            reData = connect(LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            reData = connect(type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "form":
-            reData = form(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            reData = form(pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "isolate":
             reData = isolate(BetweenTagData);
             break;
         case "head":
-            reData = head(path, pathName, LastSmallPath, type, dataTag, BetweenTagData, InsertComponent, BuildScriptWithoutModule, sessionInfo);
+            reData = head(pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "svelte":
-            reData = svelte(path, LastSmallPath, type, dataTag, sessionInfo);
+            reData = svelte(type, dataTag, sessionInfo);
             break;
         case "markdown":
             reData = markdown(type, dataTag, BetweenTagData, InsertComponent, sessionInfo);

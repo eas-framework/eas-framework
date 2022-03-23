@@ -1,5 +1,4 @@
-import { Options as TransformOptions, transform } from "sucrase";
-import { minify } from "terser";
+import { TransformOptions, transform } from "esbuild-wasm";
 import { PrintIfNew } from "../OutputInput/PrintNew";
 import EasyFs from "../OutputInput/EasyFs";
 import { BasicSettings, SystemData } from "../RunTimeBuild/SearchFileSystem";
@@ -14,6 +13,7 @@ import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
 import { pageDeps } from "../OutputInput/StoreDeps";
 import CustomImport, { customTypes } from "./CustomImport";
+import { ESBuildPrintError, ESBuildPrintWarnings } from "../CompileCode/esbuild/printMessage";
 
 async function ReplaceBefore(
   code: string,
@@ -39,43 +39,19 @@ function template(code: string, isDebug: boolean, dir: string, file: string, par
  * @param  - filePath: The path to the file you want to compile.
  * @returns The result of the script.
  */
-async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, haveSourceMap = isDebug, fileCode, templatePath = filePath, codeMinify = true }: { codeMinify?: boolean, templatePath?: string, params?: string, haveSourceMap?: boolean, fileCode?: string } = {}): Promise<string> {
-
-  const sourceMapFile = savePath && savePath.split(/\/|\\/).pop();
-
+async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, haveSourceMap = isDebug, fileCode, templatePath = filePath, codeMinify = !isDebug }: { codeMinify?: boolean, templatePath?: string, params?: string, haveSourceMap?: boolean, fileCode?: string } = {}): Promise<string> {
   const Options: TransformOptions = {
-    transforms: ["imports"],
-    sourceMapOptions: haveSourceMap ? {
-      compiledFilename: sourceMapFile,
-    } : undefined,
-    filePath: haveSourceMap ? savePath && path.relative(path.dirname(savePath), filePath) : undefined,
+    format: 'cjs',
+    loader: isTypescript ? 'ts' : 'js',
+    minify: codeMinify,
+    sourcemap: haveSourceMap ? 'inline' : false,
+    sourcefile: path.relative(path.dirname(savePath), filePath),
+    define: {
+      debug: "" + isDebug
+    }
+  };
 
-  },
-    define = {
-      debug: "" + isDebug,
-    };
-
-  if (isTypescript) {
-    Options.transforms.push("typescript");
-  }
-
-  let Result = await ReplaceBefore(
-    fileCode || await EasyFs.readFile(filePath),
-    define,
-  ),
-    sourceMap: string;
-
-  try {
-    const { code, sourceMap: map } = transform(Result, Options);
-    Result = code;
-    sourceMap = JSON.stringify(map);
-  } catch (err) {
-    PrintIfNew({
-      errorName: "compilation-error",
-      text: `${err.message}, on file -> ${filePath}`,
-    });
-  }
-
+  let Result = await ReplaceBefore(fileCode || await EasyFs.readFile(filePath), {});
   Result = template(
     Result,
     isDebug,
@@ -84,18 +60,12 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
     params
   );
 
-  if (isDebug) {
-    if (haveSourceMap)
-      Result += "\r\n//# sourceMappingURL=data:application/json;charset=utf-8;base64," + Buffer.from(sourceMap).toString("base64");
-  } else if (codeMinify) {
-    try {
-      Result = (await minify(Result, { module: false })).code;
-    } catch (err) {
-      PrintIfNew({
-        errorName: 'minify',
-        text: `${err.message} on file -> ${filePath}`
-      })
-    }
+  try {
+    const { code, warnings } = await transform(Result, Options);
+    Result = code;
+    ESBuildPrintWarnings(filePath, warnings);
+  } catch (err) {
+    ESBuildPrintError(filePath, err);
   }
 
   if (savePath) {
@@ -146,7 +116,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
 
   InStaticPath = path.join(AddExtension(InStaticPath).toLowerCase());
   const extension = path.extname(InStaticPath).substring(1), thisCustom = customTypes.includes(extension) || !['js', 'ts'].includes(extension);
-  const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = path.join(typeArray[0],InStaticPath);
+  const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = path.join(typeArray[0], InStaticPath);
 
   //wait if this module is on process, if not declare this as on process module
   let processEnd: (v?: any) => void;
@@ -202,7 +172,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
   }
 
   let MyModule: any;
-  if(thisCustom){
+  if (thisCustom) {
     MyModule = await CustomImport(filePath, extension, requireMap);
   } else {
     const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");

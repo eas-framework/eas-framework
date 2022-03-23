@@ -14,6 +14,7 @@ import { argv } from 'process';
 import { createSiteMap } from './SiteMap';
 import { isFileType, RemoveEndType } from './FileTypes';
 import { perCompile, postCompile } from '../BuildInComponents';
+import { PageTemplate } from '../CompileCode/ScriptTemplate';
 
 async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
@@ -28,7 +29,7 @@ async function compileFile(filePath: string, arrayType: string[], isDebug?: bool
     const CompiledData = await Insert(html, FullPathCompile, Boolean(nestedPage), nestedPageData, sessionInfo);
 
     if (!nestedPage) {
-        await EasyFs.writeFile(FullPathCompile, <string>CompiledData);
+        await EasyFs.writeFile(FullPathCompile, CompiledData.StringWithTack(FullPathCompile));
         pageDeps.update(RemoveEndType(ExcluUrl), sessionInfo.dependencies);
     }
 

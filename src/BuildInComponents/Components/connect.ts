@@ -9,7 +9,7 @@ function template(name: string) {
     return `function ${name}(...args){return connector("${name}", args)}`;
 }
 
-export default async function BuildCode(LastSmallPath: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, { SomePlugins }, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, { SomePlugins }, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const name = dataTag.getValue('name'),
         sendTo = dataTag.getValue('sendTo'),
         validator: string = dataTag.getValue('validate'),
@@ -21,7 +21,7 @@ export default async function BuildCode(LastSmallPath: string, type: StringTrack
 
         sessionInfo.script(serveScript, { async: null })
 
-    sessionInfo.addScriptStyle('script', parseTagDataStringBoolean(dataTag, 'page') ? LastSmallPath: type.extractInfo()).addText(template(name)); // add script
+    sessionInfo.addScriptStylePage('script', dataTag, type).addText(template(name)); // add script
 
     sessionInfo.connectorArray.push({
         type: 'connect',

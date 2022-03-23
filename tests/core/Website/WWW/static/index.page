@@ -1,0 +1,6 @@
+@[model='./server' title=Index]
+<@body/>
+<markdown>
+[Svelte](./svelte/index)
+[Svelte SSR](./svelte/ssr)
+</markdown>

@@ -1,6 +1,6 @@
 import fsExtra from 'fs-extra';
 import path from 'path';
-import esbuild from 'esbuild'
+import {build} from 'esbuild-wasm'
 
 const __dirname = path.resolve();
 
@@ -19,7 +19,7 @@ const fromScript = copyFrom + 'scripts/';
 await fsExtra.ensureDir(copyTo+'scripts/');
 
 const production = process.argv.includes('production');
-esbuild.build({
+build({
     external: ['./static/ImportWithoutCache.cjs', ...Object.keys((await fsExtra.readJSON(__dirname + '/package.json')).dependencies)],
     drop: ['debugger'],
     entryPoints: ['src/index.ts', fromScript + 'install.ts'],
@@ -51,7 +51,7 @@ async function minifyFolder(from, to, path) {
         if (i.isDirectory()) {
             minifyFolder(from, to, fullPath + '/');
         } else if (fullPath.endsWith('.js')) {
-            esbuild.build({
+            build({
                 entryPoints: [from + fullPath],
                 bundle: false,
                 platform: 'node',

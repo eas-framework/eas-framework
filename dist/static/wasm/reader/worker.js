@@ -1,6 +1,8 @@
 import workerPool from 'workerpool';
-import {build_stream} from './index.js';
+import {build_stream, find_end_of_def_skip_block, end_of_block} from './index.js';
 
 workerPool.worker({
-    build_stream
+    build_stream,
+    find_end_of_def_skip_block,
+    end_of_block
 });
