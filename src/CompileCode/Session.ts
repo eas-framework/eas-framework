@@ -150,12 +150,11 @@ export class SessionBuild {
 
         const makeAttributes = (i: setDataHTMLTag) => i.attributes ? ' ' + Object.keys(i.attributes).map(x => i.attributes[x] ? x + `="${i.attributes[x]}"` : x).join(' ') : '';
 
-        const addTypeInfo = this.typeName == getTypes.Logs[2] ? '?t=l' : '';
         let buildBundleString = ''; // add scripts add css
         for (const i of this.styleURLSet)
-            buildBundleString += `<link rel="stylesheet" href="${i.url + addTypeInfo}"${makeAttributes(i)}/>`;
+            buildBundleString += `<link rel="stylesheet" href="${i.url}"${makeAttributes(i)}/>`;
         for (const i of this.scriptURLSet)
-            buildBundleString += `<script src="${i.url + addTypeInfo}"${makeAttributes(i)}></script>`;
+            buildBundleString += `<script src="${i.url}"${makeAttributes(i)}></script>`;
 
         return buildBundleString + this.headHTML;
     }

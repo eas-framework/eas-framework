@@ -18,7 +18,7 @@ async function requestAndSettings(req: Request, res: Response) {
 }
 
 async function changeURLRules(req: Request, res: Response) {
-    let url = fileByUrl.urlFix(req.url);
+    let url = fileByUrl.urlFix(req.path);
 
     
     for (let i of Settings.routing.urlStop) {

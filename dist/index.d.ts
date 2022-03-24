@@ -503,6 +503,7 @@ declare module "@eas-framework/server/RunTimeBuild/SearchFileSystem" {
     };
     export function DeleteInDirectory(path: any): Promise<void>;
     export function smallPathToPage(smallPath: string): string;
+    export function getTypeBySmallPath(smallPath: string): any;
     export { getDirname, SystemData, workingDirectory, getTypes, BasicSettings };
 }
 declare module "@eas-framework/server/CompileCode/BaseReader/Reader" {

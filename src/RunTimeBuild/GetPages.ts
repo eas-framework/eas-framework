@@ -367,8 +367,6 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
 }
 
 function urlFix(url: string) {
-    url = url.substring(0, url.lastIndexOf('?')) || url;
-
     if (url == '/') {
         url = '/index';
     }

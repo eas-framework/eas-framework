@@ -87,8 +87,10 @@ export async function compileSass(language: string, BetweenTagData: StringTracke
         });
         outStyle = result?.css ?? outStyle;
     } catch (err) {
-        const FullPath = fileURLToPath(err.span.url);
-        await sessionInfo.dependence(BasicSettings.relative(FullPath), FullPath)
+        if(err.span.url){
+            const FullPath = fileURLToPath(err.span.url);
+            await sessionInfo.dependence(BasicSettings.relative(FullPath), FullPath)
+        }
         PrintSassErrorTracker(err, BetweenTagData);
         return {outStyle: 'Sass Error (see console)'}
     }

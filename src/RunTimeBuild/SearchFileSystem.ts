@@ -131,6 +131,11 @@ export function smallPathToPage(smallPath: string){
     return CutTheLast('.', SplitFirst('/', smallPath).pop());
 }
 
+export function getTypeBySmallPath(smallPath: string){
+    return getTypes[SplitFirst('/', smallPath).shift()];
+}
+
+
 
 export {
     getDirname,
