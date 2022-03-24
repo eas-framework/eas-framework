@@ -121,9 +121,10 @@ export class SessionBuild {
     }
 
     private async addHeadTags() {
-        const isLogs = this.typeName == getTypes.Logs[2]
+        const pageLog = this.typeName == getTypes.Logs[2]
         for (const i of this.inScriptStyle) {
-            const saveLocation = i.path == this.smallPath && isLogs ? getTypes.Logs[1] : getTypes.Static[1], addQuery = isLogs ? '?t=l' : '';
+            const isLog = pageLog && i.path == this.smallPath;
+            const saveLocation = isLog ? getTypes.Logs[1] : getTypes.Static[1], addQuery = isLog ? '?t=l' : '';
             let url = StaticFilesInfo.have(i.path, () => SessionBuild.createName(i.path)) + '.pub';
 
             switch (i.type) {
@@ -183,7 +184,7 @@ export class SessionBuild {
     }
 
     //basic methods
-    BuildScriptWithPrams(code: StringTracker){
-        return BuildScript(code, isTs(), this);  
+    BuildScriptWithPrams(code: StringTracker) {
+        return BuildScript(code, isTs(), this);
     }
 }
