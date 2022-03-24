@@ -47,4 +47,4 @@ A lot of build-in components - make you write less.
 ## Docs
 You can see the documentation [here](https://eas-framework.ml/docs).
 
-**Documentation website is not completed**
+**Documentation website is on build**
