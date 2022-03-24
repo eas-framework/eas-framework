@@ -70,22 +70,6 @@ require('source-map-support').install();module.exports = (_require, _include, _t
 <li class="nav-item">
     <a class="nav-link" href="/compile">Generated Compile</a>
 </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Dropdown
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-                    </li>
                 </ul>
                 <form class="d-flex">
                     <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
@@ -100,7 +84,7 @@ require('source-map-support').install();module.exports = (_require, _include, _t
             
 <div id="c3RhdGljL3"><main><div class="counter svelte-11tu8i0"><p class="svelte-11tu8i0">Counte: 5</p>
         <button class="svelte-11tu8i0">+</button></div>
-    <div class="number-color svelte-1lqy072"><p style="font-size:16px">This number: 0.013</p>
+    <div class="number-color svelte-1lqy072"><p style="font-size:16px">This number: 0.532</p>
 </div>
     {
   &quot;max&quot;: 100,

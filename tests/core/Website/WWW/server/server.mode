@@ -1,1 +1,1 @@
-@[model='Website' title='Server | <:title/>' body=inherit]
+@[model='TestBreadcrumb' title='Server' link='/server/index' body=inherit pageTitle='<:title/>']

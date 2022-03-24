@@ -1,4 +1,4 @@
-@[model='./server']
+@[model='./server' title='Index']
 <@body/>
 <markdown>
 [Import](./import/index)

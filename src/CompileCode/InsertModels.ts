@@ -94,7 +94,7 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
         if (holderData) {
             modelBuild.Plus(holderData.data);
         } else { // Try loading data from page base
-            const loadFromBase = baseData.pop(i.tag);
+            const loadFromBase = baseData.get(i.tag);
 
             if (loadFromBase && loadFromBase.eq.toLowerCase() != 'inherit')
                 modelBuild.Plus(loadFromBase);

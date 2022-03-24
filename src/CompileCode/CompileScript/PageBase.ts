@@ -103,6 +103,9 @@ export default class ParseBasePage {
         return parse.clearData.Plus(build);
     }
 
+    get(name: string){
+        return this.valueArray.find(x => x.key === name)[0]?.value
+    }
 
     pop(name: string) {
         return this.valueArray.splice(this.valueArray.findIndex(x => x.key === name), 1)[0]?.value;
