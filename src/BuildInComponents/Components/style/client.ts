@@ -25,7 +25,7 @@ export default async function BuildCode(language: string, dataTag: tagDataObject
     const pushStyle = sessionInfo.addScriptStylePage('style', dataTag,  BetweenTagData);
 
     if (result?.sourceMap)
-        pushStyle.addSourceMapWithStringTracker(SourceMapStore.fixURLSourceMap(result.sourceMap), BetweenTagData, outStyle);
+        pushStyle.addSourceMapWithStringTracker(SourceMapStore.fixURLSourceMap(<any>result.sourceMap), BetweenTagData, outStyle);
     else
         pushStyle.addStringTracker(BetweenTagData, { text: outStyle });
 

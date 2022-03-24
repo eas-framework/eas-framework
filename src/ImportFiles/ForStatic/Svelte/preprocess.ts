@@ -10,7 +10,7 @@ import sass from 'sass';
 import { v4 as uuid } from 'uuid';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { createImporter, sassStyle, sassSyntax } from '../../../BuildInComponents/Components/style/sass';
+import { createImporter, getSassErrorLine, PrintSassError, PrintSassErrorTracker, sassStyle, sassSyntax } from '../../../BuildInComponents/Components/style/sass';
 import { SessionBuild } from '../../../CompileCode/Session';
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { Extension, SplitFirst } from '../../../StringMethods/Splitting';
@@ -33,15 +33,11 @@ async function SASSSvelte(content: StringTracker, lang: string, fullPath: string
         });
 
         return {
-            code: backToOriginalSss(content, css, sourceMap, sourceMap.sources.find(x => x.startsWith('data:'))),
+            code: await backToOriginalSss(content, css,<any> sourceMap, sourceMap.sources.find(x => x.startsWith('data:'))),
             dependencies: loadedUrls.map(x => fileURLToPath(<any>x))
         };
     } catch (err) {
-        PrintIfNew({
-            text: `${err.message}, on file -> ${fullPath}${err.line ? ':' + err.line : ''}`,
-            errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
-            type: err?.status == 5 ? 'warn' : 'error'
-        });
+        PrintSassErrorTracker(err, content);
     }
 
     return {
@@ -51,7 +47,10 @@ async function SASSSvelte(content: StringTracker, lang: string, fullPath: string
 
 async function ScriptSvelte(content: StringTracker, lang: string, connectSvelte: string[], svelteExt = ''): Promise<StringTracker> {
     const mapToken = {};
-    content = content.replacer(/((import({|[ ]*\(?)|((import|export)({|[ ]+)[\W\w]+?(}|[ ]+)from))(}|[ ]*))(["|'|`])([\W\w]+?)\9([ ]*\))?/m, args => {
+    content = content.replacer(/((import({|[ ]*\(?)|((import[ ]*type|import|export)({|[ ]+)[\W\w]+?(}|[ ]+)from))(}|[ ]*))(["|'|`])([\W\w]+?)\9([ ]*\))?/m, args => {
+        if(lang == 'ts' && args[5].endsWith(' type'))
+            return args[0];
+        
         const ext = extname(args[10].eq);
 
         if (ext == '')
@@ -79,7 +78,7 @@ async function ScriptSvelte(content: StringTracker, lang: string, connectSvelte:
 
     try {
         const { code, map } = (await transform(content.eq, { ...GetPlugin("transformOptions"), loader: 'ts', sourcemap: true }));
-        content = backToOriginal(content, code, map);
+        content = await backToOriginal(content, code, map);
     } catch (err) {
         ESBuildPrintErrorStringTracker(content, err);
 
@@ -93,21 +92,22 @@ async function ScriptSvelte(content: StringTracker, lang: string, connectSvelte:
     return content;
 }
 
-export async function preprocess(fullPath: string, smallPath: string, savePath?: string, httpSource = true, svelteExt = '') {
-    const filename = smallPath.split(/\/|\//).pop();
-    savePath ??= filename;
-    
-    let text = new StringTracker(filename, await EasyFs.readFile(fullPath));
+export async function preprocess(fullPath: string, smallPath: string, savePath = smallPath, httpSource = true, svelteExt = '') {    
+    let text = new StringTracker(smallPath, await EasyFs.readFile(fullPath));
+
+    let scriptLang = 'js', styleLang = 'css';
 
     const connectSvelte: string[] = [], dependencies: string[] = [];
-    text = await text.replacerAsync(/(<script)[ ]*( lang=('|")?([A-Za-z]+)('|")?)?[ ]*(>)(.*?)(<\/script>)/s, async args => {
-        return args[1].Plus(args[6], await ScriptSvelte(args[7], args[4]?.eq ?? 'js', connectSvelte, svelteExt), args[8]);
+    text = await text.replacerAsync(/(<script)[ ]*( lang=('|")?([A-Za-z]+)('|")?)?[ ]*(>\n?)(.*?)(\n?<\/script>)/s, async args => {
+        scriptLang = args[4]?.eq ?? 'js';
+        return args[1].Plus(args[6], await ScriptSvelte(args[7], scriptLang, connectSvelte, svelteExt), args[8]);
     });
 
     const styleCode = connectSvelte.map(x => `@import "${x}.css";`).join('');
     let hadStyle = false;
     text = await text.replacerAsync(/(<style)[ ]*( lang=('|")?([A-Za-z]+)('|")?)?[ ]*(>)(.*?)(<\/style>)/s, async args => {
-        const { code, dependencies: deps } = await SASSSvelte(args[7], args[4]?.eq ?? 'css', fullPath);
+        styleLang = args[4]?.eq ?? 'css';
+        const { code, dependencies: deps } = await SASSSvelte(args[7], styleLang, fullPath);
         deps && dependencies.push(...deps);
         hadStyle = true;
         styleCode && code.AddTextBeforeNoTrack(styleCode);
@@ -126,7 +126,7 @@ export async function preprocess(fullPath: string, smallPath: string, savePath?:
     }
 
 
-    return { code: text.eq, map: text.StringTack(savePath, httpSource), dependencies: sessionInfo.dependencies, svelteFiles: connectSvelte.map(x => x[0] == '/' ? getTypes.Static[0] + x : path.normalize(fullPath + '/../' + x)) };
+    return { scriptLang, styleLang, code: text.eq, map: text.StringTack(savePath, httpSource), dependencies: sessionInfo.dependencies, svelteFiles: connectSvelte.map(x => x[0] == '/' ? getTypes.Static[0] + x : path.normalize(fullPath + '/../' + x)) };
 }
 
 export function Capitalize(name: string) {

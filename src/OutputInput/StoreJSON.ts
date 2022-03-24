@@ -13,7 +13,7 @@ export default class StoreJSON {
 
         process.on('SIGINT', () => {
             this.save();
-            setTimeout(() => process.exit);
+            setTimeout(() => process.exit());
         });
         process.on('exit', this.save.bind(this));
     }

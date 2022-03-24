@@ -248,9 +248,14 @@ declare module "@eas-framework/server/StringMethods/Splitting" {
     export function trimType(type: string, string: string): string;
     export function substringStart<T extends globalString<T>>(start: string, string: T): T;
 }
+declare module "@eas-framework/server/EasyDebug/SourceMap" {
+    import { RawSourceMap, SourceMapGenerator } from "source-map";
+    export function toURLComment(map: SourceMapGenerator, isCss?: boolean): string;
+    export function MergeSourceMap(generatedMap: RawSourceMap, originalMap: RawSourceMap): Promise<SourceMapGenerator>;
+}
 declare module "@eas-framework/server/EasyDebug/SourceMapStore" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { SourceMapGenerator, RawSourceMap } from "source-map-js";
+    import { SourceMapGenerator, RawSourceMap } from "source-map";
     export abstract class SourceMapBasic {
         protected filePath: string;
         protected httpSource: boolean;
@@ -287,7 +292,7 @@ declare module "@eas-framework/server/EasyDebug/SourceMapStore" {
 }
 declare module "@eas-framework/server/EasyDebug/StringTrackerToSourceMap" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    export function outputMap(text: StringTracker, filePath: string, httpSource?: boolean, relative?: boolean): import("source-map-js").RawSourceMap;
+    export function outputMap(text: StringTracker, filePath: string, httpSource?: boolean, relative?: boolean): import("source-map").RawSourceMap;
     export function outputWithMap(text: StringTracker, filePath: string): string;
 }
 declare module "@eas-framework/server/EasyDebug/StringTracker" {
@@ -484,8 +489,7 @@ declare module "@eas-framework/server/EasyDebug/StringTracker" {
         /**
          * Extract error info form error message
          */
-        debugLine({ message, text, location, line, col, sassStack }: {
-            sassStack?: string;
+        debugLine({ message, text, location, line, col }: {
             message?: string;
             text?: string;
             location?: {
@@ -496,7 +500,7 @@ declare module "@eas-framework/server/EasyDebug/StringTracker" {
             col?: number;
         }): string;
         StringWithTack(fullSaveLocation: string): string;
-        StringTack(fullSaveLocation: string, httpSource?: boolean, relative?: boolean): import("source-map-js").RawSourceMap;
+        StringTack(fullSaveLocation: string, httpSource?: boolean, relative?: boolean): import("source-map").RawSourceMap;
     }
 }
 declare module "@eas-framework/server/CompileCode/BaseReader/Reader" {
@@ -684,10 +688,10 @@ declare module "@eas-framework/server/BuildInComponents/Components/serv-connect/
 }
 declare module "@eas-framework/server/EasyDebug/SourceMapLoad" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { RawSourceMap } from "source-map-js";
-    export default function SourceMapToStringTracker(code: string, sourceMap: string | RawSourceMap): StringTracker;
-    export function backToOriginal(original: StringTracker, code: string, sourceMap: string | RawSourceMap): StringTracker;
-    export function backToOriginalSss(original: StringTracker, code: string, sourceMap: string | RawSourceMap, mySource: string): StringTracker;
+    import { RawSourceMap } from "source-map";
+    export default function SourceMapToStringTracker(code: string, sourceMap: string | RawSourceMap): Promise<StringTracker>;
+    export function backToOriginal(original: StringTracker, code: string, sourceMap: string | RawSourceMap): Promise<StringTracker>;
+    export function backToOriginalSss(original: StringTracker, code: string, sourceMap: string | RawSourceMap, mySource: string): Promise<StringTracker>;
 }
 declare module "@eas-framework/server/OutputInput/PrintNew" {
     export interface PreventLog {
@@ -708,11 +712,15 @@ declare module "@eas-framework/server/OutputInput/PrintNew" {
 }
 declare module "@eas-framework/server/CompileCode/esbuild/printMessage" {
     import { Message } from 'esbuild-wasm';
+    import { RawSourceMap } from 'source-map';
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    export function ESBuildPrintError(filePath: string, { errors }: {
+    export function ESBuildPrintError({ errors }: {
         errors: Message[];
-    }): void;
-    export function ESBuildPrintWarnings(filePath: string, warnings: Message[]): void;
+    }, filePath?: string): void;
+    export function ESBuildPrintErrorSourceMap({ errors }: {
+        errors: Message[];
+    }, sourceMap: RawSourceMap, filePath?: string): Promise<void>;
+    export function ESBuildPrintWarnings(warnings: Message[], filePath?: string): void;
     export function ESBuildPrintWarningsStringTracker(base: StringTracker, warnings: Message[]): void;
     export function ESBuildPrintErrorStringTracker(base: StringTracker, err: Message): void;
 }
@@ -887,6 +895,17 @@ declare module "@eas-framework/server/BuildInComponents/Components/style/sass" {
     export function sassStyle(language: string, SomePlugins: any): "compressed" | "expanded";
     export function sassSyntax(language: 'sass' | 'scss' | 'css'): "css" | "scss" | "indented";
     export function sassAndSource(sourceMap: RawSourceMap, source: string): void;
+    export function getSassErrorLine({ sassStack }: {
+        sassStack: any;
+    }): {
+        line: any;
+        column: any;
+    };
+    export function PrintSassError(err: any, fullPath: string, { line, column }?: {
+        line: any;
+        column: any;
+    }): void;
+    export function PrintSassErrorTracker(err: any, track: StringTracker): void;
     export function compileSass(language: string, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild, outStyle?: string): Promise<{
         result: sass.CompileResult;
         outStyle: string;
@@ -945,8 +964,10 @@ declare module "@eas-framework/server/BuildInComponents/Components/isolate" {
 declare module "@eas-framework/server/ImportFiles/ForStatic/Svelte/preprocess" {
     import { StringNumberMap } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     export function preprocess(fullPath: string, smallPath: string, savePath?: string, httpSource?: boolean, svelteExt?: string): Promise<{
+        scriptLang: string;
+        styleLang: string;
         code: string;
-        map: import("source-map-js").RawSourceMap;
+        map: import("source-map").RawSourceMap;
         dependencies: StringNumberMap;
         svelteFiles: string[];
     }>;
@@ -957,6 +978,12 @@ declare module "@eas-framework/server/ImportFiles/redirectCJS" {
     const resolve: (path: string) => string;
     export default function (filePath: string): any;
     export { clearModule, resolve };
+}
+declare module "@eas-framework/server/ImportFiles/ForStatic/Svelte/error" {
+    import { Warning } from "svelte/types/compiler/interfaces";
+    import { RawSourceMap } from "source-map";
+    export function PrintSvelteError({ message, code, start, frame }: Warning, filePath: string, sourceMap: RawSourceMap): Promise<void>;
+    export function PrintSvelteWarn(warnings: Warning[], filePath: string, sourceMap: RawSourceMap): Promise<void>;
 }
 declare module "@eas-framework/server/ImportFiles/ForStatic/Svelte/ssr" {
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
@@ -1641,16 +1668,6 @@ declare module "@eas-framework/server" {
     export const AsyncImport: (path: string, importFrom?: string) => Promise<any>;
     export const Server: typeof server;
     export { Settings, LocalSql, dump };
-}
-declare module "@eas-framework/server/ImportFiles/ForStatic/Svelte/preprocess-old" {
-    import { StringNumberMap } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
-    export function preprocess(fullPath: string, smallPath: string, svelteExt?: string): Promise<{
-        code: string;
-        map: string | object;
-        dependencies: StringNumberMap;
-        svelteFiles: string[];
-    }>;
-    export function Capitalize(name: string): string;
 }
 declare module "@eas-framework/server/scripts/build-scripts" { }
 declare module "@eas-framework/server/scripts/install" { }

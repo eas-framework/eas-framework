@@ -772,13 +772,7 @@ export default class StringTracker {
     /**
      * Extract error info form error message
      */
-    public debugLine({ message, text, location, line, col, sassStack }: { sassStack?: string, message?: string, text?: string, location?: { line: number, column: number }, line?: number, col?: number }): string {
-        if (sassStack) {
-            const loc = sassStack.match(/[0-9]+:[0-9]+/)[0].split(':').map(x => Number(x));
-            line = loc[0];
-            col = loc[1];
-        }
-
+    public debugLine({ message, text, location, line, col }: { message?: string, text?: string, location?: { line: number, column: number }, line?: number, col?: number }): string {
         let searchLine = this.getLine(line ?? location?.line ?? 1), column = col ?? location?.column ?? 0;
         if (searchLine.startsWith('//')) {
             searchLine = this.getLine((line ?? location?.line) - 1);

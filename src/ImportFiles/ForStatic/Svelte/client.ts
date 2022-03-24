@@ -3,44 +3,67 @@ import * as svelte from 'svelte/compiler';
 import { preprocess } from "./preprocess";
 import { SomePlugins } from "../../../CompileCode/InsertModels";
 import { transform } from "esbuild-wasm";
-import { PrintIfNew } from "../../../OutputInput/PrintNew";
 import EasyFs from "../../../OutputInput/EasyFs";
+import { ESBuildPrintErrorSourceMap } from "../../../CompileCode/esbuild/printMessage";
+import { toURLComment, MergeSourceMap } from "../../../EasyDebug/SourceMap";
+import { PrintIfNew } from "../../../OutputInput/PrintNew";
+import { PrintSvelteError, PrintSvelteWarn } from "./error";
 
 export default async function BuildScript(inStaticPath: string, isDebug: boolean) {
     const fullPath = getTypes.Static[0] + inStaticPath, fullCompilePath = getTypes.Static[1] + inStaticPath;
 
-    const { code, dependencies, map } = await preprocess(fullPath, getTypes.Static[2] + '/' + inStaticPath);
-
+    const { code, dependencies, map, scriptLang } = await preprocess(fullPath, getTypes.Static[2] + '/' + inStaticPath);
     const filename = fullPath.split(/\/|\//).pop();
-    const { js, css } = svelte.compile(code, {
-        filename,
-        dev: isDebug,
-        sourcemap: map,
-        css: false,
-        hydratable: true,
-        sveltePath: '/serv/svelte'
-    });
+    let js: any, css: any;
+    try {
+        const output = svelte.compile(code, {
+            filename,
+            dev: isDebug,
+            sourcemap: map,
+            css: false,
+            hydratable: true,
+            sveltePath: '/serv/svelte'
+        });
+        PrintSvelteWarn(output.warnings, fullPath, map);
+        js = output.js;
+        css = output.css;
+    } catch(err) {
+        PrintSvelteError(err, fullPath, map);
+        return {
+            thisFile: 0
+        };
+    }
+
+
+    const sourceFileClient = js.map.sources[0].substring(1);
+
+    if(isDebug){
+        js.map.sources[0] = sourceFileClient;
+    }
 
     if (SomePlugins("MinJS") || SomePlugins("MinAll")) {
         try {
-            js.code = (await transform(js.code, {
-                minify: true
-            })).code
+            const { code, map } = await transform(js.code, {
+                minify: true,
+                loader: <any>scriptLang,
+                sourcemap: isDebug
+            });
+
+            js.code = code;
+            if (map) {
+                js.map = await MergeSourceMap(JSON.parse(map), js.map);
+            }
         } catch (err) {
-            PrintIfNew({
-                errorName: 'minify',
-                text: `${err.message} on file -> ${fullPath}`
-            })
+            await ESBuildPrintErrorSourceMap(err, js.map, fullPath);
         }
     }
 
     if (isDebug) {
-        js.map.sources[0].substring(1);
-        js.code += '\n//# sourceMappingURL=' + js.map.toUrl();
-
+        js.code += toURLComment(js.map);
+        
         if (css.code) {
-            css.map.sources[0] = js.map.sources[0];
-            css.code += '\n/*# sourceMappingURL=' + css.map.toUrl() + '*/';
+            css.map.sources[0] = sourceFileClient;
+            css.code += toURLComment(css.map, true);
         }
     }
 

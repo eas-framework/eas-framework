@@ -44,7 +44,7 @@ export default async function BuildCode(language: string, pathName: string, type
         const {map, code, warnings} = await transform(BetweenTagDataExtracted, AddOptions);
         ESBuildPrintWarningsStringTracker(BetweenTagData, warnings);
         
-        ResCode = SaveServerCode.RestoreCode(SourceMapToStringTracker(code, map));
+        ResCode = SaveServerCode.RestoreCode(await SourceMapToStringTracker(code, map));
     } catch (err) {
         ESBuildPrintErrorStringTracker(BetweenTagData, err)
     }

@@ -63,9 +63,9 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
   try {
     const { code, warnings } = await transform(Result, Options);
     Result = code;
-    ESBuildPrintWarnings(filePath, warnings);
+    ESBuildPrintWarnings(warnings, filePath);
   } catch (err) {
-    ESBuildPrintError(filePath, err);
+    ESBuildPrintError(err, filePath);
   }
 
   if (savePath) {

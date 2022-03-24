@@ -18,9 +18,9 @@ async function BuildScript(inputPath: string, type: string, isDebug: boolean, mo
     try {
         const { code, warnings } = await transform(result, AddOptions);
         result = code;
-        ESBuildPrintWarnings(fullPath, warnings);
+        ESBuildPrintWarnings(warnings, fullPath);
     } catch (err) {
-        ESBuildPrintError(fullPath, err);
+        ESBuildPrintError(err, fullPath);
     }
 
     await EasyFs.makePathReal(inputPath, getTypes.Static[1]);

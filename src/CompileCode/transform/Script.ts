@@ -34,7 +34,7 @@ export default async function BuildScript(text: StringTracker, isTypescript: boo
     try {
         const {code, map, warnings} = await transform(await EasySyntax.BuildAndExportImports(text.eq), Options);
         ESBuildPrintWarningsStringTracker(text, warnings);
-        result = map ? backToOriginal(text, code, map): new StringTracker(null, code);
+        result = map ? await backToOriginal(text, code, map): new StringTracker(null, code);
     } catch (err) {
         ESBuildPrintErrorStringTracker(text, err);
         const errorMessage = text.debugLine(err);

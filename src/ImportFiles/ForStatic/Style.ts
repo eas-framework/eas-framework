@@ -5,7 +5,7 @@ import { SomePlugins } from '../../CompileCode/InsertModels';
 import path from 'path';
 import {fileURLToPath, pathToFileURL} from "url";
 import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem';
-import {  createImporter, sassAndSource, sassStyle, sassSyntax } from '../../BuildInComponents/Components/style/sass';
+import {  createImporter, getSassErrorLine, PrintSassError, sassAndSource, sassStyle, sassSyntax } from '../../BuildInComponents/Components/style/sass';
 
 export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | "css", isDebug: boolean): Promise<{ [key: string]: number }> {
     const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
@@ -42,12 +42,8 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
         }
         await EasyFs.makePathReal(inputPath, getTypes.Static[1]);
         await EasyFs.writeFile(fullCompilePath, data);
-    } catch (expression) {
-        PrintIfNew({
-            text: `${expression.message}, on file -> ${fullPath}${expression.line ? ':' + expression.line : ''}`,
-            errorName: expression?.status == 5 ? 'sass-warning' : 'sass-error',
-            type: expression?.status == 5 ? 'warn' : 'error'
-        });
+    } catch (err) {
+        PrintSassError(err, fullPath);
     }
     return dependenceObject
 }

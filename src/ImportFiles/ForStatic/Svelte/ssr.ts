@@ -7,6 +7,8 @@ import { BasicSettings, getTypes } from "../../../RunTimeBuild/SearchFileSystem"
 import { PrintIfNew } from "../../../OutputInput/PrintNew";
 import EasyFs from "../../../OutputInput/EasyFs";
 import { clearModule, resolve } from "../../redirectCJS";
+import { toURLComment } from "../../../EasyDebug/SourceMap";
+import { PrintSvelteWarn } from "./error";
 
 export default async function registerExtension(filePath: string, smallPath: string, sessionInfo: SessionBuild) {
     const name = path.parse(filePath).name.replace(/^\d/, '_$&').replace(/[^a-zA-Z0-9_$]/g, '');
@@ -17,6 +19,7 @@ export default async function registerExtension(filePath: string, smallPath: str
         generate: 'ssr',
         format: 'cjs',
         dev: sessionInfo.debug,
+        errorMode: 'warn'
     };
 
     const inStaticFile = path.relative(getTypes.Static[2], smallPath);
@@ -35,22 +38,13 @@ export default async function registerExtension(filePath: string, smallPath: str
 
     await Promise.all(promises);
     const { js, css, warnings } = svelte.compile(code, <any>options);
-
-    if (sessionInfo.debug) {
-        warnings.forEach(warning => {
-            PrintIfNew({
-                errorName: warning.code,
-                type: 'warn',
-                text: warning.message + '\n' + warning.frame
-            });
-        });
-    }
+    PrintSvelteWarn(warnings, filePath, map);
 
     await EasyFs.writeFile(fullImportPath, js.code);
 
     if (css.code) {
         css.map.sources[0] = '/' + inStaticFile.split(/\/|\//).pop() + '?source=true';
-        css.code += '\n/*# sourceMappingURL=' + css.map.toUrl() + '*/';
+        css.code += toURLComment(css.map, true);
     }
 
     await EasyFs.writeFile(fullCompilePath + '.css', css.code ?? '');

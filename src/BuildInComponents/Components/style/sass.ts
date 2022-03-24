@@ -16,7 +16,7 @@ export function createImporter(originalPath: string) {
             if (url[0] == '/' || url[0] == '~') {
                 return new URL(
                     url.substring(1),
-                    pathToFileURL(url[0] == '/' ? getTypes.Static[0]: getTypes.node_modules[0])
+                    pathToFileURL(url[0] == '/' ? getTypes.Static[0] : getTypes.node_modules[0])
                 );
             }
 
@@ -34,17 +34,39 @@ export function sassStyle(language: string, SomePlugins: any) {
     return minifyPluginSass(language, SomePlugins) ? 'compressed' : 'expanded';
 }
 
-export function sassSyntax(language: 'sass' | 'scss' | 'css'){
-    return language == 'sass' ? 'indented': language;
+export function sassSyntax(language: 'sass' | 'scss' | 'css') {
+    return language == 'sass' ? 'indented' : language;
 }
 
-export function sassAndSource(sourceMap: RawSourceMap, source: string){
-    if(!sourceMap) return;
-    for(const i in sourceMap.sources){
-        if(sourceMap.sources[i].startsWith('data:')){
+export function sassAndSource(sourceMap: RawSourceMap, source: string) {
+    if (!sourceMap) return;
+    for (const i in sourceMap.sources) {
+        if (sourceMap.sources[i].startsWith('data:')) {
             sourceMap.sources[i] = source;
         }
     }
+}
+
+export function getSassErrorLine({ sassStack }) {
+    const loc = sassStack.match(/[0-9]+:[0-9]+/)[0].split(':').map(x => Number(x));
+    return { line: loc[0], column: loc[1] }
+}
+
+export function PrintSassError(err: any, fullPath: string, {line, column} = getSassErrorLine(err)){
+    PrintIfNew({
+        text: `${err.message}, on file -> ${fullPath}:${line ?? 0}:${column ?? 0}`,
+        errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
+        type: err?.status == 5 ? 'warn' : 'error'
+    });
+}
+
+export function PrintSassErrorTracker(err: any, track: StringTracker){
+    err.location = getSassErrorLine(err);
+    PrintIfNew({
+        text: track.debugLine(err),
+        errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
+        type: err?.status == 5 ? 'warn' : 'error'
+    });
 }
 
 export async function compileSass(language: string, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild, outStyle = BetweenTagData.eq) {
@@ -62,12 +84,8 @@ export async function compileSass(language: string, BetweenTagData: StringTracke
             logger: sass.Logger.silent
         });
         outStyle = result?.css ?? outStyle;
-    } catch (expression) {
-        PrintIfNew({
-            text: BetweenTagData.debugLine(expression),
-            errorName: expression?.status == 5 ? 'sass-warning' : 'sass-error',
-            type: expression?.status == 5 ? 'warn' : 'error'
-        });
+    } catch (err) {
+        PrintSassErrorTracker(err, BetweenTagData);
     }
 
     if (result?.loadedUrls) {

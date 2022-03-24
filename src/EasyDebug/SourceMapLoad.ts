@@ -1,14 +1,14 @@
 import StringTracker from "./StringTracker";
-import { RawSourceMap, SourceMapConsumer } from "source-map-js";
+import { RawSourceMap, SourceMapConsumer } from "source-map";
 import { fileURLToPath } from "url";
 import { BasicSettings } from "../RunTimeBuild/SearchFileSystem";
 
-export default function SourceMapToStringTracker(code: string, sourceMap: string | RawSourceMap) {
+export default async function SourceMapToStringTracker(code: string, sourceMap: string | RawSourceMap) {
     const map = typeof sourceMap == 'string' ? JSON.parse(sourceMap): sourceMap;
 
     const trackCode = new StringTracker(null, code);
     const splitLines = trackCode.split('\n');
-    new SourceMapConsumer(map).eachMapping(m => {
+    (await new SourceMapConsumer(map)).eachMapping(m => {
         const isMap = splitLines[m.generatedLine - 1];
         if (!isMap) return;
 
@@ -34,8 +34,8 @@ function mergeInfoStringTracker(original: StringTracker, generated: StringTracke
     }
 }
 
-export function backToOriginal(original: StringTracker, code: string, sourceMap: string | RawSourceMap) {
-    const newTracker = SourceMapToStringTracker(code, sourceMap);
+export async function backToOriginal(original: StringTracker, code: string, sourceMap: string | RawSourceMap) {
+    const newTracker = await SourceMapToStringTracker(code, sourceMap);
     mergeInfoStringTracker(original, newTracker);
 
     return newTracker;
@@ -54,8 +54,8 @@ function mergeSassInfoStringTracker(original: StringTracker, generated: StringTr
         }
     }
 }
-export function backToOriginalSss(original: StringTracker, code: string, sourceMap: string | RawSourceMap, mySource: string) {
-    const newTracker = SourceMapToStringTracker(code, sourceMap);
+export async function backToOriginalSss(original: StringTracker, code: string, sourceMap: string | RawSourceMap, mySource: string) {
+    const newTracker = await SourceMapToStringTracker(code, sourceMap);
     mergeSassInfoStringTracker(original, newTracker, mySource);
 
     return newTracker;

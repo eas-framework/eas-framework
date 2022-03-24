@@ -1,9 +1,10 @@
 import StringTracker from './StringTracker';
-import { SourceMapGenerator, RawSourceMap, SourceMapConsumer } from "source-map-js";
+import { SourceMapGenerator, RawSourceMap, SourceMapConsumer } from "source-map";
 import path from 'path';
 import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem';
 import {fileURLToPath} from "url";
 import { SplitFirst } from '../StringMethods/Splitting';
+import { toURLComment } from './SourceMap';
 export abstract class SourceMapBasic {
     protected map: SourceMapGenerator;
     protected fileDirName: string;
@@ -33,18 +34,11 @@ export abstract class SourceMapBasic {
     }
 
     getRowSourceMap(): RawSourceMap{
-        return (<any>this.map).toJSON()
+        return this.map.toJSON()
     }
 
     mapAsURLComment() {
-        let mapString = `sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(this.map.toString()).toString("base64")}`;
-
-        if (this.isCss)
-            mapString = `/*# ${mapString}*/`
-        else
-            mapString = '//# ' + mapString;
-
-        return '\r\n' + mapString;
+        return toURLComment(this.map, this.isCss);
     }
 }
 
@@ -119,7 +113,7 @@ export default class SourceMapStore extends SourceMapBasic {
         if (!this.debug)
             return this._addText(text);
 
-        new SourceMapConsumer(fromMap).eachMapping((m) => {
+        (await new SourceMapConsumer(fromMap)).eachMapping((m) => {
             const dataInfo = track.getLine(m.originalLine).getDataArray()[0];
 
             if (m.source == this.filePath)
