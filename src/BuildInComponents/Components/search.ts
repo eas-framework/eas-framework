@@ -1,5 +1,5 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, BuildInComponent } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { tagDataObjectArray, BuildInComponent, StringMap } from '../../CompileCode/XMLHelpers/CompileTypes';
 import JSParser from '../../CompileCode/JSParser'
 import { SessionBuild } from '../../CompileCode/Session';
 import InsertComponent from '../../CompileCode/InsertComponent';
@@ -27,8 +27,7 @@ export default async function BuildCode( pathName: string, dataTag: tagDataObjec
     if(!current){
         store[link] = searchObject;
     } else {
-        const newTitles = searchObject.titles.filter(x => current.titles.find(i => i.id != x.id))
-        current.titles.push(...newTitles);
+        Object.assign(current.titles,searchObject.titles);
 
         if(!current.text.includes(searchObject.text)){
             current.text += searchObject.text;
@@ -49,18 +48,16 @@ function buildObject(html: string, match: string) {
         }
     });
 
-    const titles: {id: string, text:string}[] = [];
+    const titles: StringMap = {};
 
     for (const element of root.querySelectorAll(match)) {
         const id = element.attributes['id'];
-        titles.push({
-            id,
-            text: element.innerText.trim()
-        });
+        titles[id] = element.innerText.trim();
+        element.remove();
     }
 
     return {
         titles,
-        text: root.innerText.trim()
+        text: root.innerText.trim().replace(/[ \n]{2,}/g, ' ').replace(/[\n]/g, ' ')
     }
 }

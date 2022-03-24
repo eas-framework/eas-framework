@@ -1,0 +1,12 @@
+@[model='../../server' title='Search']
+<@body/>
+<search>
+    <h1 id="moreTitle">Page 3 Search</h1>
+    @compile {
+        write('booooooooooo')
+    }
+    @{
+        write('<br/>runtime')
+    }
+    page's 3 text
+</search>

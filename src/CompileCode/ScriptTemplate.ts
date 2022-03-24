@@ -3,6 +3,7 @@ import path from 'path';
 import { finalizeBuild } from '../BuildInComponents/index';
 import JSParser from './JSParser';
 import { SessionBuild } from './Session';
+import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 
 
 export class PageTemplate extends JSParser {
@@ -36,12 +37,14 @@ export class PageTemplate extends JSParser {
         if (sessionInfo.debug) {
             text.AddTextAfterNoTrack(`\n}
                 catch(e){
+                    const last_file = run_script_name.split(/->|<line>/).pop();
                     run_script_name += ' -> <line>' + e.stack.split(/\\n( )*at /)[2];
                     out_run_script.text += '${PageTemplate.printError(`<p>Error path: ' + run_script_name.replace(/<line>/gi, '<br/>') + '</p><p>Error message: ' + e.message + '</p>`)}';
         
-                    console.error("Error path: " + run_script_name.replace(/<line>/gi, '\\n'));
+                    console.error("Error path: " + run_script_name.slice(0, -last_file.length).replace(/<line>/gi, '\\n'));
+                    console.error("${JSParser.fixTextSimpleQuotes(BasicSettings.fullWebSitePath)}" + last_file.trim());
                     console.error("Error message: " + e.message);
-                    console.error("Error runing this code: '" + run_script_code + "'");
+                    console.error("Error running this code: \\"" + run_script_code + '"');
                     console.error("Error stack: " + e.stack);
                 }`);
         }

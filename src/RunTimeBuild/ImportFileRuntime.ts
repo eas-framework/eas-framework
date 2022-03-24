@@ -3,6 +3,7 @@ import EasyFs from '../OutputInput/EasyFs';
 import { ImportFile, AddExtension } from '../ImportFiles/Script';
 import { PrintIfNew } from '../OutputInput/PrintNew';
 import path from 'path';
+import { AliasOrPackage } from '../ImportFiles/CustomImport/Alias';
 
 type RequireFiles = {
     path: string
@@ -149,7 +150,7 @@ export default async function RequireFile(filePath: string, __filename: string, 
     }
 
     if (static_modules)
-        LastRequire[copyPath] = { model: await import(filePath), status: -1, static: true, path: filePath };
+        LastRequire[copyPath] = { model: await AliasOrPackage(copyPath), status: -1, static: true, path: filePath };
     else {
         // add serv.js or serv.ts if needed
         filePath = AddExtension(filePath);

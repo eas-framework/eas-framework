@@ -65,7 +65,7 @@ export async function AddDebugInfo(pageName:string, FullPath:string, SmallPath:s
 
     return {
         allData: new StringTracker(`${pageName}<line>${SmallPath}`, cache.value),
-        stringInfo: `<%run_script_name=\`${JSParser.fixText(pageName)}\`;%>`
+        stringInfo: `<%!\nrun_script_name=\`${JSParser.fixText(pageName + ' -> ' + SmallPath)}\`;%>`
     }
 }
 

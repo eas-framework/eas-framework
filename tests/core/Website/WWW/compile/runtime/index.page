@@ -1,0 +1,14 @@
+@[model='../server' title=Runtime]
+<@body/>
+@compile{
+    write(__dirname + '<br/>')
+    write(__filename + '<br/>')
+    write(page__dirname + '<br/>')
+    write(page__filename + '<br/>')
+    write(__localpath + '<br/>')
+}
+<br/>
+<h2>Inside Sample:</h2>
+<Sample folder="." atrOne="thisValue" thisTrue>
+    <p>This cool</p>
+</Sample>

@@ -4,7 +4,7 @@ import JSParser from '../../CompileCode/JSParser'
 import { SessionBuild } from '../../CompileCode/Session';
 import InsertComponent from '../../CompileCode/InsertComponent';
 import { CutTheLast, SplitFirst } from '../../StringMethods/Splitting';
-import { getTypes } from '../../RunTimeBuild/SearchFileSystem';
+import { getTypes, smallPathToPage } from '../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../OutputInput/EasyFs';
 import StoreJSON from '../../OutputInput/StoreJSON';
 import path from 'path';
@@ -12,7 +12,7 @@ import path from 'path';
 const recordStore = new StoreJSON('Records');
 
 function recordLink(dataTag: tagDataObjectArray, sessionInfo: SessionBuild) {
-    return dataTag.remove('link')|| CutTheLast('.', SplitFirst('/', sessionInfo.smallPath).pop());
+    return dataTag.remove('link')|| smallPathToPage(sessionInfo.smallPath);
 }
 
 export function makeRecordPath(defaultName: string, dataTag: tagDataObjectArray, sessionInfo: SessionBuild){
@@ -57,14 +57,27 @@ export default async function BuildCode(pathName: string, dataTag: tagDataObject
     }
 }
 
-export function updateRecords(session: SessionBuild) {
+export function deleteBeforeReBuild(smallPath: string){
+    const name = smallPathToPage(smallPath);
+    for(const save in recordStore.store){
+        const item = recordStore.store[save];
+
+        if(item[name]){
+            item[name] = undefined;
+            delete item[name];
+        }
+    }
+}
+
+export async function updateRecords(session: SessionBuild) {
     if (!session.debug) {
         return;
     }
     
     for (const name of session.recordNames) {
-        const path = getTypes.Static[0] + name + '.json';
-        EasyFs.writeJsonFile(path, recordStore.store[name])
+        const filePath = getTypes.Static[0] + name + '.json';
+        await EasyFs.makePathReal(name, getTypes.Static[0]);
+        EasyFs.writeJsonFile(filePath, recordStore.store[name]);
     }
 }
 
@@ -75,8 +88,7 @@ export function perCompile(){
 export async function postCompile(){
     for (const name in recordStore.store) {
         const filePath = getTypes.Static[0] + name + '.json';
-        const dirname = path.dirname(name);
-        if(dirname) await EasyFs.makePathReal(dirname, getTypes.Static[0]);
+        await EasyFs.makePathReal(name, getTypes.Static[0]);
         EasyFs.writeJsonFile(filePath, recordStore.store[name]);
     }
 }

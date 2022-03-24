@@ -104,7 +104,7 @@ export default class ParseBasePage {
     }
 
     get(name: string){
-        return this.valueArray.find(x => x.key === name)[0]?.value
+        return this.valueArray.find(x => x.key === name)?.value
     }
 
     pop(name: string) {
@@ -160,12 +160,12 @@ export default class ParseBasePage {
         
         if (await sessionInfo.dependence(SmallPath,haveCode)) {
             const baseModelData = await AddDebugInfo(pageName, haveCode, SmallPath); // read model
-            baseModelData.allData.AddTextBeforeNoTrack('<%');
-            baseModelData.allData.AddTextAfterNoTrack('%>');
+            this.scriptFile = baseModelData.allData.replaceAll("@", "@@");
 
-            baseModelData.allData.AddTextBeforeNoTrack(baseModelData.stringInfo);
+            this.scriptFile.AddTextBeforeNoTrack('<%');
+            this.scriptFile.AddTextAfterNoTrack('%>');
+            sessionInfo.debug && this.scriptFile.AddTextBeforeNoTrack(baseModelData.stringInfo);
 
-            this.scriptFile = baseModelData.allData;
         } else {
             PrintIfNew({
                 id: SmallPath,

@@ -1,0 +1,12 @@
+@[model='../../server' title='Record']
+<@body/>
+<record>
+    <h1>Page 3 record</h1>
+    @compile {
+        write('booooooooooo')
+    }
+    @{
+        write('<br/>runtime')
+    }
+    page's 3 text
+</record>

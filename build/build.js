@@ -19,8 +19,10 @@ const fromScript = copyFrom + 'scripts/';
 await fsExtra.ensureDir(copyTo+'scripts/');
 
 const production = process.argv.includes('production');
+const {dependencies, name: packageName} = await fsExtra.readJSON(__dirname + '/package.json');
+
 build({
-    external: ['./static/ImportWithoutCache.cjs', ...Object.keys((await fsExtra.readJSON(__dirname + '/package.json')).dependencies)],
+    external: ['./static/ImportWithoutCache.cjs', ...Object.keys(dependencies)],
     drop: ['debugger'],
     entryPoints: ['src/index.ts', fromScript + 'install.ts'],
     bundle: true,
@@ -31,7 +33,8 @@ build({
     minify: production,
     sourcemap: production ? undefined: 'inline',
     define: {
-        esbuild: true
+        esbuild: true,
+        packageName: `'${packageName}'`
     }
 });
 

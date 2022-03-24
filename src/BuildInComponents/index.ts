@@ -12,7 +12,7 @@ import connect, { addFinalizeBuild as addFinalizeBuildConnect, handelConnector a
 import form, { addFinalizeBuild as addFinalizeBuildForm, handelConnector as handelConnectorForm } from './Components/form';
 import { SessionBuild } from '../CompileCode/Session';
 import InsertComponent from '../CompileCode/InsertComponent';
-import record, { updateRecords, perCompile as perCompileRecord, postCompile as postCompileRecord } from './Components/record';
+import record, { updateRecords, perCompile as perCompileRecord, postCompile as postCompileRecord, deleteBeforeReBuild } from './Components/record';
 import search from './Components/search';
 
 export const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown", "record", "search"];
@@ -92,4 +92,12 @@ export async function perCompile() {
 
 export async function postCompile() {
     postCompileRecord()
+}
+
+export async function perCompilePage(sessionInfo: SessionBuild, fullCompilePath: string){
+    sessionInfo.debug && deleteBeforeReBuild(sessionInfo.smallPath);
+}
+
+export async function postCompilePage(sessionInfo: SessionBuild, fullCompilePath: string){
+    
 }

@@ -16,7 +16,7 @@ export default async function BuildCode( pathName: string, type: StringTracker, 
 }
 
 export async function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild, fullCompilePath: string) {
-    const buildBundleString = sessionInfo.buildHead();
+    const buildBundleString = await sessionInfo.buildHead();
     
     const bundlePlaceholder = [/@InsertBundle(;?)/, /@DefaultInsertBundle(;?)/];
     const removeBundle = () => {bundlePlaceholder.forEach(x => pageData = pageData.replace(x, '')); return pageData};

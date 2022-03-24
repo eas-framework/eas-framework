@@ -6,7 +6,6 @@ import { print } from '../OutputInput/Console';
 import { Request, Response } from '@tinyhttp/app';
 import { Files } from 'formidable';
 import { handelConnectorService } from '../BuildInComponents/index';
-//@ts-ignore-next-line
 import ImportWithoutCache from '../ImportFiles/redirectCJS';
 import { CutTheLast, SplitFirst } from '../StringMethods/Splitting';
 import RequireFile from './ImportFileRuntime';

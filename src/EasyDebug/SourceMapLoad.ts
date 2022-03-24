@@ -27,7 +27,7 @@ export default async function SourceMapToStringTracker(code: string, sourceMap: 
 function mergeInfoStringTracker(original: StringTracker, generated: StringTracker) {
     const originalLines = original.split('\n');
     for (const item of generated.getDataArray()) {
-        const {line, char, info}  = originalLines[item.line - 1].DefaultInfoText;
+        const {line, char, info}  = originalLines[item.line - 1]?.DefaultInfoText ?? StringTracker.emptyInfo;
         item.line = line;
         item.info = info;
         item.char = char;
@@ -37,7 +37,6 @@ function mergeInfoStringTracker(original: StringTracker, generated: StringTracke
 export async function backToOriginal(original: StringTracker, code: string, sourceMap: string | RawSourceMap) {
     const newTracker = await SourceMapToStringTracker(code, sourceMap);
     mergeInfoStringTracker(original, newTracker);
-
     return newTracker;
 }
 
@@ -45,7 +44,7 @@ function mergeSassInfoStringTracker(original: StringTracker, generated: StringTr
     const originalLines = original.split('\n');
     for (const item of generated.getDataArray()) {
         if(item.info == mySource){
-            const {line, char, info} = originalLines[item.line - 1].at(item.char-1).DefaultInfoText;
+            const {line, char, info} = originalLines[item.line - 1].at(item.char-1)?.DefaultInfoText ?? StringTracker.emptyInfo;
             item.line = line;
             item.info = info;
             item.char = char;

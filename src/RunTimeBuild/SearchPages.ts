@@ -13,12 +13,11 @@ import { ExportSettings } from '../MainBuild/SettingsTypes';
 import { argv } from 'process';
 import { createSiteMap } from './SiteMap';
 import { isFileType, RemoveEndType } from './FileTypes';
-import { perCompile, postCompile } from '../BuildInComponents';
+import { perCompile, postCompile, perCompilePage, postCompilePage } from '../BuildInComponents';
 import { PageTemplate } from '../CompileCode/ScriptTemplate';
 
 async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
-
 
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
     const ExcluUrl = (nestedPage ? nestedPage + '<line>' : '') + arrayType[2] + '/' + filePath;
@@ -26,7 +25,9 @@ async function compileFile(filePath: string, arrayType: string[], isDebug?: bool
     const sessionInfo = hasSessionInfo ?? new SessionBuild(arrayType[2] + '/' + filePath, FullFilePath, arrayType[2], isDebug, GetPlugin("SafeDebug"));
     await sessionInfo.dependence('thisPage', FullFilePath);
 
+    await perCompilePage(sessionInfo, FullPathCompile);
     const CompiledData = await Insert(html, FullPathCompile, Boolean(nestedPage), nestedPageData, sessionInfo);
+    await postCompilePage(sessionInfo, FullPathCompile);
 
     if (!nestedPage) {
         await EasyFs.writeFile(FullPathCompile, CompiledData.StringWithTack(FullPathCompile));

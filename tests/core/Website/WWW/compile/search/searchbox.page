@@ -1,0 +1,12 @@
+@[model='../server' title='Search Box']
+<@body/>
+<form class="d-flex mb-4">
+    <input name="q" value="@Query.q" type="text" class="form-control col-3" placeholder="Enter text to search"/>
+    <button class="btn btn-primary ml-2">search</button>
+</form>
+@{
+    import searchQuery from './search'
+}
+@for(const {text} of searchQuery(Query.q || '')){
+    <p>@text</p>
+}

@@ -1,8 +1,0 @@
-@[codeFile=inherit lang=js]
-@compile {
-    if(!store.count)
-        store.count = 0
-    store.count++
-    write(store.count + ' --------3--')
-}
-<a><:reader/></a>

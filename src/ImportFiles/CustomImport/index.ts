@@ -1,15 +1,12 @@
-import json from "./json";
-import wasm from "./wasm";
+import ImportAlias, { aliasNames } from './Alias';
+import ImportByExtension, { customTypes } from './Extension/index';
 
-export const customTypes = ["json", "wasm"];
+export function isPathCustom(originalPath: string, extension: string) {
+    return customTypes.includes(extension) || aliasNames.includes(originalPath);
+}
 
-export default async function (path: string, type: string, require: (p: string) => Promise<any>){
-    switch(type){
-        case "json":
-            return json(path)
-        case "wasm":
-            return wasm(path);
-        default:
-            return import(path)
-    }
+export default async function CustomImport(originalPath: string, fullPath: string, extension: string, require: (p: string) => Promise<any>) {
+    const aliasExport = await ImportAlias(originalPath);
+    if (aliasExport) return aliasExport;
+    return ImportByExtension(fullPath, extension);
 }

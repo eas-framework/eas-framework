@@ -43,7 +43,9 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
         await EasyFs.makePathReal(inputPath, getTypes.Static[1]);
         await EasyFs.writeFile(fullCompilePath, data);
     } catch (err) {
-        PrintSassError(err, fullPath);
+        PrintSassError(err);
+        return {};
     }
+
     return dependenceObject
 }

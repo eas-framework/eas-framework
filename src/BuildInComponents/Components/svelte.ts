@@ -8,7 +8,6 @@ import * as svelte from 'svelte/compiler';
 import path from 'path';
 import registerExtension from '../../ImportFiles/ForStatic/Svelte/ssr';
 import { rebuildFile } from '../../ImportFiles/StaticFiles';
-//@ts-ignore-next-line
 import ImportWithoutCache, { resolve, clearModule } from '../../ImportFiles/redirectCJS';
 import { SessionBuild } from '../../CompileCode/Session';
 import { parseTagDataStringBoolean } from './serv-connect/index';

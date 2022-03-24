@@ -334,7 +334,7 @@ export default class InsertComponent extends InsertComponentBase {
             await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, pathName + ' -> ' + AllPathTypes.SmallPath, mapAttributes);
 
             fileData = baseData.scriptFile.Plus(baseData.clearData);
-            addStringInfo = stringInfo;
+            addStringInfo = sessionInfo.debug && stringInfo;
         }
 
         if (SearchInComment && (fileData.length > 0 || BetweenTagData)) {

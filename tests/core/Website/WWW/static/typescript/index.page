@@ -1,0 +1,7 @@
+@[model='../server' title="TypeScript"]
+<@body/>
+@compile{
+    script('./load-ts.ts')
+}
+<h1>Hello from TypeScript</h1>
+<p>Open the console and reload</p>

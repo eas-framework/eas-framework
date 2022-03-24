@@ -1,6 +1,8 @@
 @[model='./server' title=Index]
 <@body/>
 <markdown>
-[Svelte](./svelte/index)
-[Svelte SSR](./svelte/ssr)
+* [Svelte](./svelte/index)
+* [Svelte SSR](./svelte/ssr)
+* [TypeScript](./typescript/index)
+* [Sass](./sass/index)
 </markdown>

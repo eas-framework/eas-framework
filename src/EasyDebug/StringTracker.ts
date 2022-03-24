@@ -772,14 +772,14 @@ export default class StringTracker {
     /**
      * Extract error info form error message
      */
-    public debugLine({ message, text, location, line, col }: { message?: string, text?: string, location?: { line: number, column: number }, line?: number, col?: number }): string {
+    public debugLine({ message, text, location, line, col}: { message?: string, text?: string, location?: { line: number, column: number, lineText?: string }, line?: number, col?: number}): string {
         let searchLine = this.getLine(line ?? location?.line ?? 1), column = col ?? location?.column ?? 0;
         if (searchLine.startsWith('//')) {
             searchLine = this.getLine((line ?? location?.line) - 1);
             column = 0;
         }
-        const data = searchLine.DefaultInfoText;
-        return `${text || message}, on file -> ${BasicSettings.fullWebSitePath}${data.info.split('<line>').shift()}:${data.line}:${column}`;
+        const data = searchLine.at(column-1).DefaultInfoText;
+        return `${text || message}, on file -> ${BasicSettings.fullWebSitePath+searchLine.extractInfo()}:${data.line}:${data.char}${location?.lineText ? '\Line: "' + location.lineText: '"'}`;
     }
 
     public StringWithTack(fullSaveLocation: string){

@@ -195,59 +195,6 @@ declare module "@eas-framework/server/OutputInput/EasyFs" {
     };
     export default _default;
 }
-declare module "@eas-framework/server/RunTimeBuild/SearchFileSystem" {
-    function getDirname(url: string): string;
-    const SystemData: string;
-    const workingDirectory: string;
-    const getTypes: {
-        Static: string[];
-        Logs: string[];
-        node_modules: string[];
-        readonly WWW: string[];
-    };
-    const BasicSettings: {
-        pageTypes: {
-            page: string;
-            model: string;
-            component: string;
-        };
-        pageTypesArray: any[];
-        pageCodeFile: {
-            page: string[];
-            model: string[];
-            component: string[];
-        };
-        pageCodeFileArray: any[];
-        partExtensions: string[];
-        ReqFileTypes: {
-            js: string;
-            ts: string;
-            'api-ts': string;
-            'api-js': string;
-        };
-        ReqFileTypesArray: any[];
-        WebSiteFolder: string;
-        readonly fullWebSitePath: string;
-        readonly tsConfig: string;
-        tsConfigFile(): Promise<any>;
-        relative(fullPath: string): string;
-    };
-    function DeleteInDirectory(path: any): Promise<void>;
-    export { getDirname, SystemData, workingDirectory, DeleteInDirectory, getTypes, BasicSettings };
-}
-declare module "@eas-framework/server/StringMethods/Splitting" {
-    interface globalString<T> {
-        indexOf(string: string): number;
-        lastIndexOf(string: string): number;
-        startsWith(string: string): boolean;
-        substring(start: number, end?: number): T;
-    }
-    export function SplitFirst<T extends globalString<T>>(type: string, string: T): T[];
-    export function CutTheLast(type: string, string: string): string;
-    export function Extension<T extends globalString<T>>(string: T): T;
-    export function trimType(type: string, string: string): string;
-    export function substringStart<T extends globalString<T>>(start: string, string: T): T;
-}
 declare module "@eas-framework/server/EasyDebug/SourceMap" {
     import { RawSourceMap, SourceMapGenerator } from "source-map";
     export function toURLComment(map: SourceMapGenerator, isCss?: boolean): string;
@@ -282,11 +229,11 @@ declare module "@eas-framework/server/EasyDebug/SourceMapStore" {
         addText(text: string): void;
         private _addText;
         static fixURLSourceMap(map: RawSourceMap): RawSourceMap;
-        addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string): Promise<void>;
+        addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string): void;
         private _addSourceMapWithStringTracker;
         private buildAll;
         mapAsURLComment(): string;
-        createDataWithMap(): string;
+        createDataWithMap(): Promise<string>;
         clone(): SourceMapStore;
     }
 }
@@ -495,6 +442,7 @@ declare module "@eas-framework/server/EasyDebug/StringTracker" {
             location?: {
                 line: number;
                 column: number;
+                lineText?: string;
             };
             line?: number;
             col?: number;
@@ -502,6 +450,60 @@ declare module "@eas-framework/server/EasyDebug/StringTracker" {
         StringWithTack(fullSaveLocation: string): string;
         StringTack(fullSaveLocation: string, httpSource?: boolean, relative?: boolean): import("source-map").RawSourceMap;
     }
+}
+declare module "@eas-framework/server/StringMethods/Splitting" {
+    interface globalString<T> {
+        indexOf(string: string): number;
+        lastIndexOf(string: string): number;
+        startsWith(string: string): boolean;
+        substring(start: number, end?: number): T;
+    }
+    export function SplitFirst<T extends globalString<T>>(type: string, string: T): T[];
+    export function CutTheLast(type: string, string: string): string;
+    export function Extension<T extends globalString<T>>(string: T): T;
+    export function trimType(type: string, string: string): string;
+    export function substringStart<T extends globalString<T>>(start: string, string: T): T;
+}
+declare module "@eas-framework/server/RunTimeBuild/SearchFileSystem" {
+    function getDirname(url: string): string;
+    const SystemData: string;
+    const workingDirectory: string;
+    const getTypes: {
+        Static: string[];
+        Logs: string[];
+        node_modules: string[];
+        readonly WWW: string[];
+    };
+    const BasicSettings: {
+        pageTypes: {
+            page: string;
+            model: string;
+            component: string;
+        };
+        pageTypesArray: any[];
+        pageCodeFile: {
+            page: string[];
+            model: string[];
+            component: string[];
+        };
+        pageCodeFileArray: any[];
+        partExtensions: string[];
+        ReqFileTypes: {
+            js: string;
+            ts: string;
+            'api-ts': string;
+            'api-js': string;
+        };
+        ReqFileTypesArray: any[];
+        WebSiteFolder: string;
+        readonly fullWebSitePath: string;
+        readonly tsConfig: string;
+        tsConfigFile(): Promise<any>;
+        relative(fullPath: string): string;
+    };
+    export function DeleteInDirectory(path: any): Promise<void>;
+    export function smallPathToPage(smallPath: string): string;
+    export { getDirname, SystemData, workingDirectory, getTypes, BasicSettings };
 }
 declare module "@eas-framework/server/CompileCode/BaseReader/Reader" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
@@ -577,7 +579,7 @@ declare module "@eas-framework/server/CompileCode/transform/EasyScript" {
     }
 }
 declare module "@eas-framework/server/CompileCode/JSParser" {
-    import StringTracker, { StringTrackerDataInfo } from "@eas-framework/server/EasyDebug/StringTracker";
+    import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     interface JSParserValues {
         type: 'text' | 'script' | 'no-track';
         text: StringTracker;
@@ -601,7 +603,6 @@ declare module "@eas-framework/server/CompileCode/JSParser" {
         static printError(message: string): string;
         static RunAndExport(text: StringTracker, path: string, isDebug: boolean): Promise<StringTracker>;
         private static split2FromEnd;
-        static RestoreTrack(text: string, defaultInfo: StringTrackerDataInfo): StringTracker;
     }
     export class EnableGlobalReplace {
         private addText;
@@ -722,17 +723,19 @@ declare module "@eas-framework/server/CompileCode/esbuild/printMessage" {
     }, sourceMap: RawSourceMap, filePath?: string): Promise<void>;
     export function ESBuildPrintWarnings(warnings: Message[], filePath?: string): void;
     export function ESBuildPrintWarningsStringTracker(base: StringTracker, warnings: Message[]): void;
-    export function ESBuildPrintErrorStringTracker(base: StringTracker, err: Message): void;
+    export function ESBuildPrintErrorStringTracker(base: StringTracker, { errors }: {
+        errors: Message[];
+    }): void;
 }
-declare module "@eas-framework/server/ImportFiles/CustomImport/json" {
+declare module "@eas-framework/server/ImportFiles/CustomImport/Extension/json" {
     export default function (path: string): Promise<any>;
 }
-declare module "@eas-framework/server/ImportFiles/CustomImport/wasm" {
+declare module "@eas-framework/server/ImportFiles/CustomImport/Extension/wasm" {
     export default function (path: string): Promise<WebAssembly.Exports>;
 }
-declare module "@eas-framework/server/ImportFiles/CustomImport/index" {
+declare module "@eas-framework/server/ImportFiles/CustomImport/Extension/index" {
     export const customTypes: string[];
-    export default function (path: string, type: string, require: (p: string) => Promise<any>): Promise<any>;
+    export default function ImportByExtension(path: string, type: string): Promise<any>;
 }
 declare module "@eas-framework/server/CompileCode/transform/EasySyntax" {
     export default class EasySyntax {
@@ -825,7 +828,7 @@ declare module "@eas-framework/server/CompileCode/Session" {
         addScriptStylePage(type: 'script' | 'style' | 'module', dataTag: tagDataObjectArray, info: StringTracker): SourceMapStore;
         private static createName;
         private addHeadTags;
-        buildHead(): string;
+        buildHead(): Promise<string>;
         extends(from: SessionBuild): void;
         BuildScriptWithPrams(code: StringTracker): Promise<StringTracker>;
     }
@@ -901,12 +904,16 @@ declare module "@eas-framework/server/BuildInComponents/Components/style/sass" {
         line: any;
         column: any;
     };
-    export function PrintSassError(err: any, fullPath: string, { line, column }?: {
+    export function PrintSassError(err: any, { line, column }?: {
         line: any;
         column: any;
     }): void;
     export function PrintSassErrorTracker(err: any, track: StringTracker): void;
     export function compileSass(language: string, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild, outStyle?: string): Promise<{
+        outStyle: string;
+        result?: undefined;
+        compressed?: undefined;
+    } | {
         result: sass.CompileResult;
         outStyle: string;
         compressed: boolean;
@@ -1079,7 +1086,8 @@ declare module "@eas-framework/server/BuildInComponents/Components/record" {
         link: string;
     };
     export default function BuildCode(pathName: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
-    export function updateRecords(session: SessionBuild): void;
+    export function deleteBeforeReBuild(smallPath: string): void;
+    export function updateRecords(session: SessionBuild): Promise<void>;
     export function perCompile(): void;
     export function postCompile(): Promise<void>;
 }
@@ -1102,6 +1110,8 @@ declare module "@eas-framework/server/BuildInComponents/index" {
     export function handelConnectorService(type: string, thisPage: any, connectorArray: any[]): Promise<void> | Promise<boolean>;
     export function perCompile(): Promise<void>;
     export function postCompile(): Promise<void>;
+    export function perCompilePage(sessionInfo: SessionBuild, fullCompilePath: string): Promise<void>;
+    export function postCompilePage(sessionInfo: SessionBuild, fullCompilePath: string): Promise<void>;
 }
 declare module "@eas-framework/server/Plugins/Syntax/RazorSyntax" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
@@ -1161,8 +1171,37 @@ declare module "@eas-framework/server/CompileCode/XMLHelpers/Extricate" {
     }
     export { searchForCutMain as getDataTages };
 }
+declare module "@eas-framework/server/BuildInFunc/SearchRecord" {
+    import { SearchOptions } from 'minisearch';
+    export default class SearchRecord {
+        private fullPath;
+        private indexData;
+        private miniSearch;
+        constructor(filepath: string);
+        load(): Promise<void>;
+        search(text: string, options?: SearchOptions, tag?: string): import("minisearch").SearchResult[];
+        suggest(text: string, options: SearchOptions): import("minisearch").Suggestion[];
+    }
+}
+declare module "@eas-framework/server/ImportFiles/CustomImport/Alias/packageExport" {
+    import SearchRecord from "@eas-framework/server/BuildInFunc/SearchRecord";
+    export default function (): {
+        Settings: import("@eas-framework/server/MainBuild/SettingsTypes").ExportSettings;
+        SearchRecord: typeof SearchRecord;
+    };
+}
+declare module "@eas-framework/server/ImportFiles/CustomImport/Alias/index" {
+    export const aliasNames: any[];
+    export default function ImportAlias(originalPath: string): any;
+    export function AliasOrPackage(originalPath: string): any;
+}
+declare module "@eas-framework/server/ImportFiles/CustomImport/index" {
+    export function isPathCustom(originalPath: string, extension: string): boolean;
+    export default function CustomImport(originalPath: string, fullPath: string, extension: string, require: (p: string) => Promise<any>): Promise<any>;
+}
 declare module "@eas-framework/server/ImportFiles/Script" {
     import { StringAnyMap } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     export function BuildScriptSmallPath(InStaticPath: string, typeArray: string[], isDebug?: boolean): Promise<string>;
     export function AddExtension(FilePath: string): string;
     /**
@@ -1194,7 +1233,7 @@ declare module "@eas-framework/server/ImportFiles/Script" {
      * @param {string} sourceMapComment - string
      * @returns A function that returns a promise.
      */
-    export function compileImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, fileCode: string, sourceMapComment: string): Promise<(...arr: any[]) => Promise<any>>;
+    export function compileImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, mergeTrack: StringTracker): Promise<(...arr: any[]) => Promise<any>>;
 }
 declare module "@eas-framework/server/CompileCode/CompileScript/Compile" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
@@ -1234,6 +1273,7 @@ declare module "@eas-framework/server/CompileCode/CompileScript/PageBase" {
         private parseBase;
         private rebuild;
         static rebuildBaseInheritance(code: StringTracker): StringTracker;
+        get(name: string): StringTracker;
         pop(name: string): StringTracker;
         popAny(name: string): StringTracker;
         byValue(value: string): string[];
@@ -1634,6 +1674,14 @@ declare module "@eas-framework/server/MainBuild/Server" {
     }): Promise<void>;
     export { Settings };
 }
+declare module "@eas-framework/server" {
+    import server, { Settings } from "@eas-framework/server/MainBuild/Server";
+    import SearchRecord from "@eas-framework/server/BuildInFunc/SearchRecord";
+    export type { Request, Response } from "@eas-framework/server/MainBuild/Types";
+    export const AsyncImport: (path: string, importFrom?: string) => Promise<any>;
+    export { Settings, SearchRecord };
+    export default server;
+}
 declare module "@eas-framework/server/BuildInFunc/localSql" {
     import { Database } from 'sql.js';
     export default class LocalSql {
@@ -1660,14 +1708,6 @@ declare module "@eas-framework/server/BuildInFunc/Index" {
         let dump: typeof console;
     }
     export { LocalSql, print as dump };
-}
-declare module "@eas-framework/server" {
-    import server, { Settings } from "@eas-framework/server/MainBuild/Server";
-    import { LocalSql, dump } from "@eas-framework/server/BuildInFunc/Index";
-    export type { Request, Response } from "@eas-framework/server/MainBuild/Types";
-    export const AsyncImport: (path: string, importFrom?: string) => Promise<any>;
-    export const Server: typeof server;
-    export { Settings, LocalSql, dump };
 }
 declare module "@eas-framework/server/scripts/build-scripts" { }
 declare module "@eas-framework/server/scripts/install" { }

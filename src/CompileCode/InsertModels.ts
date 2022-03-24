@@ -60,7 +60,7 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
     const baseModelData = await AddDebugInfo(pageName, FullPath, SmallPath); // read model
     let modelData = ParseBasePage.rebuildBaseInheritance(baseModelData.allData);
 
-    modelData.AddTextBeforeNoTrack(baseModelData.stringInfo);
+    sessionInfo.debug && modelData.AddTextBeforeNoTrack(baseModelData.stringInfo);
 
     pageName += " -> " + SmallPath;
 

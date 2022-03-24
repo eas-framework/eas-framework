@@ -1,4 +1,4 @@
-import { customTypes } from '../../ImportFiles/CustomImport';
+import { customTypes } from '../../ImportFiles/CustomImport/Extension/index';
 import { BaseReader } from '../BaseReader/Reader';
 import { EndOfBlock, EndOfDefSkipBlock, ParseTextStream, ReBuildCodeString } from './EasyScript';
 

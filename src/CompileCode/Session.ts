@@ -120,7 +120,7 @@ export class SessionBuild {
         return key;
     }
 
-    private addHeadTags() {
+    private async addHeadTags() {
         const isLogs = this.typeName == getTypes.Logs[2]
         for (const i of this.inScriptStyle) {
             const saveLocation = i.path == this.smallPath && isLogs ? getTypes.Logs[1] : getTypes.Static[1], addQuery = isLogs ? '?t=l' : '';
@@ -141,12 +141,12 @@ export class SessionBuild {
                     break;
             }
 
-            EasyFs.writeFile(saveLocation + url, i.value.createDataWithMap())
+            EasyFs.writeFile(saveLocation + url, await i.value.createDataWithMap())
         }
     }
 
-    buildHead() {
-        this.addHeadTags();
+    async buildHead() {
+        await this.addHeadTags();
 
         const makeAttributes = (i: setDataHTMLTag) => i.attributes ? ' ' + Object.keys(i.attributes).map(x => i.attributes[x] ? x + `="${i.attributes[x]}"` : x).join(' ') : '';
 

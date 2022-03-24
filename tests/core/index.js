@@ -6,6 +6,6 @@ sourceMapSupport.install({hookRequire: true});
 
 // chdir(path.dirname(fileURLToPath(import.meta.url)));
 
-const {Server} = await import('../../dist/index.js');
+const {default: Server} = await import('../../dist/index.js');
 
 Server({SitePath: './tests/core/Website'});

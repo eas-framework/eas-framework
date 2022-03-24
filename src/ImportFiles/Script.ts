@@ -6,14 +6,15 @@ import EasySyntax from "../CompileCode/transform/EasySyntax";
 import JSParser from "../CompileCode/JSParser";
 import path from "path";
 import { isTs } from "../CompileCode/InsertModels";
-
-//@ts-ignore-next-line
 import ImportWithoutCache from './redirectCJS';
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
 import { pageDeps } from "../OutputInput/StoreDeps";
-import CustomImport, { customTypes } from "./CustomImport";
-import { ESBuildPrintError, ESBuildPrintWarnings } from "../CompileCode/esbuild/printMessage";
+import CustomImport, { isPathCustom } from "./CustomImport/index";
+import { ESBuildPrintError, ESBuildPrintErrorStringTracker, ESBuildPrintWarnings, ESBuildPrintWarningsStringTracker } from "../CompileCode/esbuild/printMessage";
+import StringTracker from "../EasyDebug/StringTracker";
+import { backToOriginal } from "../EasyDebug/SourceMapLoad";
+import { AliasOrPackage } from "./CustomImport/Alias";
 
 async function ReplaceBefore(
   code: string,
@@ -39,19 +40,19 @@ function template(code: string, isDebug: boolean, dir: string, file: string, par
  * @param  - filePath: The path to the file you want to compile.
  * @returns The result of the script.
  */
-async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, haveSourceMap = isDebug, fileCode, templatePath = filePath, codeMinify = !isDebug }: { codeMinify?: boolean, templatePath?: string, params?: string, haveSourceMap?: boolean, fileCode?: string } = {}): Promise<string> {
+async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, templatePath = filePath, codeMinify = !isDebug, mergeTrack }: { codeMinify?: boolean, templatePath?: string, params?: string, mergeTrack?: StringTracker } = {}): Promise<string> {
   const Options: TransformOptions = {
     format: 'cjs',
     loader: isTypescript ? 'ts' : 'js',
     minify: codeMinify,
-    sourcemap: haveSourceMap ? 'inline' : false,
-    sourcefile: path.relative(path.dirname(savePath), filePath),
+    sourcemap: isDebug ? (mergeTrack ? 'external' : 'inline') : false,
+    sourcefile: savePath && path.relative(path.dirname(savePath), filePath),
     define: {
       debug: "" + isDebug
     }
   };
 
-  let Result = await ReplaceBefore(fileCode || await EasyFs.readFile(filePath), {});
+  let Result = await ReplaceBefore(mergeTrack?.eq || await EasyFs.readFile(filePath), {});
   Result = template(
     Result,
     isDebug,
@@ -61,11 +62,20 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
   );
 
   try {
-    const { code, warnings } = await transform(Result, Options);
-    Result = code;
-    ESBuildPrintWarnings(warnings, filePath);
+    const { code, warnings, map } = await transform(Result, Options);
+    if (mergeTrack) {
+      ESBuildPrintWarningsStringTracker(mergeTrack, warnings);
+      Result = (await backToOriginal(mergeTrack, code, map)).StringWithTack(savePath);
+    } else {
+      ESBuildPrintWarnings(warnings, filePath);
+      Result = code;
+    }
   } catch (err) {
-    ESBuildPrintError(err, filePath);
+    if (mergeTrack) {
+      ESBuildPrintErrorStringTracker(mergeTrack, err);
+    } else {
+      ESBuildPrintError(err, filePath);
+    }
   }
 
   if (savePath) {
@@ -113,9 +123,10 @@ const SavedModules = {};
  */
 export default async function LoadImport(importFrom: string, InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache: string[] = []) {
   let TimeCheck: any;
+  const originalPath = path.normalize(InStaticPath.toLowerCase());
 
-  InStaticPath = path.join(AddExtension(InStaticPath).toLowerCase());
-  const extension = path.extname(InStaticPath).substring(1), thisCustom = customTypes.includes(extension) || !['js', 'ts'].includes(extension);
+  InStaticPath = AddExtension(InStaticPath);
+  const extension = path.extname(InStaticPath).substring(1), thisCustom = isPathCustom(originalPath, extension) || !['js', 'ts'].includes(extension);
   const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = path.join(typeArray[0], InStaticPath);
 
   //wait if this module is on process, if not declare this as on process module
@@ -158,14 +169,13 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
 
   function requireMap(p: string) {
     if (path.isAbsolute(p))
-      p = path.normalize(p).substring(path.normalize(typeArray[0]).length);
+      p = path.relative(p, typeArray[0]);
     else {
       if (p[0] == ".") {
-        const dirPath = path.dirname(InStaticPath);
-        p = (dirPath != "/" ? dirPath + "/" : "") + p;
+        p = path.join(path.dirname(InStaticPath), p);
       }
       else if (p[0] != "/")
-        return import(p);
+        return AliasOrPackage(p);
     }
 
     return LoadImport(filePath, p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
@@ -173,7 +183,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
 
   let MyModule: any;
   if (thisCustom) {
-    MyModule = await CustomImport(filePath, extension, requireMap);
+    MyModule = await CustomImport(originalPath, filePath, extension, requireMap);
   } else {
     const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
     MyModule = await ImportWithoutCache(requirePath);
@@ -240,33 +250,30 @@ export async function RequireCjsScript(content: string) {
  * @param {string} sourceMapComment - string
  * @returns A function that returns a promise.
  */
-export async function compileImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, fileCode: string, sourceMapComment: string) {
+export async function compileImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, mergeTrack: StringTracker) {
   await EasyFs.makePathReal(inStaticLocationRelative, typeArray[1]);
 
   const fullSaveLocation = scriptLocation + ".cjs";
   const templatePath = typeArray[0] + inStaticLocationRelative;
 
-  const Result = await BuildScript(
+  await BuildScript(
     scriptLocation,
-    undefined,
+    fullSaveLocation,
     isTypeScript,
     isDebug,
-    { params: globalPrams, haveSourceMap: false, fileCode, templatePath, codeMinify: false }
+    { params: globalPrams, mergeTrack, templatePath, codeMinify: false }
   );
-
-  await EasyFs.makePathReal(path.dirname(fullSaveLocation));
-  await EasyFs.writeFile(fullSaveLocation, Result + sourceMapComment);
 
   function requireMap(p: string) {
     if (path.isAbsolute(p))
-      p = path.normalize(p).substring(path.normalize(typeArray[0]).length);
+      p = path.relative(p, typeArray[0]);
     else {
       if (p[0] == ".") {
-        const dirPath = path.dirname(inStaticLocationRelative);
-        p = (dirPath != "/" ? dirPath + "/" : "") + p;
+        p = path.join(inStaticLocationRelative, p);
+
       }
       else if (p[0] != "/")
-        return import(p);
+        return AliasOrPackage(p);
     }
 
     return LoadImport(templatePath, p, typeArray, isDebug);

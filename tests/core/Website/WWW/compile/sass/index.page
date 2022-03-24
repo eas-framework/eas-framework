@@ -1,0 +1,11 @@
+@[model='../server' title="Sass"]
+<@body/>
+<style lang="sass">
+    @@import './from1.sass'
+
+    main
+        div
+            border: solid 2px #000
+</style>
+<h1>Hello With Sass</h1>
+<p>Some text</p>

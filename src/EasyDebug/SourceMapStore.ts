@@ -105,7 +105,7 @@ export default class SourceMapStore extends SourceMapBasic {
         return map;
     }
 
-    async addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string) {
+    addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string) {
         this.actionLoad.push({ name: 'addSourceMapWithStringTracker', data: [fromMap, track, text] });
     }
 
@@ -133,7 +133,7 @@ export default class SourceMapStore extends SourceMapBasic {
         this._addText(text);
     }
 
-    private buildAll() {
+    private async buildAll() {
         for (const { name, data } of this.actionLoad) {
             switch (name) {
                 case 'addStringTracker':
@@ -146,7 +146,7 @@ export default class SourceMapStore extends SourceMapBasic {
                     break;
                 case 'addSourceMapWithStringTracker':
                     //@ts-ignore
-                    this._addSourceMapWithStringTracker(...data)
+                    await this._addSourceMapWithStringTracker(...data)
                     break;
             }
         }
@@ -158,8 +158,8 @@ export default class SourceMapStore extends SourceMapBasic {
         return super.mapAsURLComment()
     }
 
-    createDataWithMap() {
-        this.buildAll();
+    async createDataWithMap() {
+        await this.buildAll();
         if (!this.debug)
             return this.storeString;
 

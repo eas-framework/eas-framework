@@ -1,0 +1,10 @@
+<:reader/>
+@compile{
+    write(__dirname + '<br/>')
+    write(__filename + '<br/>')
+    write(page__dirname + '<br/>')
+    write(page__filename + '<br/>')
+    write(__localpath + '<br/>')
+
+    write(JSON.stringify(attributes, null, 2))
+}

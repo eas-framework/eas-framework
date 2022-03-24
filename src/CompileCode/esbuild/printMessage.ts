@@ -45,10 +45,12 @@ export function ESBuildPrintWarningsStringTracker(base: StringTracker, warnings:
 }
 
 
-export function ESBuildPrintErrorStringTracker(base: StringTracker, err: Message) {
-    PrintIfNew({
-        errorName: 'compilation-error',
-        text: base.debugLine(err)
-    });
+export function ESBuildPrintErrorStringTracker(base: StringTracker, {errors}:{errors: Message[]}) {
+    for(const err of errors){
+        PrintIfNew({
+            errorName: 'compilation-error',
+            text: base.debugLine(err)
+        });
+    }
 }
 

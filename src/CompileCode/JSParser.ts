@@ -44,10 +44,11 @@ export default class JSParser {
         let count = 1;
         for (const i of allScript) {
 
-            WithInfo.Plus(
-                new StringTracker(null, `//!${i.lineInfo}\n`),
-                i
-            )
+            if(i.eq.trim().length)
+                WithInfo.Plus(
+                    new StringTracker(null, `//!${i.lineInfo}\n`),
+                    i
+                )
 
             if (count != length) {
                 WithInfo.Plus('\n');
@@ -162,25 +163,6 @@ export default class JSParser {
             }
         }
         return [text];
-    }
-
-    static RestoreTrack(text: string, defaultInfo: StringTrackerDataInfo) {
-        const tracker = new StringTracker(defaultInfo);
-
-        const allLines = text.split('\n//!');
-
-        tracker.Plus(allLines.shift());
-
-        for (const i of allLines) {
-            const infoLine = i.split('\n', 1).pop(), dataText = i.substring(infoLine.length);
-
-            const [infoText, numbers] = JSParser.split2FromEnd(infoLine, ':', 2), [line, char] = numbers.split(':');
-
-            tracker.Plus(new StringTracker(null, '\n//!' + infoLine));
-            tracker.AddTextAfter(dataText, infoText, Number(line) - 1, Number(char));
-        }
-
-        return tracker;
     }
 }
 

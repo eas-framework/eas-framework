@@ -1,0 +1,3 @@
+@[model='../server' codeFile='inherit' title="Export"]
+<@body/>
+<p>See the console</p>

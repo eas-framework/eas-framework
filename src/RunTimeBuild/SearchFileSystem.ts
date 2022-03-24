@@ -3,6 +3,7 @@ import EasyFs from '../OutputInput/EasyFs';
 import {cwd} from 'process';
 import path from 'path';
 import {fileURLToPath} from 'url'
+import { CutTheLast , SplitFirst} from '../StringMethods/Splitting';
 
 function getDirname(url: string){
     return path.dirname(fileURLToPath(url));
@@ -111,7 +112,7 @@ BasicSettings.pageTypesArray = Object.values(BasicSettings.pageTypes);
 BasicSettings.pageCodeFileArray = Object.values(BasicSettings.pageCodeFile).flat();
 BasicSettings.ReqFileTypesArray = Object.values(BasicSettings.ReqFileTypes);
 
-async function DeleteInDirectory(path) {
+export async function DeleteInDirectory(path) {
     const allInFolder = await EasyFs.readdir(path, { withFileTypes: true });
     for (const i of (<Dirent[]>allInFolder)) {
         const n = i.name;
@@ -126,11 +127,15 @@ async function DeleteInDirectory(path) {
     }
 }
 
+export function smallPathToPage(smallPath: string){
+    return CutTheLast('.', SplitFirst('/', smallPath).pop());
+}
+
+
 export {
     getDirname,
     SystemData,
     workingDirectory,
-    DeleteInDirectory,
     getTypes,
     BasicSettings
 }

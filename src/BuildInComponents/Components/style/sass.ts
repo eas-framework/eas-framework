@@ -52,15 +52,17 @@ export function getSassErrorLine({ sassStack }) {
     return { line: loc[0], column: loc[1] }
 }
 
-export function PrintSassError(err: any, fullPath: string, {line, column} = getSassErrorLine(err)){
+export function PrintSassError(err: any, {line, column} = getSassErrorLine(err)){
     PrintIfNew({
-        text: `${err.message}, on file -> ${fullPath}:${line ?? 0}:${column ?? 0}`,
+        text: `${err.message},\non file -> ${fileURLToPath(err.span.url)}:${line ?? 0}:${column ?? 0}`,
         errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
         type: err?.status == 5 ? 'warn' : 'error'
     });
 }
 
 export function PrintSassErrorTracker(err: any, track: StringTracker){
+    if(err.span.url) return PrintSassError(err);
+
     err.location = getSassErrorLine(err);
     PrintIfNew({
         text: track.debugLine(err),
@@ -85,7 +87,10 @@ export async function compileSass(language: string, BetweenTagData: StringTracke
         });
         outStyle = result?.css ?? outStyle;
     } catch (err) {
+        const FullPath = fileURLToPath(err.span.url);
+        await sessionInfo.dependence(BasicSettings.relative(FullPath), FullPath)
         PrintSassErrorTracker(err, BetweenTagData);
+        return {outStyle: 'Sass Error (see console)'}
     }
 
     if (result?.loadedUrls) {
@@ -95,6 +100,6 @@ export async function compileSass(language: string, BetweenTagData: StringTracke
         }
     }
 
-    sassAndSource(result.sourceMap, thisPageURL.href);
+    result?.sourceMap && sassAndSource(result.sourceMap, thisPageURL.href);
     return { result, outStyle, compressed };
 }

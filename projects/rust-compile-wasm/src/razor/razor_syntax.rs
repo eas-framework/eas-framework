@@ -21,7 +21,11 @@ lazy_static! {
         BetterString::new(&(COMMENT_CHAR.to_string() + &RAZOR_CHAR.to_string()));
     static ref CASE: BetterString = BetterString::new("case");
     static ref BREAK: BetterString = BetterString::new("break");
-    static ref NOT_RAZOR_WORDS: Vec<String> = vec![String::from("default")];
+    static ref NOT_RAZOR_WORDS: Vec<String> = vec![
+        String::from("default"),
+        String::from("ConnectHere"),
+        String::from("ConnectHereForm")
+    ];
     static ref RAZOR_SYNTAX_SMALL: Vec<String> =
         vec![String::from("for"), String::from("function")];
     static ref RAZOR_SYNTAX: Vec<RazorSyntaxBlock> = vec![

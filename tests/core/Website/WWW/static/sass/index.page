@@ -1,0 +1,7 @@
+@[model='../server' title="Sass"]
+<@body/>
+@compile{
+    style('./from1.sass')
+}
+<h1>Hello With Sass</h1>
+<p>Some text</p>
