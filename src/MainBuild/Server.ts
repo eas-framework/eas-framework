@@ -122,7 +122,7 @@ async function StartListing(app, Server) {
     return listen;
 }
 
-export default async function StartServer({ SitePath = 'Website', HttpServer = UpdateGreenLock } = {}) {
+export default async function StartServer({ SitePath = './', HttpServer = UpdateGreenLock } = {}) {
     BasicSettings.WebSiteFolder = SitePath;
     buildFirstLoad();
     await requireSettings();

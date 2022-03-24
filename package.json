@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/ido.pluto/eas-framework.git"
+    "url": "git+https://gitlab.com/eas-framework/eas-framework.git"
   },
   "keywords": [
     "router",
@@ -83,5 +83,5 @@
     "fs-extra": "^10.0.0",
     "typescript": "^4.6.2"
   },
-  "homepage": "https://gitlab.com/eas-framework/eas-framework#readme"
+  "homepage": "https://eas-framework.ml"
 }
