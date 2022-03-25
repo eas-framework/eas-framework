@@ -710,7 +710,7 @@ declare module "@eas-framework/server/OutputInput/PrintNew" {
      * If the error is not in the PreventErrors array, print the error
      * @param {PreventLog}  - `id` - The id of the error.
      */
-    export function PrintIfNew({ id, text, type, errorName }: PreventLog): void;
+    export function createNewPrint({ id, text, type, errorName }: PreventLog): string[];
 }
 declare module "@eas-framework/server/CompileCode/esbuild/printMessage" {
     import { Message } from 'esbuild-wasm';

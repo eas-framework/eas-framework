@@ -10,7 +10,7 @@ import { Settings as InsertModelsSettings } from '../CompileCode/InsertModels';
 import bodyParser from 'body-parser';
 import { StartRequire, GetSettings } from './ImportModule';
 import { Request, Response, NextFunction } from '@tinyhttp/app';
-import { Settings as PrintIfNewSettings } from '../OutputInput/PrintNew';
+import { Settings as createNewPrintSettings } from '../OutputInput/PrintNew';
 import MemorySession from 'memorystore';
 import { ExportSettings } from './SettingsTypes';
 import { debugSiteMap } from '../RunTimeBuild/SiteMap';
@@ -123,10 +123,10 @@ export const Export: ExportSettings = {
             return InsertModelsSettings.AddCompileSyntax;
         },
         set ignoreError(value) {
-            (<any>PrintIfNewSettings).PreventErrors = value;
+            (<any>createNewPrintSettings).PreventErrors = value;
         },
         get ignoreError() {
-            return (<any>PrintIfNewSettings).PreventErrors;
+            return (<any>createNewPrintSettings).PreventErrors;
         },
         set plugins(value) {
             InsertModelsSettings.plugins.length = 0;

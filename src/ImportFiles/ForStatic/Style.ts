@@ -1,5 +1,5 @@
 import sass from 'sass';
-import { PrintIfNew } from '../../OutputInput/PrintNew';
+import { createNewPrint } from '../../OutputInput/PrintNew';
 import EasyFs from '../../OutputInput/EasyFs';
 import { SomePlugins } from '../../CompileCode/InsertModels';
 import path from 'path';

@@ -4,7 +4,7 @@ import  { Capitalize, preprocess } from "./preprocess";
 import * as svelte from 'svelte/compiler';
 import { CompileOptions } from "svelte/types/compiler/interfaces";
 import { BasicSettings, getTypes } from "../../../RunTimeBuild/SearchFileSystem";
-import { PrintIfNew } from "../../../OutputInput/PrintNew";
+import { createNewPrint } from "../../../OutputInput/PrintNew";
 import EasyFs from "../../../OutputInput/EasyFs";
 import { clearModule, resolve } from "../../redirectCJS";
 import { toURLComment } from "../../../EasyDebug/SourceMap";

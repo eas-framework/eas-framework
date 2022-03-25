@@ -1,7 +1,7 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { StringNumberMap, BuildInComponent, tagDataObjectArray } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { fileURLToPath, pathToFileURL } from "url";
-import { PrintIfNew } from '../../../OutputInput/PrintNew';
+import { createNewPrint } from '../../../OutputInput/PrintNew';
 import EasyFs from '../../../OutputInput/EasyFs';
 import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug';
 import MinCss from '../../../CompileCode/CssMinimizer';

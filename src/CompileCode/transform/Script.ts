@@ -37,10 +37,12 @@ export default async function BuildScript(text: StringTracker, isTypescript: boo
         result = map ? await backToOriginal(text, code, map): new StringTracker(null, code);
     } catch (err) {
         ESBuildPrintErrorStringTracker(text, err);
-        const errorMessage = text.debugLine(err);
 
-        if(sessionInfo.debug)
-            result = new StringTracker(null, ErrorTemplate(errorMessage));
+        if(sessionInfo.debug){
+            const first = err.errors[0];
+            first.location && (first.location.lineText = null)
+            result = new StringTracker(null, ErrorTemplate(text.debugLine(first)));
+        }
     }
 
     return result;

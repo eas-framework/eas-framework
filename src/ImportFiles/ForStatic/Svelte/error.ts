@@ -1,6 +1,7 @@
 import { Warning } from "svelte/types/compiler/interfaces";
-import { PrintIfNew } from "../../../OutputInput/PrintNew";
+import { createNewPrint } from "../../../OutputInput/PrintNew";
 import { RawSourceMap, SourceMapConsumer, SourceMapGenerator } from "source-map";
+import { print } from "../../../OutputInput/Console";
 
 class reLocation {
     map: Promise<SourceMapConsumer>
@@ -16,20 +17,22 @@ class reLocation {
 
 export async function PrintSvelteError({ message, code, start, frame }: Warning, filePath: string, sourceMap: RawSourceMap) {
     const findLocation = new reLocation(sourceMap)
-    PrintIfNew({
+    const [funcName, printText] = createNewPrint({
         errorName: 'svelte-' + code,
         type: 'error',
         text: `${message}\n${frame}\n${filePath}:${await findLocation.getLocation(start)}`
     });
+    print[funcName](printText);
 }
 
 export async function PrintSvelteWarn(warnings: Warning[], filePath: string, sourceMap: RawSourceMap) {
     const findLocation = new reLocation(sourceMap);
     for(const { message, code, start, frame } of warnings){
-        PrintIfNew({
+        const [funcName, printText] = createNewPrint({
             errorName: 'svelte-' + code,
             type: 'warn',
             text: `${message}\n${frame}\n${filePath}:${await findLocation.getLocation(start)}`
         });
+        print[funcName](printText);
     }
 }

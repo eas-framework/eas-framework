@@ -2,6 +2,7 @@
 /compile/index
 /server/index
 /static/index
+/compile/error/index
 /compile/record/index
 /compile/record/page2
 /compile/runtime/index

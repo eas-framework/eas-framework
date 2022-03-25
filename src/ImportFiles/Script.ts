@@ -1,5 +1,5 @@
 import { TransformOptions, transform } from "esbuild-wasm";
-import { PrintIfNew } from "../OutputInput/PrintNew";
+import { createNewPrint } from "../OutputInput/PrintNew";
 import EasyFs from "../OutputInput/EasyFs";
 import { BasicSettings, SystemData } from "../RunTimeBuild/SearchFileSystem";
 import EasySyntax from "../CompileCode/transform/EasySyntax";
@@ -15,6 +15,7 @@ import { ESBuildPrintError, ESBuildPrintErrorStringTracker, ESBuildPrintWarnings
 import StringTracker from "../EasyDebug/StringTracker";
 import { backToOriginal } from "../EasyDebug/SourceMapLoad";
 import { AliasOrPackage } from "./CustomImport/Alias";
+import { print } from "../OutputInput/Console";
 
 async function ReplaceBefore(
   code: string,
@@ -143,11 +144,12 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
   if (reBuild) {
     TimeCheck = TimeCheck ?? await EasyFs.stat(filePath, "mtimeMs", true, null);
     if (TimeCheck == null) {
-      PrintIfNew({
+      const [funcName, printText] = createNewPrint({
         type: 'warn',
         errorName: 'import-not-exists',
         text: `Import '${InStaticPath}' does not exists from '${importFrom}'`
-      })
+      });
+      print[funcName](printText);
       SavedModules[SavedModulesPath] = null
       return null;
     }

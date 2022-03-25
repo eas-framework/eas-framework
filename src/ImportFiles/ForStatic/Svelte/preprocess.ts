@@ -1,4 +1,4 @@
-import { PrintIfNew } from '../../../OutputInput/PrintNew';
+import { createNewPrint } from '../../../OutputInput/PrintNew';
 import { SomePlugins, GetPlugin } from '../../../CompileCode/InsertModels';
 import { StringNumberMap } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { transform } from 'esbuild-wasm';

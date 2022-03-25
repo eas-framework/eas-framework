@@ -6,7 +6,7 @@ import { transform } from "esbuild-wasm";
 import EasyFs from "../../../OutputInput/EasyFs";
 import { ESBuildPrintErrorSourceMap } from "../../../CompileCode/esbuild/printMessage";
 import { toURLComment, MergeSourceMap } from "../../../EasyDebug/SourceMap";
-import { PrintIfNew } from "../../../OutputInput/PrintNew";
+import { createNewPrint } from "../../../OutputInput/PrintNew";
 import { PrintSvelteError, PrintSvelteWarn } from "./error";
 
 export default async function BuildScript(inStaticPath: string, isDebug: boolean) {

@@ -1,0 +1,7 @@
+@[model='../server' title='Error check']
+<@body/>
+<Component folder/>
+@{
+    const declareVariable = 0;
+} 
+ 

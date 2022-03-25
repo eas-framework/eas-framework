@@ -1,9 +1,10 @@
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import EasyFs from '../OutputInput/EasyFs';
 import { ImportFile, AddExtension } from '../ImportFiles/Script';
-import { PrintIfNew } from '../OutputInput/PrintNew';
+import { createNewPrint } from '../OutputInput/PrintNew';
 import path from 'path';
 import { AliasOrPackage } from '../ImportFiles/CustomImport/Alias';
+import { print } from '../OutputInput/Console';
 
 type RequireFiles = {
     path: string
@@ -170,11 +171,12 @@ export default async function RequireFile(filePath: string, __filename: string, 
         }
         else {
             LastRequire[copyPath] = { model: {}, status: 0, path: filePath };
-            PrintIfNew({
+            const [funcName, printText] = createNewPrint({
                 type: 'warn',
                 errorName: 'import-not-exists',
                 text: `Import '${filePath}' does not exists from '${__filename}'`
-            })
+            });
+            print[funcName](printText);
         }
     }
 

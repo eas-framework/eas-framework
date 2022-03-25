@@ -1,7 +1,7 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { tagDataObjectArray, StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { TransformOptions, transform } from 'esbuild-wasm';
-import { PrintIfNew } from '../../../OutputInput/PrintNew';
+import { createNewPrint } from '../../../OutputInput/PrintNew';
 import { EnableGlobalReplace } from '../../../CompileCode/JSParser';
 import InsertComponent from '../../../CompileCode/InsertComponent';
 import { GetPlugin, SomePlugins } from '../../../CompileCode/InsertModels';

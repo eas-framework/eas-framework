@@ -3,7 +3,7 @@ import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWitho
 import markdown from 'markdown-it'
 import hljs from 'highlight.js';
 import { parseTagDataStringBoolean } from './serv-connect/index';
-import { PrintIfNew } from '../../OutputInput/PrintNew';
+import { createNewPrint } from '../../OutputInput/PrintNew';
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs';
 import { BasicSettings, workingDirectory } from '../../RunTimeBuild/SearchFileSystem';
@@ -14,6 +14,7 @@ import markdownItAbbr from 'markdown-it-abbr'
 import MinCss from '../../CompileCode/CssMinimizer';
 import { SessionBuild } from '../../CompileCode/Session';
 import InsertComponent from '../../CompileCode/InsertComponent';
+import { print } from '../../OutputInput/Console';
 
 function codeWithCopy(md: any) {
 
@@ -52,11 +53,12 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
                 try {
                     return `<pre${hljsClass}><code>${hljs.highlight(str, { language: lang, ignoreIllegals: true }).value}</code></pre>`;
                 } catch (err) {
-                    PrintIfNew({
+                    const [funcName, printText] = createNewPrint({
                         text: err,
                         type: 'error',
                         errorName: 'markdown-parser'
-                    });
+                    })
+                    print[funcName](printText)
                 }
             }
 

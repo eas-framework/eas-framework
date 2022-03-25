@@ -779,7 +779,7 @@ export default class StringTracker {
             column = 0;
         }
         const data = searchLine.at(column-1).DefaultInfoText;
-        return `${text || message}, on file -> ${BasicSettings.fullWebSitePath+searchLine.extractInfo()}:${data.line}:${data.char}${location?.lineText ? '\Line: "' + location.lineText: '"'}`;
+        return `${text || message}, on file ->\n${BasicSettings.fullWebSitePath+searchLine.extractInfo()}:${data.line}:${data.char}${location?.lineText ? '\nLine: "' + location.lineText.trim() + '"': ''}`;
     }
 
     public StringWithTack(fullSaveLocation: string){

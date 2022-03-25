@@ -3,7 +3,7 @@ import initSqlJs, { Database } from 'sql.js';
 import { print } from '../OutputInput/Console';
 import { workingDirectory } from '../RunTimeBuild/SearchFileSystem';
 import path from 'path';
-import { PrintIfNew } from '../OutputInput/PrintNew';
+import { createNewPrint } from '../OutputInput/PrintNew';
 
 export default class LocalSql {
     public db: Database;
@@ -19,13 +19,14 @@ export default class LocalSql {
         process.on('exit', this.updateLocalFile);
     }
 
-    private notLoaded(){
-        if(!this.loaded){
-            PrintIfNew({
+    private notLoaded() {
+        if (!this.loaded) {
+            const [funcName, printText] = createNewPrint({
                 errorName: 'dn-not-loaded',
                 text: 'DataBase is not loaded, please use \'await db.load()\'',
                 type: 'error'
-            })
+            });
+            print[funcName](printText);
             return true
         }
     }
@@ -40,8 +41,8 @@ export default class LocalSql {
         this.db = new SQL.Database(readData);
     }
 
-    private updateLocalFile(){
-        if(!this.hadChange) return;
+    private updateLocalFile() {
+        if (!this.hadChange) return;
         this.hadChange = false;
         EasyFs.writeFile(this.savePath, this.db.export());
     }
@@ -58,7 +59,7 @@ export default class LocalSql {
     }
 
     insert(queryArray: string[], ...valuesArray: any[]) {
-        if(this.notLoaded()) return
+        if (this.notLoaded()) return
         const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
         try {
             const id = query.get(valuesArray)[0];
@@ -71,22 +72,22 @@ export default class LocalSql {
     }
 
     affected(queryArray: string[], ...valuesArray: any[]) {
-        if(this.notLoaded()) return
+        if (this.notLoaded()) return
         const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
-        
+
         try {
-             query.run(valuesArray)
-             const effected = this.db.getRowsModified()
-             this.hadChange ||= effected > 0;
-             query.free();
-             return effected;
+            query.run(valuesArray)
+            const effected = this.db.getRowsModified()
+            this.hadChange ||= effected > 0;
+            query.free();
+            return effected;
         } catch (err) {
             print.error(err);
         }
     }
 
     select(queryArray: string[], ...valuesArray: any[]) {
-        if(this.notLoaded()) return
+        if (this.notLoaded()) return
         const query = this.buildQueryTemplate(queryArray, valuesArray);
         try {
             return this.db.exec(query);
@@ -96,7 +97,7 @@ export default class LocalSql {
     }
 
     selectOne(queryArray: string[], ...valuesArray: any[]) {
-        if(this.notLoaded()) return
+        if (this.notLoaded()) return
         const query = this.db.prepare(this.buildQueryTemplate(queryArray, valuesArray));
         try {
             query.step();

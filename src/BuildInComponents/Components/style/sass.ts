@@ -2,12 +2,13 @@ import { fileURLToPath, pathToFileURL } from "url";
 import StringTracker from "../../../EasyDebug/StringTracker";
 import { BasicSettings, getTypes } from "../../../RunTimeBuild/SearchFileSystem";
 import sass from 'sass';
-import { PrintIfNew } from "../../../OutputInput/PrintNew";
+import { createNewPrint } from "../../../OutputInput/PrintNew";
 import { StringNumberMap } from "../../../CompileCode/XMLHelpers/CompileTypes";
 import EasyFs from "../../../OutputInput/EasyFs";
 import { RawSourceMap } from "source-map-js";
 import { SessionBuild } from "../../../CompileCode/Session";
 import InsertComponent from "../../../CompileCode/InsertComponent";
+import { print } from "../../../OutputInput/Console";
 
 
 export function createImporter(originalPath: string) {
@@ -53,22 +54,25 @@ export function getSassErrorLine({ sassStack }) {
 }
 
 export function PrintSassError(err: any, {line, column} = getSassErrorLine(err)){
-    PrintIfNew({
+    const [funcName, printText] = createNewPrint({
         text: `${err.message},\non file -> ${fileURLToPath(err.span.url)}:${line ?? 0}:${column ?? 0}`,
         errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
         type: err?.status == 5 ? 'warn' : 'error'
     });
+    print[funcName](printText);
 }
 
 export function PrintSassErrorTracker(err: any, track: StringTracker){
     if(err.span.url) return PrintSassError(err);
 
     err.location = getSassErrorLine(err);
-    PrintIfNew({
+
+    const [funcName, printText] = createNewPrint({
         text: track.debugLine(err),
         errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
         type: err?.status == 5 ? 'warn' : 'error'
     });
+    print[funcName](printText);
 }
 
 export async function compileSass(language: string, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild, outStyle = BetweenTagData.eq) {

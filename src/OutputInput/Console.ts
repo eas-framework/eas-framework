@@ -6,7 +6,7 @@ export function allowPrint(d: boolean) {
 
 export const print = new Proxy(console,{
     get(target, prop, receiver) {
-        if(printMode)
+        if(printMode && prop != "do-nothing")
             return target[prop];
         return () => {}
     }

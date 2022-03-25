@@ -2,12 +2,13 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { tagDataObjectArray, StringNumberMap, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../OutputInput/EasyFs';
-import { PrintIfNew } from '../../OutputInput/PrintNew';
+import { createNewPrint } from '../../OutputInput/PrintNew';
 import path_node from 'path';
 import { SessionBuild } from '../../CompileCode/Session';
 import { CheckDependencyChange } from '../../OutputInput/StoreDeps';
 import { FastCompileInFile } from '../../RunTimeBuild/SearchPages';
 import InsertComponent from '../../CompileCode/InsertComponent';
+import { print } from '../../OutputInput/Console';
 
 function InFolderPagePath(inputPath: string, smallPath:string){
     if (inputPath[0] == '.') {
@@ -43,11 +44,12 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
     const FullPath = getTypes.Static[0] + SmallPathWithoutFolder, SmallPath = getTypes.Static[2] + '/' + SmallPathWithoutFolder;
 
     if (!(await EasyFs.stat(FullPath, null, true)).isFile?.()) {
-        PrintIfNew({
+        const [funcName, printText] = createNewPrint({
             text: `\nPage not found: ${type.at(0).lineInfo} -> ${FullPath}`,
             errorName: 'page-not-found',
             type: 'error'
         });
+        print[funcName](printText);
         return {
             compiledString: new StringTracker(type.DefaultInfoText, `<p style="color:red;text-align:left;font-size:16px;">Page not found: ${type.lineInfo} -> ${SmallPath}</p>`)
         };

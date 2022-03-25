@@ -5,11 +5,12 @@ import { AllBuildIn, IsInclude, StartCompiling } from '../BuildInComponents/inde
 import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/StringTracker';
 import AddPlugin from '../Plugins/Index';
 import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, StringArrayOrObject, StringAnyMap } from './XMLHelpers/CompileTypes';
-import { PrintIfNew } from '../OutputInput/PrintNew';
+import { createNewPrint } from '../OutputInput/PrintNew';
 import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
 import pathNode from 'path';
 import ParseBasePage from './CompileScript/PageBase';
 import { SessionBuild } from './Session';
+import { print } from '../OutputInput/Console';
 
 interface DefaultValues {
     value: StringTracker,
@@ -28,7 +29,7 @@ export default class InsertComponent extends InsertComponentBase {
     private regexSearch: RegExp;
 
     constructor(PluginBuild: AddPlugin) {
-        super(PrintIfNew);
+        super();
         this.dirFolder = 'Components';
         this.PluginBuild = PluginBuild;
         this.regexSearch = new RegExp(`<([\\p{Lu}_\\-:0-9]|${AllBuildIn.join('|')})`, 'u')
@@ -147,10 +148,11 @@ export default class InsertComponent extends InsertComponentBase {
         for (const i of all) {
             const index = tag.indexOf(i)
             if (index == -1) {
-                PrintIfNew({
+                const [funcName, printText] = createNewPrint({
                     text: `Waring, can't find all query in tag -> ${tag.eq}\n${tag.lineInfo}`,
                     errorName: "query-not-found"
                 });
+                print[funcName](printText);
                 break
             }
             counter += index + i.length
@@ -314,11 +316,12 @@ export default class InsertComponent extends InsertComponentBase {
                 sessionInfo.cacheComponent[AllPathTypes.SmallPath] = null;
 
                 if (folder) {
-                    PrintIfNew({
+                    const [funcName, printText] = createNewPrint({
                         text: `Component ${type.eq} not found! -> ${pathName}\n-> ${type.lineInfo}\n${AllPathTypes.SmallPath}`,
                         errorName: "component-not-found",
                         type: 'error'
                     });
+                    print[funcName](printText);
                 }
 
                 return this.ReBuildTag(type, dataTag, data, BetweenTagData, BetweenTagData => this.StartReplace(BetweenTagData, pathName, sessionInfo));
@@ -329,7 +332,7 @@ export default class InsertComponent extends InsertComponentBase {
 
             sessionInfo.dependencies[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
 
-            const { allData, stringInfo } = await AddDebugInfo(true, pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
+            const { allData, stringInfo } = await AddDebugInfo(false, pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
             const baseData = new ParseBasePage(allData, this.isTs());
             await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, pathName + ' -> ' + AllPathTypes.SmallPath, mapAttributes);
 
@@ -430,10 +433,11 @@ export default class InsertComponent extends InsertComponentBase {
             } else {
                 BetweenTagDataCloseIndex = await this.FindCloseCharHTML(NextTextTag, tagType.eq);
                 if (BetweenTagDataCloseIndex == -1) {
-                    PrintIfNew({
+                    const [funcName, printText] = createNewPrint({
                         text: `\nWarning, you didn't write right this tag: "${tagType}", used in: ${tagType.at(0).lineInfo}\n(the system will auto close it)`,
                         errorName: "close-tag"
                     });
+                    print[funcName](printText);
                     BetweenTagDataCloseIndex = null;
                 }
             }

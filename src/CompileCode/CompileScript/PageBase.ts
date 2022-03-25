@@ -6,9 +6,10 @@ import { AddDebugInfo } from '../XMLHelpers/CodeInfoAndDebug';
 import EasyFs from '../../OutputInput/EasyFs';
 import path from 'path';
 import { BasicSettings } from "../../RunTimeBuild/SearchFileSystem";
-import { PrintIfNew } from "../../OutputInput/PrintNew";
+import { createNewPrint } from "../../OutputInput/PrintNew";
 import CRunTime from "./Compile";
 import { SessionBuild } from "../Session";
+import { print } from "../../OutputInput/Console";
 
 export const settings = {define: {}};
 
@@ -167,12 +168,13 @@ export default class ParseBasePage {
             sessionInfo.debug && this.scriptFile.AddTextBeforeNoTrack(baseModelData.stringInfo);
 
         } else {
-            PrintIfNew({
+            const [funcName, printText] = createNewPrint({
                 id: SmallPath,
                 type: 'error',
                 errorName: 'codeFileNotFound',
                 text: `\nCode file not found: ${pagePath}<line>${SmallPath}`
             });
+            print[funcName](printText);
 
             this.scriptFile = new StringTracker(pageName, `<%="<p style=\\"color:red;text-align:left;font-size:16px;\\">Code File Not Found: '${pageSmallPath}' -> '${SmallPath}'</p>"%>`);
         }

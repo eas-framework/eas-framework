@@ -1,16 +1,16 @@
-import path from 'path';
-import EasyFs from '../OutputInput/EasyFs';
-import { BasicSettings, getTypes } from './SearchFileSystem';
-import { FastCompile } from './SearchPages';
-import { print } from '../OutputInput/Console';
 import { Request, Response } from '@tinyhttp/app';
 import { Files } from 'formidable';
+import path from 'path';
 import { handelConnectorService } from '../BuildInComponents/index';
 import ImportWithoutCache from '../ImportFiles/redirectCJS';
-import { CutTheLast, SplitFirst } from '../StringMethods/Splitting';
-import RequireFile from './ImportFileRuntime';
-import { PrintIfNew } from '../OutputInput/PrintNew';
+import { print } from '../OutputInput/Console';
+import EasyFs from '../OutputInput/EasyFs';
+import { createNewPrint } from '../OutputInput/PrintNew';
 import { CheckDependencyChange } from '../OutputInput/StoreDeps';
+import { SplitFirst } from '../StringMethods/Splitting';
+import RequireFile from './ImportFileRuntime';
+import { BasicSettings, getTypes } from './SearchFileSystem';
+import { FastCompile } from './SearchPages';
 
 const Export = {
     PageLoadRam: {},
@@ -74,11 +74,12 @@ async function RequirePage(filePath: string, __filename: string, __dirname: stri
 
     fileExists = fileExists ?? await EasyFs.existsFile(fullPath);
     if (!fileExists) {
-        PrintIfNew({
+        const [funcName, printText] = createNewPrint({
             type: 'warn',
             errorName: 'import-not-exists',
             text: `Import '${copyPath}' does not exists from '${__filename}'`
-        })
+        });
+        print[funcName](printText);
         LastRequire[copyPath] = { model: () => { }, date: -1, path: fullPath };
         return LastRequire[copyPath].model;
     }

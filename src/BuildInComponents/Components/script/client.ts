@@ -1,7 +1,7 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { BuildInComponent, tagDataObjectArray } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { TransformOptions, transform } from 'esbuild-wasm';
-import { PrintIfNew } from '../../../OutputInput/PrintNew';
+import { createNewPrint } from '../../../OutputInput/PrintNew';
 import { SessionBuild } from '../../../CompileCode/Session';
 import { parseTagDataStringBoolean } from '../serv-connect/index';
 import InsertComponent from '../../../CompileCode/InsertComponent';
