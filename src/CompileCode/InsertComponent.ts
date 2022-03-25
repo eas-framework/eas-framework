@@ -332,7 +332,7 @@ export default class InsertComponent extends InsertComponentBase {
 
             sessionInfo.dependencies[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
 
-            const { allData, stringInfo } = await AddDebugInfo(false, pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
+            const { allData, stringInfo } = await AddDebugInfo(true, pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
             const baseData = new ParseBasePage(allData, this.isTs());
             await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, pathName + ' -> ' + AllPathTypes.SmallPath, mapAttributes);
 
