@@ -43,14 +43,16 @@ export default class SearchRecord {
             for(const term of i.terms){
                 let lower = i.text.toLowerCase(), rebuild = '';
                 let index = lower.indexOf(term);
+                let beenLength = 0;
 
                 while(index != -1){
-                    rebuild += lower.substring(0, index) +  `<${tag}>${i.text.substring(index + rebuild.length, index + term.length + rebuild.length)}</${tag}>`
+                    rebuild += i.text.substring(beenLength, beenLength + index) +  `<${tag}>${i.text.substring(index + beenLength, index + term.length + beenLength)}</${tag}>`
                     lower = lower.substring(index + term.length);
+                    beenLength += index + term.length;
                     index = lower.indexOf(term);
                 }
 
-                i.text = rebuild + lower;
+                i.text = rebuild + i.text.substring(beenLength);
             }
         }
 

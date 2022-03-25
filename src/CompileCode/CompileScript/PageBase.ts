@@ -159,7 +159,7 @@ export default class ParseBasePage {
         const SmallPath = BasicSettings.relative(haveCode);
         
         if (await sessionInfo.dependence(SmallPath,haveCode)) {
-            const baseModelData = await AddDebugInfo(pageName, haveCode, SmallPath); // read model
+            const baseModelData = await AddDebugInfo(false, pageName, haveCode, SmallPath); // read model
             this.scriptFile = baseModelData.allData.replaceAll("@", "@@");
 
             this.scriptFile.AddTextBeforeNoTrack('<%');

@@ -59,12 +59,12 @@ async function ParseDebugInfo(code:StringTracker, path: string) {
     return await ParseScriptCode(code, path);
 }
 
-export async function AddDebugInfo(pageName:string, FullPath:string, SmallPath:string, cache: {value?: string} = {}){
+export async function AddDebugInfo(isolate: boolean, pageName:string, FullPath:string, SmallPath:string, cache: {value?: string} = {}){
     if(!cache.value)
         cache.value = await EasyFs.readFile(FullPath, 'utf8');
 
     return {
-        allData: new StringTracker(`${pageName}<line>${SmallPath}`, cache.value),
+        allData: new StringTracker(`${pageName}<line>${SmallPath}`, isolate ? `<%{%>${cache.value}<%}%>`: cache.value),
         stringInfo: `<%!\nrun_script_name=\`${JSParser.fixText(pageName + ' -> ' + SmallPath)}\`;%>`
     }
 }

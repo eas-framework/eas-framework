@@ -838,7 +838,7 @@ declare module "@eas-framework/server/CompileCode/XMLHelpers/CodeInfoAndDebug" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     function ParseDebugLine(code: StringTracker, path: string): Promise<StringTracker>;
     function ParseDebugInfo(code: StringTracker, path: string): Promise<StringTracker>;
-    export function AddDebugInfo(pageName: string, FullPath: string, SmallPath: string, cache?: {
+    export function AddDebugInfo(isolate: boolean, pageName: string, FullPath: string, SmallPath: string, cache?: {
         value?: string;
     }): Promise<{
         allData: StringTracker;

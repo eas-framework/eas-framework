@@ -57,7 +57,7 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
 
     await sessionInfo.dependence(SmallPath, FullPath); // check page changed date, for dependenceObject
 
-    const baseModelData = await AddDebugInfo(pageName, FullPath, SmallPath); // read model
+    const baseModelData = await AddDebugInfo(false, pageName, FullPath, SmallPath); // read model
     let modelData = ParseBasePage.rebuildBaseInheritance(baseModelData.allData);
 
     sessionInfo.debug && modelData.AddTextBeforeNoTrack(baseModelData.stringInfo);
