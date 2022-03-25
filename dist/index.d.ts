@@ -1173,14 +1173,30 @@ declare module "@eas-framework/server/CompileCode/XMLHelpers/Extricate" {
     export { searchForCutMain as getDataTages };
 }
 declare module "@eas-framework/server/BuildInFunc/SearchRecord" {
-    import { SearchOptions } from 'minisearch';
+    import { SearchOptions, SearchResult } from 'minisearch';
     export default class SearchRecord {
         private fullPath;
         private indexData;
         private miniSearch;
         constructor(filepath: string);
         load(): Promise<void>;
-        search(text: string, options?: SearchOptions, tag?: string): import("minisearch").SearchResult[];
+        /**
+         * It searches for a string and returns an array of matches
+         * @param text - The text to search for.
+         * @param options - length - maximum length - *not cutting half words*
+         *
+         * addAfterMaxLength - add text if a text result reach the maximum length, for example '...'
+         * @param tag - The tag to wrap around the founded search terms.
+         * @returns An array of objects, each object containing the `text` of the search result, `link` to the page, and an array of
+         * objects containing the terms and the index of the term in the text.
+         */
+        search(text: string, options?: SearchOptions & {
+            length?: number;
+            addAfterMaxLength?: string;
+        }, tag?: string): (SearchResult & {
+            text: string;
+            link: string;
+        })[];
         suggest(text: string, options: SearchOptions): import("minisearch").Suggestion[];
     }
 }

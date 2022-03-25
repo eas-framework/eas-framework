@@ -11,6 +11,7 @@
 /compile/search/page2
 /compile/search/searchbox
 /compile/search_runtime/index
+/server/api/index
 /server/import/index
 /server/packageExport/index
 /static/sass/index

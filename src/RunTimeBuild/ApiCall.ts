@@ -306,7 +306,7 @@ async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: s
     if (typeof apiResponse == 'string')
             newResponse = { text: apiResponse };
         else 
-            newResponse = apiResponse;
+            newResponse = apiResponse || newResponse;
 
     finalStep();  // save cookies + code
 

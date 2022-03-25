@@ -1,7 +1,7 @@
 import { StringMap } from "../CompileCode/XMLHelpers/CompileTypes";
 import EasyFs from "../OutputInput/EasyFs";
 import { getTypes } from "../RunTimeBuild/SearchFileSystem";
-import MiniSearch, {SearchOptions} from 'minisearch';
+import MiniSearch, {SearchOptions, SearchResult} from 'minisearch';
 
 export default class SearchRecord {
     private fullPath: string
@@ -32,15 +32,34 @@ export default class SearchRecord {
             storeFields: ['id', 'text', 'url']
         });
 
-        this.miniSearch.addAll(unwrapped);
+        await this.miniSearch.addAllAsync(unwrapped);
     }
 
-    search(text: string, options: SearchOptions = {fuzzy: true}, tag = 'b'){
-        const data = this.miniSearch.search(text, options);
+/**
+ * It searches for a string and returns an array of matches
+ * @param text - The text to search for.
+ * @param options - length - maximum length - *not cutting half words*
+ * 
+ * addAfterMaxLength - add text if a text result reach the maximum length, for example '...'
+ * @param tag - The tag to wrap around the founded search terms.
+ * @returns An array of objects, each object containing the `text` of the search result, `link` to the page, and an array of
+ * objects containing the terms and the index of the term in the text.
+ */
+    search(text: string, options: SearchOptions & {length?: number, addAfterMaxLength?: string} = {fuzzy: true, length: 200, addAfterMaxLength: '...'}, tag = 'b'): (SearchResult & {text: string, link: string})[]{
+        const data = <any>this.miniSearch.search(text, options);
         if(!tag) return data;
 
         for(const i of data){
             for(const term of i.terms){
+                if(options.length && i.text.length > options.length){
+                    const substring = i.text.substring(0, options.length);
+                    if(i.text[options.length].trim() != ''){
+                        i.text = substring.substring(0, substring.lastIndexOf(' ')) + (options.addAfterMaxLength ?? '');
+                    } else {
+                        i.text = substring.trim();
+                    }
+                }
+                
                 let lower = i.text.toLowerCase(), rebuild = '';
                 let index = lower.indexOf(term);
                 let beenLength = 0;

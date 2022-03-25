@@ -9,7 +9,7 @@ export default {
             query: String
         },
         func (Request, Response, _, {query}){
-           return docSearch.search(query).map(x => ({text: x.text, link: x.link}))
+           return docSearch.search(query, {length: 15}).map(x => ({text: x.text, link: x.link}))
         }
     }
 }
