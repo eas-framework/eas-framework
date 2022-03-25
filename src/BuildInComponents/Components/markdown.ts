@@ -81,9 +81,10 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
     if (parseTagDataStringBoolean(dataTag, 'abbr', markDownPlugin?.abbr ?? true))
         md.use(markdownItAbbr);
 
-    let markdownCode = BetweenTagData?.eq;
-    if (!markdownCode) {
-        const location = dataTag.remove('file');
+    let markdownCode = BetweenTagData?.eq || '';
+    const location = dataTag.remove('file');
+
+    if (!markdownCode?.trim?.() && location) {
         let filePath = location[0] == '/' ? getTypes.Static[0] + location: path.join(path.dirname(type.extractInfo('<line>')), location);
         if (!path.extname(filePath))
             filePath += '.serv.md'

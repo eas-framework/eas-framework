@@ -214,11 +214,13 @@ export default class ParseBasePage {
     private loadDefine(moreDefine: StringAnyMap) {
         let lastValue = this.loadSetting();
 
-        const values: (StringTracker|string)[][] = Object.entries(moreDefine);
+        const values: (StringTracker|string)[][] = [];
         while (lastValue) {
             values.unshift(lastValue);
             lastValue = this.loadSetting();
         }
+
+        values.unshift(...Object.entries(moreDefine))
 
         for (const [name, value] of values) {
             this.clearData = this.clearData.replaceAll(`:${name}:`, value);
