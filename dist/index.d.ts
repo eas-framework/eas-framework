@@ -1195,7 +1195,7 @@ declare module "@eas-framework/server/BuildInFunc/SearchRecord" {
             addAfterMaxLength?: string;
         }, tag?: string): (SearchResult & {
             text: string;
-            link: string;
+            url: string;
         })[];
         suggest(text: string, options: SearchOptions): import("minisearch").Suggestion[];
     }

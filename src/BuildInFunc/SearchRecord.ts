@@ -45,7 +45,7 @@ export default class SearchRecord {
  * @returns An array of objects, each object containing the `text` of the search result, `link` to the page, and an array of
  * objects containing the terms and the index of the term in the text.
  */
-    search(text: string, options: SearchOptions & {length?: number, addAfterMaxLength?: string} = {fuzzy: true, length: 200, addAfterMaxLength: '...'}, tag = 'b'): (SearchResult & {text: string, link: string})[]{
+    search(text: string, options: SearchOptions & {length?: number, addAfterMaxLength?: string} = {fuzzy: true, length: 200, addAfterMaxLength: '...'}, tag = 'b'): (SearchResult & {text: string, url: string})[]{
         const data = <any>this.miniSearch.search(text, options);
         if(!tag) return data;
 
