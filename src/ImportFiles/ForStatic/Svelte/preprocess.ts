@@ -18,11 +18,6 @@ import { ESBuildPrintErrorStringTracker } from '../../../CompileCode/esbuild/pri
 import { backToOriginal, backToOriginalSss } from '../../../EasyDebug/SourceMapLoad';
 
 async function SASSSvelte(content: StringTracker, lang: string, fullPath: string) {
-    if (lang == 'css')
-        return {
-            code: new StringTracker()
-        };
-
     try {
         const { css, sourceMap, loadedUrls } = await sass.compileStringAsync(content.eq, {
             syntax: sassSyntax(<any>lang),
@@ -105,8 +100,10 @@ export async function preprocess(fullPath: string, smallPath: string, savePath =
 
     const styleCode = connectSvelte.map(x => `@import "${x}.css";`).join('');
     let hadStyle = false;
-    text = await text.replacerAsync(/(<style)[ ]*( lang=('|")?([A-Za-z]+)('|")?)?[ ]*(>)(.*?)(<\/style>)/s, async args => {
+    text = await text.replacerAsync(/(<style)[ ]*( lang=('|")?([A-Za-z]+)('|")?)?[ ]*(>\n?)(.*?)(\n?<\/style>)/s, async args => {
         styleLang = args[4]?.eq ?? 'css';
+        if(styleLang == 'css') return args[0];
+        
         const { code, dependencies: deps } = await SASSSvelte(args[7], styleLang, fullPath);
         deps && dependencies.push(...deps);
         hadStyle = true;
