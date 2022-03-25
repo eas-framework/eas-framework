@@ -1,0 +1,20 @@
+@[model='../server' title="API"]
+<@body/>
+<h1>API</h1>
+<p>First create some records for the search API</p>
+<a href="../../compile/search/index">create record</a>
+<br/>
+<input type="text" placeholder="Enter search value" value="page" id="search"/>
+
+<a id="openLink"></a>
+<script>
+    const search = document.querySelector('#search');
+    const openLink = document.querySelector('#openLink');
+    function updateLink(){
+        const link = '/server/api/search/' + search.value;
+        openLink.href = link;
+        openLink.innerText = link;
+    }
+    search.addEventListener('input', updateLink);
+    updateLink()
+</script>

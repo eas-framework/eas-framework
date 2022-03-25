@@ -198,7 +198,7 @@ async function makeDefinition(obj: any, urlFrom: string, defineObject: any, Requ
         return {error: typeof validate == 'string' ? validate: 'Error validating URL'};
     }
 
-    return urlFrom;
+    return urlFrom || '';
 }
 /**
  * The function will parse the url and find the best match for the url

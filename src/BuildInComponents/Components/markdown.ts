@@ -85,7 +85,7 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
     const location = dataTag.remove('file');
 
     if (!markdownCode?.trim?.() && location) {
-        let filePath = location[0] == '/' ? getTypes.Static[2] + '/' + location: path.join(path.dirname(type.extractInfo('<line>')), location);
+        let filePath = location[0] == '/' ? path.join(getTypes.Static[2], location): path.join(path.dirname(type.extractInfo('<line>')), location);
         if (!path.extname(filePath))
             filePath += '.serv.md'
         const fullPath = path.join(BasicSettings.fullWebSitePath, filePath);
