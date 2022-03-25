@@ -1323,6 +1323,7 @@ declare module "@eas-framework/server/CompileCode/InsertComponent" {
         addDefaultValues(arrayValues: DefaultValues[], fileData: StringTracker): StringTracker;
         parseComponentProps(tagData: tagDataObjectArray, component: StringTracker): StringTracker;
         buildTagBasic(fileData: StringTracker, tagData: tagDataObjectArray, path: string, SmallPath: string, pathName: string, sessionInfo: SessionBuild, BetweenTagData?: StringTracker): Promise<StringTracker>;
+        static addSpacialAttributes(data: tagDataObjectArray, mapAttributes: StringAnyMap, type: StringTracker, BetweenTagData: StringTracker): void;
         insertTagData(pathName: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, sessionInfo }: {
             sessionInfo: SessionBuild;
             BetweenTagData?: StringTracker;

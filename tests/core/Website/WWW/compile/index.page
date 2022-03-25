@@ -5,6 +5,7 @@
 * [Runtime](./runtime/index)
 * [Search](./search/index)
 * [Search Box](./search/searchbox)
+* [Search Runtime](./search_runtime/index)
 * [Sass](./sass/index)
 * [Error](./error/index)
 </markdown>

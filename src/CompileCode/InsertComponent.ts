@@ -11,6 +11,7 @@ import pathNode from 'path';
 import ParseBasePage from './CompileScript/PageBase';
 import { SessionBuild } from './Session';
 import { print } from '../OutputInput/Console';
+import path from 'path';
 
 interface DefaultValues {
     value: StringTracker,
@@ -292,6 +293,18 @@ export default class InsertComponent extends InsertComponentBase {
         return fileData;
     }
 
+    static addSpacialAttributes(data: tagDataObjectArray, mapAttributes: StringAnyMap, type: StringTracker, BetweenTagData: StringTracker){
+        const addAttr = (key: string, value: string) => {
+            data.push({n: new StringTracker(null, key), v: new StringTracker(null, value)});
+            mapAttributes[key] = value;
+        }
+
+        const importSource = '/' + type.extractInfo();
+        addAttr('importSource', importSource);
+        addAttr('importSourceDirectory', path.dirname(importSource));
+        mapAttributes.reader = BetweenTagData?.eq;
+    }
+
     async insertTagData(pathName: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, sessionInfo }: { sessionInfo: SessionBuild, BetweenTagData?: StringTracker}) {
         const { data, mapAttributes } = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
 
@@ -334,6 +347,10 @@ export default class InsertComponent extends InsertComponentBase {
 
             const { allData, stringInfo } = await AddDebugInfo(true, pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
             const baseData = new ParseBasePage(allData, this.isTs());
+
+            /*add special attributes */
+            InsertComponent.addSpacialAttributes(data, mapAttributes, type, BetweenTagData);
+
             await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, pathName + ' -> ' + AllPathTypes.SmallPath, mapAttributes);
 
             fileData = baseData.scriptFile.Plus(baseData.clearData);

@@ -1,0 +1,6 @@
+<search>
+@compile {
+    define('copy', `<markdown>${attributes.reader}</markdown>`)
+}
+:copy:
+</search>

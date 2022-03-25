@@ -11,7 +11,7 @@ export default class SearchRecord {
     }}
     private miniSearch: MiniSearch;
     constructor(filepath: string){
-        this.fullPath = getTypes.Static[0] + filepath
+        this.fullPath = getTypes.Static[0] + filepath + '.json'
     }
 
     async load(){

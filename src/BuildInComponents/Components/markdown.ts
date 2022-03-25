@@ -6,7 +6,7 @@ import { parseTagDataStringBoolean } from './serv-connect/index';
 import { createNewPrint } from '../../OutputInput/PrintNew';
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs';
-import { BasicSettings, workingDirectory } from '../../RunTimeBuild/SearchFileSystem';
+import { BasicSettings, getTypes, workingDirectory } from '../../RunTimeBuild/SearchFileSystem';
 import anchor from 'markdown-it-anchor';
 import slugify from '@sindresorhus/slugify';
 import markdownItAttrs from 'markdown-it-attrs';
@@ -83,7 +83,8 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
 
     let markdownCode = BetweenTagData?.eq;
     if (!markdownCode) {
-        let filePath = path.join(path.dirname(type.extractInfo('<line>')), dataTag.remove('file'));
+        const location = dataTag.remove('file');
+        let filePath = location[0] == '/' ? getTypes.Static[0] + location: path.join(path.dirname(type.extractInfo('<line>')), location);
         if (!path.extname(filePath))
             filePath += '.serv.md'
         const fullPath = path.join(BasicSettings.fullWebSitePath, filePath);
