@@ -12,6 +12,7 @@ import { print } from "../../OutputInput/Console";
 import EasyFs from "../../OutputInput/EasyFs";
 import JSParser from "../JSParser";
 
+const ignoreInherit = ['codefile'];
 export const settings = { define: {} };
 
 async function PageBaseParser(text: string): Promise<{
@@ -114,6 +115,7 @@ export default class ParseBasePage {
         await parse.parseBase(code);
 
         for (const name of parse.byValue('inherit')) {
+            if(ignoreInherit.includes(name.toLowerCase())) continue;
             parse.pop(name)
             build.AddTextAfterNoTrack(`<@${name}><:${name}/></@${name}>`)
         }

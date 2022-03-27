@@ -1,6 +1,5 @@
-@{
-    const declareVariable = 9;
-}
+
+@[codeFile='inherit']
 <!DOCTYPE html>
 <html lang="en" me=more>
 
