@@ -108,7 +108,6 @@ async function ParseBasicInfo(Request: Request | any, Response: Response, code: 
     Request.files = Request.files || {};
 
     const CopyCookies = JSON.parse(JSON.stringify(Request.signedCookies));
-    Request.cookies = Request.signedCookies;
 
     Response.statusCode = 201;
 
