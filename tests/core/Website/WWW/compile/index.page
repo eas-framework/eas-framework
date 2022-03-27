@@ -3,6 +3,7 @@
 <markdown>
 * [Record](./record/index)
 * [Runtime](./runtime/index)
+* [More Runtime](./runtime/more_compile/index)
 * [Search](./search/index)
 * [Search Box](./search/searchbox)
 * [Search Runtime](./search_runtime/index)

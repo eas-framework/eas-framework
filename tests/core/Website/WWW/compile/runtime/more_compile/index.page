@@ -1,0 +1,21 @@
+@[model='../../server' title='More Compile']
+<@body/>
+@compile {
+    write('compile 1');
+}
+<p>Text 1</p>
+
+@compile {
+    write('compile 2');
+}
+<p>Text 2</p>
+
+@compile {
+    write('compile 3');
+}
+<p>Text 3</p>
+
+@compile {
+    write('compile 4');
+}
+<p>Text 4</p>

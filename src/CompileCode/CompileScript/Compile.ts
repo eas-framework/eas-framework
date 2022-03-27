@@ -28,12 +28,11 @@ export default class CRunTime {
         }`)
 
         for (const i of scripts) {
-            build.AddTextAfterNoTrack(`__write = {text: ''};
-            __writeArray.push(__write);`)
+            build.AddTextAfterNoTrack(`\n__write = {text: ''};__writeArray.unshift(__write);`)
             build.Plus(i)
         }
 
-        build.AddTextAfterNoTrack(`return __writeArray`);
+        build.AddTextAfterNoTrack(`\nreturn __writeArray`);
         return build;
     }
 
