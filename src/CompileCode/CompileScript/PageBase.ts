@@ -1,102 +1,121 @@
 import StringTracker from "../../EasyDebug/StringTracker";
-import { BaseReader } from '../BaseReader/Reader';
-import { getDataTages } from "../XMLHelpers/Extricate";
+import { BaseReader, pool } from '../BaseReader/Reader';
+import { getDataTags } from "../XMLHelpers/Extricate";
 import { StringAnyMap, StringNumberMap } from '../XMLHelpers/CompileTypes';
 import { AddDebugInfo } from '../XMLHelpers/CodeInfoAndDebug';
-import EasyFs from '../../OutputInput/EasyFs';
 import path from 'path';
 import { BasicSettings } from "../../RunTimeBuild/SearchFileSystem";
 import { createNewPrint } from "../../OutputInput/PrintNew";
 import CRunTime from "./Compile";
 import { SessionBuild } from "../Session";
 import { print } from "../../OutputInput/Console";
+import EasyFs from "../../OutputInput/EasyFs";
+import JSParser from "../JSParser";
 
-export const settings = {define: {}};
+export const settings = { define: {} };
 
-const stringAttributes = ['\'', '"', '`'];
+async function PageBaseParser(text: string): Promise<{
+    start: number,
+    end: number,
+    values: {
+        start: number,
+        end: number,
+        key: string,
+        char: string
+    }[]
+}> {
+    const parse = await pool.exec('PageBaseParser', [text]);
+    return JSON.parse(parse);
+}
+
 export default class ParseBasePage {
     public clearData: StringTracker
     public scriptFile = new StringTracker();
 
-    public valueArray: { key: string, value: StringTracker }[] = []
-    constructor(public code?: StringTracker, public isTs?: boolean) {
+    public valueArray: { key: string, value: StringTracker | true, char?: string }[] = []
+    constructor(private sessionInfo?: SessionBuild, public code?: StringTracker, public isTs?: boolean) {
     }
 
-    async loadSettings(sessionInfo: SessionBuild, pagePath: string, smallPath: string, pageName: string, attributes?: StringAnyMap) {
-        const run = new CRunTime(this.code, sessionInfo, smallPath, this.isTs);
+    nonDynamic(isDynamic: boolean) {
+        if (!isDynamic) return;
+
+        const haveDynamic = this.popAny('dynamic');
+        if (haveDynamic != null) return;
+
+        if (this.sessionInfo.debug) {
+            const parse = new ParseBasePage();
+            parse.clearData = this.clearData;
+            parse.valueArray = [...this.valueArray, { key: 'dynamic', value: true }];
+
+            parse.rebuild();
+
+            EasyFs.writeFile(this.sessionInfo.fullPath, parse.clearData.eq);
+
+            const [funcName, printText] = createNewPrint({
+                type: 'warn',
+                errorName: 'dynamic-ssr-import',
+                text: 'Adding \'dynamic\' attribute to file ' + this.sessionInfo.smallPath
+            })
+            print[funcName](printText)
+        } 
+        
+        return true;
+    }
+
+    async loadSettings(pagePath: string, smallPath: string, pageName: string, { attributes, dynamicCheck}: { attributes?: StringAnyMap, dynamicCheck?: boolean }) {
+        const run = new CRunTime(this.code, this.sessionInfo, smallPath, this.isTs);
         this.code = await run.compile(attributes);
 
-        this.parseBase(this.code);
-        await this.loadCodeFile(pagePath, smallPath, this.isTs, sessionInfo, pageName);
+        await this.parseBase(this.code);
+        if(this.nonDynamic(dynamicCheck)){
+            return false;
+        }
         
-        this.loadDefine({...settings.define, ...run.define});
+        await this.loadCodeFile(pagePath, smallPath, this.isTs, pageName);
+
+        this.loadDefine({ ...settings.define, ...run.define });
+
+        return true;
     }
 
-    private parseBase(code: StringTracker) {
-        let dataSplit: StringTracker;
+    private async parseBase(code: StringTracker) {
+        const parser = await PageBaseParser(code.eq);
 
-        code = code.replacer(/@\[[ ]*(([A-Za-z_][A-Za-z_0-9]*=(("[^"]*")|(`[^`]*`)|('[^']*')|[A-Za-z0-9_]+)([ ]*,?[ ]*)?)*)\]/, data => {
-            dataSplit = data[1].trim();
-            return new StringTracker();
-        });
-
-        while (dataSplit?.length) {
-            const findWord = dataSplit.indexOf('=');
-
-            let thisWord = dataSplit.substring(0, findWord).trim().eq;
-
-            if (thisWord[0] == ',')
-                thisWord = thisWord.substring(1).trim();
-
-            let nextValue = dataSplit.substring(findWord + 1);
-
-            let thisValue: StringTracker;
-
-            const closeChar = nextValue.at(0).eq;
-            if (stringAttributes.includes(closeChar)) {
-                const endIndex = BaseReader.findEntOfQ(nextValue.eq.substring(1), closeChar);
-                thisValue = nextValue.substring(1, endIndex);
-
-                nextValue = nextValue.substring(endIndex + 1).trim();
-            } else {
-                const endIndex = nextValue.search(/[_ ,]/);
-
-                if (endIndex == -1) {
-                    thisValue = nextValue;
-                    nextValue = null;
-                }
-                else {
-                    thisValue = nextValue.substring(0, endIndex);
-                    nextValue = nextValue.substring(endIndex).trim();
-                }
-            }
-
-            dataSplit = nextValue;
-            this.valueArray.push({ key: thisWord, value: thisValue });
+        if(parser.start == parser.end){
+            this.clearData = code;
+            return;
         }
 
-        this.clearData = code.trimStart();
+        for(const {char,end,key,start} of parser.values){
+            this.valueArray.push({key, value: start === end ? true: code.substring(start, end), char});
+        }
+        
+        this.clearData = code.substring(0, parser.start).Plus(code.substring(parser.end)).trimStart();
     }
 
     private rebuild() {
-        if(!this.valueArray.length) return new StringTracker();
+        if (!this.valueArray.length) return this.clearData;
         const build = new StringTracker(null, '@[');
 
-        for (const { key, value } of this.valueArray) {
-            build.Plus$`${key}="${value.replaceAll('"', '\\"')}"`;
+        for (const { key, value, char } of this.valueArray) {
+            if (value !== true) {
+                build.Plus$`${key}=${char}${value}${char} `;
+            } else {
+                build.Plus$`${key} `;
+            }
         }
-        build.Plus("]").Plus(this.clearData);
-        this.clearData = build;
+
+        this.clearData = build.substring(0, build.length-1).Plus(']\n').Plus(this.clearData);
     }
 
-    static rebuildBaseInheritance(code: StringTracker): StringTracker {
+    static async rebuildBaseInheritance(code: StringTracker) {
         const parse = new ParseBasePage();
         const build = new StringTracker();
-        parse.parseBase(code);
+        await parse.parseBase(code);
 
         for (const name of parse.byValue('inherit')) {
             parse.pop(name)
-            build.Plus(`<@${name}><:${name}/></@${name}>`)
+            build.AddTextAfterNoTrack(`<@${name}><:${name}/></@${name}>`)
         }
 
         parse.rebuild();
@@ -104,7 +123,7 @@ export default class ParseBasePage {
         return parse.clearData.Plus(build);
     }
 
-    get(name: string){
+    get(name: string) {
         return this.valueArray.find(x => x.key === name)?.value
     }
 
@@ -118,7 +137,7 @@ export default class ParseBasePage {
         if (haveName != -1)
             return this.valueArray.splice(haveName, 1)[0].value;
 
-        const asTag = getDataTages(this.clearData, [name], '@');
+        const asTag = getDataTags(this.clearData, [name], '@');
 
         if (!asTag.found[0]) return;
 
@@ -128,7 +147,7 @@ export default class ParseBasePage {
     }
 
     byValue(value: string) {
-        return this.valueArray.filter(x => x.value.eq === value).map(x => x.key)
+        return this.valueArray.filter(x => x.value !== true && x.value.eq === value).map(x => x.key)
     }
 
     replaceValue(name: string, value: StringTracker) {
@@ -136,12 +155,18 @@ export default class ParseBasePage {
         if (have) have.value = value;
     }
 
-    private async loadCodeFile(pagePath: string, pageSmallPath: string, isTs: boolean, sessionInfo: SessionBuild, pageName: string) {
-        let haveCode = this.popAny('codefile')?.eq;
+    defaultValuePopAny<T>(name: string, defaultValue: T): string | T | null {
+        const value = this.popAny(name);
+        return value === true ? defaultValue : value?.eq;
+    }
+
+    private async loadCodeFile(pagePath: string, pageSmallPath: string, isTs: boolean, pageName: string) {
+        let haveCode = this.defaultValuePopAny('codefile', 'inherit');
         if (!haveCode) return;
 
-        const lang = this.popAny('lang')?.eq;
-        if (haveCode.toLowerCase() == 'inherit')
+        const lang = this.defaultValuePopAny('lang', 'js');
+        const originalValue = haveCode.toLowerCase();
+        if (originalValue == 'inherit')
             haveCode = pagePath;
 
         const haveExt = path.extname(haveCode).substring(1);
@@ -158,25 +183,35 @@ export default class ParseBasePage {
             haveCode = path.join(path.dirname(pagePath), haveCode)
 
         const SmallPath = BasicSettings.relative(haveCode);
-        
-        if (await sessionInfo.dependence(SmallPath,haveCode)) {
+
+        if (await this.sessionInfo.dependence(SmallPath, haveCode)) {
             const baseModelData = await AddDebugInfo(false, pageName, haveCode, SmallPath); // read model
             this.scriptFile = baseModelData.allData.replaceAll("@", "@@");
 
             this.scriptFile.AddTextBeforeNoTrack('<%');
             this.scriptFile.AddTextAfterNoTrack('%>');
-            sessionInfo.debug && this.scriptFile.AddTextBeforeNoTrack(baseModelData.stringInfo);
+            this.sessionInfo.debug && this.scriptFile.AddTextBeforeNoTrack(baseModelData.stringInfo);
 
-        } else {
+        } else if(originalValue == 'inherit' && this.sessionInfo.debug){
+            EasyFs.writeFile(haveCode, '');
+            const [funcName, printText] = createNewPrint({
+                id: SmallPath,
+                type: 'warn',
+                errorName: 'create-code-file',
+                text: `\nCode file created: ${pagePath}<line>${SmallPath}`
+            });
+            print[funcName](printText);
+        }
+        else {
             const [funcName, printText] = createNewPrint({
                 id: SmallPath,
                 type: 'error',
-                errorName: 'codeFileNotFound',
+                errorName: 'code-file-not-found',
                 text: `\nCode file not found: ${pagePath}<line>${SmallPath}`
             });
             print[funcName](printText);
 
-            this.scriptFile = new StringTracker(pageName, `<%="<p style=\\"color:red;text-align:left;font-size:16px;\\">Code File Not Found: '${pageSmallPath}' -> '${SmallPath}'</p>"%>`);
+            this.scriptFile = new StringTracker(pageName, JSParser.printError(`Code File Not Found: '${pageSmallPath}' -> '${SmallPath}'`));
         }
     }
 
@@ -214,7 +249,7 @@ export default class ParseBasePage {
     private loadDefine(moreDefine: StringAnyMap) {
         let lastValue = this.loadSetting();
 
-        const values: (StringTracker|string)[][] = [];
+        const values: (StringTracker | string)[][] = [];
         while (lastValue) {
             values.unshift(lastValue);
             lastValue = this.loadSetting();

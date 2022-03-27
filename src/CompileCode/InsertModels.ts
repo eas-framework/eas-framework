@@ -35,12 +35,14 @@ Components.isTs = isTs;
 
 BuildScriptSettings.plugins = Settings.plugins;
 
-async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath: string, pageName: string, LastSmallPath: string, sessionInfo: SessionBuild): Promise<StringTracker> {
+async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath: string, pageName: string, LastSmallPath: string, sessionInfo: SessionBuild, dynamicCheck?: boolean): Promise<StringTracker> {
 
-    const baseData = new ParseBasePage(data, isTs());
-    await baseData.loadSettings(sessionInfo, pagePath, LastSmallPath, pageName);
+    const baseData = new ParseBasePage(sessionInfo, data, isTs());
+    if(!await baseData.loadSettings(pagePath, LastSmallPath, pageName, {dynamicCheck})){
+        return;
+    }
 
-    const modelName = baseData.popAny('model')?.eq;
+    const modelName = baseData.defaultValuePopAny('model', 'website');
 
     if (!modelName) return scriptFile.Plus(baseData.scriptFile, baseData.clearData);
     data = baseData.clearData;
@@ -58,14 +60,14 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
     await sessionInfo.dependence(SmallPath, FullPath); // check page changed date, for dependenceObject
 
     const baseModelData = await AddDebugInfo(false, pageName, FullPath, SmallPath); // read model
-    let modelData = ParseBasePage.rebuildBaseInheritance(baseModelData.allData);
+    let modelData = await ParseBasePage.rebuildBaseInheritance(baseModelData.allData);
 
     sessionInfo.debug && modelData.AddTextBeforeNoTrack(baseModelData.stringInfo);
 
     pageName += " -> " + SmallPath;
 
     //Get placeholders
-    const allData = extricate.getDataTages(modelData, [''], ':', false, true);
+    const allData = extricate.getDataTags(modelData, [''], ':', false, true);
 
     if (allData.error) {
         print.error("Error within model ->", modelName, "at page: ", pageName);
@@ -74,7 +76,7 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
 
     modelData = allData.data;
     const tagArray = allData.found.map(x => x.tag.substring(1));
-    const outData = extricate.getDataTages(data, tagArray, '@');
+    const outData = extricate.getDataTags(data, tagArray, '@');
 
     if (outData.error) {
         print.error("Error With model ->", modelName, "at page: ", pageName);
@@ -96,7 +98,7 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
         } else { // Try loading data from page base
             const loadFromBase = baseData.get(i.tag);
 
-            if (loadFromBase && loadFromBase.eq.toLowerCase() != 'inherit')
+            if (loadFromBase && loadFromBase !== true && loadFromBase.eq.toLowerCase() != 'inherit')
                 modelBuild.Plus(loadFromBase);
         }
     }
@@ -106,9 +108,13 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
     return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), FullPath, pageName, SmallPath, sessionInfo);
 }
 
-export async function Insert(data: string, fullPathCompile: string, nestedPage: boolean, nestedPageData: string, sessionInfo: SessionBuild) {
+export async function Insert(data: string, fullPathCompile: string, nestedPage: boolean, nestedPageData: string, sessionInfo: SessionBuild, dynamicCheck?: boolean) {
     let DebugString = new StringTracker(sessionInfo.smallPath, data);
-    DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), sessionInfo.fullPath, sessionInfo.smallPath, sessionInfo.smallPath, sessionInfo);
+    DebugString = await outPage(DebugString, new StringTracker(DebugString.DefaultInfoText), sessionInfo.fullPath, sessionInfo.smallPath, sessionInfo.smallPath, sessionInfo, dynamicCheck);
+
+    if(DebugString == null){
+        return;
+    }
 
     DebugString = await PluginBuild.BuildPage(DebugString, sessionInfo.fullPath, sessionInfo.smallPath, sessionInfo);
     DebugString = await Components.Insert(DebugString, sessionInfo.smallPath, sessionInfo); // add components

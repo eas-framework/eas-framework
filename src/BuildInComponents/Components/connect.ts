@@ -1,7 +1,8 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import type { tagDataObjectArray, BuildInComponent } from '../../CompileCode/XMLHelpers/CompileTypes';
-import { compileValues, makeValidationJSON, parseTagDataStringBoolean } from './serv-connect/index';
+import type { BuildInComponent } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { compileValues, makeValidationJSON } from './serv-connect/index';
 import { SessionBuild } from '../../CompileCode/Session';
+import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
 
 const serveScript = '/serv/connect.js';
 
@@ -9,18 +10,15 @@ function template(name: string) {
     return `function ${name}(...args){return connector("${name}", args)}`;
 }
 
-export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, { SomePlugins }, sessionInfo: SessionBuild): Promise<BuildInComponent> {
-    const name = dataTag.getValue('name'),
-        sendTo = dataTag.getValue('sendTo'),
-        validator: string = dataTag.getValue('validate'),
-        notValid: string = dataTag.remove('notValid');
+export default async function BuildCode(type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, { SomePlugins }, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+    const name = dataTag.popHaveDefault('name'),
+        sendTo = dataTag.popHaveDefault('sendTo'),
+        validator = dataTag.popHaveDefault('validate'),
+        notValid = dataTag.popHaveDefault('notValid');
 
-    let message = parseTagDataStringBoolean(dataTag, 'message'); // show error message
-    if (message === null)
-        message = sessionInfo.debug && !SomePlugins("SafeDebug");
+    const message = dataTag.popAnyDefault('message', sessionInfo.debug && !SomePlugins("SafeDebug")); // show error message
 
-        sessionInfo.script(serveScript, { async: null })
-
+    sessionInfo.script(serveScript, { async: null })
     sessionInfo.addScriptStylePage('script', dataTag, type).addText(template(name)); // add script
 
     sessionInfo.connectorArray.push({

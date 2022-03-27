@@ -131,5 +131,5 @@ function findEnd(types: string[], data:StringTracker) {
 
 
 export {
-    searchForCutMain as getDataTages
+    searchForCutMain as getDataTags
 }

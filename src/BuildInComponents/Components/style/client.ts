@@ -1,5 +1,5 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { StringNumberMap, BuildInComponent, tagDataObjectArray } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { StringNumberMap, BuildInComponent,  } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { fileURLToPath, pathToFileURL } from "url";
 import { createNewPrint } from '../../../OutputInput/PrintNew';
 import EasyFs from '../../../OutputInput/EasyFs';
@@ -7,12 +7,12 @@ import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug
 import MinCss from '../../../CompileCode/CssMinimizer';
 import { BasicSettings, getTypes } from '../../../RunTimeBuild/SearchFileSystem';
 import { SessionBuild } from '../../../CompileCode/Session';
-import { parseTagDataStringBoolean } from '../serv-connect/index';
 import SourceMapStore from '../../../EasyDebug/SourceMapStore';
 import { compileSass } from './sass';
 import InsertComponent from '../../../CompileCode/InsertComponent';
+import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
 
-export default async function BuildCode(language: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const outStyleAsTrim = BetweenTagData.eq.trim();
     if (sessionInfo.cache.style.includes(outStyleAsTrim))
         return {
@@ -20,7 +20,7 @@ export default async function BuildCode(language: string, dataTag: tagDataObject
         };
     sessionInfo.cache.style.push(outStyleAsTrim);
 
-    const { result, outStyle } = await compileSass(language, BetweenTagData, InsertComponent, sessionInfo);
+    const { result, outStyle } = await compileSass(language, BetweenTagData, sessionInfo);
 
     const pushStyle = sessionInfo.addScriptStylePage('style', dataTag,  BetweenTagData);
 

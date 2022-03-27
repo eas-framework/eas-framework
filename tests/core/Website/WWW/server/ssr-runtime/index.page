@@ -1,0 +1,7 @@
+@[model='../server' title="SSR RunTime" codeFile=inherit]
+<@body/>
+<p>Pooki</p>
+@{
+    include './component.inte'
+    include '../index'
+}

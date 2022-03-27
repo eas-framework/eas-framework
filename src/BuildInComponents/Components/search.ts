@@ -1,14 +1,21 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, BuildInComponent, StringMap } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { BuildInComponent, StringMap } from '../../CompileCode/XMLHelpers/CompileTypes';
 import JSParser from '../../CompileCode/JSParser'
 import { SessionBuild } from '../../CompileCode/Session';
 import InsertComponent from '../../CompileCode/InsertComponent';
 import { parse } from 'node-html-parser';
-import { makeRecordPath} from './record';
+import { makeRecordPath } from './record';
+import { BasicSettings } from '../../RunTimeBuild/SearchFileSystem';
+import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
 
-export default async function BuildCode( pathName: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(pathName: string, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
     BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, sessionInfo);
+
+    if (!sessionInfo.smallPath.endsWith('.' + BasicSettings.pageTypes.page)) // do not allow this for compiling component alone
+        return {
+            compiledString: BetweenTagData
+        }
 
     const parser = new JSParser(BetweenTagData, BetweenTagData.extractInfo())
     await parser.findScripts();
@@ -21,15 +28,15 @@ export default async function BuildCode( pathName: string, dataTag: tagDataObjec
         }
     }
 
-    const {store, link, current} = makeRecordPath('records/search.serv', dataTag, sessionInfo);
-    const searchObject = buildObject(html, dataTag.remove('match') || 'h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
+    const { store, link, current } = makeRecordPath('records/search.serv', dataTag, sessionInfo);
+    const searchObject = buildObject(html, dataTag.popAnyDefault('match', 'h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]'));
 
-    if(!current){
+    if (!current) {
         store[link] = searchObject;
     } else {
-        Object.assign(current.titles,searchObject.titles);
+        Object.assign(current.titles, searchObject.titles);
 
-        if(!current.text.includes(searchObject.text)){
+        if (!current.text.includes(searchObject.text)) {
             current.text += searchObject.text;
         }
     }

@@ -143,7 +143,7 @@ export default class JSParser {
     }
 
     public static printError(message: string) {
-        return `<p style="color:red;text-align:left;font-size:16px;">${message}</p>`;
+        return `<p style="color:red;text-align:left;font-size:16px;">${JSParser.fixText(message)}</p>`;
     }
 
     static async RunAndExport(text: StringTracker, path: string, isDebug: boolean) {

@@ -1,8 +1,7 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { StringNumberMap, BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import markdown from 'markdown-it'
 import hljs from 'highlight.js';
-import { parseTagDataStringBoolean } from './serv-connect/index';
 import { createNewPrint } from '../../OutputInput/PrintNew';
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs';
@@ -15,6 +14,7 @@ import MinCss from '../../CompileCode/CssMinimizer';
 import { SessionBuild } from '../../CompileCode/Session';
 import InsertComponent from '../../CompileCode/InsertComponent';
 import { print } from '../../OutputInput/Console';
+import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
 
 function codeWithCopy(md: any) {
 
@@ -34,18 +34,19 @@ function codeWithCopy(md: any) {
     md.renderer.rules.fence = renderCode(md.renderer.rules.fence);
 }
 
-export default async function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, session: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, session: SessionBuild): Promise<BuildInComponent> {
     const markDownPlugin = InsertComponent.GetPlugin('markdown');
 
-    const hljsClass = parseTagDataStringBoolean(dataTag, 'hljs-class', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
+    
+    const hljsClass =dataTag.popBoolean('hljs-class', markDownPlugin?.hljsClass ?? true) ? ' class="hljs"' : '';
 
     let haveHighlight = false;
     const md = markdown({
         html: true,
         xhtmlOut: true,
-        linkify: Boolean(parseTagDataStringBoolean(dataTag, 'linkify', markDownPlugin?.linkify)),
-        breaks: Boolean(parseTagDataStringBoolean(dataTag, 'breaks', markDownPlugin?.breaks ?? true)),
-        typographer: Boolean(parseTagDataStringBoolean(dataTag, 'typographer', markDownPlugin?.typographer ?? true)),
+        linkify: dataTag.popBoolean('linkify', markDownPlugin?.linkify),
+        breaks: dataTag.popBoolean('breaks', markDownPlugin?.breaks ?? true),
+        typographer: dataTag.popBoolean('typographer', markDownPlugin?.typographer ?? true),
 
         highlight: function (str, lang) {
             if (lang && hljs.getLanguage(lang)) {
@@ -66,23 +67,24 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
         }
     });
 
-    if (parseTagDataStringBoolean(dataTag, 'copy-code', markDownPlugin?.copyCode ?? true))
+    
+    if (dataTag.popBoolean('copy-code', markDownPlugin?.copyCode ?? true))
         md.use(codeWithCopy);
 
-    if (parseTagDataStringBoolean(dataTag, 'header-link', markDownPlugin?.headerLink ?? true))
+    if (dataTag.popBoolean('header-link', markDownPlugin?.headerLink ?? true))
         md.use(anchor, {
             slugify: (s: any) => slugify(s),
             permalink: anchor.permalink.headerLink()
         });
 
-    if (parseTagDataStringBoolean(dataTag, 'attrs', markDownPlugin?.attrs ?? true))
+    if (dataTag.popBoolean('attrs', markDownPlugin?.attrs ?? true))
         md.use(markdownItAttrs);
 
-    if (parseTagDataStringBoolean(dataTag, 'abbr', markDownPlugin?.abbr ?? true))
+    if (dataTag.popBoolean('abbr', markDownPlugin?.abbr ?? true))
         md.use(markdownItAbbr);
 
     let markdownCode = BetweenTagData?.eq || '';
-    const location = dataTag.remove('file');
+    const location = dataTag.popAnyDefault('file', './markdown');
 
     if (!markdownCode?.trim?.() && location) {
         let filePath = location[0] == '/' ? path.join(getTypes.Static[2], location): path.join(path.dirname(type.extractInfo('<line>')), location);
@@ -95,7 +97,7 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
 
     const renderHTML = md.render(markdownCode), buildHTML = new StringTracker(type.DefaultInfoText);
 
-    const theme = await createAutoTheme(dataTag.remove('code-theme') || markDownPlugin?.codeTheme || 'atom-one');
+    const theme = await createAutoTheme(dataTag.popString('code-theme') || markDownPlugin?.codeTheme || 'atom-one');
 
     if (haveHighlight) {
         const cssLink = '/serv/md/code-theme/' + theme + '.css';
@@ -104,14 +106,11 @@ export default async function BuildCode(type: StringTracker, dataTag: tagDataObj
 
     dataTag.addClass('markdown-body');
 
-    const style = parseTagDataStringBoolean(dataTag, 'theme', markDownPlugin?.theme ?? 'auto');
+    const style = dataTag.popAnyDefault('theme',  markDownPlugin?.theme ?? 'auto');
     const cssLink = '/serv/md/theme/' + style + '.css';
     style != 'none' && session.style(cssLink)
 
-    if (dataTag.length)
-        buildHTML.Plus$`<div${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${renderHTML}</div>`;
-    else
-        buildHTML.AddTextAfter(renderHTML);
+    buildHTML.Plus$`<div${dataTag.rebuildSpace()}>${renderHTML}</div>`;
 
     return {
         compiledString: buildHTML,

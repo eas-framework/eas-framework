@@ -94,19 +94,13 @@ export const Export: ExportSettings = {
     general: {
         importOnLoad: [],
         set pageInRam(value) {
-            if(fileByUrl.Settings.PageRam != value){
-                fileByUrl.Settings.PageRam = value;
-                pageInRamActivate = async () => (await compilationScan)?.()
-                return
-            }
-
             fileByUrl.Settings.PageRam = value;
             pageInRamActivate = async () => {
                 const preparations = await compilationScan;
                 await preparations?.();
-                if (!fileByUrl.Settings.PageRam) {
-                    await fileByUrl.LoadAllPagesToRam();
-                } else if (!value) {
+                if (value) {
+                    await fileByUrl.LoadAllPagesToRam(Export.development);
+                } else {
                     fileByUrl.ClearAllPagesFromRam();
                 }
             }

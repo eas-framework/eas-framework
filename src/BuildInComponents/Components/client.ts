@@ -1,15 +1,16 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import JSParser from '../../CompileCode/JSParser'
 import { SessionBuild } from '../../CompileCode/Session';
 import InsertComponent from '../../CompileCode/InsertComponent';
 import { minifyJS } from '../../CompileCode/esbuild/minify';
+import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
 
 const serveScript = '/serv/temp.js';
 
-async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name: string, params: string, selector: string, mainCode: StringTracker, path: string, isDebug: boolean) {
+async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name: StringTracker | string, params: StringTracker | string, selector: string, mainCode: StringTracker, path: string, isDebug: boolean) {
     const parse = await JSParser.RunAndExport(mainCode, path, isDebug);
-    return new StringTracker().Plus$ `function ${name}({${params}}, selector = "${selector}", out_run_script = {text: ''}){
+    return new StringTracker().Plus$ `function ${name}({${params}}, selector${selector ? ` = "${selector}"`: ''}, out_run_script = {text: ''}){
         const {write, writeSafe, setResponse, sendToSelector} = new buildTemplate(out_run_script);
         ${await BuildScriptWithoutModule(parse)}
         var exports = ${name}.exports;
@@ -17,7 +18,7 @@ async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name
     }\n${name}.exports = {};`
 }
 
-export default async function BuildCode(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
     BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, sessionInfo);
 
@@ -25,9 +26,9 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
 
     let scriptInfo = await template(
         sessionInfo.BuildScriptWithPrams,
-        dataTag.getValue('name'),
-        dataTag.getValue('params'),
-        dataTag.getValue('selector'),
+        dataTag.popAnyTracker('name', 'connect'),
+        dataTag.popAnyTracker('params', ''),
+        dataTag.popAnyDefault('selector', ''),
         BetweenTagData,
         pathName,
         sessionInfo.debug && !InsertComponent.SomePlugins("SafeDebug")

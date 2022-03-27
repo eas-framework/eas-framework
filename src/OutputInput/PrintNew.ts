@@ -20,7 +20,7 @@ export const ClearWarning = () => PreventDoubleLog.length = 0;
 export function createNewPrint({id, text, type = "warn", errorName}: PreventLog) {
     if(!PreventDoubleLog.includes(id ?? text) && !Settings.PreventErrors.includes(errorName)){
         PreventDoubleLog.push(id ?? text);
-        return [type, (text.replace(/<line>/gi, ' -> ') + `\n\nError-Code: ${errorName}\n\n`)];
+        return [type == 'error' ? 'important': type, (text.replace(/<line>/gi, ' -> ') + `\n\nError-Code: ${errorName}\n\n`)];
     }
     return ["do-nothing"]
 }

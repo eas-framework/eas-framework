@@ -1,6 +1,6 @@
 import EasyFs from '../OutputInput/EasyFs';
 import { print } from '../OutputInput/Console';
-import { getTypes, BasicSettings} from './SearchFileSystem';
+import { getTypes, BasicSettings } from './SearchFileSystem';
 import { FastCompile as FastCompile } from './SearchPages';
 import { GetFile as GetStaticFile, serverBuild } from '../ImportFiles/StaticFiles';
 import { Request, Response } from '@tinyhttp/app';
@@ -38,18 +38,18 @@ const Settings: GetPagesSettings = {
     ErrorPages: {}
 }
 
-async function LoadPageToRam(url: string) {
+async function LoadPageToRam(url: string, isDebug: boolean) {
     if (await EasyFs.existsFile(FuncScript.getFullPathCompile(url))) {
         Export.PageLoadRam[url] = [];
-        Export.PageLoadRam[url][0] = await FuncScript.LoadPage(url);
+        Export.PageLoadRam[url][0] = await FuncScript.LoadPage(url, isDebug);
         Export.PageLoadRam[url][1] = FuncScript.BuildPage(Export.PageLoadRam[url][0], url);
     }
 }
 
-async function LoadAllPagesToRam() {
+async function LoadAllPagesToRam(isDebug: boolean) {
     for (const i in pageDeps.store) {
         if (!ExtensionInArray(i, <any>BasicSettings.ReqFileTypesArray))
-            await LoadPageToRam(i);
+            await LoadPageToRam(i, isDebug);
 
     }
 }
@@ -156,28 +156,21 @@ function makeDeleteRequestFilesArray(Request: Request | any) {
 
 //final step
 async function deleteRequestFiles(array: string[]) {
-    for(const e in array)
+    for (const e in array)
         await EasyFs.unlinkIfExists(e);
 }
 
-async function isURLPathAFile(Request: Request | any, url: string, arrayType: string[], code: number) {
-    let fullPageUrl = arrayType[2];
-    let file = false;
-
+async function isURLPathAFile(Request: Request | any, url: string, code: number) {
     if (code == 200) {
-        fullPageUrl = getTypes.Static[0] + url;
+        const fullPageUrl = getTypes.Static[0] + url;
         //check that is not server file
         if (await serverBuild(Request, Settings.DevMode, url) || await EasyFs.existsFile(fullPageUrl))
-            file = true;
-        else  // then it a server page or error page
-            fullPageUrl = arrayType[2];
+            return fullPageUrl;
     }
-
-    return { file, fullPageUrl };
 }
 
-async function BuildLoadPage(smallPath: string) {
-    const pageArray = [await FuncScript.LoadPage(smallPath)];
+async function BuildLoadPage(smallPath: string, firstFunc?: any) {
+    const pageArray = [firstFunc ?? await FuncScript.LoadPage(smallPath, Settings.DevMode)];
 
     pageArray[1] = FuncScript.BuildPage(pageArray[0], smallPath);
 
@@ -185,36 +178,6 @@ async function BuildLoadPage(smallPath: string) {
         Export.PageLoadRam[smallPath] = pageArray;
 
     return pageArray[1];
-}
-
-async function BuildPageURL(arrayType: string[], url: string, smallPath: string, code: number) {
-    let fullPageUrl: string;
-
-    if (!await EasyFs.existsFile(arrayType[0] + url + '.' + BasicSettings.pageTypes.page)) {
-        const ErrorPage = GetErrorPage(404, 'notFound');
-
-        url = ErrorPage.url;
-        arrayType = ErrorPage.arrayType;
-        code = ErrorPage.code;
-
-        smallPath = arrayType[2] + '/' + url;
-        fullPageUrl = url + "." + BasicSettings.pageTypes.page;
-
-        if (!await EasyFs.existsFile(arrayType[0] + fullPageUrl))
-            fullPageUrl = null;
-        else
-            fullPageUrl = arrayType[1] + fullPageUrl + '.cjs';
-
-    } else
-        fullPageUrl = arrayType[1] + url + "." + BasicSettings.pageTypes.page + '.cjs';
-
-    return {
-        arrayType,
-        fullPageUrl,
-        smallPath,
-        code,
-        url
-    }
 }
 
 /**
@@ -228,49 +191,36 @@ async function BuildPageURL(arrayType: string[], url: string, smallPath: string,
  * The code is the status code that will be returned.
  * The fullPageUrl is the full path to the page.
  */
-async function GetDynamicPage(arrayType: string[], url: string, fullPageUrl: string, smallPath: string, code: number) {
-    const SetNewURL = async () => {
-        const build = await BuildPageURL(arrayType, url, smallPath, code);
-        smallPath = build.smallPath, url = build.url, code = build.code, fullPageUrl = build.fullPageUrl, arrayType = build.arrayType;
-        return true;
-    }
+async function GetDynamicPage(arrayType: string[], url: string, code: number) {
+    const inStatic = url + '.' + BasicSettings.pageTypes.page;
+    const smallPath = arrayType[2] + '/' + inStatic;
+    let fullPageUrl = BasicSettings.fullWebSitePath + smallPath;
 
     let DynamicFunc: (...data: any[]) => any;
-    if (Settings.DevMode && await SetNewURL() && fullPageUrl) {
+    if (Settings.DevMode && await EasyFs.existsFile(fullPageUrl)) {
 
-        if (!await EasyFs.existsFile(fullPageUrl) || await CheckDependencyChange(smallPath)) {
+        if (!await EasyFs.existsFile(getTypes.Logs[1] + inStatic) || await CheckDependencyChange(smallPath)) {
             await FastCompile(url + '.' + BasicSettings.pageTypes.page, arrayType);
             DynamicFunc = await BuildLoadPage(smallPath);
 
-        } else if (Export.PageLoadRam[smallPath]) {
+        } else if (!Export.PageLoadRam[smallPath]?.[1])
+            DynamicFunc = await BuildLoadPage(smallPath, Export.PageLoadRam[smallPath]?.[0]);
 
-            if (!Export.PageLoadRam[smallPath][1]) {
-                DynamicFunc = FuncScript.BuildPage(Export.PageLoadRam[smallPath][0], smallPath);
-                if (Settings.PageRam)
-                    Export.PageLoadRam[smallPath][1] = DynamicFunc;
-
-            } else
-                DynamicFunc = Export.PageLoadRam[smallPath][1];
+        else
+            DynamicFunc = Export.PageLoadRam[smallPath][1];
 
 
-        } else
-            DynamicFunc = await BuildLoadPage(smallPath);
-
-
-    } else if (Export.PageLoadRam[smallPath])
+    } else if (Export.PageLoadRam[smallPath]?.[1])
         DynamicFunc = Export.PageLoadRam[smallPath][1];
 
-    else if (!Settings.PageRam && await SetNewURL() && fullPageUrl)
-        DynamicFunc = await BuildLoadPage(smallPath);
+    else if (!Settings.PageRam && await EasyFs.existsFile(fullPageUrl))
+        DynamicFunc = await BuildLoadPage(smallPath, Export.PageLoadRam[smallPath]?.[0]);
 
-    else {
-        code = Settings.ErrorPages.notFound?.code ?? 404;
-        const ErrorPage = Settings.ErrorPages.notFound && Export.PageLoadRam[getTypes.Static[2] + '/' + Settings.ErrorPages.notFound.path] || Export.PageLoadRam[getTypes.Logs[2] + '/e404'];
-
-        if (ErrorPage)
-            DynamicFunc = ErrorPage[1];
-        else
-            fullPageUrl = null;
+    else if (arrayType != getTypes.Logs) {
+        const { arrayType, code, url } = GetErrorPage(404, 'notFound');
+        return GetDynamicPage(arrayType, url, code)
+    } else {
+        fullPageUrl = null;
     }
 
     return {
@@ -316,8 +266,8 @@ async function MakePageResponse(DynamicResponse: any, Response: Response | any) 
  * is loaded.
  * @returns Nothing.
  */
-async function ActivatePage(Request: Request | any, Response: Response, arrayType: string[], url: string, FileInfo: any, code: number, nextPrase: () => Promise<any>) {
-    const { DynamicFunc, fullPageUrl, code: newCode } = await GetDynamicPage(arrayType, url, FileInfo.fullPageUrl, FileInfo.fullPageUrl + '/' + url, code);
+async function ActivatePage(Request: Request | any, Response: Response, arrayType: string[], url: string, code: number, nextPrase: () => Promise<any>) {
+    const { DynamicFunc, fullPageUrl, code: newCode } = await GetDynamicPage(arrayType, url, code);
 
     if (!fullPageUrl || !DynamicFunc && code == 500)
         return Response.sendStatus(newCode);
@@ -346,11 +296,11 @@ async function ActivatePage(Request: Request | any, Response: Response, arrayTyp
 }
 
 async function DynamicPage(Request: Request | any, Response: Response | any, url: string, arrayType = getTypes.Static, code = 200) {
-    const FileInfo = await isURLPathAFile(Request, url, arrayType, code);
+    const FileInfo = await isURLPathAFile(Request, url, code);
 
     const makeDeleteArray = makeDeleteRequestFilesArray(Request)
 
-    if (FileInfo.file) {
+    if (FileInfo) {
         Settings.CacheDays && Response.setHeader("Cache-Control", "max-age=" + (Settings.CacheDays * 24 * 60 * 60));
         await GetStaticFile(url, Settings.DevMode, Request, Response);
         deleteRequestFiles(makeDeleteArray);
@@ -360,7 +310,7 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
     const nextPrase = () => ParseBasicInfo(Request, Response, code); // parse data from methods - post, get... + cookies, session...
 
     const isApi = await MakeApiCall(Request, Response, url, Settings.DevMode, nextPrase);
-    if (!isApi && !await ActivatePage(Request, Response, arrayType, url, FileInfo, code, nextPrase))
+    if (!isApi && !await ActivatePage(Request, Response, arrayType, url, code, nextPrase))
         return;
 
     deleteRequestFiles(makeDeleteArray); // delete files

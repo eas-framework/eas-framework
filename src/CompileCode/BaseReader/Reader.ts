@@ -6,7 +6,7 @@ import workerPool from 'workerpool';
 import { cpus } from 'os';
 
 const cpuLength = Math.max(1, Math.floor(cpus().length / 2));
-const pool = workerPool.pool(SystemData + '/../static/wasm/component/workerInsertComponent.js', { maxWorkers: cpuLength });
+export const pool = workerPool.pool(SystemData + '/../static/wasm/component/workerInsertComponent.js', { maxWorkers: cpuLength });
 
 export class BaseReader {
     /**

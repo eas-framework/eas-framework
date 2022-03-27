@@ -20,8 +20,8 @@
 </main>
 
 <style lang="sass">
-    @import './style'
+@import './style'
 
-    .counter
-        border: solid 1px #000
+.counter
+    border: solid 1px #000
 </style>

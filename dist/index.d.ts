@@ -508,6 +508,8 @@ declare module "@eas-framework/server/RunTimeBuild/SearchFileSystem" {
 }
 declare module "@eas-framework/server/CompileCode/BaseReader/Reader" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
+    import workerPool from 'workerpool';
+    export const pool: workerPool.WorkerPool;
     export class BaseReader {
         /**
          * Find the end of quotation marks, skipping things like escaping: "\\""
@@ -622,21 +624,6 @@ declare module "@eas-framework/server/CompileCode/JSParser" {
 }
 declare module "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    export interface tagDataObject {
-        n: StringTracker;
-        v?: StringTracker;
-        char?: StringTracker;
-    }
-    export interface tagDataObjectArray extends Array<tagDataObject> {
-        have?: (name: string) => boolean;
-        remove?: (name: string) => string;
-        getValue?: (name: string) => string;
-        addClass?: (name: string) => void;
-    }
-    export interface tagDataObjectAsText {
-        n: string;
-        v: string;
-    }
     export type StringNumberMap = {
         [key: string]: number;
     };
@@ -680,13 +667,6 @@ declare module "@eas-framework/server/OutputInput/StoreJSON" {
 }
 declare module "@eas-framework/server/StringMethods/Id" {
     export default function createId(text: string, max?: number): string;
-}
-declare module "@eas-framework/server/BuildInComponents/Components/serv-connect/index" {
-    import type { tagDataObjectArray } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
-    export function compileValues(value: string): string;
-    export function makeValidationJSON(args: any[], validatorArray: any[]): Promise<boolean | string[]>;
-    export function parseValues(args: any[], validatorArray: any[]): any[];
-    export function parseTagDataStringBoolean(data: tagDataObjectArray, find: string, defaultData?: any): string | null | boolean;
 }
 declare module "@eas-framework/server/EasyDebug/SourceMapLoad" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
@@ -773,10 +753,40 @@ declare module "@eas-framework/server/CompileCode/transform/Script" {
      */
     export default function BuildScript(text: StringTracker, isTypescript: boolean, sessionInfo: SessionBuild): Promise<StringTracker>;
 }
+declare module "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser" {
+    import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
+    export default class TagDataParser {
+        private text;
+        valueArray: {
+            key?: StringTracker;
+            value: StringTracker | true;
+            space: boolean;
+            char?: string;
+        }[];
+        constructor(text: StringTracker);
+        parser(): Promise<void>;
+        private popItem;
+        popTracker(key: string): StringTracker | null | boolean;
+        popHaveDefaultTracker<T = string>(key: string, value?: T): StringTracker | null | T;
+        popAnyTracker<T = string>(key: string, value?: T): string | null | T;
+        popString(key: string): string | null | boolean;
+        popBoolean(key: string, defaultValue?: boolean): boolean;
+        exists(key: string): boolean;
+        popHaveDefault<T = string>(key: string, value?: T): string | null | T;
+        popAnyDefault<T = string>(key: string, value?: T): string | null | T;
+        addClass(className: string): void;
+        rebuildSpace(): StringTracker;
+        pushValue(key: string, value: string): StringTracker;
+        map(): {
+            [key: string]: string | true;
+        };
+    }
+}
 declare module "@eas-framework/server/CompileCode/Session" {
     import SourceMapStore from "@eas-framework/server/EasyDebug/SourceMapStore";
-    import { StringAnyMap, StringNumberMap, tagDataObjectArray } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { StringAnyMap, StringNumberMap } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
     export type setDataHTMLTag = {
         url: string;
         attributes?: StringAnyMap;
@@ -826,7 +836,7 @@ declare module "@eas-framework/server/CompileCode/Session" {
         record(name: string): void;
         dependence(smallPath: string, fullPath?: string): Promise<boolean>;
         addScriptStyle(type: 'script' | 'style' | 'module', smallPath?: string): SourceMapStore;
-        addScriptStylePage(type: 'script' | 'style' | 'module', dataTag: tagDataObjectArray, info: StringTracker): SourceMapStore;
+        addScriptStylePage(type: 'script' | 'style' | 'module', dataTag: TagDataParser, info: StringTracker): SourceMapStore;
         private static createName;
         private addHeadTags;
         buildHead(): Promise<string>;
@@ -863,40 +873,41 @@ declare module "@eas-framework/server/CompileCode/esbuild/minify" {
 }
 declare module "@eas-framework/server/BuildInComponents/Components/client" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/script/server" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
-    import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(language: string, pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent): Promise<BuildInComponent>;
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(language: string, pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/script/client" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { BuildInComponent, tagDataObjectArray } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
-    export default function BuildCode(language: string, tagData: tagDataObjectArray, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(language: string, tagData: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/script/index" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
-    import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/style/sass" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     import sass from 'sass';
     import { RawSourceMap } from "source-map-js";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
-    import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
     export function createImporter(originalPath: string): {
         findFileUrl(url: string): URL;
     };
-    export function sassStyle(language: string, SomePlugins: any): "compressed" | "expanded";
+    export function sassStyle(language: string): "compressed" | "expanded";
     export function sassSyntax(language: 'sass' | 'scss' | 'css'): "css" | "scss" | "indented";
     export function sassAndSource(sourceMap: RawSourceMap, source: string): void;
     export function getSassErrorLine({ sassStack }: {
@@ -910,7 +921,7 @@ declare module "@eas-framework/server/BuildInComponents/Components/style/sass" {
         column: any;
     }): void;
     export function PrintSassErrorTracker(err: any, track: StringTracker): void;
-    export function compileSass(language: string, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild, outStyle?: string): Promise<{
+    export function compileSass(language: string, BetweenTagData: StringTracker, sessionInfo: SessionBuild, outStyle?: string): Promise<{
         outStyle: string;
         result?: undefined;
         compressed?: undefined;
@@ -922,27 +933,27 @@ declare module "@eas-framework/server/BuildInComponents/Components/style/sass" {
 }
 declare module "@eas-framework/server/BuildInComponents/Components/style/server" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
-    import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(language: string, pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(language: string, pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/CompileCode/CssMinimizer" {
     export default function MinCss(code: string): string;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/style/client" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { BuildInComponent, tagDataObjectArray } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
-    import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(language: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(language: string, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/style/index" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
-    import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/OutputInput/StoreDeps" {
     import { StringNumberMap } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
@@ -959,10 +970,11 @@ declare module "@eas-framework/server/OutputInput/StoreDeps" {
 }
 declare module "@eas-framework/server/BuildInComponents/Components/page" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/isolate" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
@@ -1036,32 +1048,41 @@ declare module "@eas-framework/server/ImportFiles/StaticFiles" {
 }
 declare module "@eas-framework/server/BuildInComponents/Components/svelte" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
-    export default function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(type: StringTracker, dataTag: TagDataParser, sessionInfo: SessionBuild): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/markdown" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, session: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, session: SessionBuild): Promise<BuildInComponent>;
     export function minifyMarkdownTheme(): Promise<void>;
     export function autoCodeTheme(): Promise<string>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/head" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
     export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild, fullCompilePath: string): Promise<StringTracker>;
+}
+declare module "@eas-framework/server/BuildInComponents/Components/serv-connect/index" {
+    export function compileValues(value: string): string;
+    export function makeValidationJSON(args: any[], validatorArray: any[]): Promise<boolean | string[]>;
+    export function parseValues(args: any[], validatorArray: any[]): any[];
 }
 declare module "@eas-framework/server/BuildInComponents/Components/connect" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import type { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import type { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
-    export default function BuildCode(type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, { SomePlugins }: {
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, { SomePlugins }: {
         SomePlugins: any;
     }, sessionInfo: SessionBuild): Promise<BuildInComponent>;
     export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild): StringTracker;
@@ -1069,24 +1090,26 @@ declare module "@eas-framework/server/BuildInComponents/Components/connect" {
 }
 declare module "@eas-framework/server/BuildInComponents/Components/form" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
     export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild): StringTracker;
     export function handelConnector(thisPage: any, connectorInfo: any): Promise<void>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/record" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export function makeRecordPath(defaultName: string, dataTag: tagDataObjectArray, sessionInfo: SessionBuild): {
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export function makeRecordPath(defaultName: string, dataTag: TagDataParser, sessionInfo: SessionBuild): {
         store: any;
         current: any;
         link: string;
     };
-    export default function BuildCode(pathName: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    export default function BuildCode(pathName: string, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
     export function deleteBeforeReBuild(smallPath: string): void;
     export function updateRecords(session: SessionBuild): Promise<void>;
     export function perCompile(): void;
@@ -1094,18 +1117,20 @@ declare module "@eas-framework/server/BuildInComponents/Components/record" {
 }
 declare module "@eas-framework/server/BuildInComponents/Components/search" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
-    export default function BuildCode(pathName: string, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
+    export default function BuildCode(pathName: string, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/BuildInComponents/index" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    import { tagDataObjectArray, BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
     export const AllBuildIn: string[];
-    export function StartCompiling(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+    export function StartCompiling(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
     export function IsInclude(tagname: string): boolean;
     export function finalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild, fullCompilePath: string): Promise<StringTracker>;
     export function handelConnectorService(type: string, thisPage: any, connectorArray: any[]): Promise<void> | Promise<boolean>;
@@ -1170,7 +1195,7 @@ declare module "@eas-framework/server/CompileCode/XMLHelpers/Extricate" {
         error?: boolean;
         found?: SearchCutData[];
     }
-    export { searchForCutMain as getDataTages };
+    export { searchForCutMain as getDataTags };
 }
 declare module "@eas-framework/server/BuildInFunc/SearchRecord" {
     import { SearchOptions, SearchResult } from 'minisearch';
@@ -1229,8 +1254,13 @@ declare module "@eas-framework/server/ImportFiles/Script" {
      * @param {string[]} withoutCache - an array of paths that will not be cached.
      * @returns The module that was imported.
      */
-    export default function LoadImport(importFrom: string, InStaticPath: string, typeArray: string[], isDebug?: boolean, useDeps?: StringAnyMap, withoutCache?: string[]): Promise<any>;
-    export function ImportFile(importFrom: string, InStaticPath: string, typeArray: string[], isDebug?: boolean, useDeps?: StringAnyMap, withoutCache?: string[]): any;
+    export default function LoadImport(importFrom: string, InStaticPath: string, typeArray: string[], { isDebug, useDeps, withoutCache, onlyPrepare }: {
+        isDebug: boolean;
+        useDeps?: StringAnyMap;
+        withoutCache?: string[];
+        onlyPrepare?: boolean;
+    }): Promise<any>;
+    export function ImportFile(importFrom: string, InStaticPath: string, typeArray: string[], isDebug?: boolean, useDeps?: StringAnyMap, withoutCache?: string[]): Promise<any>;
     export function RequireOnce(filePath: string, isDebug: boolean): Promise<any>;
     export function RequireCjsScript(content: string): Promise<any>;
     /**
@@ -1277,35 +1307,43 @@ declare module "@eas-framework/server/CompileCode/CompileScript/PageBase" {
         define: {};
     };
     export default class ParseBasePage {
+        private sessionInfo?;
         code?: StringTracker;
         isTs?: boolean;
         clearData: StringTracker;
         scriptFile: StringTracker;
         valueArray: {
             key: string;
-            value: StringTracker;
+            value: StringTracker | true;
+            char?: string;
         }[];
-        constructor(code?: StringTracker, isTs?: boolean);
-        loadSettings(sessionInfo: SessionBuild, pagePath: string, smallPath: string, pageName: string, attributes?: StringAnyMap): Promise<void>;
+        constructor(sessionInfo?: SessionBuild, code?: StringTracker, isTs?: boolean);
+        nonDynamic(isDynamic: boolean): boolean;
+        loadSettings(pagePath: string, smallPath: string, pageName: string, { attributes, dynamicCheck }: {
+            attributes?: StringAnyMap;
+            dynamicCheck?: boolean;
+        }): Promise<boolean>;
         private parseBase;
         private rebuild;
-        static rebuildBaseInheritance(code: StringTracker): StringTracker;
-        get(name: string): StringTracker;
-        pop(name: string): StringTracker;
-        popAny(name: string): StringTracker;
+        static rebuildBaseInheritance(code: StringTracker): Promise<StringTracker>;
+        get(name: string): true | StringTracker;
+        pop(name: string): true | StringTracker;
+        popAny(name: string): true | StringTracker;
         byValue(value: string): string[];
         replaceValue(name: string, value: StringTracker): void;
+        defaultValuePopAny<T>(name: string, defaultValue: T): string | T | null;
         private loadCodeFile;
         private loadSetting;
         private loadDefine;
     }
 }
 declare module "@eas-framework/server/CompileCode/InsertComponent" {
-    import StringTracker, { StringTrackerDataInfo } from "@eas-framework/server/EasyDebug/StringTracker";
+    import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     import AddPlugin from "@eas-framework/server/Plugins/Index";
-    import { tagDataObjectArray, CompileInFileFunc, StringArrayOrObject, StringAnyMap } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
+    import { CompileInFileFunc, StringArrayOrObject } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     import { InsertComponentBase } from "@eas-framework/server/CompileCode/BaseReader/Reader";
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
+    import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
     interface DefaultValues {
         value: StringTracker;
         elements: string[];
@@ -1321,25 +1359,16 @@ declare module "@eas-framework/server/CompileCode/InsertComponent" {
         private regexSearch;
         constructor(PluginBuild: AddPlugin);
         FindSpecialTagByStart(string: string): string[];
-        /**
-         * It takes a string of HTML and returns an array of objects that contain the name of the attribute,
-         * the value of the attribute, and the character that comes after the attribute
-         * @param {StringTracker} text - The text to parse.
-         * @returns The return value is an object with two properties:
-         */
-        tagData(text: StringTracker): {
-            data: tagDataObjectArray;
-            mapAttributes: StringAnyMap;
-        };
         findIndexSearchTag(query: string, tag: StringTracker): number;
-        ReBuildTagData(stringInfo: StringTrackerDataInfo, dataTagSplitter: tagDataObjectArray): StringTracker;
         CheckMinHTML(code: StringTracker): StringTracker;
-        ReBuildTag(type: StringTracker, dataTag: StringTracker, dataTagSpliced: tagDataObjectArray, BetweenTagData: StringTracker, SendDataFunc: (text: StringTracker) => Promise<StringTracker>): Promise<StringTracker>;
+        ReBuildTag(type: StringTracker, dataTag: StringTracker, dataTagSpliced: TagDataParser, BetweenTagData: StringTracker, SendDataFunc: (text: StringTracker) => Promise<StringTracker>): Promise<StringTracker>;
         exportDefaultValues(fileData: StringTracker, foundSetters?: DefaultValues[]): any;
         addDefaultValues(arrayValues: DefaultValues[], fileData: StringTracker): StringTracker;
-        parseComponentProps(tagData: tagDataObjectArray, component: StringTracker): StringTracker;
-        buildTagBasic(fileData: StringTracker, tagData: tagDataObjectArray, path: string, SmallPath: string, pathName: string, sessionInfo: SessionBuild, BetweenTagData?: StringTracker): Promise<StringTracker>;
-        static addSpacialAttributes(data: tagDataObjectArray, mapAttributes: StringAnyMap, type: StringTracker, BetweenTagData: StringTracker): void;
+        parseComponentProps(tagData: TagDataParser, component: StringTracker): StringTracker;
+        buildTagBasic(fileData: StringTracker, tagData: TagDataParser, path: string, SmallPath: string, pathName: string, sessionInfo: SessionBuild, BetweenTagData?: StringTracker): Promise<StringTracker>;
+        static addSpacialAttributes(data: TagDataParser, type: StringTracker, BetweenTagData: StringTracker): {
+            [key: string]: string | true;
+        };
         insertTagData(pathName: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, sessionInfo }: {
             sessionInfo: SessionBuild;
             BetweenTagData?: StringTracker;
@@ -1379,7 +1408,7 @@ declare module "@eas-framework/server/CompileCode/InsertModels" {
     export function GetPlugin(name: string): any;
     export function SomePlugins(...data: string[]): boolean;
     export function isTs(): boolean;
-    export function Insert(data: string, fullPathCompile: string, nestedPage: boolean, nestedPageData: string, sessionInfo: SessionBuild): Promise<StringTracker>;
+    export function Insert(data: string, fullPathCompile: string, nestedPage: boolean, nestedPageData: string, sessionInfo: SessionBuild, dynamicCheck?: boolean): Promise<StringTracker>;
 }
 declare module "@eas-framework/server/MainBuild/ImportModule" {
     export function StartRequire(array: string[], isDebug: boolean): Promise<any[]>;
@@ -1523,6 +1552,13 @@ declare module "@eas-framework/server/MainBuild/SettingsTypes" {
 }
 declare module "@eas-framework/server/RunTimeBuild/FileTypes" {
     /**
+     * Given a file name and an extension, return true if the file name ends with the extension
+     * @param {string} name - The name of the file.
+     * @param {string} extname - the extension to check for.
+     * @returns A boolean value.
+     */
+    export function extensionIs(name: string, extname: string): boolean;
+    /**
      * Check if the file name ends with one of the given file types.
      * @param {string[]} types - an array of file extensions to match.
      * @param {string} name - The name of the file.
@@ -1545,14 +1581,20 @@ declare module "@eas-framework/server/RunTimeBuild/SiteMap" {
 declare module "@eas-framework/server/RunTimeBuild/SearchPages" {
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     import { ExportSettings } from "@eas-framework/server/MainBuild/SettingsTypes";
+    import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     /**
      * when page call other page;
      */
-    export function FastCompileInFile(path: string, arrayType: string[], sessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string): Promise<{
-        CompiledData: import("@eas-framework/server/EasyDebug/StringTracker").default;
+    export function FastCompileInFile(path: string, arrayType: string[], { hasSessionInfo, nestedPage, nestedPageData, dynamicCheck }?: {
+        hasSessionInfo?: SessionBuild;
+        nestedPage?: string;
+        nestedPageData?: string;
+        dynamicCheck?: boolean;
+    }): Promise<{
+        CompiledData: StringTracker;
         sessionInfo: SessionBuild;
     }>;
-    export function FastCompile(path: string, arrayType: string[]): Promise<void>;
+    export function FastCompile(path: string, arrayType: string[], dynamicCheck?: boolean): Promise<void>;
     export function compileAll(Export: ExportSettings): Promise<() => Promise<void>>;
 }
 declare module "@eas-framework/server/RunTimeBuild/ImportFileRuntime" {
@@ -1593,7 +1635,7 @@ declare module "@eas-framework/server/RunTimeBuild/FunctionScript" {
      * @param ext - The extension of the file.
      * @returns A function that takes a data object and returns a string.
      */
-    function LoadPage(url: string, ext?: string): Promise<any>;
+    function LoadPage(url: string, isDebug: boolean): Promise<any>;
     /**
      * It takes a function that prepare a page, and returns a function that loads a page
      * @param LoadPageFunc - A function that takes in a page to execute on
@@ -1640,7 +1682,7 @@ declare module "@eas-framework/server/RunTimeBuild/GetPages" {
         ErrorPages: ErrorPages;
     }
     const Settings: GetPagesSettings;
-    function LoadAllPagesToRam(): Promise<void>;
+    function LoadAllPagesToRam(isDebug: boolean): Promise<void>;
     function ClearAllPagesFromRam(): void;
     function GetErrorPage(code: number, LocSettings: 'notFound' | 'serverError'): {
         url: string;

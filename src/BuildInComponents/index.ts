@@ -1,5 +1,5 @@
 import StringTracker from '../EasyDebug/StringTracker';
-import { tagDataObjectArray, BuildInComponent } from '../CompileCode/XMLHelpers/CompileTypes';
+import { BuildInComponent } from '../CompileCode/XMLHelpers/CompileTypes';
 import client from './Components/client';
 import script from './Components/script/index';
 import style from './Components/style/index';
@@ -14,10 +14,11 @@ import { SessionBuild } from '../CompileCode/Session';
 import InsertComponent from '../CompileCode/InsertComponent';
 import record, { updateRecords, perCompile as perCompileRecord, postCompile as postCompileRecord, deleteBeforeReBuild } from './Components/record';
 import search from './Components/search';
+import TagDataParser from '../CompileCode/XMLHelpers/TagDataParser';
 
 export const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown", "record", "search"];
 
-export function StartCompiling(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export function StartCompiling(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     let reData: Promise<BuildInComponent>;
 
     switch (type.eq.toLowerCase()) {
@@ -31,10 +32,10 @@ export function StartCompiling(pathName: string, type: StringTracker, dataTag: t
             reData = search( pathName, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
         case "script":
-            reData = script( pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            reData = script( pathName, type, dataTag, BetweenTagData, sessionInfo);
             break;
         case "style":
-            reData = style( pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            reData = style( pathName, type, dataTag, BetweenTagData, sessionInfo);
             break;
         case "page":
             reData = page(pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);

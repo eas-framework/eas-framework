@@ -2,7 +2,9 @@ import path from "path";
 import SourceMapStore from "../../EasyDebug/SourceMapStore";
 import StringTracker from "../../EasyDebug/StringTracker";
 import { compileImport } from "../../ImportFiles/Script";
+import { print } from "../../OutputInput/Console";
 import EasyFs from "../../OutputInput/EasyFs";
+import { createNewPrint } from "../../OutputInput/PrintNew";
 import { ConvertSyntaxMini } from "../../Plugins/Syntax/RazorSyntax";
 import { BasicSettings, getTypes, smallPathToPage } from "../../RunTimeBuild/SearchFileSystem";
 import { CutTheLast, SplitFirst } from "../../StringMethods/Splitting";
@@ -47,7 +49,7 @@ export default class CRunTime {
                 this.sessionInfo.fullPath,
                 path.dirname(this.sessionInfo.fullPath),
                 __localpath,
-                attributes
+                attributes || {}
             ]
         }
     }
@@ -96,7 +98,18 @@ export default class CRunTime {
 
         const toImport = await compileImport(string, compilePath, filePath, typeArray, this.isTs, this.sessionInfo.debug, template);
 
-        const execute = async () => this.rebuildCode(parser, await toImport(...funcs));
+        const execute = async () => {
+            try {
+                return this.rebuildCode(parser, await toImport(...funcs));
+            } catch(err){
+                const [funcName, printText] = createNewPrint({
+                    errorName: err,
+                    text: err.message,
+                    type: 'error'
+                });
+                print[funcName](printText);
+            }
+        };
         this.sessionInfo.cacheCompileScript[this.smallPath] = execute; // save this to cache
         const thisFirst = await execute();
         doForAll(execute)

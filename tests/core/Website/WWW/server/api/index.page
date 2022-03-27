@@ -2,7 +2,7 @@
 <@body/>
 <h1>API</h1>
 <p>First create some records for the search API</p>
-<a href="../../compile/search/index">create record</a>
+<a href="../../compile/search/index">create record</a> and restart the server
 <br/>
 <input type="text" placeholder="Enter search value" value="page" id="search"/>
 

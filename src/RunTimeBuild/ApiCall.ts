@@ -142,7 +142,7 @@ async function parseURLData(validate: any, value: any, Request: any, Response: a
                         resData = makeValid;
 
                 } catch (e) {
-                    error = 'Error on function validator, filed - ' + makeMassage(e);
+                    error = 'Error on function validator, field - ' + makeMassage(e);
                 }
             }
 
@@ -152,7 +152,7 @@ async function parseURLData(validate: any, value: any, Request: any, Response: a
     }
 
     if (!resData)
-        error = 'Error validate filed - ' + value;
+        error = 'Error validate field, value is "' + value + '"';
 
     return [error, pushData];
 }

@@ -7,7 +7,8 @@ import { SessionBuild } from '../Session';
 import EasySyntax from './EasySyntax';
 
 function ErrorTemplate(info: string){
-    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += "<p style=\\"color:red;text-align:left;font-size:16px;\\">Syntax Error: ${JSParser.fixTextSimpleQuotes(info.replaceAll('\n', '<br/>'))}</p>"`;
+    
+    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += \`${JSParser.printError(`Syntax Error: ${JSParser.fixTextSimpleQuotes(info.replaceAll('\n', '<br/>'))}`)}\``;
 }
 
 /**

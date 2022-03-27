@@ -1,15 +1,15 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { BuildInComponent, tagDataObjectArray } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { BuildInComponent,  } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { TransformOptions, transform } from 'esbuild-wasm';
 import { createNewPrint } from '../../../OutputInput/PrintNew';
 import { SessionBuild } from '../../../CompileCode/Session';
-import { parseTagDataStringBoolean } from '../serv-connect/index';
 import InsertComponent from '../../../CompileCode/InsertComponent';
 import { GetPlugin, SomePlugins } from '../../../CompileCode/InsertModels';
 import { ESBuildPrintErrorStringTracker, ESBuildPrintWarningsStringTracker } from '../../../CompileCode/esbuild/printMessage';
+import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
 
-export default async function BuildCode(language: string, tagData: tagDataObjectArray, BetweenTagData: StringTracker,  sessionInfo: SessionBuild): Promise<BuildInComponent> {
-    const BetweenTagDataEq = BetweenTagData.eq, BetweenTagDataEqAsTrim = BetweenTagDataEq.trim(), isModel = tagData.getValue('type') == 'module', isModelStringCache = isModel ? 'scriptModule' : 'script';
+export default async function BuildCode(language: string, tagData: TagDataParser, BetweenTagData: StringTracker,  sessionInfo: SessionBuild): Promise<BuildInComponent> {
+    const BetweenTagDataEq = BetweenTagData.eq, BetweenTagDataEqAsTrim = BetweenTagDataEq.trim(), isModel = tagData.popString('type') == 'module', isModelStringCache = isModel ? 'scriptModule' : 'script';
 
     if (sessionInfo.cache[isModelStringCache].includes(BetweenTagDataEqAsTrim))
         return {

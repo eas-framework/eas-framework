@@ -1,13 +1,13 @@
 import SourceMapStore from "../EasyDebug/SourceMapStore";
 import StoreJSON from "../OutputInput/StoreJSON";
 import { BasicSettings, getTypes } from "../RunTimeBuild/SearchFileSystem";
-import { StringAnyMap, StringMap, StringNumberMap, tagDataObjectArray } from "./XMLHelpers/CompileTypes";
+import { StringAnyMap, StringMap, StringNumberMap,  } from "./XMLHelpers/CompileTypes";
 import Base64Id from '../StringMethods/Id';
 import EasyFs from "../OutputInput/EasyFs";
 import StringTracker from "../EasyDebug/StringTracker";
-import { parseTagDataStringBoolean } from "../BuildInComponents/Components/serv-connect";
 import { isTs } from "./InsertModels";
 import BuildScript from "./transform/Script";
+import TagDataParser from "./XMLHelpers/TagDataParser";
 
 
 export type setDataHTMLTag = {
@@ -102,8 +102,8 @@ export class SessionBuild {
         return data.value
     }
 
-    addScriptStylePage(type: 'script' | 'style' | 'module', dataTag: tagDataObjectArray, info: StringTracker) {
-        return this.addScriptStyle(type, parseTagDataStringBoolean(dataTag, 'page') ? this.smallPath : info.extractInfo());
+    addScriptStylePage(type: 'script' | 'style' | 'module', dataTag: TagDataParser, info: StringTracker) {
+        return this.addScriptStyle(type, dataTag.popString('page') ? this.smallPath : info.extractInfo());
     }
 
 

@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/tests/core/index.js",
             "args": ["--preserve-symlinks", "allowSourceDebug", "rebuild"], // allow source debug in browser and rebuild even on production mode
             "pauseForSourceMap": true,
-            "smartStep": false,
+            "smartStep": true,
             "outFiles": ["${workspaceFolder}/dist/**/*.js", "${workspaceFolder}/node_modules"],
             "skipFiles": [
                 "<node_internals>/**",

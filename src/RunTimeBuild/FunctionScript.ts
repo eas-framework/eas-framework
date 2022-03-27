@@ -2,12 +2,14 @@ import { Request, Response } from '@tinyhttp/app';
 import { Files } from 'formidable';
 import path from 'path';
 import { handelConnectorService } from '../BuildInComponents/index';
+import JSParser from '../CompileCode/JSParser';
 import ImportWithoutCache from '../ImportFiles/redirectCJS';
 import { print } from '../OutputInput/Console';
 import EasyFs from '../OutputInput/EasyFs';
 import { createNewPrint } from '../OutputInput/PrintNew';
 import { CheckDependencyChange } from '../OutputInput/StoreDeps';
 import { SplitFirst } from '../StringMethods/Splitting';
+import { RemoveEndType } from './FileTypes';
 import RequireFile from './ImportFileRuntime';
 import { BasicSettings, getTypes } from './SearchFileSystem';
 import { FastCompile } from './SearchPages';
@@ -56,14 +58,9 @@ async function RequirePage(filePath: string, __filename: string, __dirname: stri
     }
 
     let fullPath: string;
-    if (filePath[0] == '.') {
-        if (filePath[1] == '/')
-            filePath = filePath.substring(2);
-        else
-            filePath = filePath.substring(1);
-
-        fullPath = path.join(__dirname, filePath)
-    } else
+    if (filePath[0] == '.')
+        fullPath = path.join(__dirname, filePath);
+     else
         fullPath = path.join(typeArray[0], filePath);
 
     if (![BasicSettings.pageTypes.page, BasicSettings.pageTypes.component].includes(extname)) {
@@ -84,24 +81,25 @@ async function RequirePage(filePath: string, __filename: string, __dirname: stri
         return LastRequire[copyPath].model;
     }
 
-    const ForSavePath = typeArray[2] + '/' + filePath.substring(0, filePath.length - extname.length - 1);
-    const reBuild = DataObject.isDebug && (!await EasyFs.existsFile(typeArray[1] + filePath + '.cjs') || await CheckDependencyChange(ForSavePath));
+    const inStaticPath =  path.relative(typeArray[0],fullPath);
+    const SmallPath = typeArray[2] + '/' + inStaticPath;
+    const reBuild = DataObject.isDebug && (!await EasyFs.existsFile(typeArray[1] + '/' +inStaticPath + '.cjs') || await CheckDependencyChange(SmallPath));
 
     if (reBuild)
-        await FastCompile(filePath, typeArray);
+        await FastCompile(inStaticPath, typeArray, extname != BasicSettings.pageTypes.page);
 
 
-    if (Export.PageLoadRam[ForSavePath] && !reBuild) {
-        LastRequire[copyPath] = { model: Export.PageLoadRam[ForSavePath][0] };
+    if (Export.PageLoadRam[SmallPath] && !reBuild) {
+        LastRequire[copyPath] = { model: Export.PageLoadRam[SmallPath][0] };
         return await LastRequire[copyPath].model(DataObject);
     }
 
-    const func = await LoadPage(ForSavePath, extname);
+    const func = await LoadPage(SmallPath, DataObject.isDebug);
     if (Export.PageRam) {
-        if (!Export.PageLoadRam[ForSavePath]) {
-            Export.PageLoadRam[ForSavePath] = [];
+        if (!Export.PageLoadRam[SmallPath]) {
+            Export.PageLoadRam[SmallPath] = [];
         }
-        Export.PageLoadRam[ForSavePath][0] = func;
+        Export.PageLoadRam[SmallPath][0] = func;
     }
 
     LastRequire[copyPath] = { model: func };
@@ -113,7 +111,7 @@ const GlobalVar = {};
 function getFullPathCompile(url: string) {
     const SplitInfo = SplitFirst('/', url);
     const typeArray = getTypes[SplitInfo[0]];
-    return typeArray[1] + SplitInfo[1] + "." + BasicSettings.pageTypes.page + '.cjs';
+    return typeArray[1] + SplitInfo[1] + '.cjs';
 }
 
 /**
@@ -122,7 +120,7 @@ function getFullPathCompile(url: string) {
  * @param ext - The extension of the file.
  * @returns A function that takes a data object and returns a string.
  */
-async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
+async function LoadPage(url: string, isDebug: boolean) {
     const SplitInfo = SplitFirst('/', url);
 
     const typeArray = getTypes[SplitInfo[0]];
@@ -152,7 +150,7 @@ async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
 
     }
 
-    const compiledPath = path.join(typeArray[1], SplitInfo[1] + "." + ext + '.cjs');
+    const compiledPath = path.join(typeArray[1], SplitInfo[1] + '.cjs');
     const private_var = {};
 
     try {
@@ -160,10 +158,21 @@ async function LoadPage(url: string, ext = BasicSettings.pageTypes.page) {
 
         return MyModule(_require, _include, _transfer, private_var, handelConnectorService);
     } catch (e) {
-        const debug__filename = url + "." + ext;
-        print.error("Error path -> ", debug__filename, "->", e.message);
-        print.error(e.stack);
-        return (DataObject: any) => DataObject.out_run_script.text += `<div style="color:red;text-align:left;font-size:16px;"><p>Error path: ${debug__filename}</p><p>Error message: ${e.message}</p></div>`;
+        let errorText: string;
+
+        if(isDebug){
+            print.error("Error path -> ", RemoveEndType(url), "->", e.message);
+            print.error(e.stack);
+            errorText = JSParser.printError(`Error path: ${url}<br/>Error message: ${e.message}`);
+        } else {
+            errorText = JSParser.printError(`Error code: ${e.code}`)
+        }
+
+        return (DataObject: any) => {
+            DataObject.Request.error = e;
+            DataObject.out_run_script.text += errorText;
+        }
+
     }
 }
 /**

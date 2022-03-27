@@ -64,7 +64,7 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
 
   try {
     const { code, warnings, map } = await transform(Result, Options);
-    if (mergeTrack) {
+    if (mergeTrack && map) {
       ESBuildPrintWarningsStringTracker(mergeTrack, warnings);
       Result = (await backToOriginal(mergeTrack, code, map)).StringWithTack(savePath);
     } else {
@@ -112,7 +112,7 @@ export function AddExtension(FilePath: string) {
   return FilePath;
 }
 
-const SavedModules = {};
+const SavedModules = {}, PrepareMap = {};
 
 /**
  * LoadImport is a function that takes a path to a file, and returns the module that is at that path
@@ -122,7 +122,7 @@ const SavedModules = {};
  * @param {string[]} withoutCache - an array of paths that will not be cached.
  * @returns The module that was imported.
  */
-export default async function LoadImport(importFrom: string, InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache: string[] = []) {
+export default async function LoadImport(importFrom: string, InStaticPath: string, typeArray: string[], { isDebug = false, useDeps, withoutCache = [], onlyPrepare }: { isDebug: boolean, useDeps?: StringAnyMap, withoutCache?: string[], onlyPrepare?: boolean }) {
   let TimeCheck: any;
   const originalPath = path.normalize(InStaticPath.toLowerCase());
 
@@ -132,10 +132,13 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
 
   //wait if this module is on process, if not declare this as on process module
   let processEnd: (v?: any) => void;
-  if (!SavedModules[SavedModulesPath])
-    SavedModules[SavedModulesPath] = new Promise(r => processEnd = r);
-  else if (SavedModules[SavedModulesPath] instanceof Promise)
-    await SavedModules[SavedModulesPath];
+  if(!onlyPrepare){
+    if (!SavedModules[SavedModulesPath])
+      SavedModules[SavedModulesPath] = new Promise(r => processEnd = r);
+    else if (SavedModules[SavedModulesPath] instanceof Promise)
+      await SavedModules[SavedModulesPath];
+  }
+
 
   //build paths
   const reBuild = !pageDeps.store[SavedModulesPath] || pageDeps.store[SavedModulesPath] != (TimeCheck = await EasyFs.stat(filePath, "mtimeMs", true, null));
@@ -180,7 +183,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
         return AliasOrPackage(p);
     }
 
-    return LoadImport(filePath, p, typeArray, isDebug, useDeps, inheritanceCache ? withoutCache : []);
+    return LoadImport(filePath, p, typeArray, { isDebug, useDeps, withoutCache: inheritanceCache ? withoutCache : [] });
   }
 
   let MyModule: any;
@@ -189,6 +192,12 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
   } else {
     const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
     MyModule = await ImportWithoutCache(requirePath);
+
+    if (onlyPrepare) { // only prepare the module without actively importing it
+      PrepareMap[SavedModulesPath] = () => MyModule(requireMap);
+      return;
+    }
+
     MyModule = await MyModule(requireMap);
   }
 
@@ -198,13 +207,21 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
   return MyModule;
 }
 
-export function ImportFile(importFrom: string, InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache?: string[]) {
+export async function ImportFile(importFrom: string, InStaticPath: string, typeArray: string[], isDebug = false, useDeps?: StringAnyMap, withoutCache?: string[]) {
   if (!isDebug) {
-    const haveImport = SavedModules[path.join(typeArray[2], InStaticPath.toLowerCase())];
-    if (haveImport !== undefined) return haveImport;
+    const SavedModulesPath = path.join(typeArray[2], InStaticPath.toLowerCase());
+    const haveImport = SavedModules[SavedModulesPath];
+
+    if (haveImport != undefined)
+      return haveImport;
+    else if (PrepareMap[SavedModulesPath]) {
+      const module = await PrepareMap[SavedModulesPath]();
+      SavedModules[SavedModulesPath] = module;
+      return module;
+    }
   }
 
-  return LoadImport(importFrom, InStaticPath, typeArray, isDebug, useDeps, withoutCache);
+  return LoadImport(importFrom, InStaticPath, typeArray, {isDebug, useDeps, withoutCache});
 }
 
 export async function RequireOnce(filePath: string, isDebug: boolean) {
@@ -278,7 +295,7 @@ export async function compileImport(globalPrams: string, scriptLocation: string,
         return AliasOrPackage(p);
     }
 
-    return LoadImport(templatePath, p, typeArray, isDebug);
+    return LoadImport(templatePath, p, typeArray, {isDebug});
   }
 
   const MyModule = await ImportWithoutCache(fullSaveLocation);

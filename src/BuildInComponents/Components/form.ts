@@ -1,29 +1,27 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, BuildInComponent } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { StringNumberMap, BuildInComponent } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
-import { compileValues, makeValidationJSON, parseValues, parseTagDataStringBoolean } from './serv-connect/index';
+import { compileValues, makeValidationJSON, parseValues } from './serv-connect/index';
 import { SplitFirst } from '../../StringMethods/Splitting';
 import { SessionBuild } from '../../CompileCode/Session';
 import InsertComponent from '../../CompileCode/InsertComponent';
+import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
 
-export default async function BuildCode(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+export default async function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
-    const sendTo = dataTag.remove('sendTo').trim();
+    const sendTo = dataTag.popAnyDefault('sendTo','').trim();
 
     if (!sendTo)  // special action not found
         return {
-            compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${await InsertComponent.StartReplace(BetweenTagData, pathName,  sessionInfo)
+            compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${dataTag.rebuildSpace()}>${await InsertComponent.StartReplace(BetweenTagData, pathName,  sessionInfo)
                 }</form>`,
             checkComponents: false
         }
 
 
-    const name = dataTag.remove('name').trim() || uuid(), validator: string = dataTag.remove('validate'), orderDefault: string = dataTag.remove('order'), notValid: string = dataTag.remove('notValid'), responseSafe = dataTag.have('safe');
+    const name = dataTag.popAnyDefault('name',uuid()).trim(), validator: string = dataTag.popHaveDefault('validate'), orderDefault: string = dataTag.popHaveDefault('order'), notValid: string = dataTag.popHaveDefault('notValid'), responseSafe = dataTag.popBoolean('safe');
 
-    let message = parseTagDataStringBoolean(dataTag, 'message'); // show error message
-    if (message === null)
-        message = sessionInfo.debug && !InsertComponent.SomePlugins("SafeDebug");
-
+    const message = dataTag.popAnyDefault('message', sessionInfo.debug && !InsertComponent.SomePlugins("SafeDebug")); // show error message
     let order = [];
 
     const validatorArray = validator && validator.split(',').map(x => { // Checking if there is an order information, for example "prop1: string, prop3: num, prop2: bool"
@@ -49,17 +47,12 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
         responseSafe
     });
 
-    if (!dataTag.have('method')) {
-        dataTag.push({
-            n: new StringTracker(null, 'method'),
-            v: new StringTracker(null, 'post')
-        });
-    }
+    dataTag.pushValue('method', 'post');
 
     const compiledString = new StringTracker(type.DefaultInfoText).Plus$
         `<%!
 @?ConnectHereForm(${sendTo});
-%><form${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>
+%><form${dataTag.rebuildSpace()}>
     <input type="hidden" name="connectorFormCall" value="${name}"/>${await InsertComponent.StartReplace(BetweenTagData, pathName, sessionInfo)}</form>`;
 
     return {

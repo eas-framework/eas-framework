@@ -20,7 +20,7 @@ export async function BuildStyleSass(inputPath: string, type: "sass" | "scss" | 
         const result = await sass.compileStringAsync(fileData, {
             sourceMap: isDebug,
             syntax: sassSyntax(type),
-            style: sassStyle(type, SomePlugins),
+            style: sassStyle(type),
             logger: sass.Logger.silent,
             importer: createImporter(fullPath),
         });

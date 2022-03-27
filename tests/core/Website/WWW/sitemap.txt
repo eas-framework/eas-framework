@@ -1,8 +1,9 @@
 /index
 /compile/index
-/server/index
 /static/index
+/server/index
 /compile/error/index
+/compile/import_page/index
 /compile/record/index
 /compile/record/page2
 /compile/runtime/index
@@ -11,12 +12,13 @@
 /compile/search/page2
 /compile/search/searchbox
 /compile/search_runtime/index
-/server/api/index
-/server/import/index
-/server/packageExport/index
 /static/sass/index
 /static/svelte/index
 /static/svelte/ssr
 /static/typescript/index
+/server/api/index
+/server/packageExport/index
+/server/import/index
+/server/ssr-runtime/index
 /compile/record/nested/page3
 /compile/search/nested/page3

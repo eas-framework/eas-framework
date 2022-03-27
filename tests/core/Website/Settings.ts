@@ -2,7 +2,7 @@ export default {
     development: true, // development mode, if off, then is optimize for production
 
     general: {
-        pageInRam: true,
+        pageInRam: false,
         // importOnLoad: ["OnStart.serv.ts"]
     },
 

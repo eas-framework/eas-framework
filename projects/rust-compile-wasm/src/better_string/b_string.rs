@@ -17,6 +17,19 @@ impl BetterString {
         BetterString { chars, length }
     }
 
+    pub fn repeat( char: char, length: usize) -> BetterString {
+        let mut chars = vec![];
+
+        for _ in 0..length {
+            chars.push(char);
+        }
+
+        BetterString {
+            chars,
+            length
+        }
+    }
+
     pub fn concat(&self, text: &BetterString) -> BetterString{
         let mut chars = self.chars.to_owned();
         chars.extend(&text.chars);
@@ -146,6 +159,24 @@ impl BetterString {
         }
 
         self.substring_start(i)
+    }
+
+    pub fn trim_end(&self) -> BetterString {
+        let mut i = 0;
+        for current in self.length..0 {
+            let c = self.chars[current];
+            if c.is_whitespace() {
+                i += 1;
+            } else {
+                break;
+            }
+        }
+
+        self.substring(0, self.length - i)
+    }
+
+    pub fn trim(&self) -> BetterString {
+        self.trim_start().trim_end()
     }
 
     pub fn eq(&self, text: &BetterString) -> bool{

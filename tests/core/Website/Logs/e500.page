@@ -2,3 +2,4 @@
 <@title>Page Error</@title>
 <@body/>
 <h1>Error compiling the page</h1>
+@Request.error

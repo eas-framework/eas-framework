@@ -4,19 +4,22 @@ import { ParseDebugInfo, CreateFilePath, PathTypes, AddDebugInfo } from './XMLHe
 import { AllBuildIn, IsInclude, StartCompiling } from '../BuildInComponents/index';
 import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/StringTracker';
 import AddPlugin from '../Plugins/Index';
-import { tagDataObjectArray, StringNumberMap, tagDataObjectAsText, CompileInFileFunc, StringArrayOrObject, StringAnyMap } from './XMLHelpers/CompileTypes';
+import {CompileInFileFunc, StringArrayOrObject, StringAnyMap } from './XMLHelpers/CompileTypes';
 import { createNewPrint } from '../OutputInput/PrintNew';
-import { InsertComponentBase, BaseReader } from './BaseReader/Reader';
+import { InsertComponentBase, BaseReader, pool } from './BaseReader/Reader';
 import pathNode from 'path';
 import ParseBasePage from './CompileScript/PageBase';
 import { SessionBuild } from './Session';
 import { print } from '../OutputInput/Console';
 import path from 'path';
+import TagDataParser from './XMLHelpers/TagDataParser';
+
 
 interface DefaultValues {
     value: StringTracker,
     elements: string[]
 }
+
 
 export default class InsertComponent extends InsertComponentBase {
     public dirFolder: string;
@@ -44,105 +47,6 @@ export default class InsertComponent extends InsertComponentBase {
         }
     }
 
-    /**
-     * It takes a string of HTML and returns an array of objects that contain the name of the attribute,
-     * the value of the attribute, and the character that comes after the attribute
-     * @param {StringTracker} text - The text to parse.
-     * @returns The return value is an object with two properties:
-     */
-    tagData(text: StringTracker): { data: tagDataObjectArray, mapAttributes: StringAnyMap } {
-        const tokenArray = [], a: tagDataObjectArray = [], mapAttributes: StringAnyMap = {};
-
-        text = text.trim().replacer(/(<%)([\w\W]+?)(%>)/, data => {
-            tokenArray.push(data[2]);
-            return data[1].Plus(data[3]);
-        });
-
-        const unToken = (text: StringTracker) => text.replacer(/(<%)(%>)/, (data) => data[1].Plus(tokenArray.shift()).Plus(data[2]))
-
-        let fastText = text.eq;
-        const SkipTypes = ['"', "'", '`'], BlockTypes = [
-            ['{', '}'],
-            ['(', ')']
-        ];
-
-        while (fastText.length) {
-            let i = 0;
-            for (; i < fastText.length; i++) {
-                const char = fastText.charAt(i);
-                if (char == '=') {
-                    let nextChar = text.at(i + 1);
-                    const nextCharEq = nextChar.eq, attrName = text.substring(0, i);
-
-                    let value: StringTracker, endIndex: number, blockEnd: string;
-                    if (SkipTypes.includes(nextCharEq)) {
-                        endIndex = BaseReader.findEntOfQ(fastText.substring(i + 2), nextCharEq) + 1;
-                        value = text.substr(i + 2, endIndex - 2);
-
-                    } else if ((blockEnd = BlockTypes.find(x => x[0] == nextCharEq)?.[1]) != null) {
-                        endIndex = BaseReader.findEndOfDef(fastText.substring(i + 2), [nextCharEq, blockEnd]) + 1;
-                        value = text.substr(i + 1, endIndex + 1);
-
-                    } else {
-                        endIndex = fastText.substring(i + 1).search(/ |\n/);
-                        if (endIndex == -1)
-                            endIndex = fastText.length;
-                        value = text.substr(i + 1, endIndex);
-                        nextChar = new StringTracker();
-                    }
-
-                    const n = unToken(attrName), v = unToken(value);
-                    mapAttributes[n.eq] = v.eq;
-                    a.push({
-                        n,
-                        v,
-                        char: nextChar
-                    });
-                    i += 1 + endIndex;
-                    break;
-
-                } else if (char == ' ' || i == fastText.length - 1 && ++i) {
-                    const n = unToken(text.substring(0, i));
-                    a.push({
-                        n: n
-                    });
-                    mapAttributes[n.eq] = true;
-                    break;
-                }
-
-            }
-
-            fastText = fastText.substring(i).trim();
-            text = text.substring(i).trim();
-        }
-
-        //methods to the array
-        const index = (name: string) => a.findIndex(x => x.n.eq == name);
-        const getValue = (name: string) => a.find(tag => tag.n.eq == name)?.v?.eq ?? '';
-        const remove = (name: string) => {
-            const nameIndex = index(name);
-            if (nameIndex == -1)
-                return '';
-            return a.splice(nameIndex, 1).pop().v?.eq ?? '';
-        };
-
-        a.have = (name: string) => index(name) != -1;
-        a.getValue = getValue;
-        a.remove = remove;
-        a.addClass = c => {
-            const i = index('class');
-            if (i == -1) {
-                a.push({ n: new StringTracker(null, 'class'), v: new StringTracker(null, c), char: new StringTracker(null, '"') });
-                return;
-            }
-            const item = a[i];
-            if (item.v.length)
-                c = ' ' + c;
-            item.v.AddTextAfter(c);
-        }
-        return { data: a, mapAttributes };
-    }
-
     findIndexSearchTag(query: string, tag: StringTracker) {
         const all = query.split('.');
         let counter = 0
@@ -163,24 +67,6 @@ export default class InsertComponent extends InsertComponentBase {
         return counter + tag.search(/\ |\>/)
     }
 
-    ReBuildTagData(stringInfo: StringTrackerDataInfo, dataTagSplitter: tagDataObjectArray) {
-        let newAttributes = new StringTracker(stringInfo);
-
-        for (const i of dataTagSplitter) {
-            if (i.v) {
-                newAttributes.Plus$`${i.n}=${i.char}${i.v}${i.char} `;
-            } else {
-                newAttributes.Plus(i.n, ' ');
-            }
-        }
-
-        if (dataTagSplitter.length) {
-            newAttributes = new StringTracker(stringInfo, ' ').Plus(newAttributes.substring(0, newAttributes.length - 1));
-        }
-
-        return newAttributes;
-    }
-
     CheckMinHTML(code: StringTracker) {
         if (this.SomePlugins("MinHTML", "MinAll")) {
             code = code.SpaceOne(' ');
@@ -188,11 +74,11 @@ export default class InsertComponent extends InsertComponentBase {
         return code;
     }
 
-    async ReBuildTag(type: StringTracker, dataTag: StringTracker, dataTagSpliced: tagDataObjectArray, BetweenTagData: StringTracker, SendDataFunc: (text: StringTracker) => Promise<StringTracker>) {
+    async ReBuildTag(type: StringTracker, dataTag: StringTracker, dataTagSpliced: TagDataParser, BetweenTagData: StringTracker, SendDataFunc: (text: StringTracker) => Promise<StringTracker>) {
         if (BetweenTagData && this.SomePlugins("MinHTML", "MinAll")) {
             BetweenTagData = BetweenTagData.SpaceOne(' ');
 
-            dataTag = this.ReBuildTagData(type.DefaultInfoText, dataTagSpliced);
+            dataTag = dataTagSpliced.rebuildSpace();
         } else if (dataTag.eq.length) {
             dataTag = new StringTracker(type.DefaultInfoText, ' ').Plus(dataTag);
         }
@@ -238,46 +124,20 @@ export default class InsertComponent extends InsertComponentBase {
         return fileData;
     }
 
-    parseComponentProps(tagData: tagDataObjectArray, component: StringTracker) {
+    parseComponentProps(tagData: TagDataParser, component: StringTracker) {
 
         // eslint-disable-next-line
         let { fileData, foundSetters } = this.exportDefaultValues(component);
 
-        for (const i of tagData) {
-            if (i.n.eq == '&') {
-                let re = i.n.substring(1);
-
-                let FoundIndex: number;
-
-                if (re.includes('&')) {
-                    const index = re.indexOf('&');
-                    FoundIndex = this.findIndexSearchTag(re.substring(0, index).eq, fileData);
-                    re = re.substring(index + 1);
-                } else {
-                    FoundIndex = fileData.search(/\ |\>/)
-                }
-
-                const fileDataNext = new StringTracker(fileData.DefaultInfoText);
-
-                const startData = fileData.substring(0, FoundIndex);
-                fileDataNext.Plus(
-                    startData,
-                    new StringTracker(fileData.DefaultInfoText).Plus$` ${re}="${i.v ?? ''}"`,
-                    (startData.endsWith(' ') ? '' : ' '),
-                    fileData.substring(FoundIndex)
-                );
-
-                fileData = fileDataNext;
-            } else {
-                const re = new RegExp("\\~" + i.n.eq, "gi");
-                fileData = fileData.replace(re, i.v ?? i.n);
-            }
+        for (const {key,value} of tagData.valueArray) {
+            const re = new RegExp("\\~" + key, "gi");
+            fileData = fileData.replace(re, value);
         }
 
         return this.addDefaultValues(foundSetters, fileData);
     }
 
-    async buildTagBasic(fileData: StringTracker, tagData: tagDataObjectArray, path: string, SmallPath: string, pathName: string, sessionInfo: SessionBuild, BetweenTagData?: StringTracker) {
+    async buildTagBasic(fileData: StringTracker, tagData: TagDataParser, path: string, SmallPath: string, pathName: string, sessionInfo: SessionBuild, BetweenTagData?: StringTracker) {
         fileData = await this.PluginBuild.BuildComponent(fileData, path, pathName, sessionInfo);
 
         fileData = this.parseComponentProps(tagData, fileData);
@@ -293,36 +153,34 @@ export default class InsertComponent extends InsertComponentBase {
         return fileData;
     }
 
-    static addSpacialAttributes(data: tagDataObjectArray, mapAttributes: StringAnyMap, type: StringTracker, BetweenTagData: StringTracker){
-        const addAttr = (key: string, value: string) => {
-            data.push({n: new StringTracker(null, key), v: new StringTracker(null, value)});
-            mapAttributes[key] = value;
-        }
-
+    static addSpacialAttributes(data: TagDataParser, type: StringTracker, BetweenTagData: StringTracker) {
         const importSource = '/' + type.extractInfo();
-        addAttr('importSource', importSource);
-        addAttr('importSourceDirectory', path.dirname(importSource));
+
+        data.pushValue('importSource', importSource)
+        data.pushValue('importSourceDirectory', path.dirname(importSource))
+
+        const  mapAttributes = data.map();
         mapAttributes.reader = BetweenTagData?.eq;
+
+        return mapAttributes;
     }
 
-    async insertTagData(pathName: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, sessionInfo }: { sessionInfo: SessionBuild, BetweenTagData?: StringTracker}) {
-        const { data, mapAttributes } = this.tagData(dataTag), BuildIn = IsInclude(type.eq);
+    async insertTagData(pathName: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, sessionInfo }: { sessionInfo: SessionBuild, BetweenTagData?: StringTracker }) {
+        const dataParser = new TagDataParser(dataTag), BuildIn = IsInclude(type.eq);
+        await dataParser.parser();
 
         let fileData: StringTracker, SearchInComment = true, AllPathTypes: PathTypes = {}, addStringInfo: string;
 
         if (BuildIn) {//check if it build in component
-            const { compiledString, checkComponents } = await StartCompiling( pathName, type, data, BetweenTagData ?? new StringTracker(), this, sessionInfo);
+            const { compiledString, checkComponents } = await StartCompiling(pathName, type, dataParser, BetweenTagData ?? new StringTracker(), this, sessionInfo);
             fileData = compiledString;
             SearchInComment = checkComponents;
         } else {
-            let folder: boolean | string = data.have('folder');
-
-            if (folder)
-                folder = data.remove('folder') || '.';
+            let folder: boolean | string = dataParser.popHaveDefault('folder', '.');
 
             const tagPath = (folder ? folder + '/' : '') + type.replace(/:/gi, "/").eq;
 
-            const relativesFilePathSmall = type.extractInfo('<line>'), relativesFilePath = pathNode.join(BasicSettings.fullWebSitePath, relativesFilePathSmall);
+            const relativesFilePathSmall = type.extractInfo(), relativesFilePath = pathNode.join(BasicSettings.fullWebSitePath, relativesFilePathSmall);
             AllPathTypes = CreateFilePath(relativesFilePath, relativesFilePathSmall, tagPath, this.dirFolder, BasicSettings.pageTypes.component);
 
             if (sessionInfo.cacheComponent[AllPathTypes.SmallPath] === null || sessionInfo.cacheComponent[AllPathTypes.SmallPath] === undefined && !await EasyFs.existsFile(AllPathTypes.FullPath)) {
@@ -337,7 +195,7 @@ export default class InsertComponent extends InsertComponentBase {
                     print[funcName](printText);
                 }
 
-                return this.ReBuildTag(type, dataTag, data, BetweenTagData, BetweenTagData => this.StartReplace(BetweenTagData, pathName, sessionInfo));
+                return this.ReBuildTag(type, dataTag, dataParser, BetweenTagData, BetweenTagData => this.StartReplace(BetweenTagData, pathName, sessionInfo));
             }
 
             if (!sessionInfo.cacheComponent[AllPathTypes.SmallPath]?.mtimeMs)
@@ -346,12 +204,12 @@ export default class InsertComponent extends InsertComponentBase {
             sessionInfo.dependencies[AllPathTypes.SmallPath] = sessionInfo.cacheComponent[AllPathTypes.SmallPath].mtimeMs
 
             const { allData, stringInfo } = await AddDebugInfo(true, pathName, AllPathTypes.FullPath, AllPathTypes.SmallPath, sessionInfo.cacheComponent[AllPathTypes.SmallPath]);
-            const baseData = new ParseBasePage(allData, this.isTs());
+            const baseData = new ParseBasePage(sessionInfo, allData, this.isTs());
 
             /*add special attributes */
-            InsertComponent.addSpacialAttributes(data, mapAttributes, type, BetweenTagData);
+            const mapAttributes = InsertComponent.addSpacialAttributes(dataParser, type, BetweenTagData);
 
-            await baseData.loadSettings(sessionInfo, AllPathTypes.FullPath, AllPathTypes.SmallPath, pathName + ' -> ' + AllPathTypes.SmallPath, mapAttributes);
+            await baseData.loadSettings(AllPathTypes.FullPath, AllPathTypes.SmallPath, pathName + ' -> ' + AllPathTypes.SmallPath, {attributes: mapAttributes});
 
             fileData = baseData.scriptFile.Plus(baseData.clearData);
             addStringInfo = sessionInfo.debug && stringInfo;
@@ -360,7 +218,7 @@ export default class InsertComponent extends InsertComponentBase {
         if (SearchInComment && (fileData.length > 0 || BetweenTagData)) {
             const { SmallPath, FullPath } = AllPathTypes;
 
-            fileData = await this.buildTagBasic(fileData, data, BuildIn ? type.eq : FullPath, BuildIn ? type.eq : SmallPath, pathName, sessionInfo, BetweenTagData);
+            fileData = await this.buildTagBasic(fileData, dataParser, BuildIn ? type.eq : FullPath, BuildIn ? type.eq : SmallPath, pathName, sessionInfo, BetweenTagData);
             addStringInfo && fileData.AddTextBeforeNoTrack(addStringInfo);
         }
 
@@ -424,18 +282,18 @@ export default class InsertComponent extends InsertComponentBase {
 
             const findEndOfSmallTag = await this.FindCloseChar(startFrom.substring(1), '>') + 1;
 
-            let inTag = startFrom.substring(tagTypeEnd + 1, findEndOfSmallTag);
-
-            const NextTextTag = startFrom.substring(findEndOfSmallTag + 1);
+            let inTag = startFrom.substring(tagTypeEnd, findEndOfSmallTag);
 
             if (inTag.at(inTag.length - 1).eq == '/') {
                 inTag = inTag.substring(0, inTag.length - 1);
             }
 
+            const NextTextTag = startFrom.substring(findEndOfSmallTag + 1);
+
             if (startFrom.at(findEndOfSmallTag - 1).eq == '/') {//small tag
                 promiseBuild.push(
                     this.CheckMinHTML(cutStartData),
-                    this.insertTagData(pathName, tagType, inTag, {  sessionInfo })
+                    this.insertTagData(pathName, tagType, inTag, { sessionInfo })
                 );
 
                 data = NextTextTag;

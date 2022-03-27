@@ -1,5 +1,5 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { TransformOptions, transform } from 'esbuild-wasm';
 import { createNewPrint } from '../../../OutputInput/PrintNew';
 import { EnableGlobalReplace } from '../../../CompileCode/JSParser';
@@ -7,8 +7,9 @@ import InsertComponent from '../../../CompileCode/InsertComponent';
 import { GetPlugin, SomePlugins } from '../../../CompileCode/InsertModels';
 import { ESBuildPrintErrorStringTracker, ESBuildPrintWarningsStringTracker } from '../../../CompileCode/esbuild/printMessage';
 import SourceMapToStringTracker from '../../../EasyDebug/SourceMapLoad';
+import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
 
-export default async function BuildCode(language: string, pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker): Promise<BuildInComponent> {
 
     let ResCode = BetweenTagData;
 
@@ -51,6 +52,6 @@ export default async function BuildCode(language: string, pathName: string, type
 
 
     return {
-        compiledString: new StringTracker(type.DefaultInfoText).Plus$`<script${InsertComponent.ReBuildTagData(BetweenTagData.DefaultInfoText, dataTag)}>${ResCode}</script>`
+        compiledString: new StringTracker(type.DefaultInfoText).Plus$`<script${dataTag.rebuildSpace()}>${ResCode}</script>`
     };
 }

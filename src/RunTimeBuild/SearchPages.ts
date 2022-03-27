@@ -2,7 +2,7 @@ import EasyFs from '../OutputInput/EasyFs';
 import { Dirent } from 'fs';
 import { Insert, Components, GetPlugin } from '../CompileCode/InsertModels';
 import { ClearWarning } from '../OutputInput/PrintNew'
-import * as SearchFileSystem from './SearchFileSystem';
+import { BasicSettings, DeleteInDirectory, getTypes } from './SearchFileSystem';
 import ReqScript from '../ImportFiles/Script';
 import StaticFiles from '../ImportFiles/StaticFiles';
 import path from 'path';
@@ -12,11 +12,12 @@ import { CheckDependencyChange, pageDeps } from '../OutputInput/StoreDeps';
 import { ExportSettings } from '../MainBuild/SettingsTypes';
 import { argv } from 'process';
 import { createSiteMap } from './SiteMap';
-import { isFileType, RemoveEndType } from './FileTypes';
+import { extensionIs, isFileType, RemoveEndType } from './FileTypes';
 import { perCompile, postCompile, perCompilePage, postCompilePage } from '../BuildInComponents';
 import { PageTemplate } from '../CompileCode/ScriptTemplate';
+import StringTracker from '../EasyDebug/StringTracker';
 
-async function compileFile(filePath: string, arrayType: string[], isDebug?: boolean, hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string) {
+async function compileFile(filePath: string, arrayType: string[], { isDebug, hasSessionInfo, nestedPage, nestedPageData, dynamicCheck }: { isDebug?: boolean, hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string, dynamicCheck?: boolean } = {}) {
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
 
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
@@ -26,15 +27,19 @@ async function compileFile(filePath: string, arrayType: string[], isDebug?: bool
     await sessionInfo.dependence('thisPage', FullFilePath);
 
     await perCompilePage(sessionInfo, FullPathCompile);
-    const CompiledData = await Insert(html, FullPathCompile, Boolean(nestedPage), nestedPageData, sessionInfo);
+    const CompiledData = (await Insert(html, FullPathCompile, Boolean(nestedPage), nestedPageData, sessionInfo, dynamicCheck)) ?? new StringTracker();
     await postCompilePage(sessionInfo, FullPathCompile);
 
-    if (!nestedPage) {
+    if (!nestedPage && CompiledData.length) {
         await EasyFs.writeFile(FullPathCompile, CompiledData.StringWithTack(FullPathCompile));
-        pageDeps.update(RemoveEndType(ExcluUrl), sessionInfo.dependencies);
+        pageDeps.update(ExcluUrl, sessionInfo.dependencies);
     }
 
     return { CompiledData, sessionInfo };
+}
+
+function RequireScript(script: string) {
+    return ReqScript('Production Loader', script, getTypes.Static, { isDebug: false, onlyPrepare: true });
 }
 
 async function FilesInFolder(arrayType: string[], path: string, state: CompileState) {
@@ -47,13 +52,13 @@ async function FilesInFolder(arrayType: string[], path: string, state: CompileSt
             await FilesInFolder(arrayType, connect + '/', state);
         }
         else {
-            if (isFileType(SearchFileSystem.BasicSettings.pageTypesArray, n)) {
+            if (isFileType(BasicSettings.pageTypesArray, n)) {
                 state.addPage(connect, arrayType[2]);
                 if (await CheckDependencyChange(arrayType[2] + '/' + connect)) //check if not already compile from a 'in-file' call
-                    await compileFile(connect, arrayType, false);
-            } else if (arrayType == SearchFileSystem.getTypes.Static && isFileType(SearchFileSystem.BasicSettings.ReqFileTypesArray, n)) {
+                    await compileFile(connect, arrayType, { dynamicCheck: !extensionIs(n, BasicSettings.pageTypes.page) });
+            } else if (arrayType == getTypes.Static && isFileType(BasicSettings.ReqFileTypesArray, n)) {
                 state.addImport(connect);
-                await ReqScript('Production Loader - ' + arrayType[2], connect, arrayType, false);
+                await RequireScript(connect);
             } else {
                 state.addFile(connect);
                 await StaticFiles(connect, false);
@@ -64,26 +69,26 @@ async function FilesInFolder(arrayType: string[], path: string, state: CompileSt
 
 async function RequireScripts(scripts: string[]) {
     for (const path of scripts) {
-        await ReqScript('Production Loader', path, SearchFileSystem.getTypes.Static, false);
+        await RequireScript(path);
     }
 }
 
 async function CreateCompile(t: string, state: CompileState) {
-    const types = SearchFileSystem.getTypes[t];
-    await SearchFileSystem.DeleteInDirectory(types[1]);
+    const types = getTypes[t];
+    await DeleteInDirectory(types[1]);
     return () => FilesInFolder(types, '', state);
 }
 
 /**
  * when page call other page;
  */
-export async function FastCompileInFile(path: string, arrayType: string[], sessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string) {
+export async function FastCompileInFile(path: string, arrayType: string[],  { hasSessionInfo, nestedPage, nestedPageData, dynamicCheck }: { hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string, dynamicCheck?: boolean } = {}) {
     await EasyFs.makePathReal(path, arrayType[1]);
-    return await compileFile(path, arrayType, true, sessionInfo, nestedPage, nestedPageData);
+    return await compileFile(path, arrayType, {isDebug:true, hasSessionInfo, nestedPage, nestedPageData, dynamicCheck});
 }
 
-export async function FastCompile(path: string, arrayType: string[]) {
-    await FastCompileInFile(path, arrayType);
+export async function FastCompile(path: string, arrayType: string[], dynamicCheck?: boolean) {
+    await FastCompileInFile(path, arrayType, {dynamicCheck});
     ClearWarning();
 }
 
@@ -92,12 +97,12 @@ export async function compileAll(Export: ExportSettings) {
 
     if (state) return () => RequireScripts(state.scripts)
     pageDeps.clear();
-    
+
     state = new CompileState()
 
     perCompile();
 
-    const activateArray = [await CreateCompile(SearchFileSystem.getTypes.Static[2], state), await CreateCompile(SearchFileSystem.getTypes.Logs[2], state), ClearWarning];
+    const activateArray = [await CreateCompile(getTypes.Static[2], state), await CreateCompile(getTypes.Logs[2], state), ClearWarning];
 
     return async () => {
         for (const i of activateArray) {

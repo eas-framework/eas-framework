@@ -1,4 +1,14 @@
 /**
+ * Given a file name and an extension, return true if the file name ends with the extension
+ * @param {string} name - The name of the file.
+ * @param {string} extname - the extension to check for.
+ * @returns A boolean value.
+ */
+export function extensionIs(name: string, extname: string){
+    return name.endsWith('.' + extname);
+}
+
+/**
  * Check if the file name ends with one of the given file types.
  * @param {string[]} types - an array of file extensions to match.
  * @param {string} name - The name of the file.
@@ -8,7 +18,7 @@ export function isFileType(types: string[], name: string) {
     name = name.toLowerCase();
 
     for (const type of types) {
-        if (name.endsWith('.' + type)) {
+        if (extensionIs(name,type)) {
             return true;
         }
     }

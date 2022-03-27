@@ -22,7 +22,7 @@ export default class SearchRecord {
         for(const path in this.indexData){
             const element = this.indexData[path];
             for(const id in element.titles){
-                unwrapped.push({id: counter++, text: element.titles[id], url: `/${path}/#${id}`});
+                unwrapped.push({id: counter++, text: element.titles[id], url: `/${path}#${id}`});
             }
             unwrapped.push({id: counter++, text: element.text, url: `/${path}`});
         }
@@ -56,8 +56,9 @@ export default class SearchRecord {
                     if(i.text[options.length].trim() != ''){
                         i.text = substring.substring(0, substring.lastIndexOf(' ')) + (options.addAfterMaxLength ?? '');
                     } else {
-                        i.text = substring.trim();
+                        i.text = substring
                     }
+                    i.text = i.text.trim();
                 }
                 
                 let lower = i.text.toLowerCase(), rebuild = '';

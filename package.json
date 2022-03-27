@@ -11,7 +11,6 @@
     "commit": "node build/commit.js",
     "production": "node build/production.js",
     "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
-    "test:compile": "node --trace-warnings --inspect=127.0.0.1:9229 tests/compile.js",
     "test": "npm run build && npm run test:dist"
   },
   "repository": {

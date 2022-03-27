@@ -9,6 +9,7 @@ import { RawSourceMap } from "source-map-js";
 import { SessionBuild } from "../../../CompileCode/Session";
 import InsertComponent from "../../../CompileCode/InsertComponent";
 import { print } from "../../../OutputInput/Console";
+import { SomePlugins } from "../../../CompileCode/InsertModels";
 
 
 export function createImporter(originalPath: string) {
@@ -27,12 +28,12 @@ export function createImporter(originalPath: string) {
 }
 
 
-function minifyPluginSass(language: string, SomePlugins: any): boolean {
+function minifyPluginSass(language: string): boolean {
     return (['scss', 'sass'].includes(language) ? SomePlugins("MinAll", "MinSass") : SomePlugins("MinCss", "MinAll"))
 }
 
-export function sassStyle(language: string, SomePlugins: any) {
-    return minifyPluginSass(language, SomePlugins) ? 'compressed' : 'expanded';
+export function sassStyle(language: string) {
+    return minifyPluginSass(language) ? 'compressed' : 'expanded';
 }
 
 export function sassSyntax(language: 'sass' | 'scss' | 'css') {
@@ -75,10 +76,10 @@ export function PrintSassErrorTracker(err: any, track: StringTracker){
     print[funcName](printText);
 }
 
-export async function compileSass(language: string, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild, outStyle = BetweenTagData.eq) {
+export async function compileSass(language: string, BetweenTagData: StringTracker, sessionInfo: SessionBuild, outStyle = BetweenTagData.eq) {
     const thisPage = BasicSettings.fullWebSitePath + BetweenTagData.extractInfo(),
         thisPageURL = pathToFileURL(thisPage),
-        compressed = minifyPluginSass(language, InsertComponent.SomePlugins);
+        compressed = minifyPluginSass(language);
 
     let result: sass.CompileResult;
     try {

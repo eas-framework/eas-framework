@@ -21,7 +21,7 @@ async function SASSSvelte(content: StringTracker, lang: string, fullPath: string
     try {
         const { css, sourceMap, loadedUrls } = await sass.compileStringAsync(content.eq, {
             syntax: sassSyntax(<any>lang),
-            style: sassStyle(lang, SomePlugins),
+            style: sassStyle(lang),
             importer: createImporter(fullPath),
             logger: sass.Logger.silent,
             sourceMap: true

@@ -133,13 +133,10 @@ export default async function RequireFile(filePath: string, __filename: string, 
     let static_modules = false;
 
     if (!ReqFile) {
-        if (filePath[0] == '.') {
-
-            if (filePath[1] == '/')
-                filePath = filePath.substring(2);
-
+        if (filePath[0] == '.')
             filePath = path.join(path.relative(typeArray[0], __dirname), filePath);
-        } else if (filePath[0] != '/')
+
+        else if (filePath[0] != '/')
             static_modules = true;
 
         else

@@ -8,7 +8,7 @@ export async function StartRequire(array: string[], isDebug: boolean) {
     for (let i of array) {
         i = AddExtension(i);
 
-        const b = await ImportFile('root folder (WWW)', i, getTypes.Static, isDebug);
+        const b = await ImportFile('root folder (WWW)', i, getTypes.Static, {isDebug});
         if (b && typeof b.StartServer == 'function') {
             arrayFuncServer.push(b.StartServer);
         } else {

@@ -1,6 +1,6 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { tagDataObjectArray, StringNumberMap, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
-import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem';
+import { StringNumberMap, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { BasicSettings, getTypes, smallPathToPage } from '../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../OutputInput/EasyFs';
 import { createNewPrint } from '../../OutputInput/PrintNew';
 import path_node from 'path';
@@ -9,39 +9,27 @@ import { CheckDependencyChange } from '../../OutputInput/StoreDeps';
 import { FastCompileInFile } from '../../RunTimeBuild/SearchPages';
 import InsertComponent from '../../CompileCode/InsertComponent';
 import { print } from '../../OutputInput/Console';
+import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
+import JSParser from '../../CompileCode/JSParser';
 
-function InFolderPagePath(inputPath: string, smallPath:string){
+function InFolderPagePath(inputPath: string, smallPath: string) {
     if (inputPath[0] == '.') {
-        if (inputPath[1] == '/') {
-            inputPath = inputPath.substring(2);
-        } else {
-            inputPath = inputPath.substring(1);
-        }
-        let folder = path_node.dirname(smallPath);
-
-        if(folder){
-            folder += '/';
-        }
-        inputPath = folder + inputPath;
-    } else if (inputPath[0] == '/') {
-        inputPath = inputPath.substring(1);
+        inputPath = path_node.join(smallPath, '/../', inputPath);
     }
 
-    const pageType = '.' + BasicSettings.pageTypes.page;
-    if(!inputPath.endsWith(pageType)){
-        inputPath += pageType;
-    }
+    if (!path_node.extname(inputPath))
+        inputPath += '.' + BasicSettings.pageTypes.page;
 
     return inputPath;
 }
 
-const cacheMap: { [key: string]: {CompiledData: StringTracker, newSession: SessionBuild}} = {};
-export default async function BuildCode(pathName: string, type: StringTracker, dataTag: tagDataObjectArray, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
-    const filepath = dataTag.getValue("from");
+const cacheMap: { [key: string]: { CompiledData: StringTracker, newSession: SessionBuild } } = {};
+export default async function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
+    const filepath = dataTag.popHaveDefault("from");
 
-    const SmallPathWithoutFolder = InFolderPagePath(filepath, type.extractInfo());
+    const inStatic = InFolderPagePath(filepath, smallPathToPage(type.extractInfo()));
 
-    const FullPath = getTypes.Static[0] + SmallPathWithoutFolder, SmallPath = getTypes.Static[2] + '/' + SmallPathWithoutFolder;
+    const FullPath = getTypes.Static[0] + inStatic, SmallPath = getTypes.Static[2] + '/' + inStatic;
 
     if (!(await EasyFs.stat(FullPath, null, true)).isFile?.()) {
         const [funcName, printText] = createNewPrint({
@@ -50,26 +38,27 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
             type: 'error'
         });
         print[funcName](printText);
+
         return {
-            compiledString: new StringTracker(type.DefaultInfoText, `<p style="color:red;text-align:left;font-size:16px;">Page not found: ${type.lineInfo} -> ${SmallPath}</p>`)
+            compiledString: new StringTracker(type.DefaultInfoText, JSParser.printError(`Page not found: ${BasicSettings.relative(type.lineInfo)} -> ${SmallPath}`))
         };
     }
 
     let ReturnData: StringTracker;
 
-    const haveCache = cacheMap[SmallPathWithoutFolder];
+    const haveCache = cacheMap[inStatic];
     if (!haveCache || await CheckDependencyChange(null, haveCache.newSession.dependencies)) {
-        const { CompiledData, sessionInfo: newSession} = await FastCompileInFile(SmallPathWithoutFolder, getTypes.Static, null, pathName, dataTag.remove('object'));
+        const { CompiledData, sessionInfo: newSession } = await FastCompileInFile(inStatic, getTypes.Static, { nestedPage: pathName, nestedPageData: dataTag.popHaveDefault('object') });
         newSession.dependencies[SmallPath] = newSession.dependencies.thisPage;
         delete newSession.dependencies.thisPage;
 
         sessionInfo.extends(newSession)
 
-        cacheMap[SmallPathWithoutFolder] = {CompiledData:<StringTracker>CompiledData, newSession};
-        ReturnData =<StringTracker>CompiledData;
+        cacheMap[inStatic] = { CompiledData: <StringTracker>CompiledData, newSession };
+        ReturnData = <StringTracker>CompiledData;
     } else {
-        const { CompiledData, newSession } = cacheMap[SmallPathWithoutFolder];
-   
+        const { CompiledData, newSession } = cacheMap[inStatic];
+
         Object.assign(sessionInfo.dependencies, newSession.dependencies);
         sessionInfo.extends(newSession)
 

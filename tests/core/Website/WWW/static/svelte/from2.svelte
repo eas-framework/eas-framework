@@ -8,8 +8,8 @@
 </div>
 
 <style lang="sass">
-    @import './styl2'
+@import './styl2'
 
-    .number-color
-        @include button(16, #c1d5ec)
+.number-color
+    @include button(16, #c1d5ec)
 </style>

@@ -2,6 +2,7 @@
 
 mod actions;
 mod html_search;
+mod page_base;
 pub mod razor;
 pub mod ejs;
 pub mod better_string;
@@ -93,4 +94,14 @@ pub fn razor_to_ejs_min(text: &str, name: &str) -> String {
 #[wasm_bindgen]
 pub fn ejs_parse(text: &str, start: &str, end: &str) -> String {
     ejs::builder::output_json(text, start, end)
+}
+
+#[wasm_bindgen]
+pub fn page_base_parser(text: &str) -> String{
+    page_base::builder::page_base(text)
+}
+
+#[wasm_bindgen]
+pub fn html_attr_parser(text: &str) -> String{
+    page_base::builder::attr_json(text)
 }
