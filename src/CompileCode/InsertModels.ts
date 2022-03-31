@@ -11,6 +11,7 @@ import BuildScript from './transform/Script';
 import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings';
 import ParseBasePage from './CompileScript/PageBase';
 import { SessionBuild } from './Session';
+import { finalizeBuild } from '../BuildInComponents';
 
 export const Settings = { AddCompileSyntax: [], plugins: [], BasicCompilationSyntax: ['Razor'] };
 const PluginBuild = new AddPlugin(Settings);
@@ -125,7 +126,9 @@ export async function Insert(data: string, fullPathCompile: string, nestedPage: 
         return PageTemplate.InPageTemplate(DebugString, nestedPageData, sessionInfo.fullPath);
     }
 
-    DebugString = await PageTemplate.BuildPage(DebugString, fullPathCompile, sessionInfo);
+    DebugString = await finalizeBuild(DebugString, sessionInfo, fullPathCompile);
+    
+    DebugString = await PageTemplate.BuildPage(DebugString, sessionInfo);
     DebugString = await sessionInfo.BuildScriptWithPrams(DebugString);
     DebugString= PageTemplate.AddAfterBuild(DebugString, sessionInfo.debug);
 

@@ -8,9 +8,7 @@ import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 
 export class PageTemplate extends JSParser {
 
-    private static async AddPageTemplate(text: StringTracker, fullPathCompile: string, sessionInfo: SessionBuild) {
-
-        text = await finalizeBuild(text, sessionInfo, fullPathCompile);
+    private static async AddPageTemplate(text: StringTracker, sessionInfo: SessionBuild) {
 
         if (sessionInfo.debug) {
             text.AddTextBeforeNoTrack(`try {\n`);
@@ -54,10 +52,10 @@ export class PageTemplate extends JSParser {
         return text;
     }
 
-    static async BuildPage(text: StringTracker, fullPathCompile: string, sessionInfo: SessionBuild) {
+    static async BuildPage(text: StringTracker, sessionInfo: SessionBuild) {
         const builtCode = await PageTemplate.RunAndExport(text, sessionInfo.fullPath, sessionInfo.debug);
 
-        return PageTemplate.AddPageTemplate(builtCode, fullPathCompile, sessionInfo);
+        return PageTemplate.AddPageTemplate(builtCode, sessionInfo);
     }
 
     static AddAfterBuild(text: StringTracker, isDebug: boolean) {

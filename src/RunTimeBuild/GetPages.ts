@@ -22,7 +22,6 @@ export interface ErrorPages {
 
 interface GetPagesSettings {
     CacheDays: number,
-    PageRam: boolean,
     DevMode: boolean,
     CookieSettings?: any,
     Cookies?: (...args: any[]) => Promise<any>,
@@ -33,7 +32,6 @@ interface GetPagesSettings {
 
 const Settings: GetPagesSettings = {
     CacheDays: 1,
-    PageRam: false,
     DevMode: true,
     ErrorPages: {}
 }
@@ -173,7 +171,7 @@ async function BuildLoadPage(smallPath: string, firstFunc?: any) {
 
     pageArray[1] = FuncScript.BuildPage(pageArray[0], smallPath);
 
-    if (Settings.PageRam)
+    if (Export.PageRam)
         Export.PageLoadRam[smallPath] = pageArray;
 
     return pageArray[1];
@@ -198,21 +196,20 @@ async function GetDynamicPage(arrayType: string[], url: string, code: number) {
     let DynamicFunc: (...data: any[]) => any;
     if (Settings.DevMode && await EasyFs.existsFile(fullPageUrl)) {
 
-        if (!await EasyFs.existsFile(getTypes.Logs[1] + inStatic) || await CheckDependencyChange(smallPath)) {
+        if (!await EasyFs.existsFile(arrayType[1] + inStatic + '.cjs') || await CheckDependencyChange(smallPath)) {
             await FastCompile(url + '.' + BasicSettings.pageTypes.page, arrayType);
             DynamicFunc = await BuildLoadPage(smallPath);
 
-        } else if (!Export.PageLoadRam[smallPath]?.[1])
-            DynamicFunc = await BuildLoadPage(smallPath, Export.PageLoadRam[smallPath]?.[0]);
-
-        else
+        } else if (Export.PageLoadRam[smallPath]?.[1])
             DynamicFunc = Export.PageLoadRam[smallPath][1];
 
+        else
+            DynamicFunc = await BuildLoadPage(smallPath, Export.PageLoadRam[smallPath]?.[0]);
 
     } else if (Export.PageLoadRam[smallPath]?.[1])
         DynamicFunc = Export.PageLoadRam[smallPath][1];
 
-    else if (!Settings.PageRam && await EasyFs.existsFile(fullPageUrl))
+    else if (!Export.PageRam && await EasyFs.existsFile(fullPageUrl))
         DynamicFunc = await BuildLoadPage(smallPath, Export.PageLoadRam[smallPath]?.[0]);
 
     else if (arrayType != getTypes.Logs) {

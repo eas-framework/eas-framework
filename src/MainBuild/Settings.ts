@@ -15,6 +15,7 @@ import MemorySession from 'memorystore';
 import { ExportSettings } from './SettingsTypes';
 import { debugSiteMap } from '../RunTimeBuild/SiteMap';
 import { settings as defineSettings } from '../CompileCode/CompileScript/PageBase';
+import {Export as ExportRam} from '../RunTimeBuild/FunctionScript'
 
 const
     CookiesSecret = uuidv4().substring(0, 32),
@@ -94,7 +95,7 @@ export const Export: ExportSettings = {
     general: {
         importOnLoad: [],
         set pageInRam(value) {
-            fileByUrl.Settings.PageRam = value;
+            ExportRam.PageRam = value;
             pageInRamActivate = async () => {
                 const preparations = await compilationScan;
                 await preparations?.();
@@ -106,7 +107,7 @@ export const Export: ExportSettings = {
             }
         },
         get pageInRam() {
-            return fileByUrl.Settings.PageRam;
+            return ExportRam.PageRam;
         }
     },
     compile: {

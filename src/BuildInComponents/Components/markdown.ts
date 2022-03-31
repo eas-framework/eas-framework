@@ -16,14 +16,14 @@ import InsertComponent from '../../CompileCode/InsertComponent';
 import { print } from '../../OutputInput/Console';
 import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
 
-function codeWithCopy(md: any) {
+function codeWithCopy(md: any, icon: string) {
 
     function renderCode(origRule: any) {
         return (...args: any[]) => {
             const origRendered = origRule(...args);
             return `<div class="code-copy">
                 <div>
-                    <a href="#copy-clipboard" onclick="navigator.clipboard.writeText(this.parentElement.nextElementSibling.innerText)">copy</a>
+                    <a href="#copy-clipboard" onclick="markdownCopy(this)">${icon}</a>
                 </div>
                 ${origRendered}
             </div>`
@@ -67,9 +67,9 @@ export default async function BuildCode(type: StringTracker, dataTag: TagDataPar
         }
     });
 
-    
-    if (dataTag.popBoolean('copy-code', markDownPlugin?.copyCode ?? true))
-        md.use(codeWithCopy);
+    const copy = dataTag.popAnyDefault('copy-code', markDownPlugin?.copyCode ?? '📋');
+    if (copy)
+        md.use((m:any)=> codeWithCopy(m, copy));
 
     if (dataTag.popBoolean('header-link', markDownPlugin?.headerLink ?? true))
         md.use(anchor, {
@@ -100,8 +100,13 @@ export default async function BuildCode(type: StringTracker, dataTag: TagDataPar
     const theme = await createAutoTheme(dataTag.popString('code-theme') || markDownPlugin?.codeTheme || 'atom-one');
 
     if (haveHighlight) {
-        const cssLink = '/serv/md/code-theme/' + theme + '.css';
-        session.style(cssLink);
+        if(theme != 'none'){
+            const cssLink = '/serv/md/code-theme/' + theme + '.css';
+            session.style(cssLink);
+        }
+        if(copy){
+            session.script('/serv/md.js');
+        }
     }
 
     dataTag.addClass('markdown-body');
@@ -126,18 +131,24 @@ export async function minifyMarkdownTheme() {
             .replace(/(\n\.markdown-body {)|(^.markdown-body {)/gm, (match: string) => {
                 return match + 'padding:20px;'
             }) + `
+            .code-copy>div>a{
+                margin-top: 25px;
+                margin-right: 10px;
+                position: relative;
+                bottom: -7px;        
+            }
             .code-copy>div {
                 text-align:right;
-                margin-bottom:-30px;
-                margin-right:10px;
                 opacity:0;
+                height:0;
             }
             .code-copy:hover>div {
                 opacity:1;
             }
             .code-copy>div a:focus {
                 color:#6bb86a
-            }`;
+            }
+            `;
         await EasyFs.writeFile(themePath + i + '.min.css', MinCss(mini));
     }
 }

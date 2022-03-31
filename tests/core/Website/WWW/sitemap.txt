@@ -4,6 +4,7 @@
 /static/index
 /compile/error/index
 /compile/import_page/index
+/compile/md/index
 /compile/record/index
 /compile/record/page2
 /compile/runtime/index

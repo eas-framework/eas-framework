@@ -88,6 +88,11 @@ const getStatic: buildIn[] = [{
     path: "serv/connect.js",
     type: "js",
     inServer: staticFiles + "makeConnection.js"
+},
+{
+    path: "serv/md.js",
+    type: "js",
+    inServer: staticFiles + "markdownCopy.js"
 }];
 
 const getStaticFilesType: buildIn[] = [{

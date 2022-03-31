@@ -107,7 +107,7 @@ export default class TagDataParser {
         const have = this.valueArray.find(x => x.key.eq.toLowerCase() == key);
         if (have) return (have.value = new StringTracker(null, value));
 
-        this.valueArray.push({ key: new StringTracker(null, value), value: new StringTracker(null, value), char: '"', space: true });
+        this.valueArray.push({ key: new StringTracker(null, key), value: new StringTracker(null, value), char: '"', space: true });
     }
 
     map() {

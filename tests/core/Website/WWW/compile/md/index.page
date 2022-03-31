@@ -1,0 +1,15 @@
+@[model='../server' title='Import Page']
+<@body/>
+<markdown copy-code="📋">
+# Code
+```js
+var i = 9; //very long comment
+```
+</markdown>
+
+<markdown copy-code="Copy">
+# Code
+```js
+var i = 9; //very long comment
+```
+</markdown>
