@@ -90,7 +90,7 @@ export default class JSParser {
     }
 
     static fixText(text: StringTracker | string) {
-        return text.replace(/\\/gi, '\\\\').replace(/`/gi, '\\`').replace(/\$/gi, '\\u0024');
+        return text.replace(/\\/gi, '\\\\').replace(/`/gi, '\\`').replace(/\u0024/gi, '\\u0024');
     }
 
     static fixTextSimpleQuotes(text: StringTracker | string){

@@ -14,13 +14,13 @@
 /compile/search/searchbox
 /compile/search_runtime/index
 /server/api/index
-/server/import/index
 /server/packageExport/index
+/server/import/index
 /server/ssr-runtime/index
 /static/sass/index
-/static/typescript/index
 /static/svelte/index
 /static/svelte/ssr
+/static/typescript/index
 /compile/record/nested/page3
 /compile/runtime/more_compile/index
 /compile/search/nested/page3

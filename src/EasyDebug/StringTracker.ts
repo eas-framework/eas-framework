@@ -587,16 +587,17 @@ export default class StringTracker {
         const allSplit: StringIndexerInfo[] = [];
 
         let mainText = this.OneString, hasMath: RegExpMatchArray = mainText.match(regex), addNext = 0, counter = 0;
+        let thisSubstring = this.Clone();
 
         while ((limit == null || counter < limit) && hasMath?.[0]?.length) {
-            const length = [...hasMath[0]].length, index = this.charLength(hasMath.index);
+            const length = [...hasMath[0]].length, index = thisSubstring.charLength(hasMath.index);
             allSplit.push({
                 index: index + addNext,
                 length
             });
 
             mainText = mainText.slice(hasMath.index + hasMath[0].length);
-
+            thisSubstring = thisSubstring.CutString(index + length);
             addNext += index + length;
 
             hasMath = mainText.match(regex);

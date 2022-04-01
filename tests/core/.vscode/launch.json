@@ -1,0 +1,26 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch EAS Framework Server",
+            "program": "${workspaceFolder}/index.js",
+            "args": [
+                "allowSourceDebug",
+                "rebuild"
+            ],
+            "pauseForSourceMap": true,
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/node_modules/eas-framework/dist/SystemData/*",
+                "${workspaceFolder}/**/*.js"
+            ]
+        }
+    ]
+}
