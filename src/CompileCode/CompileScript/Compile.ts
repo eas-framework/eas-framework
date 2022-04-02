@@ -72,8 +72,8 @@ export default class CRunTime {
         /* load from cache */
         const haveCache = this.sessionInfo.cacheCompileScript[this.smallPath];
         if (haveCache)
-            return (await haveCache)();
-        let doForAll: (resolve: () => StringTracker | Promise<StringTracker>) => void;
+            return (await haveCache)(this.methods(attributes).funcs);
+        let doForAll: (resolve: (funcs: any[]) => StringTracker | Promise<StringTracker>) => void;
         this.sessionInfo.cacheCompileScript[this.smallPath] = new Promise(r => doForAll = r);
 
         /* run the script */
@@ -97,7 +97,7 @@ export default class CRunTime {
 
         const toImport = await compileImport(string, compilePath, filePath, typeArray, this.isTs, this.sessionInfo.debug, template);
 
-        const execute = async () => {
+        const execute = async (funcs: any[]) => {
             try {
                 return this.rebuildCode(parser, await toImport(...funcs));
             } catch(err){
@@ -110,7 +110,7 @@ export default class CRunTime {
             }
         };
         this.sessionInfo.cacheCompileScript[this.smallPath] = execute; // save this to cache
-        const thisFirst = await execute();
+        const thisFirst = await execute(funcs);
         doForAll(execute)
 
         return thisFirst;
