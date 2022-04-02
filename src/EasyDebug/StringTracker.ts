@@ -255,11 +255,11 @@ export default class StringTracker {
      * add text at the *end* of the string without tracking
      * @param text 
      */
-    public AddTextAfterNoTrack(text: string) {
+    public AddTextAfterNoTrack(text: string, info = '') {
         for (const char of text) {
             this.DataArray.push({
                 text: char,
-                info: '',
+                info,
                 line: 0,
                 char: 0
             });
@@ -281,12 +281,12 @@ export default class StringTracker {
  * add text at the *start* of the string
  * @param text 
  */
-    public AddTextBeforeNoTrack(text: string) {
+    public AddTextBeforeNoTrack(text: string, info = '') {
         const copy = [];
         for (const char of text) {
             copy.push({
                 text: char,
-                info: '',
+                info,
                 line: 0,
                 char: 0
             });

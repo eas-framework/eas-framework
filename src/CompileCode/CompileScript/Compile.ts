@@ -62,7 +62,7 @@ export default class CRunTime {
                 continue
             }
 
-            build.AddTextAfterNoTrack(buildStrings.pop().text)
+            build.AddTextAfterNoTrack(buildStrings.pop().text, i.text.DefaultInfoText.info);
         }
 
         return build;

@@ -338,7 +338,7 @@ declare module "@eas-framework/server/EasyDebug/StringTracker" {
          * add text at the *end* of the string without tracking
          * @param text
          */
-        AddTextAfterNoTrack(text: string): this;
+        AddTextAfterNoTrack(text: string, info?: string): this;
         /**
          * add text at the *start* of the string
          * @param text
@@ -349,7 +349,7 @@ declare module "@eas-framework/server/EasyDebug/StringTracker" {
      * add text at the *start* of the string
      * @param text
      */
-        AddTextBeforeNoTrack(text: string): this;
+        AddTextBeforeNoTrack(text: string, info?: string): this;
         /**
          * Add Text File Tracking
          * @param text
