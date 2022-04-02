@@ -131,7 +131,7 @@ export default class StringTracker {
     }
 
     private AddClone(data: StringTracker) {
-        this.DataArray.push(...data.DataArray);
+        this.DataArray = this.DataArray.concat(data.DataArray);
 
         this.setDefault({
             info: data.InfoText,
@@ -329,7 +329,7 @@ export default class StringTracker {
     private CutString(start = 0, end = this.length): StringTracker {
         const newString = new StringTracker(this.StartInfo);
 
-        newString.DataArray.push(...this.DataArray.slice(start, end));
+        newString.DataArray = newString.DataArray.concat(this.DataArray.slice(start, end))
 
         return newString;
     }
