@@ -58,7 +58,7 @@ export default class CRunTime {
 
         for (const i of parser.values) {
             if (i.type == 'text') {
-                build.Plus(i.text)
+                build.Plus(i.text.trimEnd())
                 continue
             }
 
