@@ -110,6 +110,7 @@ export async function compileAll(Export: ExportSettings) {
         }
         await createSiteMap(Export, state);
         state.export()
+        pageDeps.save();
         postCompile()
     }
 }

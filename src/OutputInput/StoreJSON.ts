@@ -11,11 +11,10 @@ export default class StoreJSON {
         this.savePath = `${SystemData}/${filePath}.json`;
         autoLoad && this.loadFile();
 
-        process.on('SIGINT', () => {
-            this.save();
+        process.on('SIGINT', async () => {
+            await this.save();
             setTimeout(() => process.exit());
         });
-        process.on('exit', this.save.bind(this));
     }
 
     async loadFile() {
@@ -50,7 +49,7 @@ export default class StoreJSON {
         }
     }
 
-    private save() {
+    save() {
         return EasyFs.writeJsonFile(this.savePath, this.store);
     }
 }

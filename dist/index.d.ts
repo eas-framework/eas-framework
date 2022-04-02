@@ -662,7 +662,7 @@ declare module "@eas-framework/server/OutputInput/StoreJSON" {
          */
         have(key: string, create?: () => string): any;
         clear(): void;
-        private save;
+        save(): Promise<boolean>;
     }
 }
 declare module "@eas-framework/server/StringMethods/Id" {
