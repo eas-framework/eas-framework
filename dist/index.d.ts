@@ -791,7 +791,7 @@ declare module "@eas-framework/server/CompileCode/Session" {
         url: string;
         attributes?: StringAnyMap;
     };
-    export type connectorArray = {
+    export type connectorInfo = {
         type: string;
         name: string;
         sendTo: string;
@@ -800,7 +800,8 @@ declare module "@eas-framework/server/CompileCode/Session" {
         notValid?: string;
         message?: string | boolean;
         responseSafe?: boolean;
-    }[];
+    };
+    export type connectorArray = connectorInfo[];
     export type cacheComponent = {
         [key: string]: null | {
             mtimeMs?: number;
@@ -1077,6 +1078,13 @@ declare module "@eas-framework/server/BuildInComponents/Components/serv-connect/
     export function makeValidationJSON(args: any[], validatorArray: any[]): Promise<boolean | string[]>;
     export function parseValues(args: any[], validatorArray: any[]): any[];
 }
+declare module "@eas-framework/server/BuildInComponents/Components/serv-connect/connect-node" {
+    import { connectorInfo, SessionBuild } from "@eas-framework/server/CompileCode/Session";
+    import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
+    export function addFinalizeBuildAnyConnection(connectName: string, connectorCall: string, connectionType: string, pageData: StringTracker, sessionInfo: SessionBuild, buildArguments: (info: connectorInfo) => string, { returnData }?: {
+        returnData?: boolean;
+    }): StringTracker;
+}
 declare module "@eas-framework/server/BuildInComponents/Components/connect" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     import type { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
@@ -1086,7 +1094,7 @@ declare module "@eas-framework/server/BuildInComponents/Components/connect" {
         SomePlugins: any;
     }, sessionInfo: SessionBuild): Promise<BuildInComponent>;
     export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild): StringTracker;
-    export function handelConnector(thisPage: any, connectorArray: any[]): Promise<boolean>;
+    export function handelConnector(thisPage: any, connector: any): Promise<boolean>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/form" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
@@ -1133,7 +1141,7 @@ declare module "@eas-framework/server/BuildInComponents/index" {
     export function StartCompiling(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
     export function IsInclude(tagname: string): boolean;
     export function finalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild, fullCompilePath: string): Promise<StringTracker>;
-    export function handelConnectorService(type: string, thisPage: any, connectorArray: any[]): Promise<void> | Promise<boolean>;
+    export function handelConnectorService(type: string, thisPage: any, connector: any): Promise<boolean> | Promise<void>;
     export function perCompile(): Promise<void>;
     export function postCompile(): Promise<void>;
     export function perCompilePage(sessionInfo: SessionBuild, fullCompilePath: string): Promise<void>;

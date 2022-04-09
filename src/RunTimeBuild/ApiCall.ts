@@ -152,7 +152,7 @@ async function parseURLData(validate: any, value: any, Request: any, Response: a
     }
 
     if (!resData)
-        error = 'Error validate field, value is "' + value + '"';
+        error = 'Validation error with value "' + value + '"';
 
     return [error, pushData];
 }

@@ -80,11 +80,11 @@ export async function finalizeBuild(pageData: StringTracker, sessionInfo: Sessio
     return pageData;
 }
 
-export function handelConnectorService(type: string, thisPage: any, connectorArray: any[]) {
+export function handelConnectorService(type: string, thisPage: any, connector: any) {
     if (type == 'connect')
-        return handelConnectorConnect(thisPage, connectorArray);
+        return handelConnectorConnect(thisPage, connector);
     else
-        return handelConnectorForm(thisPage, connectorArray);
+        return handelConnectorForm(thisPage, connector);
 }
 
 export async function perCompile() {

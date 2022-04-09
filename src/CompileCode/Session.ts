@@ -15,7 +15,7 @@ export type setDataHTMLTag = {
     attributes?: StringAnyMap
 }
 
-export type connectorArray = {
+export type connectorInfo = {
     type: string,
     name: string,
     sendTo: string,
@@ -24,7 +24,9 @@ export type connectorArray = {
     notValid?: string,
     message?: string | boolean,
     responseSafe?: boolean
-}[]
+}
+
+export type connectorArray = connectorInfo[]
 
 export type cacheComponent = {
     [key: string]: null | {

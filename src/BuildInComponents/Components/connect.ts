@@ -1,8 +1,9 @@
 import StringTracker from '../../EasyDebug/StringTracker';
 import type { BuildInComponent } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { compileValues, makeValidationJSON } from './serv-connect/index';
-import { SessionBuild } from '../../CompileCode/Session';
+import { connectorInfo, SessionBuild } from '../../CompileCode/Session';
 import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
+import { addFinalizeBuildAnyConnection } from './serv-connect/connect-node';
 
 const serveScript = '/serv/connect.js';
 
@@ -30,62 +31,31 @@ export default async function BuildCode(type: StringTracker, dataTag: TagDataPar
         validator: validator && validator.split(',').map(x => x.trim())
     });
 
+    const compiledString = BetweenTagData || new StringTracker()
+    compiledString.AddTextBeforeNoTrack(`<%!@@?ConnectHere(${name})%>`)
+
     return {
-        compiledString: BetweenTagData,
+        compiledString,
         checkComponents: true
     }
 }
 
 export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild) {
-    if (!sessionInfo.connectorArray.length)
-        return pageData;
-
-    let buildObject = '';
-
-    for (const i of sessionInfo.connectorArray) {
-        if (i.type != 'connect')
-            continue;
-
-        buildObject += `,
+    return addFinalizeBuildAnyConnection('ConnectHere', 'connectorCall?.name', 'connect', pageData, sessionInfo, i => {
+        return `
         {
             name:"${i.name}",
             sendTo:${i.sendTo},
             notValid: ${i.notValid || 'null'},
             message:${typeof i.message == 'string' ? `"${i.message}"` : i.message},
             validator:[${(i.validator && i.validator.map(compileValues).join(',')) || ''}]
-        }`;
-    }
-
-    buildObject = `[${buildObject.substring(1)}]`;
-
-    const addScript = `
-        if(Post?.connectorCall){
-            if(await handelConnector("connect", page, ${buildObject})){
-                return;
-            }
-        }`;
-
-    if (pageData.includes("@ConnectHere"))
-        pageData = pageData.replacer(/@ConnectHere(;?)/, () => new StringTracker(null, addScript));
-    else
-        pageData.AddTextAfterNoTrack(addScript);
-
-    return pageData;
+        }`
+    }, {returnData: true})
 }
 
-export async function handelConnector(thisPage: any, connectorArray: any[]) {
-    if (!thisPage.Post?.connectorCall)
-        return false;
-
-
-    const have = connectorArray.find(x => x.name == thisPage.Post.connectorCall.name);
-
-    if (!have)
-        return false;
-
-
+export async function handelConnector(thisPage: any, connector: any) {
     const values = thisPage.Post.connectorCall.values;
-    const isValid = have.validator.length && await makeValidationJSON(values, have.validator);
+    const isValid = connector.validator.length && await makeValidationJSON(values, connector.validator);
 
     thisPage.setResponse('');
 
@@ -94,15 +64,15 @@ export async function handelConnector(thisPage: any, connectorArray: any[]) {
         thisPage.Response.end(JSON.stringify(obj));
     }
 
-    if (!have.validator.length || isValid === true)
-        betterJSON(await have.sendTo(...values));
+    if (!connector.validator.length || isValid === true)
+        betterJSON(await connector.sendTo(...values));
 
-    else if (have.notValid)
-        betterJSON(await have.notValid(...<any>isValid));
+    else if (connector.notValid)
+        betterJSON(await connector.notValid(...<any>isValid));
 
-    else if (have.message)
+    else if (connector.message)
         betterJSON({
-            error: typeof have.message == 'string' ? have.message : (<any>isValid).shift()
+            error: typeof connector.message == 'string' ? connector.message : (<any>isValid).shift()
         });
     else
         thisPage.Response.status(400);

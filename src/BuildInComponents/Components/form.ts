@@ -6,20 +6,21 @@ import { SplitFirst } from '../../StringMethods/Splitting';
 import { SessionBuild } from '../../CompileCode/Session';
 import InsertComponent from '../../CompileCode/InsertComponent';
 import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
+import { addFinalizeBuildAnyConnection } from './serv-connect/connect-node';
 
 export default async function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
-    const sendTo = dataTag.popAnyDefault('sendTo','').trim();
+    const sendTo = dataTag.popAnyDefault('sendTo', '').trim();
 
     if (!sendTo)  // special action not found
         return {
-            compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${dataTag.rebuildSpace()}>${await InsertComponent.StartReplace(BetweenTagData, pathName,  sessionInfo)
+            compiledString: new StringTracker(type.DefaultInfoText).Plus$`<form${dataTag.rebuildSpace()}>${await InsertComponent.StartReplace(BetweenTagData, pathName, sessionInfo)
                 }</form>`,
             checkComponents: false
         }
 
 
-    const name = dataTag.popAnyDefault('name',uuid()).trim(), validator: string = dataTag.popHaveDefault('validate'), orderDefault: string = dataTag.popHaveDefault('order'), notValid: string = dataTag.popHaveDefault('notValid'), responseSafe = dataTag.popBoolean('safe');
+    const name = dataTag.popAnyDefault('name', uuid()).trim(), validator: string = dataTag.popHaveDefault('validate'), orderDefault: string = dataTag.popHaveDefault('order'), notValid: string = dataTag.popHaveDefault('notValid'), responseSafe = dataTag.popBoolean('safe');
 
     const message = dataTag.popAnyDefault('message', sessionInfo.debug && !InsertComponent.SomePlugins("SafeDebug")); // show error message
     let order = [];
@@ -51,7 +52,7 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
 
     const compiledString = new StringTracker(type.DefaultInfoText).Plus$
         `<%!
-@?ConnectHereForm(${sendTo});
+@?ConnectHereForm(${name})
 %><form${dataTag.rebuildSpace()}>
     <input type="hidden" name="connectorFormCall" value="${name}"/>${await InsertComponent.StartReplace(BetweenTagData, pathName, sessionInfo)}</form>`;
 
@@ -63,46 +64,17 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
 
 
 export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionBuild) {
-    if (!sessionInfo.connectorArray.length)
-        return pageData;
-
-    for (const i of sessionInfo.connectorArray) {
-        if (i.type != 'form')
-            continue;
-
-        const sendToUnicode = new StringTracker(null, i.sendTo).unicode.eq
-        const connect = new RegExp(`@ConnectHereForm\\([ ]*${sendToUnicode}[ ]*\\)(;?)`), connectDefault = new RegExp(`@\\?ConnectHereForm\\([ ]*${sendToUnicode}[ ]*\\)(;?)`);
-
-        let counter = 0;
-
-        const scriptData = data => {
-            counter++;
-            return new StringTracker(data[0].StartInfo).Plus$
-                `
-                if(Post?.connectorFormCall == "${i.name}"){
-                    await handelConnector("form", page, 
-                        {
-                            sendTo:${i.sendTo},
-                            notValid: ${i.notValid || 'null'},
-                            validator:[${i.validator?.map?.(compileValues)?.join(',') ?? ''}],
-                            order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}],
-                            message:${typeof i.message == 'string' ? `"${i.message}"` : i.message},
-                            safe:${i.responseSafe}
-                        }
-                    );
-                }`
-        };
-
-        pageData = pageData.replacer(connect, scriptData);
-
-        if (counter)
-            pageData = pageData.replace(connectDefault, ''); // deleting default
-        else
-            pageData = pageData.replacer(connectDefault, scriptData);
-
-    }
-
-    return pageData;
+    return addFinalizeBuildAnyConnection('ConnectHereForm', 'connectorFormCall', 'form', pageData, sessionInfo, i => {
+        return `
+        {
+            sendTo:${i.sendTo},
+            notValid: ${i.notValid || 'null'},
+            validator:[${i.validator?.map?.(compileValues)?.join(',') ?? ''}],
+            order: [${i.order?.map?.(item => `"${item}"`)?.join(',') ?? ''}],
+            message:${typeof i.message == 'string' ? `"${i.message}"` : i.message},
+            safe:${i.responseSafe}
+        }`
+    })
 }
 
 export async function handelConnector(thisPage: any, connectorInfo: any) {
@@ -132,9 +104,9 @@ export async function handelConnector(thisPage: any, connectorInfo: any) {
     else if (connectorInfo.notValid)
         response = await connectorInfo.notValid(...<any>isValid);
 
-    if (!isValid && !response)
+    if (isValid && !response)
         if (connectorInfo.message === true)
-            thisPage.writeSafe(connectorInfo.message);
+            thisPage.writeSafe(isValid[0]);
         else
             response = connectorInfo.message;
 

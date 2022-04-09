@@ -15,8 +15,14 @@ const builtInConnectionRegex = {
         ([min, max], text: string) => text.length >= min && text.length <= max,
         "string"
     ],
-    "number-range": [
+    "number-range-integer": [
         /^[0-9]+..[0-9]+$/,
+        (validator: string) => validator.split('..').map(x => Number(x)),
+        ([min, max], num: number) => Number.isInteger(num) && num >= min && num <= max,
+        "number"
+    ],
+    "number-range-float": [
+        /^[0-9]+\.[0-9]+..[0-9]+\.[0-9]+$/,
         (validator: string) => validator.split('..').map(x => Number(x)),
         ([min, max], num: number) => num >= min && num <= max,
         "number"
@@ -63,7 +69,7 @@ export async function makeValidationJSON(args: any[], validatorArray: any[]): Pr
 
     for (const i in validatorArray) {
         const [element, ...elementArgs] = validatorArray[i], value = args[i];
-        let returnNow = false;
+        let returnNow: boolean | string = false;
 
         let isDefault = false;
         switch (element) {
@@ -87,24 +93,23 @@ export async function makeValidationJSON(args: any[], validatorArray: any[]): Pr
                 returnNow = !emailValidator.test(value);
                 break;
             default: {
-                const haveRegex = value != null && builtInConnectionRegex[element];
+                const haveRegex = builtInConnectionRegex[element];
 
                 if(haveRegex){
-                    returnNow = !haveRegex[2](elementArgs, value);
+                    returnNow = value == null || !haveRegex[2](elementArgs, value);
                     break;
                 }
 
-
                 isDefault = true;
                 if (element instanceof RegExp)
-                    returnNow = element.test(value);
+                    returnNow = (!element.test(value)) && 'regex - ' + value;
                 else if (typeof element == 'function')
-                    returnNow = !await element(value);
+                    returnNow = (!await element(value)) && 'function - ' + (element.name || 'anonymous');
             }
         }
 
         if (returnNow) {
-            let info = `failed at ${i} filed - ${isDefault ? returnNow : 'expected ' + element}`;
+            let info = `Validation failed at filed ${Number(i)+1} - ${isDefault ? returnNow : 'expected ' + element}`;
 
             if(elementArgs.length)
                 info += `, arguments: ${JSON.stringify(elementArgs)}`;
