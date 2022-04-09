@@ -1,11 +1,18 @@
 image: node:14
-
 build:
   stage: build
   script:
-  - npm install
-  - npm run build production
+    - npm install
+    - npm run build production
   artifacts:
     paths:
       - dist
     expire_in: 10 min
+stages:
+  - test
+sast:
+  variables:
+    SAST_EXCLUDED_PATHS: spec, test, tests, tmp, build
+  stage: test
+include:
+  - template: Security/SAST.gitlab-ci.yml
