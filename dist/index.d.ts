@@ -1205,7 +1205,7 @@ declare module "@eas-framework/server/CompileCode/XMLHelpers/Extricate" {
     }
     export { searchForCutMain as getDataTags };
 }
-declare module "@eas-framework/server/BuildInFunc/SearchRecord" {
+declare module "@eas-framework/server/Global/SearchRecord" {
     import { SearchOptions, SearchResult } from 'minisearch';
     export default class SearchRecord {
         private fullPath;
@@ -1234,7 +1234,7 @@ declare module "@eas-framework/server/BuildInFunc/SearchRecord" {
     }
 }
 declare module "@eas-framework/server/ImportFiles/CustomImport/Alias/packageExport" {
-    import SearchRecord from "@eas-framework/server/BuildInFunc/SearchRecord";
+    import SearchRecord from "@eas-framework/server/Global/SearchRecord";
     export default function (): {
         Settings: import("@eas-framework/server/MainBuild/SettingsTypes").ExportSettings;
         SearchRecord: typeof SearchRecord;
@@ -1743,13 +1743,13 @@ declare module "@eas-framework/server/MainBuild/Server" {
 }
 declare module "@eas-framework/server" {
     import server, { Settings } from "@eas-framework/server/MainBuild/Server";
-    import SearchRecord from "@eas-framework/server/BuildInFunc/SearchRecord";
+    import SearchRecord from "@eas-framework/server/Global/SearchRecord";
     export type { Request, Response } from "@eas-framework/server/MainBuild/Types";
     export const AsyncImport: (path: string, importFrom?: string) => Promise<any>;
     export { Settings, SearchRecord };
     export default server;
 }
-declare module "@eas-framework/server/BuildInFunc/localSql" {
+declare module "@eas-framework/server/Global/localSql" {
     import { Database } from 'sql.js';
     export default class LocalSql {
         db: Database;
@@ -1767,12 +1767,13 @@ declare module "@eas-framework/server/BuildInFunc/localSql" {
         selectOne(queryArray: string[], ...valuesArray: any[]): import("sql.js").ParamsObject;
     }
 }
-declare module "@eas-framework/server/BuildInFunc/Index" {
-    import LocalSql from "@eas-framework/server/BuildInFunc/localSql";
+declare module "@eas-framework/server/Global/Index" {
+    import LocalSql from "@eas-framework/server/Global/localSql";
     import { print } from "@eas-framework/server/OutputInput/Console";
     global {
         let LocalSql: LocalSql;
         let dump: typeof console;
+        let debug: boolean;
     }
     export { LocalSql, print as dump };
 }
