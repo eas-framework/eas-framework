@@ -5,7 +5,7 @@ import { StringAnyMap, StringNumberMap } from '../XMLHelpers/CompileTypes';
 import { AddDebugInfo } from '../XMLHelpers/CodeInfoAndDebug';
 import path from 'path';
 import { BasicSettings } from "../../RunTimeBuild/SearchFileSystem";
-import { createNewPrint } from "../../OutputInput/PrintNew";
+import { createNewPrint } from "../../OutputInput/Logger";
 import CRunTime from "./Compile";
 import { SessionBuild } from "../Session";
 import { print } from "../../OutputInput/Console";
@@ -55,7 +55,7 @@ export default class ParseBasePage {
             const [funcName, printText] = createNewPrint({
                 type: 'warn',
                 errorName: 'dynamic-ssr-import',
-                text: 'Adding \'dynamic\' attribute to file ' + this.sessionInfo.smallPath
+                text: 'Adding \'dynamic\' attribute to file <color>' + this.sessionInfo.smallPath
             })
             print[funcName](printText)
         } 
@@ -200,7 +200,7 @@ export default class ParseBasePage {
                 id: SmallPath,
                 type: 'warn',
                 errorName: 'create-code-file',
-                text: `\nCode file created: ${pagePath}<line>${SmallPath}`
+                text: `\nCode file created: <color>${pagePath}<line>${SmallPath}`
             });
             print[funcName](printText);
         }
@@ -209,7 +209,7 @@ export default class ParseBasePage {
                 id: SmallPath,
                 type: 'error',
                 errorName: 'code-file-not-found',
-                text: `\nCode file not found: ${pagePath}<line>${SmallPath}`
+                text: `\nCode file not found: <color>${pagePath}<line>${SmallPath}`
             });
             print[funcName](printText);
 

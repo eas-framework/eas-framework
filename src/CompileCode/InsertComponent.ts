@@ -5,7 +5,7 @@ import { AllBuildIn, IsInclude, StartCompiling } from '../BuildInComponents/inde
 import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/StringTracker';
 import AddPlugin from '../Plugins/Index';
 import {CompileInFileFunc, StringArrayOrObject, StringAnyMap } from './XMLHelpers/CompileTypes';
-import { createNewPrint } from '../OutputInput/PrintNew';
+import { createNewPrint } from '../OutputInput/Logger';
 import { InsertComponentBase, BaseReader, pool } from './BaseReader/Reader';
 import pathNode from 'path';
 import ParseBasePage from './CompileScript/PageBase';
@@ -54,7 +54,7 @@ export default class InsertComponent extends InsertComponentBase {
             const index = tag.indexOf(i)
             if (index == -1) {
                 const [funcName, printText] = createNewPrint({
-                    text: `Waring, can't find all query in tag -> ${tag.eq}\n${tag.lineInfo}`,
+                    text: `Waring, can't find all query in tag -><color>${tag.eq}\n${tag.lineInfo}`,
                     errorName: "query-not-found"
                 });
                 print[funcName](printText);
@@ -188,7 +188,7 @@ export default class InsertComponent extends InsertComponentBase {
 
                 if (folder) {
                     const [funcName, printText] = createNewPrint({
-                        text: `Component ${type.eq} not found! -> ${pathName}\n-> ${type.lineInfo}\n${AllPathTypes.SmallPath}`,
+                        text: `Component ${type.eq} not found! -><color>${pathName}\n-> ${type.lineInfo}\n${AllPathTypes.SmallPath}`,
                         errorName: "component-not-found",
                         type: 'error'
                     });

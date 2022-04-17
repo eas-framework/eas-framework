@@ -789,7 +789,7 @@ export default class StringTracker {
         
         const data = this.originalPositionFor(line ?? location?.line ?? 1, col ?? location?.column ?? 0)
 
-        return `${text || message}, on file ->\n${BasicSettings.fullWebSitePath+data.searchLine.extractInfo()}:${data.line}:${data.char}${location?.lineText ? '\nLine: "' + location.lineText.trim() + '"': ''}`;
+        return `${text || message}, on file -><color>${BasicSettings.fullWebSitePath+data.searchLine.extractInfo()}:${data.line}:${data.char}${location?.lineText ? '\nLine: "' + location.lineText.trim() + '"': ''}`;
     }
 
     public StringWithTack(fullSaveLocation: string){

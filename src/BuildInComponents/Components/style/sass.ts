@@ -2,7 +2,7 @@ import { fileURLToPath, pathToFileURL } from "url";
 import StringTracker from "../../../EasyDebug/StringTracker";
 import { BasicSettings, getTypes } from "../../../RunTimeBuild/SearchFileSystem";
 import sass from 'sass';
-import { createNewPrint } from "../../../OutputInput/PrintNew";
+import { createNewPrint } from "../../../OutputInput/Logger";
 import { StringNumberMap } from "../../../CompileCode/XMLHelpers/CompileTypes";
 import EasyFs from "../../../OutputInput/EasyFs";
 import { RawSourceMap } from "source-map-js";
@@ -56,7 +56,7 @@ export function getSassErrorLine({ sassStack }) {
 
 export function PrintSassError(err: any, {line, column} = getSassErrorLine(err)){
     const [funcName, printText] = createNewPrint({
-        text: `${err.message},\non file -> ${fileURLToPath(err.span.url)}:${line ?? 0}:${column ?? 0}`,
+        text: `${err.message},\non file -><color>${fileURLToPath(err.span.url)}:${line ?? 0}:${column ?? 0}`,
         errorName: err?.status == 5 ? 'sass-warning' : 'sass-error',
         type: err?.status == 5 ? 'warn' : 'error'
     });

@@ -1,5 +1,5 @@
 import { Warning } from "svelte/types/compiler/interfaces";
-import { createNewPrint } from "../../../OutputInput/PrintNew";
+import { createNewPrint } from "../../../OutputInput/Logger";
 import { RawSourceMap, SourceMapConsumer, SourceMapGenerator } from "source-map";
 import { print } from "../../../OutputInput/Console";
 
@@ -20,7 +20,7 @@ export async function PrintSvelteError({ message, code, start, frame }: Warning,
     const [funcName, printText] = createNewPrint({
         errorName: 'svelte-' + code,
         type: 'error',
-        text: `${message}\n${frame}\n${filePath}:${await findLocation.getLocation(start)}`
+        text: `${message}\n${frame}<color>${filePath}:${await findLocation.getLocation(start)}`
     });
     print[funcName](printText);
 }
@@ -31,7 +31,7 @@ export async function PrintSvelteWarn(warnings: Warning[], filePath: string, sou
         const [funcName, printText] = createNewPrint({
             errorName: 'svelte-' + code,
             type: 'warn',
-            text: `${message}\n${frame}\n${filePath}:${await findLocation.getLocation(start)}`
+            text: `${message}\n${frame}<color>${filePath}:${await findLocation.getLocation(start)}`
         });
         print[funcName](printText);
     }

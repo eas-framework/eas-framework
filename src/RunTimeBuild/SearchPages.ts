@@ -1,7 +1,7 @@
 import EasyFs from '../OutputInput/EasyFs';
 import { Dirent } from 'fs';
 import { Insert, Components, GetPlugin } from '../CompileCode/InsertModels';
-import { ClearWarning } from '../OutputInput/PrintNew'
+import { ClearWarning } from '../OutputInput/Logger'
 import { BasicSettings, DeleteInDirectory, getTypes } from './SearchFileSystem';
 import ReqScript from '../ImportFiles/Script';
 import StaticFiles from '../ImportFiles/StaticFiles';
@@ -39,7 +39,7 @@ async function compileFile(filePath: string, arrayType: string[], { isDebug, has
 }
 
 function RequireScript(script: string) {
-    return ReqScript('Production Loader', script, getTypes.Static, { isDebug: false, onlyPrepare: true });
+    return ReqScript(['Production Loader'], script, getTypes.Static, { isDebug: false, onlyPrepare: true });
 }
 
 async function FilesInFolder(arrayType: string[], path: string, state: CompileState) {

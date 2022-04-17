@@ -1,5 +1,5 @@
 import { Options as TransformOptions, transform } from '@swc/core';
-import { createNewPrint } from "../OutputInput/PrintNew";
+import { createNewPrint } from "../OutputInput/Logger";
 import EasyFs from "../OutputInput/EasyFs";
 import { BasicSettings, SystemData } from "../RunTimeBuild/SearchFileSystem";
 import EasySyntax from "../CompileCode/transform/EasySyntax";
@@ -114,19 +114,31 @@ const SavedModules = {}, PrepareMap = {};
 
 /**
  * LoadImport is a function that takes a path to a file, and returns the module that is at that path
- * @param {string} importFrom - The path to the file that created this import.
+ * @param {string[]} importFrom - The path to the file that created this import.
  * @param {string} InStaticPath - The path to the file that you want to import.
  * @param {StringAnyMap} [useDeps] - This is a map of dependencies that will be used by the page.
  * @param {string[]} withoutCache - an array of paths that will not be cached.
  * @returns The module that was imported.
  */
-export default async function LoadImport(importFrom: string, InStaticPath: string, typeArray: string[], { isDebug = false, useDeps, withoutCache = [], onlyPrepare }: { isDebug: boolean, useDeps?: StringAnyMap, withoutCache?: string[], onlyPrepare?: boolean }) {
+export default async function LoadImport(importFrom: string[], InStaticPath: string, typeArray: string[], { isDebug = false, useDeps, withoutCache = [], onlyPrepare }: { isDebug: boolean, useDeps?: StringAnyMap, withoutCache?: string[], onlyPrepare?: boolean }) {
   let TimeCheck: any;
   const originalPath = path.normalize(InStaticPath.toLowerCase());
 
   InStaticPath = AddExtension(InStaticPath);
   const extension = path.extname(InStaticPath).substring(1), thisCustom = isPathCustom(originalPath, extension) || !['js', 'ts'].includes(extension);
   const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = path.join(typeArray[0], InStaticPath);
+
+  if(importFrom.includes(SavedModulesPath)){
+    const [funcName, printText] = createNewPrint({
+      type: 'error',
+      errorName: 'circle-import',
+      text: `Import '${SavedModulesPath}' creates a circular dependency <color>${importFrom.slice(importFrom.indexOf(SavedModulesPath)).concat(filePath).join(' ->\n')}`
+    });
+    print[funcName](printText);
+    SavedModules[SavedModulesPath] = null
+    useDeps[InStaticPath] = { thisFile: -1 };
+    return null
+  }
 
   //wait if this module is on process, if not declare this as on process module
   let processEnd: (v?: any) => void;
@@ -148,7 +160,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
       const [funcName, printText] = createNewPrint({
         type: 'warn',
         errorName: 'import-not-exists',
-        text: `Import '${InStaticPath}' does not exists from '${importFrom}'`
+        text: `Import '${InStaticPath}' does not exists from <color>'${BasicSettings.fullWebSitePath}/${importFrom.at(-1)}'`
       });
       print[funcName](printText);
       SavedModules[SavedModulesPath] = null
@@ -181,7 +193,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
         return AliasOrPackage(p);
     }
 
-    return LoadImport(filePath, p, typeArray, { isDebug, useDeps, withoutCache: inheritanceCache ? withoutCache : [] });
+    return LoadImport([...importFrom, SavedModulesPath], p, typeArray, { isDebug, useDeps, withoutCache: inheritanceCache ? withoutCache : [] });
   }
 
   let MyModule: any;
@@ -189,18 +201,30 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
     MyModule = await CustomImport(originalPath, filePath, extension, requireMap);
   } else {
     const requirePath = path.join(typeArray[1], InStaticPath + ".cjs");
-    MyModule = await ImportWithoutCache(requirePath);
+    MyModule = ImportWithoutCache(requirePath);
 
     if (onlyPrepare) { // only prepare the module without actively importing it
       PrepareMap[SavedModulesPath] = () => MyModule(requireMap);
       return;
     }
 
-    MyModule = await MyModule(requireMap);
+    try { 
+      MyModule = await MyModule(requireMap);
+    }
+     catch (err) {
+      const [funcName, printText] = createNewPrint({
+        type: 'error',
+        errorName: 'import-error',
+        text: `${err.message}<color>${importFrom.concat(filePath).reverse().join(' ->\n')}`
+      });
+      print[funcName](printText);
+     }
   }
 
+  //in case on an error - release the async
   SavedModules[SavedModulesPath] = MyModule;
   processEnd?.();
+
 
   return MyModule;
 }
@@ -219,7 +243,7 @@ export async function ImportFile(importFrom: string, InStaticPath: string, typeA
     }
   }
 
-  return LoadImport(importFrom, InStaticPath, typeArray, { isDebug, useDeps, withoutCache });
+  return LoadImport([importFrom], InStaticPath, typeArray, { isDebug, useDeps, withoutCache });
 }
 
 export async function RequireOnce(filePath: string, isDebug: boolean) {
@@ -293,7 +317,7 @@ export async function compileImport(globalPrams: string, scriptLocation: string,
         return AliasOrPackage(p);
     }
 
-    return LoadImport(templatePath, p, typeArray, { isDebug });
+    return LoadImport([templatePath], p, typeArray, { isDebug });
   }
 
   const MyModule = await ImportWithoutCache(fullSaveLocation);

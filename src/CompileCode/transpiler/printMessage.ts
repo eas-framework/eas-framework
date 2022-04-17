@@ -1,7 +1,7 @@
 import { RawSourceMap, SourceMapConsumer } from 'source-map';
 import StringTracker from '../../EasyDebug/StringTracker';
 import { print } from '../../OutputInput/Console';
-import { createNewPrint } from '../../OutputInput/PrintNew';
+import { createNewPrint } from '../../OutputInput/Logger';
 
 export function parseSWCError(err: {message: string, stack: string, code: string}, changeLocations = (line: number, char: number, info: string) => {return {line, char, info}}){
     const splitData:string[] = err.stack.trim().split('\n');
@@ -30,7 +30,7 @@ export function parseSWCError(err: {message: string, stack: string, code: string
 
     const dataError = {
         get simpleMessage(){
-            return `${dataError.errorCode}, on file ->\n${dataError.errorFile}`
+            return `${dataError.errorCode}, on file -><color>\n${dataError.errorFile}`
         },
         get fullMessage(){
             return `${dataError.simpleMessage}\nLines: ${dataError.errorLines}`

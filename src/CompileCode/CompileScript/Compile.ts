@@ -4,7 +4,7 @@ import StringTracker from "../../EasyDebug/StringTracker";
 import { compileImport } from "../../ImportFiles/Script";
 import { print } from "../../OutputInput/Console";
 import EasyFs from "../../OutputInput/EasyFs";
-import { createNewPrint } from "../../OutputInput/PrintNew";
+import { createNewPrint } from "../../OutputInput/Logger";
 import { ConvertSyntaxMini } from "../../Plugins/Syntax/RazorSyntax";
 import { BasicSettings, getTypes, smallPathToPage } from "../../RunTimeBuild/SearchFileSystem";
 import { CutTheLast, SplitFirst } from "../../StringMethods/Splitting";

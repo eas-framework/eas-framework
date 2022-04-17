@@ -2,7 +2,7 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { StringNumberMap, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { BasicSettings, getTypes, smallPathToPage } from '../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../OutputInput/EasyFs';
-import { createNewPrint } from '../../OutputInput/PrintNew';
+import { createNewPrint } from '../../OutputInput/Logger';
 import path_node from 'path';
 import { SessionBuild } from '../../CompileCode/Session';
 import { CheckDependencyChange } from '../../OutputInput/StoreDeps';
@@ -33,7 +33,7 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
 
     if (!(await EasyFs.stat(FullPath, null, true)).isFile?.()) {
         const [funcName, printText] = createNewPrint({
-            text: `\nPage not found: ${type.at(0).lineInfo} -> ${FullPath}`,
+            text: `\nPage not found: <color>${type.at(0).lineInfo} -> ${FullPath}`,
             errorName: 'page-not-found',
             type: 'error'
         });

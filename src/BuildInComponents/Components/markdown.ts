@@ -2,7 +2,7 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { StringNumberMap, BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XMLHelpers/CompileTypes';
 import markdown from 'markdown-it'
 import hljs from 'highlight.js';
-import { createNewPrint } from '../../OutputInput/PrintNew';
+import { createNewPrint } from '../../OutputInput/Logger';
 import path from 'path';
 import EasyFs from '../../OutputInput/EasyFs';
 import { BasicSettings, getTypes, workingDirectory } from '../../RunTimeBuild/SearchFileSystem';

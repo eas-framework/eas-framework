@@ -1,4 +1,5 @@
 import StringTracker, { StringTrackerDataInfo } from '../EasyDebug/StringTracker';
+import { LogToHTML } from '../OutputInput/Logger';
 import { BaseReader, EJSParser } from './BaseReader/Reader';
 import { ParseTextStream, ReBuildCodeString } from './transform/EasyScript';
 
@@ -143,7 +144,7 @@ export default class JSParser {
     }
 
     public static printError(message: string) {
-        return `<p style="color:red;text-align:left;font-size:16px;">${JSParser.fixText(message)}</p>`;
+        return `<div style="color:red;text-align:left;font-size:16px;">${JSParser.fixText(LogToHTML(message))}</div>`;
     }
 
     static async RunAndExport(text: StringTracker, path: string, isDebug: boolean) {

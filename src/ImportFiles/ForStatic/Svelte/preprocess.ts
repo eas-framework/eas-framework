@@ -1,22 +1,18 @@
-import { createNewPrint } from '../../../OutputInput/PrintNew';
-import { SomePlugins, GetPlugin } from '../../../CompileCode/InsertModels';
-import { StringNumberMap } from '../../../CompileCode/XMLHelpers/CompileTypes';
-import { Options as TransformOptions, transform } from '@swc/core';
+import { GetPlugin } from '../../../CompileCode/InsertModels';
+import { transform } from '@swc/core';
 import { getTypes, BasicSettings } from '../../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../../OutputInput/EasyFs';
-import * as svelte from 'svelte/compiler';
-import { dirname, extname } from 'path';
+import { extname } from 'path';
 import sass from 'sass';
 import { v4 as uuid } from 'uuid';
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
-import { createImporter, getSassErrorLine, PrintSassError, PrintSassErrorTracker, sassStyle, sassSyntax } from '../../../BuildInComponents/Components/style/sass';
+import { fileURLToPath } from 'url';
+import { createImporter, PrintSassErrorTracker, sassStyle, sassSyntax } from '../../../BuildInComponents/Components/style/sass';
 import { SessionBuild } from '../../../CompileCode/Session';
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { Extension, SplitFirst } from '../../../StringMethods/Splitting';
 import { ESBuildPrintErrorStringTracker } from '../../../CompileCode/transpiler/printMessage';
 import { backToOriginal, backToOriginalSss } from '../../../EasyDebug/SourceMapLoad';
-import { esTarget, TransformJSC } from '../../../CompileCode/transpiler/settings';
+import { TransformJSC } from '../../../CompileCode/transpiler/settings';
 
 async function SASSSvelte(content: StringTracker, lang: string, fullPath: string) {
     try {

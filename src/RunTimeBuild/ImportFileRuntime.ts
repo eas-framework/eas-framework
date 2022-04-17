@@ -1,10 +1,11 @@
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import EasyFs from '../OutputInput/EasyFs';
 import { ImportFile, AddExtension } from '../ImportFiles/Script';
-import { createNewPrint } from '../OutputInput/PrintNew';
+import { createNewPrint } from '../OutputInput/Logger';
 import path from 'path';
 import { AliasOrPackage } from '../ImportFiles/CustomImport/Alias';
 import { print } from '../OutputInput/Console';
+import { BasicSettings } from './SearchFileSystem';
 
 type RequireFiles = {
     path: string
@@ -163,7 +164,7 @@ export default async function RequireFile(filePath: string, __filename: string, 
             else {
                 newDeps = newDeps ?? {};
 
-                LastRequire[copyPath] = { model: await ImportFile(__filename, filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath }
+                LastRequire[copyPath] = { model: await ImportFile(BasicSettings.relative(__filename), filePath, typeArray, isDebug, newDeps, haveModel && getChangeArray(haveModel.dependencies, newDeps)), dependencies: newDeps, path: filePath }
             }
         }
         else {
@@ -171,7 +172,7 @@ export default async function RequireFile(filePath: string, __filename: string, 
             const [funcName, printText] = createNewPrint({
                 type: 'warn',
                 errorName: 'import-not-exists',
-                text: `Import '${filePath}' does not exists from '${__filename}'`
+                text: `Import '${filePath}' does not exists from <color>'${__filename}'`
             });
             print[funcName](printText);
         }

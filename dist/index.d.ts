@@ -513,6 +513,24 @@ declare module "@eas-framework/server/RunTimeBuild/SearchFileSystem" {
     export function getTypeBySmallPath(smallPath: string): any;
     export { getDirname, SystemData, workingDirectory, getTypes, BasicSettings };
 }
+declare module "@eas-framework/server/OutputInput/Logger" {
+    export interface PreventLog {
+        id?: string;
+        text: string;
+        errorName: string;
+        type?: "warn" | "error";
+    }
+    export const Settings: {
+        PreventErrors: string[];
+    };
+    export const ClearWarning: () => number;
+    /**
+     * If the error is not in the PreventErrors array, print the error
+     * @param {PreventLog}  - `id` - The id of the error.
+     */
+    export function createNewPrint({ id, text, type, errorName }: PreventLog): string[];
+    export function LogToHTML(log: string): string;
+}
 declare module "@eas-framework/server/CompileCode/BaseReader/Reader" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     import workerPool from 'workerpool';
@@ -681,23 +699,6 @@ declare module "@eas-framework/server/EasyDebug/SourceMapLoad" {
     export default function SourceMapToStringTracker(code: string, sourceMap: string | RawSourceMap): Promise<StringTracker>;
     export function backToOriginal(original: StringTracker, code: string, sourceMap: string | RawSourceMap): Promise<StringTracker>;
     export function backToOriginalSss(original: StringTracker, code: string, sourceMap: string | RawSourceMap, mySource: string): Promise<StringTracker>;
-}
-declare module "@eas-framework/server/OutputInput/PrintNew" {
-    export interface PreventLog {
-        id?: string;
-        text: string;
-        errorName: string;
-        type?: "warn" | "error";
-    }
-    export const Settings: {
-        PreventErrors: string[];
-    };
-    export const ClearWarning: () => number;
-    /**
-     * If the error is not in the PreventErrors array, print the error
-     * @param {PreventLog}  - `id` - The id of the error.
-     */
-    export function createNewPrint({ id, text, type, errorName }: PreventLog): string[];
 }
 declare module "@eas-framework/server/CompileCode/transpiler/printMessage" {
     import { RawSourceMap } from 'source-map';
@@ -985,9 +986,6 @@ declare module "@eas-framework/server/BuildInComponents/Components/style/server"
     import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
     export default function BuildCode(language: string, pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent>;
 }
-declare module "@eas-framework/server/CompileCode/CssMinimizer" {
-    export default function MinCss(code: string): string;
-}
 declare module "@eas-framework/server/BuildInComponents/Components/style/client" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
@@ -1029,13 +1027,12 @@ declare module "@eas-framework/server/BuildInComponents/Components/isolate" {
     export default function isolate(BetweenTagData: StringTracker): Promise<BuildInComponent>;
 }
 declare module "@eas-framework/server/ImportFiles/ForStatic/Svelte/preprocess" {
-    import { StringNumberMap } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
     export function preprocess(fullPath: string, smallPath: string, savePath?: string, httpSource?: boolean, svelteExt?: string): Promise<{
         scriptLang: string;
         styleLang: string;
         code: string;
         map: import("source-map").RawSourceMap;
-        dependencies: StringNumberMap;
+        dependencies: import("@eas-framework/server/CompileCode/XMLHelpers/CompileTypes").StringNumberMap;
         svelteFiles: string[];
     }>;
     export function Capitalize(name: string): string;
@@ -1099,6 +1096,9 @@ declare module "@eas-framework/server/BuildInComponents/Components/svelte" {
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
     export default function BuildCode(type: StringTracker, dataTag: TagDataParser, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+}
+declare module "@eas-framework/server/CompileCode/CssMinimizer" {
+    export default function MinCss(code: string): string;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/markdown" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
@@ -1302,13 +1302,13 @@ declare module "@eas-framework/server/ImportFiles/Script" {
     export function AddExtension(FilePath: string): string;
     /**
      * LoadImport is a function that takes a path to a file, and returns the module that is at that path
-     * @param {string} importFrom - The path to the file that created this import.
+     * @param {string[]} importFrom - The path to the file that created this import.
      * @param {string} InStaticPath - The path to the file that you want to import.
      * @param {StringAnyMap} [useDeps] - This is a map of dependencies that will be used by the page.
      * @param {string[]} withoutCache - an array of paths that will not be cached.
      * @returns The module that was imported.
      */
-    export default function LoadImport(importFrom: string, InStaticPath: string, typeArray: string[], { isDebug, useDeps, withoutCache, onlyPrepare }: {
+    export default function LoadImport(importFrom: string[], InStaticPath: string, typeArray: string[], { isDebug, useDeps, withoutCache, onlyPrepare }: {
         isDebug: boolean;
         useDeps?: StringAnyMap;
         withoutCache?: string[];

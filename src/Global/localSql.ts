@@ -3,7 +3,7 @@ import initSqlJs, { Database } from 'sql.js';
 import { print } from '../OutputInput/Console';
 import { workingDirectory } from '../RunTimeBuild/SearchFileSystem';
 import path from 'path';
-import { createNewPrint } from '../OutputInput/PrintNew';
+import { createNewPrint } from '../OutputInput/Logger';
 
 export default class LocalSql {
     public db: Database;

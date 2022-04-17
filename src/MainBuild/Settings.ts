@@ -10,7 +10,7 @@ import { Settings as InsertModelsSettings } from '../CompileCode/InsertModels';
 import bodyParser from 'body-parser';
 import { StartRequire, GetSettings } from './ImportModule';
 import { Request, Response, NextFunction } from '@tinyhttp/app';
-import { Settings as createNewPrintSettings } from '../OutputInput/PrintNew';
+import { Settings as createNewPrintSettings } from '../OutputInput/Logger';
 import MemorySession from 'memorystore';
 import { ExportSettings } from './SettingsTypes';
 import { debugSiteMap } from '../RunTimeBuild/SiteMap';

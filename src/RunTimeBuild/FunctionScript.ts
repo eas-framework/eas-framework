@@ -6,7 +6,7 @@ import JSParser from '../CompileCode/JSParser';
 import ImportWithoutCache from '../ImportFiles/redirectCJS';
 import { print } from '../OutputInput/Console';
 import EasyFs from '../OutputInput/EasyFs';
-import { createNewPrint } from '../OutputInput/PrintNew';
+import { createNewPrint } from '../OutputInput/Logger';
 import { CheckDependencyChange } from '../OutputInput/StoreDeps';
 import { SplitFirst } from '../StringMethods/Splitting';
 import { RemoveEndType } from './FileTypes';
@@ -74,7 +74,7 @@ async function RequirePage(filePath: string, __filename: string, __dirname: stri
         const [funcName, printText] = createNewPrint({
             type: 'warn',
             errorName: 'import-not-exists',
-            text: `Import '${copyPath}' does not exists from '${__filename}'`
+            text: `Import '${copyPath}' does not exists from <color>'${__filename}'`
         });
         print[funcName](printText);
         LastRequire[copyPath] = { model: () => { }, date: -1, path: fullPath };

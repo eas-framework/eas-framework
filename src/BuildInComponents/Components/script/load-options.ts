@@ -1,6 +1,5 @@
 import { Options as TransformOptions, transform, JscConfig } from '@swc/core';
 import { GetPlugin, SomePlugins } from '../../../CompileCode/InsertModels';
-import { SessionBuild } from '../../../CompileCode/Session';
 import { ESBuildPrintErrorStringTracker } from '../../../CompileCode/transpiler/printMessage';
 import { Commonjs, Decorators, esTarget } from '../../../CompileCode/transpiler/settings';
 import StringTracker from '../../../EasyDebug/StringTracker';

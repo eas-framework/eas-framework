@@ -1,15 +1,8 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { StringNumberMap, BuildInComponent,  } from '../../../CompileCode/XMLHelpers/CompileTypes';
-import { fileURLToPath, pathToFileURL } from "url";
-import { createNewPrint } from '../../../OutputInput/PrintNew';
-import EasyFs from '../../../OutputInput/EasyFs';
-import { CreateFilePath } from '../../../CompileCode/XMLHelpers/CodeInfoAndDebug';
-import MinCss from '../../../CompileCode/CssMinimizer';
-import { BasicSettings, getTypes } from '../../../RunTimeBuild/SearchFileSystem';
+import { BuildInComponent,  } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { SessionBuild } from '../../../CompileCode/Session';
 import SourceMapStore from '../../../EasyDebug/SourceMapStore';
 import { compileSass } from './sass';
-import InsertComponent from '../../../CompileCode/InsertComponent';
 import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
 
 export default async function BuildCode(language: string, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent> {

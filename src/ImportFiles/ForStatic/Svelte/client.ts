@@ -6,7 +6,7 @@ import { transform } from "@swc/core";
 import EasyFs from "../../../OutputInput/EasyFs";
 import { ESBuildPrintErrorSourceMap } from "../../../CompileCode/transpiler/printMessage";
 import { toURLComment, MergeSourceMap } from "../../../EasyDebug/SourceMap";
-import { createNewPrint } from "../../../OutputInput/PrintNew";
+import { createNewPrint } from "../../../OutputInput/Logger";
 import { PrintSvelteError, PrintSvelteWarn } from "./error";
 import { esTarget, TransformJSC } from "../../../CompileCode/transpiler/settings";
 
