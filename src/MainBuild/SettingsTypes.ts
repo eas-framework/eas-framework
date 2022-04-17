@@ -1,4 +1,4 @@
-import {  TransformOptions } from 'esbuild-wasm';
+import { JscConfig as TransformOptions } from '@swc/core';
 import { Request, Response, NextFunction } from '@tinyhttp/app';
 import * as fileByUrl from '../RunTimeBuild/GetPages';
 

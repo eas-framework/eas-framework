@@ -1,12 +1,8 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { BuildInComponent,  } from '../../../CompileCode/XMLHelpers/CompileTypes';
-import { TransformOptions, transform } from 'esbuild-wasm';
-import { createNewPrint } from '../../../OutputInput/PrintNew';
 import { SessionBuild } from '../../../CompileCode/Session';
-import InsertComponent from '../../../CompileCode/InsertComponent';
-import { GetPlugin, SomePlugins } from '../../../CompileCode/InsertModels';
-import { ESBuildPrintErrorStringTracker, ESBuildPrintWarningsStringTracker } from '../../../CompileCode/esbuild/printMessage';
 import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
+import { transpilerWithOptions } from './load-options';
 
 export default async function BuildCode(language: string, tagData: TagDataParser, BetweenTagData: StringTracker,  sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const BetweenTagDataEq = BetweenTagData.eq, BetweenTagDataEqAsTrim = BetweenTagDataEq.trim(), isModel = tagData.popString('type') == 'module', isModelStringCache = isModel ? 'scriptModule' : 'script';
@@ -17,42 +13,7 @@ export default async function BuildCode(language: string, tagData: TagDataParser
         };
     sessionInfo.cache[isModelStringCache].push(BetweenTagDataEqAsTrim);
 
-    let resultCode = '', resultMap: string;
-
-    const AddOptions: TransformOptions = {
-        sourcefile: BetweenTagData.extractInfo(),
-        minify: SomePlugins("Min" + language.toUpperCase()) || SomePlugins("MinAll"),
-        sourcemap: sessionInfo.debug ? 'external' : false,
-        ...GetPlugin("transformOptions")
-    };
-
-    try {
-        switch (language) {
-            case 'ts':
-                AddOptions.loader = 'ts';
-                break;
-
-            case 'jsx':
-                AddOptions.loader = 'jsx';
-                Object.assign(AddOptions, GetPlugin("JSXOptions") ?? {});
-                break;
-
-            case 'tsx':
-                AddOptions.loader = 'tsx';
-                Object.assign(AddOptions, GetPlugin("TSXOptions") ?? {});
-                break;
-        }
-
-        const { map, code, warnings } = await transform(BetweenTagData.eq, AddOptions);
-        ESBuildPrintWarningsStringTracker(BetweenTagData, warnings);
-
-        resultCode = code;
-        resultMap = map;
-    } catch (err) {
-        ESBuildPrintErrorStringTracker(BetweenTagData, err)
-    }
-
-
+    const {resultCode, resultMap} = await transpilerWithOptions(BetweenTagData, language, sessionInfo.debug)
     const pushStyle = sessionInfo.addScriptStylePage(isModel ? 'module' : 'script', tagData, BetweenTagData);
 
     if (resultMap) {

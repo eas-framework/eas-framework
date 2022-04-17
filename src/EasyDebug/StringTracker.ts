@@ -770,17 +770,26 @@ export default class StringTracker {
         return this.DefaultInfoText.info.split(type).pop().trim()
     }
 
+    public originalPositionFor(line:number, column:number){
+        let searchLine = this.getLine(line);
+        if (searchLine.startsWith('//')) {
+            searchLine = this.getLine(line - 1);
+            column = 0;
+        }
+        return {
+            ...searchLine.at(column-1).DefaultInfoText,
+            searchLine
+        }
+    }
+
     /**
      * Extract error info form error message
      */
     public debugLine({ message, text, location, line, col}: { message?: string, text?: string, location?: { line: number, column: number, lineText?: string }, line?: number, col?: number}): string {
-        let searchLine = this.getLine(line ?? location?.line ?? 1), column = col ?? location?.column ?? 0;
-        if (searchLine.startsWith('//')) {
-            searchLine = this.getLine((line ?? location?.line) - 1);
-            column = 0;
-        }
-        const data = searchLine.at(column-1).DefaultInfoText;
-        return `${text || message}, on file ->\n${BasicSettings.fullWebSitePath+searchLine.extractInfo()}:${data.line}:${data.char}${location?.lineText ? '\nLine: "' + location.lineText.trim() + '"': ''}`;
+        
+        const data = this.originalPositionFor(line ?? location?.line ?? 1, col ?? location?.column ?? 0)
+
+        return `${text || message}, on file ->\n${BasicSettings.fullWebSitePath+data.searchLine.extractInfo()}:${data.line}:${data.char}${location?.lineText ? '\nLine: "' + location.lineText.trim() + '"': ''}`;
     }
 
     public StringWithTack(fullSaveLocation: string){

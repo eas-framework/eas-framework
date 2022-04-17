@@ -2,6 +2,13 @@
 <@body/>
 <Component folder/>
 @{
-    const declareVariable = 0;
+    const declareVariable = {
+
+
+
+        a:2,
+        b:3,
+        c:4
+    };
 } 
  

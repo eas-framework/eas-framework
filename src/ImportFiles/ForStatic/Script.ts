@@ -1,26 +1,32 @@
 import { SomePlugins, GetPlugin } from '../../CompileCode/InsertModels';
-import { TransformOptions, transform } from 'esbuild-wasm';
+import { Options as TransformOptions, transform, ParserConfig } from '@swc/core';
 import { getTypes } from '../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../OutputInput/EasyFs';
-import { ESBuildPrintError, ESBuildPrintWarnings } from '../../CompileCode/esbuild/printMessage';
+import { ESBuildPrintError } from '../../CompileCode/transpiler/printMessage';
+import { esTarget, TransformJSC } from '../../CompileCode/transpiler/settings';
 
-async function BuildScript(inputPath: string, type: string, isDebug: boolean, moreOptions?: TransformOptions) {
+async function BuildScript(inputPath: string, type: string, isDebug: boolean, parser?: ParserConfig, optionsName?: string) {
     const fullPath = getTypes.Static[0] + inputPath, fullCompilePath = getTypes.Static[1] + inputPath;
     const AddOptions: TransformOptions = {
-        sourcefile: inputPath + '?source=true',
-        sourcemap: isDebug ? 'inline': false,
+        filename: fullPath,
+        sourceFileName: inputPath + '?source=true',
+        jsc: TransformJSC({
+            parser: {
+                ...parser,
+                ...GetPlugin("transformOptions"),
+                ...GetPlugin(optionsName)
+            }
+        }),
         minify: SomePlugins("Min" + type.toUpperCase()) || SomePlugins("MinAll"),
-        ...GetPlugin("transformOptions"), ...moreOptions
+        sourceMaps: isDebug ? 'inline' : false
     };
 
     let result = await EasyFs.readFile(fullPath);
 
     try {
-        const { code, warnings } = await transform(result, AddOptions);
-        result = code;
-        ESBuildPrintWarnings(warnings, fullPath);
+        result = (await transform(result, AddOptions)).code;
     } catch (err) {
-        ESBuildPrintError(err, fullPath);
+        ESBuildPrintError(err);
     }
 
     await EasyFs.makePathReal(inputPath, getTypes.Static[1]);
@@ -32,17 +38,17 @@ async function BuildScript(inputPath: string, type: string, isDebug: boolean, mo
 }
 
 export function BuildJS(inStaticPath: string, isDebug: boolean) {
-    return BuildScript(inStaticPath, 'js', isDebug, undefined);
+    return BuildScript(inStaticPath, 'js', isDebug);
 }
 
 export function BuildTS(inStaticPath: string, isDebug: boolean) {
-    return BuildScript(inStaticPath, 'ts', isDebug, { loader: 'ts' });
+    return BuildScript(inStaticPath, 'ts', isDebug, { syntax: 'typescript', decorators: true });
 }
 
 export function BuildJSX(inStaticPath: string, isDebug: boolean) {
-    return BuildScript(inStaticPath, 'jsx', isDebug, { ...(GetPlugin("JSXOptions") ?? {}), loader: 'jsx' });
+    return BuildScript(inStaticPath, 'jsx', isDebug, { syntax: 'ecmascript', jsx: true }, 'JSXOptions');
 }
 
 export function BuildTSX(inStaticPath: string, isDebug: boolean) {
-    return BuildScript(inStaticPath, 'tsx', isDebug, { loader: 'tsx', ...(GetPlugin("TSXOptions") ?? {}) });
+    return BuildScript(inStaticPath, 'tsx', isDebug, { syntax: 'typescript', tsx: true, decorators: true, }, 'TSXOptions');
 }

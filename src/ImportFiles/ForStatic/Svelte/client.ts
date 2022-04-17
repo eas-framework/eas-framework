@@ -1,13 +1,14 @@
 import { getTypes } from "../../../RunTimeBuild/SearchFileSystem";
 import * as svelte from 'svelte/compiler';
 import { preprocess } from "./preprocess";
-import { SomePlugins } from "../../../CompileCode/InsertModels";
-import { transform } from "esbuild-wasm";
+import { GetPlugin, SomePlugins } from "../../../CompileCode/InsertModels";
+import { transform } from "@swc/core";
 import EasyFs from "../../../OutputInput/EasyFs";
-import { ESBuildPrintErrorSourceMap } from "../../../CompileCode/esbuild/printMessage";
+import { ESBuildPrintErrorSourceMap } from "../../../CompileCode/transpiler/printMessage";
 import { toURLComment, MergeSourceMap } from "../../../EasyDebug/SourceMap";
 import { createNewPrint } from "../../../OutputInput/PrintNew";
 import { PrintSvelteError, PrintSvelteWarn } from "./error";
+import { esTarget, TransformJSC } from "../../../CompileCode/transpiler/settings";
 
 export default async function BuildScript(inStaticPath: string, isDebug: boolean) {
     const fullPath = getTypes.Static[0] + inStaticPath, fullCompilePath = getTypes.Static[1] + inStaticPath;
@@ -44,9 +45,14 @@ export default async function BuildScript(inStaticPath: string, isDebug: boolean
     if (SomePlugins("MinJS") || SomePlugins("MinAll")) {
         try {
             const { code, map } = await transform(js.code, {
+                jsc: TransformJSC({
+                    parser:{
+                        syntax: scriptLang == 'js' ? 'ecmascript': 'typescript',
+                        ...GetPlugin(scriptLang.toUpperCase() +"Options")
+                    }
+                }),
                 minify: true,
-                loader: <any>scriptLang,
-                sourcemap: isDebug
+                sourceMaps: isDebug
             });
 
             js.code = code;

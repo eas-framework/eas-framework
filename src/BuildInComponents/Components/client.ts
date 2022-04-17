@@ -3,7 +3,7 @@ import { BuildInComponent, BuildScriptWithoutModule } from '../../CompileCode/XM
 import JSParser from '../../CompileCode/JSParser'
 import { SessionBuild } from '../../CompileCode/Session';
 import InsertComponent from '../../CompileCode/InsertComponent';
-import { minifyJS } from '../../CompileCode/esbuild/minify';
+import { minifyJS } from '../../CompileCode/transpiler/minify';
 import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
 
 const serveScript = '/serv/temp.js';

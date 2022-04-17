@@ -1,21 +1,22 @@
-import { TransformOptions, transform } from "esbuild-wasm";
+import { Options as TransformOptions, transform } from '@swc/core';
 import { createNewPrint } from "../OutputInput/PrintNew";
 import EasyFs from "../OutputInput/EasyFs";
 import { BasicSettings, SystemData } from "../RunTimeBuild/SearchFileSystem";
 import EasySyntax from "../CompileCode/transform/EasySyntax";
 import JSParser from "../CompileCode/JSParser";
 import path from "path";
-import { isTs } from "../CompileCode/InsertModels";
+import { GetPlugin, isTs } from "../CompileCode/InsertModels";
 import ImportWithoutCache from './redirectCJS';
 import { StringAnyMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import { v4 as uuid } from 'uuid';
 import { pageDeps } from "../OutputInput/StoreDeps";
 import CustomImport, { isPathCustom } from "./CustomImport/index";
-import { ESBuildPrintError, ESBuildPrintErrorStringTracker, ESBuildPrintWarnings, ESBuildPrintWarningsStringTracker } from "../CompileCode/esbuild/printMessage";
+import { ESBuildPrintError, ESBuildPrintErrorStringTracker } from "../CompileCode/transpiler/printMessage";
 import StringTracker from "../EasyDebug/StringTracker";
 import { backToOriginal } from "../EasyDebug/SourceMapLoad";
 import { AliasOrPackage } from "./CustomImport/Alias";
 import { print } from "../OutputInput/Console";
+import { Commonjs, esTarget, TransformJSC } from '../CompileCode/transpiler/settings';
 
 async function ReplaceBefore(
   code: string,
@@ -42,18 +43,20 @@ function template(code: string, isDebug: boolean, dir: string, file: string, par
  * @returns The result of the script.
  */
 async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, templatePath = filePath, codeMinify = !isDebug, mergeTrack }: { codeMinify?: boolean, templatePath?: string, params?: string, mergeTrack?: StringTracker } = {}): Promise<string> {
-  const Options: TransformOptions = {
-    format: 'cjs',
-    loader: isTypescript ? 'ts' : 'js',
+  const Options: TransformOptions = Commonjs({
+    jsc: TransformJSC({
+      parser: {
+        syntax: isTypescript ? "typescript" : "ecmascript",
+        ...GetPlugin((isTypescript ? 'TS' : 'JS') + "Options")
+      }
+    }),
     minify: codeMinify,
-    sourcemap: isDebug ? (mergeTrack ? 'external' : 'inline') : false,
-    sourcefile: savePath && path.relative(path.dirname(savePath), filePath),
-    define: {
-      debug: "" + isDebug
-    }
-  };
+    filename: filePath,
+    sourceMaps: isDebug ? (mergeTrack ? true : 'inline') : false,
+    outputPath: savePath && path.relative(path.dirname(savePath), filePath)
+  });
 
-  let Result = await ReplaceBefore(mergeTrack?.eq || await EasyFs.readFile(filePath), {});
+  let Result = await ReplaceBefore(mergeTrack?.eq || await EasyFs.readFile(filePath), { debug: "" + isDebug });
   Result = template(
     Result,
     isDebug,
@@ -63,19 +66,14 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
   );
 
   try {
-    const { code, warnings, map } = await transform(Result, Options);
-    if (mergeTrack && map) {
-      ESBuildPrintWarningsStringTracker(mergeTrack, warnings);
-      Result = (await backToOriginal(mergeTrack, code, map)).StringWithTack(savePath);
-    } else {
-      ESBuildPrintWarnings(warnings, filePath);
-      Result = code;
-    }
+    const { code, map } = await transform(Result, Options);
+    Result = mergeTrack && map && (await backToOriginal(mergeTrack, code, map)).StringWithTack(savePath) || code;
+
   } catch (err) {
     if (mergeTrack) {
       ESBuildPrintErrorStringTracker(mergeTrack, err);
     } else {
-      ESBuildPrintError(err, filePath);
+      ESBuildPrintError(err);
     }
   }
 
@@ -132,7 +130,7 @@ export default async function LoadImport(importFrom: string, InStaticPath: strin
 
   //wait if this module is on process, if not declare this as on process module
   let processEnd: (v?: any) => void;
-  if(!onlyPrepare){
+  if (!onlyPrepare) {
     if (!SavedModules[SavedModulesPath])
       SavedModules[SavedModulesPath] = new Promise(r => processEnd = r);
     else if (SavedModules[SavedModulesPath] instanceof Promise)
@@ -221,7 +219,7 @@ export async function ImportFile(importFrom: string, InStaticPath: string, typeA
     }
   }
 
-  return LoadImport(importFrom, InStaticPath, typeArray, {isDebug, useDeps, withoutCache});
+  return LoadImport(importFrom, InStaticPath, typeArray, { isDebug, useDeps, withoutCache });
 }
 
 export async function RequireOnce(filePath: string, isDebug: boolean) {
@@ -295,7 +293,7 @@ export async function compileImport(globalPrams: string, scriptLocation: string,
         return AliasOrPackage(p);
     }
 
-    return LoadImport(templatePath, p, typeArray, {isDebug});
+    return LoadImport(templatePath, p, typeArray, { isDebug });
   }
 
   const MyModule = await ImportWithoutCache(fullSaveLocation);

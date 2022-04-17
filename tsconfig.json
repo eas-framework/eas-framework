@@ -2,6 +2,7 @@
     "compilerOptions": {
         "strict": false,
         "target": "es2020",
+        "experimentalDecorators": true,
         "declarationDir": "dist",
         "module": "esnext",
         "declaration": true,

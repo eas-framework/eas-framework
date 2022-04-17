@@ -433,6 +433,13 @@ declare module "@eas-framework/server/EasyDebug/StringTracker" {
         match(searchValue: string | RegExp): ArrayMatch | StringTracker[];
         toString(): string;
         extractInfo(type?: string): string;
+        originalPositionFor(line: number, column: number): {
+            searchLine: StringTracker;
+            text?: string;
+            info: string;
+            line?: number;
+            char?: number;
+        };
         /**
          * Extract error info form error message
          */
@@ -692,21 +699,45 @@ declare module "@eas-framework/server/OutputInput/PrintNew" {
      */
     export function createNewPrint({ id, text, type, errorName }: PreventLog): string[];
 }
-declare module "@eas-framework/server/CompileCode/esbuild/printMessage" {
-    import { Message } from 'esbuild-wasm';
+declare module "@eas-framework/server/CompileCode/transpiler/printMessage" {
     import { RawSourceMap } from 'source-map';
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
-    export function ESBuildPrintError({ errors }: {
-        errors: Message[];
-    }, filePath?: string): void;
-    export function ESBuildPrintErrorSourceMap({ errors }: {
-        errors: Message[];
-    }, sourceMap: RawSourceMap, filePath?: string): Promise<void>;
-    export function ESBuildPrintWarnings(warnings: Message[], filePath?: string): void;
-    export function ESBuildPrintWarningsStringTracker(base: StringTracker, warnings: Message[]): void;
-    export function ESBuildPrintErrorStringTracker(base: StringTracker, { errors }: {
-        errors: Message[];
-    }): void;
+    export function parseSWCError(err: {
+        message: string;
+        stack: string;
+        code: string;
+    }, changeLocations?: (line: number, char: number, info: string) => {
+        line: number;
+        char: number;
+        info: string;
+    }): {
+        errorCode: string;
+        errorLines: string;
+        errorFile: string;
+        simpleMessage: string;
+        fullMessage: string;
+    };
+    export function ESBuildPrintError(err: any): {
+        errorCode: string;
+        errorLines: string;
+        errorFile: string;
+        simpleMessage: string;
+        fullMessage: string;
+    };
+    export function ESBuildPrintErrorSourceMap(err: any, sourceMap: RawSourceMap, sourceFile?: string): Promise<{
+        errorCode: string;
+        errorLines: string;
+        errorFile: string;
+        simpleMessage: string;
+        fullMessage: string;
+    }>;
+    export function ESBuildPrintErrorStringTracker(base: StringTracker, err: any): {
+        errorCode: string;
+        errorLines: string;
+        errorFile: string;
+        simpleMessage: string;
+        fullMessage: string;
+    };
 }
 declare module "@eas-framework/server/ImportFiles/CustomImport/Extension/json" {
     export default function (path: string): Promise<any>;
@@ -741,6 +772,13 @@ declare module "@eas-framework/server/CompileCode/transform/EasySyntax" {
             [key: string]: string;
         }): Promise<string>;
     }
+}
+declare module "@eas-framework/server/CompileCode/transpiler/settings" {
+    import { Options as TransformOptions, JscConfig } from '@swc/core';
+    export const esTarget = "es2022";
+    export function Decorators(data: JscConfig): JscConfig;
+    export function TransformJSC(data?: JscConfig): JscConfig;
+    export function Commonjs(data: TransformOptions): TransformOptions;
 }
 declare module "@eas-framework/server/CompileCode/transform/Script" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
@@ -868,7 +906,7 @@ declare module "@eas-framework/server/CompileCode/XMLHelpers/CodeInfoAndDebug" {
     };
     export { ParseDebugLine, CreateFilePath, ParseDebugInfo };
 }
-declare module "@eas-framework/server/CompileCode/esbuild/minify" {
+declare module "@eas-framework/server/CompileCode/transpiler/minify" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     export function minifyJS(text: string, tracker: StringTracker): Promise<string>;
 }
@@ -879,6 +917,14 @@ declare module "@eas-framework/server/BuildInComponents/Components/client" {
     import InsertComponent from "@eas-framework/server/CompileCode/InsertComponent";
     import TagDataParser from "@eas-framework/server/CompileCode/XMLHelpers/TagDataParser";
     export default function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent>;
+}
+declare module "@eas-framework/server/BuildInComponents/Components/script/load-options" {
+    import { JscConfig } from '@swc/core';
+    import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
+    export function transpilerWithOptions(BetweenTagData: StringTracker, language: string, sourceMaps: boolean, BetweenTagDataString?: string, options?: JscConfig): Promise<{
+        resultCode: string;
+        resultMap: string;
+    }>;
 }
 declare module "@eas-framework/server/BuildInComponents/Components/script/server" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
@@ -909,7 +955,7 @@ declare module "@eas-framework/server/BuildInComponents/Components/style/sass" {
         findFileUrl(url: string): URL;
     };
     export function sassStyle(language: string): "compressed" | "expanded";
-    export function sassSyntax(language: 'sass' | 'scss' | 'css'): "css" | "scss" | "indented";
+    export function sassSyntax(language: 'sass' | 'scss' | 'css'): "scss" | "css" | "indented";
     export function sassAndSource(sourceMap: RawSourceMap, source: string): void;
     export function getSassErrorLine({ sassStack }: {
         sassStack: any;
@@ -1439,7 +1485,7 @@ declare module "@eas-framework/server/RunTimeBuild/CompileState" {
     }
 }
 declare module "@eas-framework/server/MainBuild/SettingsTypes" {
-    import { TransformOptions } from 'esbuild-wasm';
+    import { JscConfig as TransformOptions } from '@swc/core';
     import { Request, Response, NextFunction } from '@tinyhttp/app';
     import * as fileByUrl from "@eas-framework/server/RunTimeBuild/GetPages";
     export interface GreenLockSite {

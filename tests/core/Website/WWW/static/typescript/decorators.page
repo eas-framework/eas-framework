@@ -1,0 +1,10 @@
+@[model='../server' title="TypeScript"]
+<@body/>
+@compile{
+    script('./decorators.ts')
+}
+@{
+    include './decorators.ts'
+}
+<h1>Hello from TypeScript</h1>
+<p>Open the console and reload</p>

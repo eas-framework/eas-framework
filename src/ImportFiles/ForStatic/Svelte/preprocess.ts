@@ -1,7 +1,7 @@
 import { createNewPrint } from '../../../OutputInput/PrintNew';
 import { SomePlugins, GetPlugin } from '../../../CompileCode/InsertModels';
 import { StringNumberMap } from '../../../CompileCode/XMLHelpers/CompileTypes';
-import { transform } from 'esbuild-wasm';
+import { Options as TransformOptions, transform } from '@swc/core';
 import { getTypes, BasicSettings } from '../../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../../OutputInput/EasyFs';
 import * as svelte from 'svelte/compiler';
@@ -14,8 +14,9 @@ import { createImporter, getSassErrorLine, PrintSassError, PrintSassErrorTracker
 import { SessionBuild } from '../../../CompileCode/Session';
 import StringTracker from '../../../EasyDebug/StringTracker';
 import { Extension, SplitFirst } from '../../../StringMethods/Splitting';
-import { ESBuildPrintErrorStringTracker } from '../../../CompileCode/esbuild/printMessage';
+import { ESBuildPrintErrorStringTracker } from '../../../CompileCode/transpiler/printMessage';
 import { backToOriginal, backToOriginalSss } from '../../../EasyDebug/SourceMapLoad';
+import { esTarget, TransformJSC } from '../../../CompileCode/transpiler/settings';
 
 async function SASSSvelte(content: StringTracker, lang: string, fullPath: string) {
     try {
@@ -72,7 +73,15 @@ async function ScriptSvelte(content: StringTracker, lang: string, connectSvelte:
         return content;
 
     try {
-        const { code, map } = (await transform(content.eq, { ...GetPlugin("transformOptions"), loader: 'ts', sourcemap: true }));
+        const { code, map } = (await transform(content.eq, { 
+            jsc: TransformJSC({
+                parser: {
+                    syntax: 'typescript'
+                }
+            }),
+            sourceMaps: true,
+            ...GetPlugin("transformOptions"), 
+    }));
         content = await backToOriginal(content, code, map);
     } catch (err) {
         ESBuildPrintErrorStringTracker(content, err);

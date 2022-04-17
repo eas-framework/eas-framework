@@ -4,5 +4,6 @@
 * [Svelte](./svelte/index)
 * [Svelte SSR](./svelte/ssr)
 * [TypeScript](./typescript/index)
+* [TypeScript Decorators](./typescript/decorators)
 * [Sass](./sass/index)
 </markdown>
