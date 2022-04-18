@@ -1,6 +1,6 @@
 {
   "name": "@eas-framework/server",
-  "version": "1.0.7",
+  "version": "0.0.0-development",
   "description": "Node.js framework, with a lot of built in features",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,11 +11,12 @@
     "commit": "node build/commit.js",
     "production": "node build/production.js",
     "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
-    "test": "npm run build && npm run test:dist"
+    "test": "npm run build && npm run test:dist",
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/eas-framework/eas-framework.git"
+    "url": "https://github.com/eas-framework/eas-framework.git"
   },
   "keywords": [
     "router",
@@ -30,7 +31,7 @@
   "author": "ido.pluto",
   "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/eas-framework/eas-framework/issues"
+    "url": "https://github.com/eas-framework/eas-framework/issues"
   },
   "dependencies": {
     "@sindresorhus/slugify": "^2.1.0",
@@ -82,7 +83,8 @@
     "@typescript-eslint/parser": "^5.3.0",
     "esbuild-wasm": "^0.14.36",
     "fs-extra": "^10.0.0",
-    "typescript": "^4.6.2"
+    "typescript": "^4.6.2",
+    "semantic-release": "^19.0.2"
   },
   "homepage": "https://eas-framework.ml"
 }
