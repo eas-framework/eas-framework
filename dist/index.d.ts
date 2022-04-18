@@ -1755,6 +1755,7 @@ declare module "@eas-framework/server/MainBuild/Settings" {
     export function buildBodyParser(): void;
     export function buildSession(): void;
     export function requireSettings(): Promise<void>;
+    export function waitProductionPromise(): Promise<void>;
     export function buildFirstLoad(): void;
 }
 declare module "@eas-framework/server/MainBuild/ListenGreenLock" {
@@ -1795,9 +1796,10 @@ declare module "@eas-framework/server/MainBuild/Server" {
 declare module "@eas-framework/server" {
     import server, { Settings } from "@eas-framework/server/MainBuild/Server";
     import SearchRecord from "@eas-framework/server/Global/SearchRecord";
+    import { waitProductionPromise } from "@eas-framework/server/MainBuild/Settings";
     export type { Request, Response } from "@eas-framework/server/MainBuild/Types";
     export const AsyncImport: (path: string, importFrom?: string) => Promise<any>;
-    export { Settings, SearchRecord };
+    export { Settings, SearchRecord, waitProductionPromise };
     export default server;
 }
 declare module "@eas-framework/server/Global/localSql" {

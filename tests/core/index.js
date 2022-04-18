@@ -8,7 +8,7 @@ import puppeteer from 'puppeteer'
 sourceMapSupport.install({ hookRequire: true });
 
 //activate server
-const { default: Server, Settings } = await import('../../dist/index.js');
+const { default: Server, Settings, waitProductionPromise } = await import('../../dist/index.js');
 await Server({ SitePath: './tests/core/Website' });
 
 //load pages
@@ -42,6 +42,8 @@ if(!process.argv.includes('only'))
 
 if(process.argv.includes('with-production')){
     Settings.development = false
+    await waitProductionPromise()
+
     await testPages('production')
 }
 

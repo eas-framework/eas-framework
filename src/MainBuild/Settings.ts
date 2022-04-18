@@ -324,6 +324,10 @@ export async function requireSettings() {
     }
 }
 
+export async function waitProductionPromise(){
+    await compilationScan;
+}
+
 export function buildFirstLoad() {
     buildSession();
     buildFormidable();
