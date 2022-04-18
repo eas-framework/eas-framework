@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">84% </span>
+                <span class="strong">86% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>84/100</span>
+                <span class='fraction'>86/100</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">85.71% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>7/7</span>
+                <span class='fraction'>6/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">84% </span>
+                <span class="strong">86% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>84/100</span>
+                <span class='fraction'>86/100</span>
             </div>
         
             
@@ -228,40 +228,40 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">33x</span>
 <span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">38x</span>
+<span class="cline-any cline-yes">38x</span>
+<span class="cline-any cline-yes">38x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">38x</span>
 <span class="cline-any cline-yes">33x</span>
-<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">import StringTracker from '../../EasyDebug/StringTracker';
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import StringTracker from '../../EasyDebug/StringTracker';
 import { BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
 import JSParser from '../../CompileCode/JSParser'
 import { SessionBuild } from '../../CompileCode/Session';
@@ -328,46 +328,46 @@ export default async function BuildCode(pathName: string, dataTag: TagDataParser
 &nbsp;
 export function deleteBeforeReBuild(smallPath: string) {
     const name = smallPathToPage(smallPath);
-    for (const save in recordStore.store) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
-<span class="cstat-no" title="statement not covered" >        const item = recordStore.store[save];</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >        if (item[name]) {</span>
+    for (const save in recordStore.store) {
+        const item = recordStore.store[save];
+&nbsp;
+        if (item[name]) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
 <span class="cstat-no" title="statement not covered" >            item[name] = undefined;</span>
 <span class="cstat-no" title="statement not covered" >            delete item[name];</span>
 <span class="cstat-no" title="statement not covered" >        }</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+    }
 }
 &nbsp;
 export async function updateRecords(session: SessionBuild) {
-    if (!session.debug) {
-        return;
-<span class="branch-0 cbranch-no" title="branch not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >    for (const name of session.recordNames) {</span>
-<span class="cstat-no" title="statement not covered" >        const filePath = getTypes.Static[0] + name + '.json';</span>
-<span class="cstat-no" title="statement not covered" >        await EasyFs.makePathReal(name, getTypes.Static[0]);</span>
-<span class="cstat-no" title="statement not covered" >        EasyFs.writeJsonFile(filePath, recordStore.store[name]);</span>
+    if (!session.debug) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >        return;</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;
+    for (const name of session.recordNames) {
+        const filePath = getTypes.Static[0] + name + '.json';
+        await EasyFs.makePathReal(name, getTypes.Static[0]);
+        EasyFs.writeJsonFile(filePath, recordStore.store[name]);
+    }
+}
 &nbsp;
 export function perCompile() {
     recordStore.clear();
 }
 &nbsp;
-export async function postCompile() {
-    for (const name in recordStore.store) {
-        const filePath = getTypes.Static[0] + name + '.json';
-        await EasyFs.makePathReal(name, getTypes.Static[0]);
-        EasyFs.writeJsonFile(filePath, recordStore.store[name]);
-    }
-}</pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >export async function postCompile() {</span></span>
+<span class="cstat-no" title="statement not covered" >    for (const name in recordStore.store) {</span>
+<span class="cstat-no" title="statement not covered" >        const filePath = getTypes.Static[0] + name + '.json';</span>
+<span class="cstat-no" title="statement not covered" >        await EasyFs.makePathReal(name, getTypes.Static[0]);</span>
+<span class="cstat-no" title="statement not covered" >        EasyFs.writeJsonFile(filePath, recordStore.store[name]);</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+<span class="cstat-no" title="statement not covered" >}</span></pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at Mon Apr 18 2022 13:06:51 GMT+0300 (Israel Daylight Time)
+                at Mon Apr 18 2022 15:10:21 GMT+0300 (Israel Daylight Time)
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90.9% </span>
+                <span class="strong">95.45% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>40/44</span>
+                <span class='fraction'>42/44</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">42.85% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>3/6</span>
+                <span class='fraction'>3/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.66% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90.9% </span>
+                <span class="strong">95.45% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>40/44</span>
+                <span class='fraction'>42/44</span>
             </div>
         
             
@@ -128,28 +128,28 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import chalk from 'chalk';
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">33x</span></td><td class="text"><pre class="prettyprint lang-js">import chalk from 'chalk';
 &nbsp;
 export interface PreventLog {
     id?: string,
@@ -182,7 +182,7 @@ export function createNewPrint({id, text, type = "warn", errorName}: PreventLog)
         let about = '-'.repeat(10) + (type == 'error' ? chalk.bold(type<span class="branch-0 cbranch-no" title="branch not covered" >): type) + '</span>-'.repeat(10)
         return [logType,
             about + '\n' +
-            chalk.blue(splitColor.shift() || '') + '\n' + 
+            chalk.blue(splitColor.shift(<span class="branch-0 cbranch-no" title="branch not covered" >) || '')</span> + '\n' + 
             mainMessage + '\n' +
             chalk.red(`Error-Code: ${errorName}`) + '\n' +
             '-'.repeat(type.length+20) + '\n']
@@ -190,16 +190,16 @@ export function createNewPrint({id, text, type = "warn", errorName}: PreventLog)
 <span class="cstat-no" title="statement not covered" >    return ["do-nothing"]</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 &nbsp;
-export <span class="fstat-no" title="function not covered" >function LogToHTML(log: string){</span>
-<span class="cstat-no" title="statement not covered" >    return log.replace(/\n|&lt;line&gt;|&lt;color&gt;/, '&lt;br/&gt;')</span>
-<span class="cstat-no" title="statement not covered" >}</span></pre></td></tr></table></pre>
+export function LogToHTML(log: string){
+    return log.replace(/\n|&lt;line&gt;|&lt;color&gt;/, '&lt;br/&gt;')
+}</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at Mon Apr 18 2022 13:06:51 GMT+0300 (Israel Daylight Time)
+                at Mon Apr 18 2022 15:10:21 GMT+0300 (Israel Daylight Time)
             </div>
         <script src="../../prettify.js"></script>
         <script>

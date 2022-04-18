@@ -16,4 +16,5 @@
     function sendConnect(num = 3.3, key = "rgergrhe54rhgrrthgeg"){
         conServer(num, key).then(x => console.log(x))
     }
+    sendConnect()
 </script>

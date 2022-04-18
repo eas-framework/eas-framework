@@ -1,29 +1,50 @@
 import fetch from 'node-fetch'
-import {promises} from 'fs'
-import sourceMapSupport from 'source-map-support'; 
+import { promises } from 'fs'
+import sourceMapSupport from 'source-map-support';
 import { fileURLToPath } from 'url';
 import path from 'path';
-sourceMapSupport.install({hookRequire: true});
+import puppeteer from 'puppeteer'
 
+sourceMapSupport.install({ hookRequire: true });
+
+//activate server
+const { default: Server, Settings } = await import('../../dist/index.js');
+await Server({ SitePath: './tests/core/Website' });
+
+//load pages
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const {default: Server, Settings} = await import('../../dist/index.js');
-
-await Server({SitePath: './tests/core/Website'});
-
-
-if(process.argv.includes('coverage')){
+async function testPages(name = "test"){
     const paths = await promises.readFile(path.join(__dirname, 'Website', 'WWW', 'sitemap.txt'), 'utf8')
-    
-    
-    for(const p of paths.split('\n')){
-        const timeout = setTimeout(() => console.log('time-out: ', p), 1000)
-        await fetch(`http://localhost:${Settings.serve.port + p}`)
-        clearTimeout(timeout)
-    }
 
-    console.log('all-fetched')
+    const browser = await puppeteer.launch({ headless: true })
+    const pathSplit = paths.split('\n');
+    for (const index in pathSplit) {
+        const p = pathSplit[index];
+        const page = await browser.newPage()
+    
+        page.on('dialog', async (dialog) => {
+            await dialog.accept("This is a test");
+        });
+    
+        await page.goto(`http://localhost:${Settings.serve.port + p}`, { timeout: 5000, waitUntil: 'networkidle2' });
+        await page.screenshot({ path: `./tests/core/screenshots/${p.replace(/\//g, '_')}.png` })
+        page.close()
+
+        console.log(`${name}: ${index} of ${pathSplit.length}`)
+    }
+    
+    console.log(`${name}: done\n`)
 }
 
-if(!process.argv.includes('server'))
+if(!process.argv.includes('only'))
+    await testPages()
+
+if(process.argv.includes('with-production')){
+    Settings.development = false
+    await testPages('production')
+}
+
+//close server if this only a test
+if (!process.argv.includes('server'))
     process.exit(0)

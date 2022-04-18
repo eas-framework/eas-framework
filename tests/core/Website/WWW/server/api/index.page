@@ -17,4 +17,5 @@
     }
     search.addEventListener('input', updateLink);
     updateLink()
+    fetch(openLink.href)
 </script>

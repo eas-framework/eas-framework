@@ -220,7 +220,7 @@ async function markdownTheme(filePath: string, checked: boolean) {
         return;
 
     let fileName = filePath.substring(14);
-    if (fileName.startsWith('auto'))
+    if (fileName.startsWith('auto.'))
         fileName = fileName.substring(4)
     else
         fileName = '-' + fileName;
