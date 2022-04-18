@@ -1,6 +1,6 @@
 {
   "name": "@eas-framework/server",
-  "version": "0.0.0-development",
+  "version": "1.0.7",
   "description": "Node.js framework, with a lot of built in features",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,6 +15,11 @@
     "test:server": "npm test only server",
     "coverage": "c8 --reporter=lcov npm run test:dist rebuild coverage with-production",
     "semantic-release": "semantic-release"
+  },
+  "release": {
+    "branches": [
+      "master"
+    ]
   },
   "repository": {
     "type": "git",
@@ -71,6 +76,8 @@
     "workerpool": "^6.1.5"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/git": "^10.0.1",
     "@types/body-parser": "^1.19.1",
     "@types/compression": "^1.7.2",
     "@types/express-session": "^1.17.4",

@@ -19,3 +19,4 @@ Cargo.lock
 # mac files
 .DS_Store
 **/.DS_Store
+env.sh
