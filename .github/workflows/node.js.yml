@@ -28,4 +28,14 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build
-    - run: npm test:dist
+    - run: npm run coverage
+
+    - uses: actions/checkout@master
+    - uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+        directory: ./coverage # optional
+        flags: unittests # optional
+        name: codecov-umbrella # optional
+        fail_ci_if_error: true # optional (default = false)
+        verbose: true # optional (default = false)
