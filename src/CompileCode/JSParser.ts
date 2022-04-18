@@ -45,7 +45,7 @@ export default class JSParser {
         let count = 1;
         for (const i of allScript) {
 
-            if(i.eq.trim().length)
+            if (i.eq.trim().length)
                 WithInfo.Plus(
                     new StringTracker(null, `//!${i.lineInfo}\n`),
                     i
@@ -70,18 +70,21 @@ export default class JSParser {
 
             switch (i.name) {
                 case "print":
-                    substring = new StringTracker().Plus$`write(${substring});`;
+                    substring = new StringTracker().Plus$`write(${substring})`;
                     type = 'script';
                     break;
                 case "escape":
-                    substring = new StringTracker().Plus$`writeSafe(${substring});`;
+                    substring = new StringTracker().Plus$`writeSafe(${substring})`;
                     type = 'script';
                     break;
                 case "debug":
-                    substring = new StringTracker().Plus$`\nrun_script_name = \`${JSParser.fixText(substring)}\`;`
+                    substring = new StringTracker().Plus$`\nrun_script_name = \`${JSParser.fixText(substring)}\``
                     type = 'no-track';
                     break;
             }
+
+            if (type != 'text' && !substring.endsWith(';'))
+                substring.AddTextAfterNoTrack(';')
 
             this.values.push({
                 text: substring,
@@ -94,7 +97,7 @@ export default class JSParser {
         return text.replace(/\\/gi, '\\\\').replace(/`/gi, '\\`').replace(/\u0024/gi, '\\u0024');
     }
 
-    static fixTextSimpleQuotes(text: StringTracker | string){
+    static fixTextSimpleQuotes(text: StringTracker | string) {
         return text.replace(/\\/gi, '\\\\').replace(/"/gi, '\\"');
     }
 
@@ -234,7 +237,7 @@ export class EnableGlobalReplace {
     }
 
     private RestoreAsCode(Data: GlobalReplaceArray) {
-        return new StringTracker(Data.text.StartInfo).Plus$`<%${Data.type == 'no-track' ? '!': ''}${Data.text}%>`;
+        return new StringTracker(Data.text.StartInfo).Plus$`<%${Data.type == 'no-track' ? '!' : ''}${Data.text}%>`;
     }
 
     public RestoreCode(code: StringTracker) {

@@ -1,5 +1,5 @@
 export default {
-    development: true, // development mode, if off, then is optimize for production
+    development: false, // development mode, if off, then is optimize for production
 
     general: {
         pageInRam: true,
@@ -63,7 +63,15 @@ export default {
     implDev: {
         //custom settings for development
     }, 
-    impProd: {
+    implProd: {
         //custom settings for production
+        compile: {
+            compileSyntax: ["TypeScript"],
+            plugins: ["MinAll"],
+            define: {
+                name: 'cool',
+                version: 20
+            }
+        }
     }
 }

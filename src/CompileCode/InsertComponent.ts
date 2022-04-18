@@ -20,6 +20,9 @@ interface DefaultValues {
     elements: string[]
 }
 
+const searchSpecificComponents = new RegExp(`<([\\p{Lu}_\\-:0-9]|${AllBuildIn.join('|')})`, 'u')
+const searchAllComponents = /<[\p{L}_\-:0-9]/u
+
 
 export default class InsertComponent extends InsertComponentBase {
     public dirFolder: string;
@@ -30,13 +33,15 @@ export default class InsertComponent extends InsertComponentBase {
     public SomePlugins: (...names: string[]) => boolean;
     public isTs: () => boolean;
 
-    private regexSearch: RegExp;
+
+    get regexSearch(){
+        return this.SomePlugins("MinHTML", "MinAll") ? searchAllComponents: searchSpecificComponents
+    }
 
     constructor(PluginBuild: AddPlugin) {
         super();
         this.dirFolder = 'Components';
         this.PluginBuild = PluginBuild;
-        this.regexSearch = new RegExp(`<([\\p{Lu}_\\-:0-9]|${AllBuildIn.join('|')})`, 'u')
     }
 
     FindSpecialTagByStart(string: string) {
@@ -74,13 +79,24 @@ export default class InsertComponent extends InsertComponentBase {
         return code;
     }
 
+    CheckMinHTMLText(code: StringTracker) {
+        if (!this.SomePlugins("MinHTML", "MinAll")) {
+            return code;
+        }
+
+        while(/[ \n]{2,}/.test(code.eq)){
+            code = code.replace(/[ \n]{2,}/gi, ' ')
+        }
+    
+        return code;
+    }
+
     async ReBuildTag(type: StringTracker, dataTag: StringTracker, dataTagSpliced: TagDataParser, BetweenTagData: StringTracker, SendDataFunc: (text: StringTracker) => Promise<StringTracker>) {
-        if (BetweenTagData && this.SomePlugins("MinHTML", "MinAll")) {
-            BetweenTagData = BetweenTagData.SpaceOne(' ');
+        if (this.SomePlugins("MinHTML", "MinAll")) {
+            if(BetweenTagData)
+                BetweenTagData = BetweenTagData.SpaceOne(' ');
 
             dataTag = dataTagSpliced.rebuildSpace();
-        } else if (dataTag.eq.length) {
-            dataTag = new StringTracker(type.DefaultInfoText, ' ').Plus(dataTag);
         }
 
         const tagData = new StringTracker(type.DefaultInfoText).Plus(
@@ -176,6 +192,16 @@ export default class InsertComponent extends InsertComponentBase {
             fileData = compiledString;
             SearchInComment = checkComponents;
         } else {
+
+            //rebuild formatted component
+            const ReBuildTag = () => this.ReBuildTag(type, dataTag, dataParser, BetweenTagData, BetweenTagData => this.StartReplace(BetweenTagData, pathName, sessionInfo));
+
+            //check if component not starts with upper case
+            const firstChar = type.at(0).eq
+            if(firstChar != firstChar.toUpperCase()){
+                return ReBuildTag()
+            }
+
             let folder: boolean | string = dataParser.popHaveDefault('folder', '.');
 
             const tagPath = (folder ? folder + '/' : '') + type.replace(/:/gi, "/").eq;
@@ -194,8 +220,7 @@ export default class InsertComponent extends InsertComponentBase {
                     });
                     print[funcName](printText);
                 }
-
-                return this.ReBuildTag(type, dataTag, dataParser, BetweenTagData, BetweenTagData => this.StartReplace(BetweenTagData, pathName, sessionInfo));
+                return ReBuildTag()
             }
 
             if (!sessionInfo.cacheComponent[AllPathTypes.SmallPath]?.mtimeMs)
@@ -292,7 +317,7 @@ export default class InsertComponent extends InsertComponentBase {
 
             if (startFrom.at(findEndOfSmallTag - 1).eq == '/') {//small tag
                 promiseBuild.push(
-                    this.CheckMinHTML(cutStartData),
+                    this.CheckMinHTML(this.CheckMinHTMLText(cutStartData)),
                     this.insertTagData(pathName, tagType, inTag, { sessionInfo })
                 );
 
@@ -336,6 +361,11 @@ export default class InsertComponent extends InsertComponentBase {
 
         for (const i of promiseBuild) {
             textBuild = this.CheckDoubleSpace(textBuild, await i);
+        }
+
+        //If this only text then delete double spacing
+        if(promiseBuild.length === 0 && !this.FindSpecialTagByStart(data.eq.trim())){
+            data = this.CheckMinHTMLText(data)
         }
 
         return this.CheckMinHTML(this.CheckDoubleSpace(textBuild, data));

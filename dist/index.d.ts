@@ -1410,11 +1410,12 @@ declare module "@eas-framework/server/CompileCode/InsertComponent" {
         GetPlugin: (name: string) => any;
         SomePlugins: (...names: string[]) => boolean;
         isTs: () => boolean;
-        private regexSearch;
+        get regexSearch(): RegExp;
         constructor(PluginBuild: AddPlugin);
         FindSpecialTagByStart(string: string): string[];
         findIndexSearchTag(query: string, tag: StringTracker): number;
         CheckMinHTML(code: StringTracker): StringTracker;
+        CheckMinHTMLText(code: StringTracker): StringTracker;
         ReBuildTag(type: StringTracker, dataTag: StringTracker, dataTagSpliced: TagDataParser, BetweenTagData: StringTracker, SendDataFunc: (text: StringTracker) => Promise<StringTracker>): Promise<StringTracker>;
         exportDefaultValues(fileData: StringTracker, foundSetters?: DefaultValues[]): any;
         addDefaultValues(arrayValues: DefaultValues[], fileData: StringTracker): StringTracker;

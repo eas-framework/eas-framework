@@ -9,8 +9,7 @@ interface SplitText {
     is_skip: boolean
 }
 
-const cpuLength = Math.max(1, Math.floor(cpus().length / 2));
-const parse_stream = workerPool.pool(SystemData + '/../static/wasm/reader/worker.js', { maxWorkers: cpuLength });
+const parse_stream = workerPool.pool(SystemData + '/../static/wasm/reader/worker.js', { maxWorkers: cpus().length });
 
 export async function ParseTextStream(text: string): Promise<SplitText[]> {
     return JSON.parse(await parse_stream.exec('build_stream', [text]));
