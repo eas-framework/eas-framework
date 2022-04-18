@@ -1,0 +1,5 @@
+@[model='../server' title='Import Extension' codeFile]
+<@body/>
+@{
+    echoData()
+}

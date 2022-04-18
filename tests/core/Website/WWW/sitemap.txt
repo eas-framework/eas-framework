@@ -1,4 +1,5 @@
 /compile/error/index
+/compile/import_extension/index
 /compile/import_page/index
 /compile/index
 /compile/md/index

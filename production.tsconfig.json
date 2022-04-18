@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "strict": false,
+        "out": "dist/index.js",
+        "target": "ESNEXT",
+        "module": "system",
+        "declaration": true,
+        "preserveSymlinks": true,
+        "esModuleInterop": true,
+        "downlevelIteration": true,
+        "noUnusedLocals": false,
+        "noImplicitAny": false,
+        "noUnusedParameters": false,
+        "preserveConstEnums": true,
+        "skipLibCheck": true,
+        "moduleResolution": "node",
+        "sourceMap": false,
+        "allowUnusedLabels": true,
+        "allowUmdGlobalAccess": false,
+        "forceConsistentCasingInFileNames": true,
+        "allowSyntheticDefaultImports": true,
+        "emitDeclarationOnly": false
+    },
+    "include": [
+        "src"
+    ]
+}

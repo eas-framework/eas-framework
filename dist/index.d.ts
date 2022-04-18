@@ -1053,43 +1053,6 @@ declare module "@eas-framework/server/ImportFiles/ForStatic/Svelte/ssr" {
     import { SessionBuild } from "@eas-framework/server/CompileCode/Session";
     export default function registerExtension(filePath: string, smallPath: string, sessionInfo: SessionBuild): Promise<string>;
 }
-declare module "@eas-framework/server/ImportFiles/ForStatic/Script" {
-    export function BuildJS(inStaticPath: string, isDebug: boolean): Promise<{
-        thisFile: any;
-    }>;
-    export function BuildTS(inStaticPath: string, isDebug: boolean): Promise<{
-        thisFile: any;
-    }>;
-    export function BuildJSX(inStaticPath: string, isDebug: boolean): Promise<{
-        thisFile: any;
-    }>;
-    export function BuildTSX(inStaticPath: string, isDebug: boolean): Promise<{
-        thisFile: any;
-    }>;
-}
-declare module "@eas-framework/server/ImportFiles/ForStatic/Svelte/client" {
-    export default function BuildScript(inStaticPath: string, isDebug: boolean): Promise<{
-        thisFile: any;
-    }>;
-}
-declare module "@eas-framework/server/ImportFiles/ForStatic/Style" {
-    export function BuildStyleSass(inputPath: string, type: "sass" | "scss" | "css", isDebug: boolean): Promise<{
-        [key: string]: number;
-    }>;
-}
-declare module "@eas-framework/server/ImportFiles/StaticFiles" {
-    import { Response, Request } from '@tinyhttp/app';
-    export default function BuildFile(SmallPath: string, isDebug: boolean, fullCompilePath?: string): Promise<boolean>;
-    interface buildIn {
-        path?: string;
-        ext?: string;
-        type: string;
-        inServer?: string;
-    }
-    export function serverBuild(Request: Request, isDebug: boolean, path: string, checked?: boolean): Promise<null | buildIn>;
-    export function rebuildFile(SmallPath: string, fullCompilePath: string, isDebug: boolean): Promise<boolean>;
-    export function GetFile(SmallPath: string, isDebug: boolean, Request: Request, Response: Response): Promise<void>;
-}
 declare module "@eas-framework/server/BuildInComponents/Components/svelte" {
     import StringTracker from "@eas-framework/server/EasyDebug/StringTracker";
     import { BuildInComponent } from "@eas-framework/server/CompileCode/XMLHelpers/CompileTypes";
@@ -1465,6 +1428,43 @@ declare module "@eas-framework/server/CompileCode/InsertModels" {
     export function isTs(): boolean;
     export function Insert(data: string, fullPathCompile: string, nestedPage: boolean, nestedPageData: string, sessionInfo: SessionBuild, dynamicCheck?: boolean): Promise<StringTracker>;
 }
+declare module "@eas-framework/server/ImportFiles/ForStatic/Script" {
+    export function BuildJS(inStaticPath: string, isDebug: boolean): Promise<{
+        thisFile: any;
+    }>;
+    export function BuildTS(inStaticPath: string, isDebug: boolean): Promise<{
+        thisFile: any;
+    }>;
+    export function BuildJSX(inStaticPath: string, isDebug: boolean): Promise<{
+        thisFile: any;
+    }>;
+    export function BuildTSX(inStaticPath: string, isDebug: boolean): Promise<{
+        thisFile: any;
+    }>;
+}
+declare module "@eas-framework/server/ImportFiles/ForStatic/Svelte/client" {
+    export default function BuildScript(inStaticPath: string, isDebug: boolean): Promise<{
+        thisFile: any;
+    }>;
+}
+declare module "@eas-framework/server/ImportFiles/ForStatic/Style" {
+    export function BuildStyleSass(inputPath: string, type: "sass" | "scss" | "css", isDebug: boolean): Promise<{
+        [key: string]: number;
+    }>;
+}
+declare module "@eas-framework/server/ImportFiles/StaticFiles" {
+    import { Response, Request } from '@tinyhttp/app';
+    export default function BuildFile(SmallPath: string, isDebug: boolean, fullCompilePath?: string): Promise<boolean>;
+    interface buildIn {
+        path?: string;
+        ext?: string;
+        type: string;
+        inServer?: string;
+    }
+    export function serverBuild(Request: Request, isDebug: boolean, path: string, checked?: boolean): Promise<null | buildIn>;
+    export function rebuildFile(SmallPath: string, fullCompilePath: string, isDebug: boolean): Promise<boolean>;
+    export function GetFile(SmallPath: string, isDebug: boolean, Request: Request, Response: Response): Promise<void>;
+}
 declare module "@eas-framework/server/MainBuild/ImportModule" {
     export function StartRequire(array: string[], isDebug: boolean): Promise<any[]>;
     export function GetSettings(filePath: string, isDebug: boolean): Promise<any>;
@@ -1782,10 +1782,14 @@ declare module "@eas-framework/server/MainBuild/ListenGreenLock" {
 declare module "@eas-framework/server/MainBuild/Server" {
     import { Export as Settings } from "@eas-framework/server/MainBuild/Settings";
     import { UpdateGreenLock } from "@eas-framework/server/MainBuild/ListenGreenLock";
+    import http from 'http';
     export default function StartServer({ SitePath, HttpServer }?: {
         SitePath?: string;
         HttpServer?: typeof UpdateGreenLock;
-    }): Promise<void>;
+    }): Promise<{
+        close: () => void;
+        server: http.Server;
+    }>;
     export { Settings };
 }
 declare module "@eas-framework/server" {

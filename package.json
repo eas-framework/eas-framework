@@ -12,6 +12,8 @@
     "production": "node build/production.js",
     "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
     "test": "npm run build && npm run test:dist",
+    "test:server": "npm test server",
+    "coverage": "c8 --reporter=lcov npm run test:dist rebuild coverage",
     "semantic-release": "semantic-release"
   },
   "repository": {
@@ -48,6 +50,7 @@
     "github-markdown-css": "^5.1.0",
     "greenlock-express": "^4.0.3",
     "highlight.js": "^11.4.0",
+    "json5": "^2.2.1",
     "markdown-it": "^12.3.2",
     "markdown-it-abbr": "^1.0.4",
     "markdown-it-anchor": "^8.4.1",
@@ -81,10 +84,12 @@
     "@types/workerpool": "^6.1.0",
     "@typescript-eslint/eslint-plugin": "^5.3.0",
     "@typescript-eslint/parser": "^5.3.0",
+    "c8": "^7.11.0",
     "esbuild-wasm": "^0.14.36",
     "fs-extra": "^10.0.0",
-    "typescript": "^4.6.2",
-    "semantic-release": "^19.0.2"
+    "node-fetch": "^3.2.3",
+    "semantic-release": "^19.0.2",
+    "typescript": "^4.6.2"
   },
   "homepage": "https://eas-framework.ml"
 }

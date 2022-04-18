@@ -1,2 +1,0 @@
-function conServer(...args){return connector("conServer", args)}function sendConnect(num=3.3,key="rgergrhe54rhgrrthgeg"){conServer(num,key).then(x=>console.log(x))}
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJpbmRleC5wYWdlIn0=

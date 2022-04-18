@@ -1,24 +1,22 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { BuildInComponent, StringNumberMap } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { BuildInComponent } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { CreateFilePath } from '../../CompileCode/XMLHelpers/CodeInfoAndDebug';
-import { BasicSettings, getTypes, SystemData } from '../../RunTimeBuild/SearchFileSystem';
+import { BasicSettings, getTypes } from '../../RunTimeBuild/SearchFileSystem';
 import { relative } from 'path';
 import Base64Id from '../../StringMethods/Id';
-import * as svelte from 'svelte/compiler';
-import path from 'path';
 import registerExtension from '../../ImportFiles/ForStatic/Svelte/ssr';
-import { rebuildFile } from '../../ImportFiles/StaticFiles';
-import ImportWithoutCache, { resolve, clearModule } from '../../ImportFiles/redirectCJS';
+import ImportWithoutCache, {  } from '../../ImportFiles/redirectCJS';
 import { SessionBuild } from '../../CompileCode/Session';
 import { Capitalize } from '../../ImportFiles/ForStatic/Svelte/preprocess';
 import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
+import JSON5 from 'json5'
 
 async function ssrHTML(dataTag: TagDataParser, FullPath: string, smallPath: string,sessionInfo: SessionBuild) {
     const getV = (name: string) => {
         const gv = (name: string) => dataTag.popAnyDefault(name,'').trim(),
             value = gv('ssr' + Capitalize(name)) || gv(name);
 
-        return value ? eval(`({${value}})`) : {};
+        return value ? JSON5.parse(`{${value}}`) : {};
     };
     const buildPath = await registerExtension(FullPath, smallPath, sessionInfo);
     const mode = await ImportWithoutCache(buildPath);

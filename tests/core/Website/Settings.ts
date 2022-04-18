@@ -1,5 +1,5 @@
 export default {
-    development: false, // development mode, if off, then is optimize for production
+    development: !process.argv.includes('coverage'), // development mode, if off, then is optimize for production
 
     general: {
         pageInRam: true,

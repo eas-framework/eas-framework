@@ -7,6 +7,7 @@ import { print } from '../OutputInput/Console';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import formidable from 'formidable';
 import { UpdateGreenLock } from './ListenGreenLock';
+import http from 'http';
 
 
 async function requestAndSettings(req: Request, res: Response) {
@@ -59,7 +60,7 @@ async function filerURLRules(req: Request, res: Response, url: string) {
     await fileByUrl.DynamicPage(req, res, url.substring(1));
 }
 
-let appOnline
+let appOnline: {close: () => void, server: http.Server}
 
 /**
  * It starts the server and then calls StartListing
@@ -126,7 +127,8 @@ export default async function StartServer({ SitePath = './', HttpServer = Update
     BasicSettings.WebSiteFolder = SitePath;
     buildFirstLoad();
     await requireSettings();
-    StartApp(HttpServer);
+    await StartApp(HttpServer);
+    return appOnline
 }
 
 export { Settings };
