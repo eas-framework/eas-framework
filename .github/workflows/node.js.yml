@@ -29,12 +29,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build App
+      - name: Build
         run: npm run build
-        
+
       - name: Coverage
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: npm run coverage
-        run: npx codecov
-        
+        run: npm run coverage && npx codecov        
