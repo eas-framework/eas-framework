@@ -1,2 +1,0 @@
-const search=document.querySelector("#search");const openLink=document.querySelector("#openLink");function updateLink(){const link="/server/api/search/"+search.value;openLink.href=link;openLink.innerText=link}search.addEventListener("input",updateLink);updateLink();fetch(openLink.href)
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJpbmRleC5wYWdlIn0=

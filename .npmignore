@@ -3,7 +3,15 @@
 /tests
 /projects
 /coverage
+/.coverage
 /.vscode
+/.github
 /examples
 tsconfig.json
 production.tsconfig.json
+.releaserc
+.gitignore
+.c8rc.json
+release.sh
+
+dist/
