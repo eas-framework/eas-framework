@@ -1,5 +1,4 @@
 node_modules/
-coverage/
 .coverage/
 tests/core/screenshots/*.png
 *.cpuprofile
@@ -21,4 +20,3 @@ Cargo.lock
 # mac files
 .DS_Store
 **/.DS_Store
-release.sh

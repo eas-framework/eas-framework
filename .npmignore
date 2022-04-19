@@ -12,6 +12,3 @@ production.tsconfig.json
 .releaserc
 .gitignore
 .c8rc.json
-release.sh
-
-dist/
