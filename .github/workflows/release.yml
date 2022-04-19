@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: "17"
       - name: Install modules
-        run: npm ci
+        run: npm ci && npm run postinstall
       - name: Build
         run: npm run build
       - name: Release
