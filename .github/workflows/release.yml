@@ -13,9 +13,9 @@ jobs:
         with:
           node-version: "17"
       - name: Install modules
-        run: npm ci && npm run postinstall
+        run: npm ci
       - name: Build
-        run: npm run build
+        run: npm run build && npm run postinstall
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
