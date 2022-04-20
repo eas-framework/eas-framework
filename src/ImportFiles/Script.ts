@@ -128,11 +128,19 @@ export default async function LoadImport(importFrom: string[], InStaticPath: str
   const extension = path.extname(InStaticPath).substring(1), thisCustom = isPathCustom(originalPath, extension) || !['js', 'ts'].includes(extension);
   const SavedModulesPath = path.join(typeArray[2], InStaticPath), filePath = path.join(typeArray[0], InStaticPath);
 
-  if(importFrom.includes(SavedModulesPath)){
+  if (importFrom.includes(SavedModulesPath)) {
+    /**
+     * return a string of the stack importing this module
+     */
+    const getStackString = () => [SavedModulesPath].concat(
+      importFrom.slice(importFrom.indexOf(SavedModulesPath))
+        .map(x => BasicSettings.fullWebSitePath + x)
+    ).join(' ->\n');
+
     const [funcName, printText] = createNewPrint({
       type: 'error',
       errorName: 'circle-import',
-      text: `Import '${SavedModulesPath}' creates a circular dependency <color>${importFrom.slice(importFrom.indexOf(SavedModulesPath)).concat(filePath).join(' ->\n')}`
+      text: `Import '${SavedModulesPath}' creates a circular dependency <color>${getStackString()}`
     });
     print[funcName](printText);
     SavedModules[SavedModulesPath] = null
@@ -208,17 +216,17 @@ export default async function LoadImport(importFrom: string[], InStaticPath: str
       return;
     }
 
-    try { 
+    try {
       MyModule = await MyModule(requireMap);
     }
-     catch (err) {
+    catch (err) {
       const [funcName, printText] = createNewPrint({
         type: 'error',
         errorName: 'import-error',
         text: `${err.message}<color>${importFrom.concat(filePath).reverse().join(' ->\n')}`
       });
       print[funcName](printText);
-     }
+    }
   }
 
   //in case on an error - release the async
