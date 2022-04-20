@@ -17,6 +17,8 @@ import { debugSiteMap } from '../RunTimeBuild/SiteMap';
 import { settings as defineSettings } from '../CompileCode/CompileScript/PageBase';
 import {Export as ExportRam} from '../RunTimeBuild/FunctionScript'
 
+export const printLogs = debug && process.argv.includes('logs')
+
 const
     CookiesSecret = uuidv4().substring(0, 32),
     SessionSecret = uuidv4(),

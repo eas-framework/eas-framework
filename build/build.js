@@ -33,6 +33,7 @@ build({
     minify: production,
     sourcemap: production ? undefined: 'inline',
     define: {
+        debug: !production,
         esbuild: true,
         packageName: `'${packageName}'`
     }

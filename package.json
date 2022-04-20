@@ -7,7 +7,7 @@
   "scripts": {
     "postinstall": "node dist/scripts/install.js || echo 'Package is not built yet'",
     "prepare": "[ $CI = true ] || [ -d '.husky/_' ] || husky install",
-    "build": "node build",
+    "build": "node build logs",
     "build:ts": "tsc --project production.tsconfig.json",
     "commit": "node build/commit.js",
     "production": "node build/production.js",

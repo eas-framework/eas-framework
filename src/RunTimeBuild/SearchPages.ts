@@ -12,16 +12,19 @@ import { CheckDependencyChange, pageDeps } from '../OutputInput/StoreDeps';
 import { ExportSettings } from '../MainBuild/SettingsTypes';
 import { argv } from 'process';
 import { createSiteMap } from './SiteMap';
-import { extensionIs, isFileType, RemoveEndType } from './FileTypes';
+import { extensionIs, isFileType } from './FileTypes';
 import { perCompile, postCompile, perCompilePage, postCompilePage } from '../BuildInComponents';
-import { PageTemplate } from '../CompileCode/ScriptTemplate';
 import StringTracker from '../EasyDebug/StringTracker';
+import { printLogs } from '../MainBuild/Settings';
 
 async function compileFile(filePath: string, arrayType: string[], { isDebug, hasSessionInfo, nestedPage, nestedPageData, dynamicCheck }: { isDebug?: boolean, hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string, dynamicCheck?: boolean } = {}) {
+    let calc_time: number; // calculate time for each file
+    if (printLogs) calc_time = performance.now();
+
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
 
     const html = await EasyFs.readFile(FullFilePath, 'utf8');
-    const ExcluUrl = (nestedPage ? nestedPage + '<line>' : '') + arrayType[2] + '/' + filePath;
+    const SmallPath = (nestedPage ? nestedPage + '<line>' : '') + arrayType[2] + '/' + filePath;
 
     const sessionInfo = hasSessionInfo ?? new SessionBuild(arrayType[2] + '/' + filePath, FullFilePath, arrayType[2], isDebug, GetPlugin("SafeDebug"));
     await sessionInfo.dependence('thisPage', FullFilePath);
@@ -32,9 +35,11 @@ async function compileFile(filePath: string, arrayType: string[], { isDebug, has
 
     if (!nestedPage && CompiledData.length) {
         await EasyFs.writeFile(FullPathCompile, CompiledData.StringWithTack(FullPathCompile));
-        pageDeps.update(ExcluUrl, sessionInfo.dependencies);
+        pageDeps.update(SmallPath, sessionInfo.dependencies);
     }
 
+    if (printLogs) // print time that each file took
+        console.log('file build: ' + ((performance.now() - calc_time)/1000).toFixed(3) + 'ms', filePath);
     return { CompiledData, sessionInfo };
 }
 
@@ -45,26 +50,29 @@ function RequireScript(script: string) {
 async function FilesInFolder(arrayType: string[], path: string, state: CompileState) {
     const allInFolder = await EasyFs.readdir(arrayType[0] + path, { withFileTypes: true });
 
+    const promises = [];
     for (const i of <Dirent[]>allInFolder) {
         const n = i.name, connect = path + n;
         if (i.isDirectory()) {
             await EasyFs.mkdir(arrayType[1] + connect);
-            await FilesInFolder(arrayType, connect + '/', state);
+            promises.push(FilesInFolder(arrayType, connect + '/', state));
         }
         else {
             if (isFileType(BasicSettings.pageTypesArray, n)) {
                 state.addPage(connect, arrayType[2]);
                 if (await CheckDependencyChange(arrayType[2] + '/' + connect)) //check if not already compile from a 'in-file' call
-                    await compileFile(connect, arrayType, { dynamicCheck: !extensionIs(n, BasicSettings.pageTypes.page) });
+                    promises.push(compileFile(connect, arrayType, { dynamicCheck: !extensionIs(n, BasicSettings.pageTypes.page) }));
             } else if (arrayType == getTypes.Static && isFileType(BasicSettings.ReqFileTypesArray, n)) {
                 state.addImport(connect);
-                await RequireScript(connect);
+                promises.push(RequireScript(connect));
             } else {
                 state.addFile(connect);
-                await StaticFiles(connect, false);
+                promises.push(StaticFiles(connect, false));
             }
         }
     }
+
+    await Promise.all(promises);
 }
 
 async function RequireScripts(scripts: string[]) {
@@ -82,13 +90,13 @@ async function CreateCompile(t: string, state: CompileState) {
 /**
  * when page call other page;
  */
-export async function FastCompileInFile(path: string, arrayType: string[],  { hasSessionInfo, nestedPage, nestedPageData, dynamicCheck }: { hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string, dynamicCheck?: boolean } = {}) {
+export async function FastCompileInFile(path: string, arrayType: string[], { hasSessionInfo, nestedPage, nestedPageData, dynamicCheck }: { hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string, dynamicCheck?: boolean } = {}) {
     await EasyFs.makePathReal(path, arrayType[1]);
-    return await compileFile(path, arrayType, {isDebug:true, hasSessionInfo, nestedPage, nestedPageData, dynamicCheck});
+    return await compileFile(path, arrayType, { isDebug: true, hasSessionInfo, nestedPage, nestedPageData, dynamicCheck });
 }
 
 export async function FastCompile(path: string, arrayType: string[], dynamicCheck?: boolean) {
-    await FastCompileInFile(path, arrayType, {dynamicCheck});
+    await FastCompileInFile(path, arrayType, { dynamicCheck });
     ClearWarning();
 }
 
