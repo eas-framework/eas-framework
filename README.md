@@ -37,7 +37,7 @@ npm i @eas-framework/server
 
 A lot of build-in components - make you write less.
 
-- SSR syntax similar to Razor
+- SSR syntax similar to Razor/ASPX
 - Built in support for SASS
 - Built in support for JSX, Svelte
 - Built in support for TypeScript
@@ -52,4 +52,4 @@ A lot of build-in components - make you write less.
 
 You can see the documentation [here](https://eas-framework.ml/docs).
 
-**Documentation website is on build**
+**Documentation website on build**
