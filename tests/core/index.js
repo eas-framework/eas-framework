@@ -8,7 +8,7 @@ import puppeteer from 'puppeteer'
 sourceMapSupport.install({ hookRequire: true });
 
 //activate server
-const { default: Server, Settings, waitProductionPromise } = await import('../../dist/index.js');
+const { default: Server, Settings, waitProductionBuild } = await import('../../dist/index.js');
 await Server({ SitePath: './tests/core/Website' });
 
 //load pages
@@ -31,7 +31,7 @@ async function testPages(name = "test"){
         await page.screenshot({ path: `./tests/core/screenshots/${p.replace(/\//g, '_')}.png` })
         page.close()
 
-        console.log(`${name}: ${index} of ${pathSplit.length}`)
+        console.log(`${name}: ${index} of ${pathSplit.length} - ${p}`)
     }
     
     console.log(`${name}: done\n`)
@@ -42,7 +42,7 @@ if(!process.argv.includes('only'))
 
 if(process.argv.includes('with-production')){
     Settings.development = false
-    await waitProductionPromise()
+    await waitProductionBuild()
 
     await testPages('production')
 }

@@ -324,8 +324,11 @@ export async function requireSettings() {
     }
 }
 
-export async function waitProductionPromise(){
-    await compilationScan;
+/**
+ * If you change to production build on run time, this you need to call this to make sure the production build is used
+ */
+export async function waitProductionBuild(){
+    await (await compilationScan)?.();
 }
 
 export function buildFirstLoad() {
