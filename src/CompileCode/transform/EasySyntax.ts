@@ -1,5 +1,10 @@
+import path from 'path';
 import { customTypes } from '../../ImportFiles/CustomImport/Extension/index';
 import { EndOfBlock, EndOfDefSkipBlock, ParseTextStream, ReBuildCodeString } from './EasyScript';
+
+export const SyntaxSettings: {pathAliases: { [key: string]: string }} = {
+    pathAliases:  {}
+}
 
 export default class EasySyntax {
     private Build: ReBuildCodeString;
@@ -8,11 +13,27 @@ export default class EasySyntax {
         const parseArray = await ParseTextStream(code);
         this.Build = new ReBuildCodeString(parseArray);
 
+        this.actionStringImport = this.actionStringImport.bind(this);
+        this.actionStringImportAll = this.actionStringImportAll.bind(this);
         this.actionStringExport = this.actionStringExport.bind(this);
         this.actionStringExportAll = this.actionStringExportAll.bind(this);
     }
 
+    private changeAlias(index: string) {
+        let original = this.Build.AllInputs[index]
+
+        for (const start in SyntaxSettings.pathAliases) {
+            if (original.substring(1).startsWith(start)) {
+                original = original[0] + path.join(SyntaxSettings.pathAliases[start], original.substring(start.length + 1))
+                break
+            }
+        }
+
+        this.Build.AllInputs[index] = original
+    }
+
     private actionStringImport(replaceToType: string, dataObject: string, index: string) {
+        this.changeAlias(index);
         return `var ${dataObject} = await ${replaceToType}(<|${index}||>)`;
     }
 
@@ -21,6 +42,7 @@ export default class EasySyntax {
     }
 
     private actionStringImportAll(replaceToType: string, index: string) {
+        this.changeAlias(index);
         return `await ${replaceToType}(<|${index}||>)`;
     }
 

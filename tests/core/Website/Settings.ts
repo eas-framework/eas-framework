@@ -13,6 +13,9 @@ export default {
         define: { // global define
             name: 'cool',
             version: 20
+        },
+        pathAliases: { // esm path aliases (not for dynamic imports)
+            "@imr": "/server/import/"
         }
     },
 

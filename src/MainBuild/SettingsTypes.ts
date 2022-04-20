@@ -75,6 +75,7 @@ interface GlobalSettings {
             "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning" | "markdown-parser")[],
         plugins?: pluginsOptions[]
         define: {[key: string]: string | number | boolean | null}
+        pathAliases?: { [key: string]: string }
     },
     routing?: {
         rules?: {[key: string]: ((url: string, req?: Request, res?: Response<any>) => string | Promise<string>)},

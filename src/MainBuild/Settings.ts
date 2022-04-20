@@ -16,6 +16,7 @@ import { ExportSettings } from './SettingsTypes';
 import { debugSiteMap } from '../RunTimeBuild/SiteMap';
 import { settings as defineSettings } from '../CompileCode/CompileScript/PageBase';
 import {Export as ExportRam} from '../RunTimeBuild/FunctionScript'
+import { SyntaxSettings } from '../CompileCode/transform/EasySyntax';
 
 export const printLogs = debug && process.argv.includes('logs')
 
@@ -137,6 +138,12 @@ export const Export: ExportSettings = {
         },
         set define(value) {
             defineSettings.define = value;
+        },
+        get pathAliases(){
+            return SyntaxSettings.pathAliases
+        },
+        set pathAliases(value){
+            SyntaxSettings.pathAliases = value
         }
     },
     routing: {
