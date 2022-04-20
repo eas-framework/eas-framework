@@ -1,5 +1,4 @@
 import { customTypes } from '../../ImportFiles/CustomImport/Extension/index';
-import { BaseReader } from '../BaseReader/Reader';
 import { EndOfBlock, EndOfDefSkipBlock, ParseTextStream, ReBuildCodeString } from './EasyScript';
 
 export default class EasySyntax {
@@ -35,7 +34,7 @@ export default class EasySyntax {
         let match: RegExpMatchArray;
 
         function Rematch() {
-            match = newString.match(new RegExp(`${type}[ \\n]+([\\*]{0,1}[\\p{L}0-9_,\\{\\} \\n]+)[ \\n]+from[ \\n]+<\\|([0-9]+)\\|\\|>`, 'u'));
+            match = newString.match(new RegExp(`${type}[ \\n]+(?!type )([\\*]{0,1}[\\p{L}0-9_,\\{\\} \\n]+)[ \\n]+from[ \\n]+<\\|([0-9]+)\\|\\|>`, 'u'));
         }
 
         Rematch();
