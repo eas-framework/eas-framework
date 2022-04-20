@@ -1,3 +1,11 @@
+import {name} from '../../../package.json'
+import {Settings} from '@eas-framework/server'
+Settings.compile.compileSyntax.push("TypeScript")
+
+import {func} from './WWW/server/import/from1.serv.ts'
+import {test} from './testImport.ts'
+console.log(name, func, test)
+
 export default {
     development: !process.argv.includes('prod'), // development mode, if off, then is optimize for production
 

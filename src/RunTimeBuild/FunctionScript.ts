@@ -110,7 +110,7 @@ const GlobalVar = {};
 
 function getFullPathCompile(url: string) {
     const SplitInfo = SplitFirst('/', url);
-    const typeArray = getTypes[SplitInfo[0]];
+    const typeArray = getTypes[SplitInfo[0]] ?? getTypes.Static;
     return typeArray[1] + SplitInfo[1] + '.cjs';
 }
 

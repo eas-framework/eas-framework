@@ -280,7 +280,7 @@ function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'ignore' 
 
 // read the settings of the website
 export async function requireSettings() {
-    const Settings: ExportSettings = await GetSettings(Export.settingsPath, DevMode_);
+    const Settings: ExportSettings = await GetSettings(Export);
     if(Settings == null) return;
 
     if (Settings.development)

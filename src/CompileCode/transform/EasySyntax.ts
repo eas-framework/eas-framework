@@ -186,7 +186,7 @@ export default class EasySyntax {
             }
 
             const beforeClose = afterMatch.substring(0, closeIndex), afterClose = afterMatch.substring(closeIndex);
-            newString = `${beforeMatch + removeExport + beforeClose};exports.${match[3]}=${match[3]}${afterClose}`;
+            newString = `${beforeMatch + removeExport + beforeClose}exports.${match[3]}=${match[3]}${afterClose}`;
 
             Rematch();
         }
@@ -282,6 +282,6 @@ export default class EasySyntax {
         await builder.BuildImports(defineData);
 
         code = builder.BuiltString();
-        return code.substring(1, code.length - 1);
+        return code.substring(1).trimEnd();
     }
 }

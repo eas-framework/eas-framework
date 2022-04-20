@@ -1,7 +1,8 @@
 import { getTypes } from '../RunTimeBuild/SearchFileSystem';
-import ImportFile, {AddExtension, RequireOnce} from '../ImportFiles/Script';
+import ImportFile, {AddExtension, ImportFromWorkingDirectory} from '../ImportFiles/Script';
 import EasyFs from '../OutputInput/EasyFs';
 import {print} from '../OutputInput/Console'
+import { ExportSettings } from './SettingsTypes';
 
 export async function StartRequire(array: string[], isDebug: boolean) {
     const arrayFuncServer = [];
@@ -20,7 +21,8 @@ export async function StartRequire(array: string[], isDebug: boolean) {
 }
 
 let lastSettingsImport: number;
-export async function GetSettings(filePath: string, isDebug: boolean){
+export async function GetSettings(settings: ExportSettings){
+    let filePath = settings.settingsPath;
     if(await EasyFs.existsFile(filePath + '.ts')){
         filePath += '.ts';
     } else {
@@ -32,8 +34,8 @@ export async function GetSettings(filePath: string, isDebug: boolean){
         return null;
     
     lastSettingsImport = changeTime;
-    const data = await RequireOnce(filePath, isDebug);
-    return data.default;
+    const data = await ImportFromWorkingDirectory(filePath, settings.development);
+    return (await data()).default;
 }
 
 export function getSettingsDate(){

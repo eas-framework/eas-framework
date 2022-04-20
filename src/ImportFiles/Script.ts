@@ -1,7 +1,7 @@
 import { Options as TransformOptions, transform } from '@swc/core';
 import { createNewPrint } from "../OutputInput/Logger";
 import EasyFs from "../OutputInput/EasyFs";
-import { BasicSettings, SystemData } from "../RunTimeBuild/SearchFileSystem";
+import { BasicSettings, getTypes, SystemData, workingDirectory } from "../RunTimeBuild/SearchFileSystem";
 import EasySyntax from "../CompileCode/transform/EasySyntax";
 import JSParser from "../CompileCode/JSParser";
 import path from "path";
@@ -168,7 +168,7 @@ export default async function LoadImport(importFrom: string[], InStaticPath: str
       const [funcName, printText] = createNewPrint({
         type: 'warn',
         errorName: 'import-not-exists',
-        text: `Import '${InStaticPath}' does not exists from <color>'${BasicSettings.fullWebSitePath}/${importFrom.at(-1)}'`
+        text: `Import '${InStaticPath}' does not exists from <color>'${BasicSettings.fullWebSitePath+importFrom.at(-1)}'`
       });
       print[funcName](printText);
       SavedModules[SavedModulesPath] = null
@@ -254,33 +254,33 @@ export async function ImportFile(importFrom: string, InStaticPath: string, typeA
   return LoadImport([importFrom], InStaticPath, typeArray, { isDebug, useDeps, withoutCache });
 }
 
-export async function RequireOnce(filePath: string, isDebug: boolean) {
+// export async function RequireOnce(filePath: string, isDebug: boolean) {
 
-  const tempFile = path.join(SystemData, `temp-${uuid()}.cjs`);
+//   const tempFile = path.join(SystemData, `temp-${uuid()}.cjs`);
 
-  await BuildScript(
-    filePath,
-    tempFile,
-    CheckTs(filePath),
-    isDebug,
-  );
+//   await BuildScript(
+//     filePath,
+//     tempFile,
+//     CheckTs(filePath),
+//     isDebug,
+//   );
 
-  const MyModule = await ImportWithoutCache(tempFile);
-  EasyFs.unlink(tempFile);
+//   const MyModule = await ImportWithoutCache(tempFile);
+//   EasyFs.unlink(tempFile);
 
-  return await MyModule((path: string) => import(path));
-}
+//   return await MyModule((path: string) => import(path));
+// }
 
-export async function RequireCjsScript(content: string) {
+// export async function RequireCjsScript(content: string) {
 
-  const tempFile = path.join(SystemData, `temp-${uuid()}.cjs`);
-  await EasyFs.writeFile(tempFile, content);
+//   const tempFile = path.join(SystemData, `temp-${uuid()}.cjs`);
+//   await EasyFs.writeFile(tempFile, content);
 
-  const model = await ImportWithoutCache(tempFile);
-  EasyFs.unlink(tempFile);
+//   const model = await ImportWithoutCache(tempFile);
+//   EasyFs.unlink(tempFile);
 
-  return model;
-}
+//   return model;
+// }
 
 /**
  * It takes a fake script location, a file location, a type array, and a boolean for whether or not it's
@@ -299,7 +299,7 @@ export async function RequireCjsScript(content: string) {
  * @param {string} sourceMapComment - string
  * @returns A function that returns a promise.
  */
-export async function compileImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, mergeTrack: StringTracker) {
+export async function compileImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, mergeTrack?: StringTracker) {
   await EasyFs.makePathReal(inStaticLocationRelative, typeArray[1]);
 
   const fullSaveLocation = scriptLocation + ".cjs";
@@ -329,5 +329,52 @@ export async function compileImport(globalPrams: string, scriptLocation: string,
   }
 
   const MyModule = await ImportWithoutCache(fullSaveLocation);
+  return async (...arr: any[]) => await MyModule(requireMap, ...arr);
+}
+
+/**
+ * `ImportOnce` is a function that takes a path to a file in the project directory, a boolean that
+ * determines if the file is TypeScript or JavaScript, a string that contains global parameters to be
+ * passed to the compiler, and a boolean that determines if the compiler should be run in debug mode
+ * @param {string} pathInProjectDirectory - The path to the file you want to import.
+ * @param {boolean} isTypeScript - If the file is a TypeScript file, set this to true.
+ * @param [globalPrams] - This is a string of parameters that will be passed to the compiler.
+ * @param [isDebug=true] - For the global variable 'debug'
+ * @returns The return value is a promise that resolves to the value of the last expression evaluated
+ * in the function.
+ */
+export async function ImportFromWorkingDirectory(fullPath: string, isTypeScript: boolean, globalPrams = "", isDebug = true) {
+  const relative = path.relative(BasicSettings.fullWebSitePath, fullPath)
+  await EasyFs.makePathReal(relative, SystemData + '/');
+
+  const fullSaveLocation = path.join(SystemData, `temp-${uuid()}.cjs`);
+
+
+  await BuildScript(
+    fullPath,
+    fullSaveLocation,
+    isTypeScript,
+    isDebug,
+    { params: globalPrams, codeMinify: false }
+  );
+
+  function requireMap(p: string) {
+    if (path.isAbsolute(p))
+      p = path.join('..', p);
+    else {
+      if (p[0] == ".") {
+        p = path.relative(getTypes.Static[0], path.join(path.dirname(fullPath), p));
+
+      }
+      else if (p[0] != "/")
+        return AliasOrPackage(p);
+    }
+
+    return LoadImport([relative], p, getTypes.Static, { isDebug });
+  }
+
+  const MyModule = await ImportWithoutCache(fullSaveLocation);
+  // EasyFs.unlink(fullSaveLocation);
+
   return async (...arr: any[]) => await MyModule(requireMap, ...arr);
 }
