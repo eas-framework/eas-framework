@@ -1,0 +1,17 @@
+@[model='../server' title='Client CSR']
+<@body/>
+@{const name = 'Cool App'}
+<div id="tasks">
+    <isolate>
+        @{const name = 'Task App'}
+        <div class="task">
+            <div class="task-text">
+                <span>@name</span>
+            </div>
+            <div class="task-time">
+                <span>@(new Date().toLocaleString())</span>
+            </div>
+        </div>
+    </isolate>
+</div>
+<p>App Name: @name</p>

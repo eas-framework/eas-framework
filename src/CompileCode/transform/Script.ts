@@ -12,7 +12,7 @@ import path from 'path/win32';
 
 function ErrorTemplate(info: string) {
 
-    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += \`${JSParser.printError(`Syntax Error: ${info}}`)}\``;
+    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += \`${JSParser.printError(`Syntax Error: ${info}`)}\``;
 }
 
 /**
