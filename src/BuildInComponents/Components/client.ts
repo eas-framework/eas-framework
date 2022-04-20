@@ -9,11 +9,12 @@ import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
 const serveScript = '/serv/temp.js';
 
 async function template(BuildScriptWithoutModule: BuildScriptWithoutModule, name: StringTracker | string, params: StringTracker | string, selector: string, mainCode: StringTracker, path: string, isDebug: boolean) {
-    const parse = await JSParser.RunAndExport(mainCode, path, isDebug);
+    const parse = await JSParser.RunAndExport(mainCode, path, isDebug, true);
     return new StringTracker().Plus$ `function ${name}({${params}}, selector${selector ? ` = "${selector}"`: ''}, out_run_script = {text: ''}){
         const {write, writeSafe, setResponse, sendToSelector} = new buildTemplate(out_run_script);
-        ${await BuildScriptWithoutModule(parse)}
         var exports = ${name}.exports;
+        ${await BuildScriptWithoutModule(parse)}
+        ${name}.exports = exports;
         return sendToSelector(selector, out_run_script.text);
     }\n${name}.exports = {};`
 }

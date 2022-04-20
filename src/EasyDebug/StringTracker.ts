@@ -34,7 +34,7 @@ export default class StringTracker {
         }
 
         if (text) {
-            this.AddFileText(text, this.DefaultInfoText.info);
+            this.AddFileText(text, this.InfoText);
         }
     }
 
@@ -61,15 +61,7 @@ export default class StringTracker {
      * get the InfoText that are setted on the last InfoText
      */
     public get DefaultInfoText(): StringTrackerDataInfo {
-        if (!this.DataArray.find(x => x.info) && this.InfoText != null) {
-            return {
-                info: this.InfoText,
-                line: this.OnLine,
-                char: this.OnChar
-            }
-        }
-
-        return this.DataArray[this.DataArray.length - 1] ?? StringTracker.emptyInfo;
+        return this.DataArray.find(x => x.info) ?? StringTracker.emptyInfo;
     }
 
     /**
@@ -100,16 +92,22 @@ export default class StringTracker {
     }
 
     /**
-     * return the info about this text
+     * return the info about this text (small path)
      */
-    get lineInfo() {
-        const d = this.DefaultInfoText;
-        const s = d.info.split('<line>');
-        s.push(BasicSettings.fullWebSitePath + s.pop());
-
-        return `${s.join('<line>')}:${d.line}:${d.char}`;
+    get originalLineInfo(){
+        const defaultInfo = this.DefaultInfoText;
+        return `${defaultInfo.info}:${defaultInfo.line}:${defaultInfo.char}`;
     }
 
+    /**
+     * return the info about this text, with **full path**
+     */
+    get lineInfo() {
+        const s = this.originalLineInfo.split('<line>');
+        s.push(BasicSettings.fullWebSitePath + s.pop());
+
+        return s.join('<line>');
+    }
 
     /**
      * length of the string

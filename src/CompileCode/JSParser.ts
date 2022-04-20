@@ -15,6 +15,7 @@ export default class JSParser {
     public type: string;
     public path: string;
     public values: JSParserValues[];
+    public forClientSide = false // will render for client side
 
     constructor(text: StringTracker, path: string, start = "<%", end = "%>", type = 'script') {
         this.start = start;
@@ -47,7 +48,7 @@ export default class JSParser {
 
             if (i.eq.trim().length)
                 WithInfo.Plus(
-                    new StringTracker(null, `//!${i.lineInfo}\n`),
+                    new StringTracker(null, `//!${this.forClientSide ? i.originalLineInfo: i.lineInfo}\n`), //small line info
                     i
                 )
 
@@ -133,8 +134,12 @@ export default class JSParser {
                 }
             } else {
                 if (isDebug && i.type == 'script') {
+                    if(!this.forClientSide){
+                        runScript.Plus(
+                            new StringTracker(null, `\nrun_script_code=\`${JSParser.fixText(i.text)}\`;`)
+                        );
+                    }
                     runScript.Plus(
-                        new StringTracker(null, `\nrun_script_code=\`${JSParser.fixText(i.text)}\`;`),
                         this.ScriptWithInfo(i.text)
                     );
                 } else {
@@ -150,9 +155,10 @@ export default class JSParser {
         return `<div style="color:red;text-align:left;font-size:16px;">${JSParser.fixText(LogToHTML(message))}</div>`;
     }
 
-    static async RunAndExport(text: StringTracker, path: string, isDebug: boolean) {
-        const parser = new JSParser(text, path)
+    static async RunAndExport(text: StringTracker, path: string, isDebug: boolean, forClientSide?: boolean) {
+        const parser = new JSParser(text, path);
         await parser.findScripts();
+        parser.forClientSide = forClientSide;
         return parser.BuildAll(isDebug);
     }
 
