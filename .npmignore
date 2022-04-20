@@ -12,3 +12,5 @@ production.tsconfig.json
 .releaserc
 .gitignore
 .c8rc.json
+.husky
+.commitlintrc.json
