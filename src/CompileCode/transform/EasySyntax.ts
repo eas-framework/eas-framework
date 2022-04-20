@@ -34,7 +34,7 @@ export default class EasySyntax {
         let match: RegExpMatchArray;
 
         function Rematch() {
-            match = newString.match(new RegExp(`${type}[ \\n]+(?!type )([\\*]{0,1}[\\p{L}0-9_,\\{\\} \\n]+)[ \\n]+from[ \\n]+<\\|([0-9]+)\\|\\|>`, 'u'));
+            match = newString.match(new RegExp(`${type}[ \\n]+([\\*]{0,1}[\\p{L}0-9_,\\{\\} \\n]+)[ \\n]+from[ \\n]+<\\|([0-9]+)\\|\\|>`, 'u'));
         }
 
         Rematch();
@@ -43,6 +43,11 @@ export default class EasySyntax {
             const data = match[1].trim();
             beforeString += newString.substring(0, match.index);
             newString = newString.substring(match.index + match[0].length);
+
+            if(data.startsWith('type ')){
+                Rematch();
+                continue;
+            }
 
             let DataObject: string;
 
