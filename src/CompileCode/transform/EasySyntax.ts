@@ -34,7 +34,7 @@ export default class EasySyntax {
         let match: RegExpMatchArray;
 
         function Rematch() {
-            match = newString.match(new RegExp(`${type}[ \\n]+([\\*]{0,1}[\\p{L}0-9_,\\{\\} \\n]+)[ \\n]+from[ \\n]+<\\|([0-9]+)\\|\\|>`, 'u'));
+            match = newString.match(new RegExp(`${type}[\\s]+([\\*]{0,1}[\\p{L}0-9_,\\{\\}\\s]+)[\\s]+from[\\s]+<\\|([0-9]+)\\|\\|>`, 'u'));
         }
 
         Rematch();
@@ -44,7 +44,7 @@ export default class EasySyntax {
             beforeString += newString.substring(0, match.index);
             newString = newString.substring(match.index + match[0].length);
 
-            if(data.startsWith('type ')){
+            if (/^type\s/.test(data)) {
                 Rematch();
                 continue;
             }
@@ -104,7 +104,7 @@ export default class EasySyntax {
         let match: RegExpMatchArray;
 
         function Rematch() {
-            match = newString.match(new RegExp(type + '[ \\n]+<\\|([0-9]+)\\|\\|>'));
+            match = newString.match(new RegExp(type + '[\\s]+<\\|([0-9]+)\\|\\|>'));
         }
 
         Rematch();
@@ -137,17 +137,17 @@ export default class EasySyntax {
     }
 
     private BuildInAsFunction(word: string, toWord: string) {
-        this.replaceWithSpace(text => text.replace(new RegExp(`([^\\p{L}])${word}([ \\n]*\\()`, 'gui'), (...match) => {
+        this.replaceWithSpace(text => text.replace(new RegExp(`([^\\p{L}])${word}([\\s]*\\()`, 'gui'), (...match) => {
             return match[1] + toWord + match[2]
         }));
     }
 
-    private async exportVariable(){
+    private async exportVariable() {
         let newString = this.Build.CodeBuildText;
         let match: RegExpMatchArray;
 
         function Rematch() {
-            match = newString.match(/(export[ \n]+)(var|let|const)[ \n]+([\p{L}\$_][\p{L}0-9\$_]*)/u);
+            match = newString.match(/(export[\s]+)(var|let|const)[\s]+([\p{L}\$_][\p{L}0-9\$_]*)/u);
         }
 
         Rematch();
@@ -156,16 +156,15 @@ export default class EasySyntax {
             const beforeMatch = newString.substring(0, match.index);
             const removeExport = match[0].substring(match[1].length);
             const afterMatch = newString.substring(match.index + match[0].length);
-           
-            let closeIndex = await EndOfDefSkipBlock(afterMatch,[';', '\n']);
 
-            if(closeIndex == -1){
+            let closeIndex = await EndOfDefSkipBlock(afterMatch, [';', '\n']);
+
+            if (closeIndex == -1) {
                 closeIndex = afterMatch.length
             }
 
             const beforeClose = afterMatch.substring(0, closeIndex), afterClose = afterMatch.substring(closeIndex);
-
-            newString = `${beforeMatch + removeExport+ beforeClose};exports.${match[3]}=${match[3]}${afterClose}`;
+            newString = `${beforeMatch + removeExport + beforeClose};exports.${match[3]}=${match[3]}${afterClose}`;
 
             Rematch();
         }
@@ -173,12 +172,12 @@ export default class EasySyntax {
         this.Build.CodeBuildText = newString;
     }
 
-    private async exportBlock(){
+    private async exportBlock() {
         let newString = this.Build.CodeBuildText;
         let match: RegExpMatchArray;
 
         function Rematch() {
-            match = newString.match(/(export[ \n]+)(default[ \n]+)?([^ \n])/u);
+            match = newString.match(/(export[\s]+)(default[\s]+)?([^\s])/u);
         }
 
         Rematch();
@@ -186,38 +185,44 @@ export default class EasySyntax {
         while (match) {
             let beforeMatch = newString.substring(0, match.index);
             let removeExport = match[0].substring(match[1].length + (match[2] || '').length);
-           
-            const firstChar = match[3][0], isDefault = Boolean(match[2]);
-            if(firstChar== '{'){
-                let afterMatch = newString.substring(match.index + match[0].length);
+            let afterMatch = newString.substring(match.index + match[0].length - 1);
 
-                if(isDefault){
+            if (/^(type|interface)\s/.test(afterMatch)) { // only removing the export, typescript will do the rest
+                newString = beforeMatch + afterMatch;
+                Rematch();
+                continue
+            }
+
+            const firstChar = match[3][0], isDefault = Boolean(match[2]);
+            if (firstChar == '{') {
+                afterMatch = afterMatch.substring(1);
+
+                if (isDefault) {
                     newString = beforeMatch + 'exports.default=' + removeExport + afterMatch;
                 } else {
                     const endIndex = await EndOfBlock(afterMatch, ['{', '}']);
-                    beforeMatch += `Object.assign(exports, ${removeExport + afterMatch.substring(0, endIndex+1)})`;
-                    newString = beforeMatch + afterMatch.substring(endIndex+1);
+                    beforeMatch += `Object.assign(exports, ${removeExport + afterMatch.substring(0, endIndex + 1)})`;
+                    newString = beforeMatch + afterMatch.substring(endIndex + 1);
                 }
             } else {
-                let afterMatch = newString.substring(match.index + match[0].length-1);
                 removeExport = removeExport.slice(0, -1);
 
-                let closeIndex = await EndOfDefSkipBlock(afterMatch,[';', '\n']);
-                if(closeIndex == -1){
+                let closeIndex = await EndOfDefSkipBlock(afterMatch, [';', '\n']);
+                if (closeIndex == -1) {
                     closeIndex = afterMatch.trimEnd().length
                 }
 
                 const beforeClose = afterMatch.substring(0, closeIndex);
                 const blockMatch = beforeClose.match(/(function|class)[ |\n]+([\p{L}\$_][\p{L}0-9\$_]*)?/u);
 
-                if(blockMatch?.[2]){       
+                if (blockMatch?.[2]) {
                     const afterClose = afterMatch.substring(closeIndex);
-        
-                    newString = `${beforeMatch + removeExport+ beforeClose}exports.${isDefault ? 'default': blockMatch[2]}=${blockMatch[2]}${afterClose}`;
-                } else if(isDefault){
+
+                    newString = `${beforeMatch + removeExport + beforeClose}exports.${isDefault ? 'default' : blockMatch[2]}=${blockMatch[2]}${afterClose}`;
+                } else if (isDefault) {
                     newString = beforeMatch + 'exports.default=' + removeExport + afterMatch;
                 } else {
-                    newString = `${beforeMatch}exports.${beforeClose.split(/ |\n/, 1).pop()}=${removeExport+ afterMatch}`;
+                    newString = `${beforeMatch}exports.${beforeClose.split(/ |\n/, 1).pop()}=${removeExport + afterMatch}`;
                 }
             }
 
