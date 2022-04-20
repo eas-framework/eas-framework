@@ -9,8 +9,6 @@
     "prepare": "[ $CI = true ] || [ -d '.husky/_' ] || husky install",
     "build": "node build logs",
     "build:ts": "tsc --project production.tsconfig.json",
-    "commit": "node build/commit.js",
-    "production": "node build/production.js",
     "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
     "test": "npm run build && npm run test:dist",
     "test:server": "npm test only server",

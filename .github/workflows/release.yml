@@ -15,7 +15,7 @@ jobs:
       - name: Install modules
         run: npm ci
       - name: Build
-        run: npm run build && npm run postinstall
+        run: npm run build production && npm run postinstall
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
