@@ -15,4 +15,5 @@
 * [Client CSR](./client/index)
 * [Isolate JS](./isolate/index)
 * [TypeScript Import Type](./typescript/index)
+* [Server Script](./server-script/index)
 </markdown>

@@ -1,0 +1,8 @@
+@[model='../server' title="Server Script"]
+<@body />
+@{const redirect = '/'}
+<script server>
+    setTimeout(function () {
+        window.location.pathname = '@redirect';
+    }, 3000);
+</script>

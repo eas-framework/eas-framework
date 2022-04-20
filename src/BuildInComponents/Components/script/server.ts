@@ -14,7 +14,7 @@ export default async function BuildCode(language: string, pathName: string, type
 
     const BetweenTagDataExtracted = await SaveServerCode.StartBuild();
 
-    const {resultCode, resultMap} = await transpilerWithOptions(BetweenTagData, language, false, BetweenTagDataExtracted, {preserveAllComments: true})
+    const {resultCode, resultMap} = await transpilerWithOptions(BetweenTagData, language, true, BetweenTagDataExtracted, {preserveAllComments: true})
     ResCode = SaveServerCode.RestoreCode(await SourceMapToStringTracker(resultCode, resultMap));
  
     return {
