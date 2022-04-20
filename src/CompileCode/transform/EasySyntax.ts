@@ -13,7 +13,7 @@ export default class EasySyntax {
     }
 
     private actionStringImport(replaceToType: string, dataObject: string, index: string) {
-        return `const ${dataObject} = await ${replaceToType}(<|${index}||>)`;
+        return `var ${dataObject} = await ${replaceToType}(<|${index}||>)`;
     }
 
     private actionStringExport(replaceToType: string, dataObject: string, index: string) {
