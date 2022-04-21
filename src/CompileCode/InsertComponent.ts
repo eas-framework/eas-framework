@@ -133,7 +133,7 @@ export default class InsertComponent extends InsertComponentBase {
     addDefaultValues(arrayValues: DefaultValues[], fileData: StringTracker) {
         for (const i of arrayValues) {
             for (const be of i.elements) {
-                fileData = fileData.replaceAll('#' + be, i.value);
+                fileData = fileData.replaceAll('~' + be, i.value);
             }
         }
 
