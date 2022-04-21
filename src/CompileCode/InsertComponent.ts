@@ -113,7 +113,7 @@ export default class InsertComponent extends InsertComponentBase {
     }
 
     exportDefaultValues(fileData: StringTracker, foundSetters: DefaultValues[] = []) {
-        const indexBasic: ArrayMatch = fileData.match(/@default[ ]*\(([A-Za-z0-9{}()\[\]_\-$"'`%*&|\/\@ \n]*)\)[ ]*\[([A-Za-z0-9_\-,$ \n]+)\]/);
+        const indexBasic: ArrayMatch = fileData.match(/@default[\s]*\(([A-Za-z0-9{}()\[\]_\-$"'`%*&|\/\@\s]*?)\)[\s]*\[([A-Za-z0-9_\-,$\s]+)\]/);
 
         if (indexBasic == null)
             return { fileData, foundSetters };
