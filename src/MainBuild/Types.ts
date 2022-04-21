@@ -22,6 +22,8 @@ type page = {
     Cookies: AddAny,
     PageVar: AddAny,
     GlobalVar: AddAny
+    Request: Request
+    Response: Response
 } & AddAny
 
 declare global {
