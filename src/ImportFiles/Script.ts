@@ -374,7 +374,7 @@ export async function ImportFromWorkingDirectory(fullPath: string, isTypeScript:
   }
 
   const MyModule = await ImportWithoutCache(fullSaveLocation);
-  // EasyFs.unlink(fullSaveLocation);
+  EasyFs.unlink(fullSaveLocation);
 
   return async (...arr: any[]) => await MyModule(requireMap, ...arr);
 }
