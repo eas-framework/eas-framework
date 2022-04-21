@@ -186,7 +186,7 @@ export default class EasySyntax {
             }
 
             const beforeClose = afterMatch.substring(0, closeIndex), afterClose = afterMatch.substring(closeIndex);
-            newString = `${beforeMatch + removeExport + beforeClose}exports.${match[3]}=${match[3]}${afterClose}`;
+            newString = `${beforeMatch + removeExport + beforeClose};exports.${match[3]}=${match[3]}${afterClose}`;
 
             Rematch();
         }
