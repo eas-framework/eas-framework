@@ -45,7 +45,7 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
 
     const modelName = baseData.defaultValuePopAny('model', 'website');
 
-    if (!modelName) return scriptFile.Plus(baseData.scriptFile, baseData.clearData);
+    if (!modelName) return baseData.scriptFile.Plus(scriptFile, baseData.clearData);
     data = baseData.clearData;
 
     //import model
@@ -106,7 +106,7 @@ async function outPage(data: StringTracker, scriptFile: StringTracker, pagePath:
 
     modelBuild.Plus(modelData);
 
-    return await outPage(modelBuild, scriptFile.Plus(baseData.scriptFile), FullPath, pageName, SmallPath, sessionInfo);
+    return await outPage(modelBuild, baseData.scriptFile.Plus(scriptFile), FullPath, pageName, SmallPath, sessionInfo);
 }
 
 export async function Insert(data: string, fullPathCompile: string, nestedPage: boolean, nestedPageData: string, sessionInfo: SessionBuild, dynamicCheck?: boolean) {
