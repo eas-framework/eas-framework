@@ -121,8 +121,9 @@ export async function createSiteMap(Export: ExportSettings, state: CompileState)
     }
 
     if(write && pages.length){
-        const path = write === true ? 'sitemap.txt': write;
-        state.addFile(path);
-        await EasyFs.writeFile(getTypes.Static[0] + path, pages.join('\n'));
+        const filePath = write === true ? 'sitemap.txt': write;
+        state.addFile(filePath);
+        await EasyFs.makePathReal(path.dirname(filePath), getTypes.Static[0]);
+        await EasyFs.writeFile(getTypes.Static[0] + filePath, pages.join('\n'));
     }
 }
