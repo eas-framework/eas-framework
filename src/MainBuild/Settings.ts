@@ -16,9 +16,8 @@ import { ExportSettings } from './SettingsTypes';
 import { debugSiteMap } from '../RunTimeBuild/SiteMap';
 import { settings as defineSettings } from '../CompileCode/CompileScript/PageBase';
 import {Export as ExportRam} from '../RunTimeBuild/FunctionScript'
+import { TransformSettings } from '../CompileCode/transform/Script';
 import { SyntaxSettings } from '../CompileCode/transform/EasySyntax';
-
-export const printLogs = debug && process.argv.includes('logs')
 
 const
     CookiesSecret = uuidv4().substring(0, 32),
@@ -144,6 +143,15 @@ export const Export: ExportSettings = {
         },
         set pathAliases(value){
             SyntaxSettings.pathAliases = value
+        },
+        get globals(){
+            return TransformSettings.globals
+        },
+        set globals(value){
+            for(const i in value){
+                value[i] = String(value[i]);
+            }
+            TransformSettings.globals = value
         }
     },
     routing: {
@@ -278,17 +286,28 @@ function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'ignore' 
     return hasImpleated;
 }
 
+/**
+ * Merge the nested objects in the from object into the nested objects in the target object.
+ * @param {any} target - any - The target object to merge into.
+ * @param from - {[key: string]: {[key: string]: any}}
+ */
+function mergeNested1(target: any, from?: {[key: string]: {[key: string]: any}}){
+    if(!from) return;
+    for(const i in from){
+        Object.assign(target[i], from[i]);
+    }
+}
+
 // read the settings of the website
 export async function requireSettings() {
     const Settings: ExportSettings = await GetSettings(Export);
     if(Settings == null) return;
 
     if (Settings.development)
-        Object.assign(Settings, Settings.implDev);
+        mergeNested1(Settings, <any>Settings.implDev);
 
     else
-        Object.assign(Settings, Settings.implProd);
-
+        mergeNested1(Settings, <any>Settings.implProd);
 
     copyJSON(Export.compile, Settings.compile);
 

@@ -1,5 +1,6 @@
 import {name} from '../../../package.json'
 import {Settings} from '@eas-framework/server'
+
 Settings.compile.compileSyntax.push("TypeScript")
 
 import {func} from './WWW/server/import/from1.serv.ts'
@@ -23,7 +24,10 @@ export default {
             version: 20
         },
         pathAliases: { // esm path aliases (not for dynamic imports)
-            "@imr": "/server/import/"
+            "@imr/": "/server/import/"
+        },
+        globals: {
+            counter: 10
         }
     },
 
@@ -80,8 +84,8 @@ export default {
             compileSyntax: ["TypeScript"],
             plugins: ["MinAll"],
             define: {
-                name: 'cool',
-                version: 20
+                name: 'co1ol',
+                version: 30
             }
         }
     }

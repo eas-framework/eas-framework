@@ -16,7 +16,7 @@ async function BuildScript(inputPath: string, type: string, isDebug: boolean, pa
                 ...GetPlugin("transformOptions"),
                 ...GetPlugin(optionsName)
             }
-        }),
+        }, { __DEBUG__: '' + isDebug }),
         minify: SomePlugins("Min" + type.toUpperCase()) || SomePlugins("MinAll"),
         sourceMaps: isDebug ? 'inline' : false
     };

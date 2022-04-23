@@ -3,11 +3,8 @@ import StringTracker from "../../../EasyDebug/StringTracker";
 import { BasicSettings, getTypes } from "../../../RunTimeBuild/SearchFileSystem";
 import sass from 'sass';
 import { createNewPrint } from "../../../OutputInput/Logger";
-import { StringNumberMap } from "../../../CompileCode/XMLHelpers/CompileTypes";
-import EasyFs from "../../../OutputInput/EasyFs";
 import { RawSourceMap } from "source-map-js";
 import { SessionBuild } from "../../../CompileCode/Session";
-import InsertComponent from "../../../CompileCode/InsertComponent";
 import { print } from "../../../OutputInput/Console";
 import { SomePlugins } from "../../../CompileCode/InsertModels";
 
@@ -76,7 +73,7 @@ export function PrintSassErrorTracker(err: any, track: StringTracker){
     print[funcName](printText);
 }
 
-export async function compileSass(language: string, BetweenTagData: StringTracker, sessionInfo: SessionBuild, outStyle = BetweenTagData.eq) {
+export async function compileSass(language: string, BetweenTagData: StringTracker, sessionInfo: SessionBuild, outStyle = BetweenTagData.eq, sourceMap = sessionInfo.debug) {
     const thisPage = BasicSettings.fullWebSitePath + BetweenTagData.extractInfo(),
         thisPageURL = pathToFileURL(thisPage),
         compressed = minifyPluginSass(language);
@@ -84,7 +81,7 @@ export async function compileSass(language: string, BetweenTagData: StringTracke
     let result: sass.CompileResult;
     try {
         result = await sass.compileStringAsync(outStyle, {
-            sourceMap: sessionInfo.debug,
+            sourceMap,
             syntax: sassSyntax(<any>language),
             style: compressed ? 'compressed' : 'expanded',
             importer: createImporter(thisPage),

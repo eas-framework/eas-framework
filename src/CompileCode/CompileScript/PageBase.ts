@@ -189,6 +189,7 @@ export default class ParseBasePage {
         if (await this.sessionInfo.dependence(SmallPath, haveCode)) {
             const baseModelData = await AddDebugInfo(false, pageName, haveCode, SmallPath); // read model
             this.scriptFile = baseModelData.allData.replaceAll("@", "@@");
+            this.scriptFile = await this.sessionInfo.BuildScriptWithPrams(this.scriptFile) // convert script to EAS Framework script
 
             this.scriptFile.AddTextBeforeNoTrack('<%');
             this.scriptFile.AddTextAfterNoTrack('%>');

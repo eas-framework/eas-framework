@@ -1,0 +1,5 @@
+@[model='../server' title="TypeScript - Import Type"]
+<@body/>
+@{
+   stop();
+}

@@ -58,10 +58,22 @@ export default class StringTracker {
     }
 
     /**
-     * get the InfoText that are setted on the last InfoText
+     * get the first info of the string
      */
     public get DefaultInfoText(): StringTrackerDataInfo {
         return this.DataArray.find(x => x.info) ?? StringTracker.emptyInfo;
+    }
+
+    /**
+     * get the last info of the string
+     */
+    public get DefaultInfoTextLast(): StringTrackerDataInfo {
+        for(let i = this.DataArray.length - 1; i >= 0; i--) {
+            if(this.DataArray[i].info) {
+                return this.DataArray[i];
+            }
+        }
+        return StringTracker.emptyInfo;
     }
 
     /**
@@ -94,7 +106,7 @@ export default class StringTracker {
     /**
      * return the info about this text (small path)
      */
-    get originalLineInfo(){
+    get originalLineInfo() {
         const defaultInfo = this.DefaultInfoText;
         return `${defaultInfo.info}:${defaultInfo.line}:${defaultInfo.char}`;
     }
@@ -172,10 +184,10 @@ export default class StringTracker {
      * @returns this string (not new string)
      */
     public Plus(...data: any[]): StringTracker {
-        let lastinfo = this.DefaultInfoText;
+        let lastinfo = this.DefaultInfoTextLast;
         for (const i of data) {
             if (i instanceof StringTracker) {
-                lastinfo = i.DefaultInfoText;
+                lastinfo = i.DefaultInfoTextLast;
                 this.AddClone(i);
             } else {
                 this.AddTextAfter(String(i), lastinfo.info, lastinfo.line, lastinfo.char);
@@ -192,7 +204,7 @@ export default class StringTracker {
      * @param values all the values
      */
     public Plus$(texts: TemplateStringsArray, ...values: (StringTracker | any)[]): StringTracker {
-        let lastValue: StringTrackerDataInfo = this.DefaultInfoText;
+        let lastValue: StringTrackerDataInfo = this.DefaultInfoTextLast;
         for (const i in values) {
             const text = texts[i];
             const value = values[i];
@@ -201,7 +213,7 @@ export default class StringTracker {
 
             if (value instanceof StringTracker) {
                 this.AddClone(value);
-                lastValue = value.DefaultInfoText;
+                lastValue = value.DefaultInfoTextLast;
             } else if (value != null) {
                 this.AddTextAfter(String(value), lastValue?.info, lastValue?.line, lastValue?.char);
             }
@@ -289,7 +301,7 @@ export default class StringTracker {
                 char: 0
             });
         }
-        
+
         this.DataArray.unshift(...copy);
         return this;
     }
@@ -636,9 +648,9 @@ export default class StringTracker {
         return newString;
     }
 
-    public static join(arr: StringTracker[]){
+    public static join(arr: StringTracker[]) {
         let all = new StringTracker();
-        for(const i of arr){
+        for (const i of arr) {
             all.AddClone(i);
         }
         return all;
@@ -768,14 +780,14 @@ export default class StringTracker {
         return this.DefaultInfoText.info.split(type).pop().trim()
     }
 
-    public originalPositionFor(line:number, column:number){
+    public originalPositionFor(line: number, column: number) {
         let searchLine = this.getLine(line);
         if (searchLine.startsWith('//')) {
             searchLine = this.getLine(line - 1);
             column = 0;
         }
         return {
-            ...searchLine.at(column-1).DefaultInfoText,
+            ...searchLine.at(column - 1).DefaultInfoText,
             searchLine
         }
     }
@@ -783,18 +795,18 @@ export default class StringTracker {
     /**
      * Extract error info form error message
      */
-    public debugLine({ message, text, location, line, col}: { message?: string, text?: string, location?: { line: number, column: number, lineText?: string }, line?: number, col?: number}): string {
-        
+    public debugLine({ message, text, location, line, col }: { message?: string, text?: string, location?: { line: number, column: number, lineText?: string }, line?: number, col?: number }): string {
+
         const data = this.originalPositionFor(line ?? location?.line ?? 1, col ?? location?.column ?? 0)
 
-        return `${text || message}, on file -><color>${BasicSettings.fullWebSitePath+data.searchLine.extractInfo()}:${data.line}:${data.char}${location?.lineText ? '\nLine: "' + location.lineText.trim() + '"': ''}`;
+        return `${text || message}, on file -><color>${BasicSettings.fullWebSitePath + data.searchLine.extractInfo()}:${data.line}:${data.char}${location?.lineText ? '\nLine: "' + location.lineText.trim() + '"' : ''}`;
     }
 
-    public StringWithTack(fullSaveLocation: string){
+    public StringWithTack(fullSaveLocation: string) {
         return outputWithMap(this, fullSaveLocation)
     }
 
-    public StringTack(fullSaveLocation: string, httpSource?: boolean, relative?: boolean){
+    public StringTack(fullSaveLocation: string, httpSource?: boolean, relative?: boolean) {
         return outputMap(this, fullSaveLocation, httpSource, relative)
     }
 }

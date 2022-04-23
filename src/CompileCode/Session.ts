@@ -6,7 +6,7 @@ import Base64Id from '../StringMethods/Id';
 import EasyFs from "../OutputInput/EasyFs";
 import StringTracker from "../EasyDebug/StringTracker";
 import { isTs } from "./InsertModels";
-import BuildScript from "./transform/Script";
+import { PluginScript } from "./transform/Script";
 import TagDataParser from "./XMLHelpers/TagDataParser";
 
 
@@ -187,6 +187,6 @@ export class SessionBuild {
 
     //basic methods
     BuildScriptWithPrams(code: StringTracker) {
-        return BuildScript(code, isTs(), this);
+        return PluginScript(code, isTs(), this);
     }
 }

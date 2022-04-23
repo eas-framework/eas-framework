@@ -2,8 +2,8 @@ import path from 'path';
 import { customTypes } from '../../ImportFiles/CustomImport/Extension/index';
 import { EndOfBlock, EndOfDefSkipBlock, ParseTextStream, ReBuildCodeString } from './EasyScript';
 
-export const SyntaxSettings: {pathAliases: { [key: string]: string }} = {
-    pathAliases:  {}
+export const SyntaxSettings: { pathAliases: { [key: string]: string } } = {
+    pathAliases: {}
 }
 
 export default class EasySyntax {
@@ -55,62 +55,52 @@ export default class EasySyntax {
         let newString = this.Build.CodeBuildText;
         let match: RegExpMatchArray;
 
+        /**
+         * **ESM Module search**
+         * - (\s([\p{L}0-9_]+)\s*,\s*(\{([\p{L}0-9_,\s]*)\}))  - import {a, b}, def from './path'
+         * - ((\*\s*as)?\s+([\p{L}0-9_]+)\s)  - import a from './path' **or** import * as a from './path'
+         * - (\{([\p{L}0-9_,\s]*)\})  - import {a, b} from './path'
+         *
+         * **Template**
+         * 
+         * import(\s+type)?[\s]*
+         *
+         * **one ot the options**
+         * 
+         * [\s]*from[\s]*<\|([0-9]+)\|\|>
+         */
         function Rematch() {
-            match = newString.match(new RegExp(`${type}[\\s]+([\\*]{0,1}[\\p{L}0-9_,\\{\\}\\s]+)[\\s]+from[\\s]+<\\|([0-9]+)\\|\\|>`, 'u'));
+            match = newString.match(new RegExp(`${type}(\\s+type)?[\\s]*((\\s([\\p{L}0-9_]+)\\s*,\\s*(\\{([\\p{L}0-9_,\\s]*)\\}))|((\\*\\s*as)?\\s+([\\p{L}0-9_]+)\\s)|(\\{([\\p{L}0-9_,\\s]*)\\}))[\\s]*from[\\s]*<\\|([0-9]+)\\|\\|>`, 'u'));
         }
 
         Rematch();
 
         while (match) {
-            const data = match[1].trim();
+            const data = match[2].trim();
             beforeString += newString.substring(0, match.index);
             newString = newString.substring(match.index + match[0].length);
 
-            if (/^type\s/.test(data)) {
+            if (match[1]) { // if this importing of type -> import type {a} from './path'
                 Rematch();
                 continue;
             }
 
             let DataObject: string;
+            const asToObject = (x:string) => x.replace(/\sas\s/g, ':');
 
-            if (data[0] == '*') {
-                DataObject = data.substring(1).replace(' as ', '').trimStart();
+            if (match[10] || data[0] == '*') {// import {a, b} from './path' **or** import * as a from './path'
+                DataObject = match[10] && asToObject(match[10]) || match[9];
             } else {
-                let Spliced: string[] = [];
 
-                if (data[0] == '{') {
-                    Spliced = data.split('}', 2);
-                    Spliced[0] += '}';
-                    if (Spliced[1])
-                        Spliced[1] = Spliced[1].split(',').pop();
-                } else {
-                    Spliced = data.split(',', 1).reverse();
+                if (match[4] && match[6]) { // import a, {b} from './path'
+                    DataObject = `{default:${match[4]},${asToObject(match[6])}}`
                 }
-
-                Spliced = Spliced.map(x => x.trim()).filter(x => x.length);
-
-                if (Spliced.length == 1) {
-                    if (Spliced[0][0] == '{') {
-                        DataObject = Spliced[0];
-                    } else {
-                        let extension = this.Build.AllInputs[match[2]];
-                        extension = extension.substring(extension.lastIndexOf('.') + 1, extension.length - 1);
-                        if (customTypes.includes(extension))
-                            DataObject = Spliced[0];
-                        else
-                            DataObject = `{default:${Spliced[0]}}`; //only if this isn't custom import
-                    }
-                } else {
-
-                    DataObject = Spliced[0];
-
-                    DataObject = `${DataObject.substring(0, DataObject.length - 1)},default:${Spliced[1]}}`;
+                else if (match[4] ?? match[9]) { // import a from './path'
+                    DataObject = `{default:${match[4] ?? match[9]}}`
                 }
-
-                DataObject = DataObject.replace(/ as /, ':');
             }
 
-            beforeString += actionString(replaceToType, DataObject, match[2]);
+            beforeString += actionString(replaceToType, DataObject, match[12]); // match[12] - index of import string, for example: <|1||>
 
             Rematch();
         }
@@ -126,7 +116,7 @@ export default class EasySyntax {
         let match: RegExpMatchArray;
 
         function Rematch() {
-            match = newString.match(new RegExp(type + '[\\s]+<\\|([0-9]+)\\|\\|>'));
+            match = newString.match(new RegExp(type + '[\\s]*<\\|([0-9]+)\\|\\|>'));
         }
 
         Rematch();
@@ -199,14 +189,14 @@ export default class EasySyntax {
         let match: RegExpMatchArray;
 
         function Rematch() {
-            match = newString.match(/(export[\s]+)(default[\s]+)?([^\s])/u);
+            match = newString.match(/(export[\s]+)(default[\s|{|\[|\(][\s]*)?([^\s])/u);
         }
 
         Rematch();
 
         while (match) {
             let beforeMatch = newString.substring(0, match.index);
-            let removeExport = match[0].substring(match[1].length + (match[2] || '').length);
+            let removeExport = match[0].substring(match[1].length + (match[2] || ' ').length - 1);
             let afterMatch = newString.substring(match.index + match[0].length - 1);
 
             if (/^(type|interface)\s/.test(afterMatch)) { // only removing the export, typescript will do the rest
@@ -216,7 +206,7 @@ export default class EasySyntax {
             }
 
             const firstChar = match[3][0], isDefault = Boolean(match[2]);
-            if (firstChar == '{') {
+            if (firstChar == '{' || match[2]?.at?.(-1) == '{') {
                 afterMatch = afterMatch.substring(1);
 
                 if (isDefault) {
@@ -235,7 +225,7 @@ export default class EasySyntax {
                 }
 
                 const beforeClose = afterMatch.substring(0, closeIndex);
-                const blockMatch = beforeClose.match(/(function|class)[ |\n]+([\p{L}\$_][\p{L}0-9\$_]*)?/u);
+                const blockMatch = beforeClose.match(/(function|class)[\s]+([\p{L}\$_][\p{L}0-9\$_]*)?/u);
 
                 if (blockMatch?.[2]) {
                     const afterClose = afterMatch.substring(closeIndex);
@@ -244,7 +234,7 @@ export default class EasySyntax {
                 } else if (isDefault) {
                     newString = beforeMatch + 'exports.default=' + removeExport + afterMatch;
                 } else {
-                    newString = `${beforeMatch}exports.${beforeClose.split(/ |\n/, 1).pop()}=${removeExport + afterMatch}`;
+                    newString = `${beforeMatch}exports.${beforeClose.split(/\s/, 1).pop()}=${removeExport + afterMatch}`;
                 }
             }
 
@@ -260,7 +250,6 @@ export default class EasySyntax {
         this.BuildImportType('include');
 
         this.BuildInOneWord('import', 'require');
-        this.BuildInOneWord('export', 'require', this.actionStringExportAll);
         this.BuildInOneWord('include');
 
         this.BuildInAsFunction('import', 'require');

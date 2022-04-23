@@ -1,0 +1,3 @@
+@[model='../server' title='Client CSR']
+<@body/>
+<p>Counter @counter</p>

@@ -5,7 +5,7 @@ import SourceMapToStringTracker from '../../../EasyDebug/SourceMapLoad';
 import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
 import { transpilerWithOptions } from './load-options';
 
-export default async function BuildCode(language: string, pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker): Promise<BuildInComponent> {
+export default async function BuildCode(language: string, pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, isDebug: boolean): Promise<BuildInComponent> {
 
     let ResCode = BetweenTagData;
 
@@ -14,7 +14,7 @@ export default async function BuildCode(language: string, pathName: string, type
 
     const BetweenTagDataExtracted = await SaveServerCode.StartBuild();
 
-    const {resultCode, resultMap} = await transpilerWithOptions(BetweenTagData, language, true, BetweenTagDataExtracted, {preserveAllComments: true})
+    const {resultCode, resultMap} = await transpilerWithOptions(BetweenTagData, language, true, isDebug, BetweenTagDataExtracted, {preserveAllComments: true})
     ResCode = SaveServerCode.RestoreCode(await SourceMapToStringTracker(resultCode, resultMap));
  
     return {

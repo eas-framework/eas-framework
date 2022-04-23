@@ -1,23 +1,22 @@
 import { Options as TransformOptions, transform, JscConfig } from '@swc/core';
 import { GetPlugin, SomePlugins } from '../../../CompileCode/InsertModels';
 import { ESBuildPrintErrorStringTracker } from '../../../CompileCode/transpiler/printMessage';
-import { Commonjs, Decorators, esTarget } from '../../../CompileCode/transpiler/settings';
+import { Decorators, TransformJSC } from '../../../CompileCode/transpiler/settings';
 import StringTracker from '../../../EasyDebug/StringTracker';
 
-export async function transpilerWithOptions(BetweenTagData: StringTracker, language: string, sourceMaps: boolean, BetweenTagDataString = BetweenTagData.eq, options?: JscConfig) {
+export async function transpilerWithOptions(BetweenTagData: StringTracker, language: string, sourceMaps: boolean, isDebug: boolean, BetweenTagDataString = BetweenTagData.eq, options?: JscConfig) {
 
     let resultCode = '', resultMap: string;
 
-    const AddOptions: TransformOptions = Commonjs({
+    const AddOptions: TransformOptions = {
         filename: BetweenTagData.extractInfo(),
         minify: SomePlugins("Min" + language.toUpperCase()) || SomePlugins("MinAll"),
         sourceMaps,
-        jsc: {
-            target: esTarget,
+        jsc: TransformJSC({
             ...options
-        },
+        }, {__DEBUG__: '' + isDebug}),
         ...GetPlugin("transformOptions")
-    });
+    };
 
     try {
         switch (language) {
@@ -51,7 +50,7 @@ export async function transpilerWithOptions(BetweenTagData: StringTracker, langu
         resultCode = code;
         resultMap = map;
     } catch (err) {
-        ESBuildPrintErrorStringTracker(BetweenTagData, err)
+        ESBuildPrintErrorStringTracker(BetweenTagData, err, BetweenTagData.extractInfo())
     }
 
     return { resultCode, resultMap }

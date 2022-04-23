@@ -1,10 +1,8 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import scriptWithServer from './server';
 import scriptWithClient from './client';
-import { BuildScriptWithoutModule } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { SessionBuild } from '../../../CompileCode/Session';
-import InsertComponent from '../../../CompileCode/InsertComponent';
 import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
 
 
@@ -18,7 +16,7 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
     const language = dataTag.popAnyDefault('lang', 'js');
 
     if (dataTag.popBoolean('server')) {
-        return scriptWithServer(language, pathName, type, dataTag, BetweenTagData);
+        return scriptWithServer(language, pathName, type, dataTag, BetweenTagData, sessionInfo.debug);
     }
 
     return scriptWithClient(language, dataTag, BetweenTagData, sessionInfo);

@@ -2,7 +2,6 @@ import { Options as TransformOptions, transform } from '@swc/core';
 import { createNewPrint } from "../OutputInput/Logger";
 import EasyFs from "../OutputInput/EasyFs";
 import { BasicSettings, getTypes, SystemData, workingDirectory } from "../RunTimeBuild/SearchFileSystem";
-import EasySyntax from "../CompileCode/transform/EasySyntax";
 import JSParser from "../CompileCode/JSParser";
 import path from "path";
 import { GetPlugin, isTs } from "../CompileCode/InsertModels";
@@ -16,15 +15,10 @@ import StringTracker from "../EasyDebug/StringTracker";
 import { backToOriginal } from "../EasyDebug/SourceMapLoad";
 import { AliasOrPackage } from "./CustomImport/Alias";
 import { print } from "../OutputInput/Console";
-import { Commonjs, esTarget, TransformJSC } from '../CompileCode/transpiler/settings';
+import { TransformJSC } from '../CompileCode/transpiler/settings';
+import { TransformSettings } from '../CompileCode/transform/Script';
+import EasySyntax from '../CompileCode/transform/EasySyntax';
 
-async function ReplaceBefore(
-  code: string,
-  defineData: { [key: string]: string },
-) {
-  code = await EasySyntax.BuildAndExportImports(code, defineData);
-  return code;
-}
 
 function template(code: string, isDebug: boolean, dir: string, file: string, params?: string) {
   return `${isDebug ? "require('source-map-support').install();" : ''}var __dirname="${JSParser.fixTextSimpleQuotes(dir)
@@ -43,35 +37,34 @@ function template(code: string, isDebug: boolean, dir: string, file: string, par
  * @returns The result of the script.
  */
 async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, templatePath = filePath, codeMinify = !isDebug, mergeTrack }: { codeMinify?: boolean, templatePath?: string, params?: string, mergeTrack?: StringTracker } = {}): Promise<string> {
-  const Options: TransformOptions = Commonjs({
+  const Options: TransformOptions = {
+
     jsc: TransformJSC({
       parser: {
         syntax: isTypescript ? "typescript" : "ecmascript",
         ...GetPlugin((isTypescript ? 'TS' : 'JS') + "Options")
       }
-    }),
+    }, { __DEBUG__: '' + isDebug, ...TransformSettings.globals }, true),
+
     minify: codeMinify,
     filename: filePath,
     sourceMaps: isDebug ? (mergeTrack ? true : 'inline') : false,
     outputPath: savePath && path.relative(path.dirname(savePath), filePath)
-  });
+  };
+  
+  let Result = mergeTrack?.eq || await EasyFs.readFile(filePath);
 
-  let Result = await ReplaceBefore(mergeTrack?.eq || await EasyFs.readFile(filePath), { debug: "" + isDebug });
-  Result = template(
-    Result,
-    isDebug,
-    path.dirname(templatePath),
-    templatePath,
-    params
-  );
+  const CommonJSScript = await EasySyntax.BuildAndExportImports(Result)
+  Result = template(CommonJSScript,isDebug,path.dirname(templatePath),templatePath,params);
 
   try {
     const { code, map } = await transform(Result, Options);
+
     Result = mergeTrack && map && (await backToOriginal(mergeTrack, code, map)).StringWithTack(savePath) || code;
 
   } catch (err) {
     if (mergeTrack) {
-      ESBuildPrintErrorStringTracker(mergeTrack, err);
+      ESBuildPrintErrorStringTracker(mergeTrack, err, mergeTrack.extractInfo());
     } else {
       ESBuildPrintError(err);
     }
@@ -168,7 +161,7 @@ export default async function LoadImport(importFrom: string[], InStaticPath: str
       const [funcName, printText] = createNewPrint({
         type: 'warn',
         errorName: 'import-not-exists',
-        text: `Import '${InStaticPath}' does not exists from <color>'${BasicSettings.fullWebSitePath+importFrom.at(-1)}'`
+        text: `Import '${InStaticPath}' does not exists from <color>'${BasicSettings.fullWebSitePath + importFrom.at(-1)}'`
       });
       print[funcName](printText);
       SavedModules[SavedModulesPath] = null

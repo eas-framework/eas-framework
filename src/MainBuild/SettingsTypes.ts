@@ -1,5 +1,6 @@
 import { JscConfig as TransformOptions } from '@swc/core';
 import { Request, Response, NextFunction } from '@tinyhttp/app';
+import { StringMap } from '../CompileCode/XMLHelpers/CompileTypes';
 import * as fileByUrl from '../RunTimeBuild/GetPages';
 
 export interface GreenLockSite {
@@ -75,7 +76,8 @@ interface GlobalSettings {
             "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning" | "markdown-parser")[],
         plugins?: pluginsOptions[]
         define: {[key: string]: string | number | boolean | null}
-        pathAliases?: { [key: string]: string }
+        pathAliases?: StringMap
+        globals?: StringMap
     },
     routing?: {
         rules?: {[key: string]: ((url: string, req?: Request, res?: Response<any>) => string | Promise<string>)},

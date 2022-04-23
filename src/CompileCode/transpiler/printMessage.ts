@@ -3,14 +3,14 @@ import StringTracker from '../../EasyDebug/StringTracker';
 import { print } from '../../OutputInput/Console';
 import { createNewPrint } from '../../OutputInput/Logger';
 
-export function parseSWCError(err: {message: string, stack: string, code: string}, changeLocations = (line: number, char: number, info: string) => {return {line, char, info}}){
+export function parseSWCError(err: {message: string, stack: string, code: string}, changeLocations = (line: number, char: number, info: string) => {return {line, char, info}}, codeFile = ""){
     const splitData:string[] = err.stack.trim().split('\n');
     const errorFileAsIndex = splitData.reverse().findIndex((x:string) => x.includes('//!'))
 
     if(errorFileAsIndex == -1){
-        const message = err.message.replace(/(;[0-9]m)(.*?)\[0m:([0-9]+):([0-9]+)\]/, (_, start, file, g1, g2) => {
+        const message = err.message.replace(/(;[0-9]m)(.*?\.\w+)(\W\[0m:)([0-9]+):([0-9]+)\]/, (_, start, file, locationStart, g1, g2) => {
             const {line, char, info} = changeLocations(Number(g1), Number(g2), file)
-            return `${start}${info}:${line}:${char}]`
+            return `${start}${info + locationStart +line}:${char}]`
         })
 
         return {
@@ -18,7 +18,7 @@ export function parseSWCError(err: {message: string, stack: string, code: string
             errorLines: splitData[0],
             errorFile: splitData[0],
             simpleMessage: message,
-            fullMessage: message
+            fullMessage: `${codeFile}, on file -><color>\n${message}`
         }
     }
 
@@ -75,7 +75,7 @@ export async function ESBuildPrintErrorSourceMap(err: any, sourceMap: RawSourceM
 }
 
 
-export function ESBuildPrintErrorStringTracker(base: StringTracker, err: any) {
+export function ESBuildPrintErrorStringTracker(base: StringTracker, err: any, codeFile: string) {
 
     const parseError = parseSWCError(err, (line, column, info) => {
         const position = base.originalPositionFor(line, column)
@@ -83,7 +83,7 @@ export function ESBuildPrintErrorStringTracker(base: StringTracker, err: any) {
             ...position,
             info: position.searchLine.extractInfo()
         }
-    });
+    }, codeFile);
 
     const [funcName, printText] = createNewPrint({
         type: 'error',

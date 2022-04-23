@@ -7,7 +7,7 @@ export async function minifyJS(text: string, tracker: StringTracker){
     try {
         return (await minify(text)).code
     } catch(err) {
-        ESBuildPrintErrorStringTracker(tracker, err)
+        ESBuildPrintErrorStringTracker(tracker, err, tracker.extractInfo())
     }
     return text;
 }

@@ -1,7 +1,7 @@
 import EasyFs from '../OutputInput/EasyFs';
 import { Dirent } from 'fs';
 import { Insert, Components, GetPlugin } from '../CompileCode/InsertModels';
-import { ClearWarning } from '../OutputInput/Logger'
+import { ClearWarning, PageTimeLogger } from '../OutputInput/Logger'
 import { BasicSettings, DeleteInDirectory, getTypes } from './SearchFileSystem';
 import ReqScript from '../ImportFiles/Script';
 import StaticFiles from '../ImportFiles/StaticFiles';
@@ -15,11 +15,9 @@ import { createSiteMap } from './SiteMap';
 import { extensionIs, isFileType } from './FileTypes';
 import { perCompile, postCompile, perCompilePage, postCompilePage } from '../BuildInComponents';
 import StringTracker from '../EasyDebug/StringTracker';
-import { printLogs } from '../MainBuild/Settings';
 
 async function compileFile(filePath: string, arrayType: string[], { isDebug, hasSessionInfo, nestedPage, nestedPageData, dynamicCheck }: { isDebug?: boolean, hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string, dynamicCheck?: boolean } = {}) {
-    let calc_time: number; // calculate time for each file
-    if (printLogs) calc_time = performance.now();
+    const startMeasureTime = performance.now();
 
     const FullFilePath = path.join(arrayType[0], filePath), FullPathCompile = arrayType[1] + filePath + '.cjs';
 
@@ -38,8 +36,12 @@ async function compileFile(filePath: string, arrayType: string[], { isDebug, has
         pageDeps.update(SmallPath, sessionInfo.dependencies);
     }
 
-    if (printLogs) // print time that each file took
-        console.log('file build: ' + ((performance.now() - calc_time)/1000).toFixed(3) + 'ms', filePath);
+    PageTimeLogger.dispatch('compile-time', { 
+        time: Number(((performance.now() - startMeasureTime) / 1000).toFixed(3)), 
+        file: filePath, 
+        debug: isDebug 
+    });
+
     return { CompiledData, sessionInfo };
 }
 
@@ -113,10 +115,14 @@ export async function compileAll(Export: ExportSettings) {
     const activateArray = [await CreateCompile(getTypes.Static[2], state), await CreateCompile(getTypes.Logs[2], state), ClearWarning];
 
     return async () => {
+        PageTimeLogger.dispatch('start-compile');
         for (const i of activateArray) {
             await i();
         }
+        PageTimeLogger.dispatch('end-compile');
+        PageTimeLogger.dispatch('create-sitemap');
         await createSiteMap(Export, state);
+        PageTimeLogger.dispatch('end-create-sitemap');
         state.export()
         pageDeps.save();
         postCompile()

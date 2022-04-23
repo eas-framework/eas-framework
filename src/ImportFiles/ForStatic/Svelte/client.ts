@@ -13,7 +13,7 @@ import { esTarget, TransformJSC } from "../../../CompileCode/transpiler/settings
 export default async function BuildScript(inStaticPath: string, isDebug: boolean) {
     const fullPath = getTypes.Static[0] + inStaticPath, fullCompilePath = getTypes.Static[1] + inStaticPath;
 
-    const { code, dependencies, map, scriptLang } = await preprocess(fullPath, getTypes.Static[2] + '/' + inStaticPath);
+    const { code, dependencies, map, scriptLang } = await preprocess(fullPath, getTypes.Static[2] + '/' + inStaticPath, isDebug);
     const filename = fullPath.split(/\/|\//).pop();
     let js: any, css: any;
     try {
@@ -47,10 +47,9 @@ export default async function BuildScript(inStaticPath: string, isDebug: boolean
             const { code, map } = await transform(js.code, {
                 jsc: TransformJSC({
                     parser:{
-                        syntax: scriptLang == 'js' ? 'ecmascript': 'typescript',
-                        ...GetPlugin(scriptLang.toUpperCase() +"Options")
+                        syntax: scriptLang == 'js' ? 'ecmascript': 'typescript'
                     }
-                }),
+                },null, true),
                 minify: true,
                 sourceMaps: isDebug
             });

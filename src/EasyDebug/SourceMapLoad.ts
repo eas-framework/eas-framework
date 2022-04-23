@@ -12,9 +12,8 @@ export default async function SourceMapToStringTracker(code: string, sourceMap: 
         const isMap = splitLines[m.generatedLine - 1];
         if (!isMap) return;
 
-
-        let charCount = 1;
-        for (const i of isMap.substring(m.generatedColumn ? m.generatedColumn - 1: 0).getDataArray()) {
+        let charCount = m.originalColumn || 1;
+        for (const i of isMap.substring(m.generatedColumn ? m.generatedColumn - 1: 0, m.name?.length).getDataArray()) {
             i.info = m.source;
             i.line = m.originalLine;
             i.char = charCount++;
@@ -27,10 +26,12 @@ export default async function SourceMapToStringTracker(code: string, sourceMap: 
 function mergeInfoStringTracker(original: StringTracker, generated: StringTracker) {
     const originalLines = original.split('\n');
     for (const item of generated.getDataArray()) {
-        const {line, char, info}  = originalLines[item.line - 1]?.DefaultInfoText ?? StringTracker.emptyInfo;
+        const originalLine = originalLines[item.line - 1]
+        const {line, char, info}  = originalLine?.DefaultInfoText ?? StringTracker.emptyInfo;
+        
+        item.char = originalLine && originalLine.at(item.char - 1).DefaultInfoText.char || char;
         item.line = line;
         item.info = info;
-        item.char = char;
     }
 }
 

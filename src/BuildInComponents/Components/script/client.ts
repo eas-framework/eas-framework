@@ -13,7 +13,7 @@ export default async function BuildCode(language: string, tagData: TagDataParser
         };
     sessionInfo.cache[isModelStringCache].push(BetweenTagDataEqAsTrim);
 
-    const {resultCode, resultMap} = await transpilerWithOptions(BetweenTagData, language, sessionInfo.debug)
+    const {resultCode, resultMap} = await transpilerWithOptions(BetweenTagData, language, sessionInfo.debug, sessionInfo.debug)
     const pushStyle = sessionInfo.addScriptStylePage(isModel ? 'module' : 'script', tagData, BetweenTagData);
 
     if (resultMap) {

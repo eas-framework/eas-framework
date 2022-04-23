@@ -1,9 +1,8 @@
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { StringNumberMap, BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
+import { BuildInComponent } from '../../../CompileCode/XMLHelpers/CompileTypes';
 import { EnableGlobalReplace } from '../../../CompileCode/JSParser';
 import { compileSass } from './sass';
 import { SessionBuild } from '../../../CompileCode/Session';
-import InsertComponent from '../../../CompileCode/InsertComponent';
 import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
 
 export default async function BuildCode(language: string,pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent> {

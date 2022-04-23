@@ -1,13 +1,12 @@
 import path from "path";
-import SourceMapStore from "../../EasyDebug/SourceMapStore";
 import StringTracker from "../../EasyDebug/StringTracker";
 import { compileImport } from "../../ImportFiles/Script";
 import { print } from "../../OutputInput/Console";
 import EasyFs from "../../OutputInput/EasyFs";
 import { createNewPrint } from "../../OutputInput/Logger";
 import { ConvertSyntaxMini } from "../../Plugins/Syntax/RazorSyntax";
-import { BasicSettings, getTypes, smallPathToPage } from "../../RunTimeBuild/SearchFileSystem";
-import { CutTheLast, SplitFirst } from "../../StringMethods/Splitting";
+import { getTypes, smallPathToPage } from "../../RunTimeBuild/SearchFileSystem";
+import { SplitFirst } from "../../StringMethods/Splitting";
 import JSParser from "../JSParser";
 import { SessionBuild } from "../Session";
 import { StringAnyMap } from "../XMLHelpers/CompileTypes";
@@ -32,7 +31,7 @@ export default class CRunTime {
             build.Plus(i)
         }
 
-        build.AddTextAfterNoTrack(`\nreturn __writeArray`);
+        build.AddTextAfterNoTrack(`\nmodule.exports=__writeArray`);
         return build;
     }
 

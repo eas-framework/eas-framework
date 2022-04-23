@@ -25,7 +25,7 @@ export default async function registerExtension(filePath: string, smallPath: str
     const fullCompilePath = getTypes.Static[1] + inStaticFile;
 
     const fullImportPath = fullCompilePath + '.ssr.cjs';
-    const {svelteFiles, code, map, dependencies} = await preprocess(filePath, smallPath,fullImportPath,false,'.ssr.cjs');
+    const {svelteFiles, code, map, dependencies} = await preprocess(filePath, smallPath,sessionInfo.debug,fullImportPath,false,'.ssr.cjs');
     Object.assign(sessionInfo.dependencies,dependencies);
     options.sourcemap = map;
 

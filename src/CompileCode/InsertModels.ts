@@ -7,7 +7,7 @@ import AddPlugin from '../Plugins/Index';
 import { CreateFilePath, ParseDebugLine, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug';
 import * as extricate from './XMLHelpers/Extricate';
 import StringTracker from '../EasyDebug/StringTracker';
-import BuildScript from './transform/Script';
+import {ScriptToEASScriptLastProcesses} from './transform/Script';
 import { Settings as BuildScriptSettings } from '../BuildInComponents/Settings';
 import ParseBasePage from './CompileScript/PageBase';
 import { SessionBuild } from './Session';
@@ -129,7 +129,7 @@ export async function Insert(data: string, fullPathCompile: string, nestedPage: 
     DebugString = await finalizeBuild(DebugString, sessionInfo, fullPathCompile);
     
     DebugString = await PageTemplate.BuildPage(DebugString, sessionInfo);
-    DebugString = await sessionInfo.BuildScriptWithPrams(DebugString);
+    DebugString = await ScriptToEASScriptLastProcesses(DebugString, isTs(), sessionInfo);
     DebugString= PageTemplate.AddAfterBuild(DebugString, sessionInfo.debug);
 
     return DebugString;

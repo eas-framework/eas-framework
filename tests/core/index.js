@@ -1,20 +1,23 @@
-import fetch from 'node-fetch'
 import { promises } from 'fs'
 import sourceMapSupport from 'source-map-support';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import puppeteer from 'puppeteer'
+import fs from 'fs-extra' 
 
 sourceMapSupport.install({ hookRequire: true });
 
 //activate server
-const { default: Server, Settings, waitProductionBuild } = await import('../../dist/index.js');
+const { default: Server, Settings, waitProductionBuild, PageTimeLogger } = await import('../../dist/index.js');
 await Server({ SitePath: './tests/core/Website' });
 
 //load pages
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-async function testPages(name = "test"){
+async function testPages(name, filter){
+    await fs.emptyDir(__dirname + '/screenshots/')
+    await fs.writeFile(__dirname + '/screenshots/.gitkeep', '')
+    
     const paths = await promises.readFile(path.join(__dirname, 'Website', 'WWW', 'sitemap.txt'), 'utf8')
 
     const browser = await puppeteer.launch({ headless: true })
@@ -31,20 +34,26 @@ async function testPages(name = "test"){
         await page.screenshot({ path: `./tests/core/screenshots/${p.replace(/\//g, '_')}.png` })
         page.close()
 
-        console.log(`${name}: ${index} of ${pathSplit.length} - ${p}`)
+        console.log(`${name}: ${index} of ${pathSplit.length}`)
     }
     
-    console.log(`${name}: done\n`)
+    const pageTimeLogsFilter = PageTimeLogger.eventLog.filter(filter)
+    const sumTime = pageTimeLogsFilter.reduce((last, current) => last + current.time, 0)
+    console.log(`${name}: done, average time:${(sumTime/pageTimeLogsFilter.length).toFixed(3)}s \n`)
 }
 
+PageTimeLogger.event('compile-time', ({time, file}) => {
+    console.log(`compile-time: ${time}s ${file}`)
+})
+
 if(!process.argv.includes('only'))
-    await testPages()
+    await testPages("test", x => x)
 
 if(process.argv.includes('with-production')){
     Settings.development = false
     await waitProductionBuild()
 
-    await testPages('production')
+    await testPages('production', x => x.debug)
 }
 
 //close server if this only a test

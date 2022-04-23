@@ -15,3 +15,11 @@ pub fn split_max_2(text: &BetterString, sp: &char) -> Vec<BetterString> {
 
     vec![text.substring_end(index), text.substring_start(index+1)]
 }
+
+pub fn index_to_none_some(index: i32) -> Option<usize> {
+    if index < 0 {
+        return None;
+    }
+
+    Some(index as usize)
+}
