@@ -49,6 +49,11 @@ export default class TagDataParser {
         return index == -1 ? null : this.valueArray.splice(index, 1).shift();
     }
 
+    private getItem(key: string) {
+        key = key.toLowerCase();
+        return this.valueArray.find(x => x.key.eq.toLowerCase() == key);
+    }
+
     popTracker(key: string): StringTracker | null | boolean {
         return this.popItem(key)?.value
     }
@@ -68,8 +73,8 @@ export default class TagDataParser {
         return value instanceof StringTracker ? value.eq : value;
     }
 
-    popOBJ(key: string): {[key: string | number]: any} | null {
-        return this.popItem(key)?.obj
+    getOBJ(key: string): {[key: string | number]: any} | null {
+        return this.getItem(key)?.obj
     }
 
     popBoolean(key: string, defaultValue?: boolean) {

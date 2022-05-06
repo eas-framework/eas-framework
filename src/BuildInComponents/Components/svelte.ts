@@ -11,7 +11,7 @@ import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
 
 async function ssrHTML(dataTag: TagDataParser, FullPath: string, smallPath: string,sessionInfo: SessionBuild) {
     const getV = (name: string) => {
-        const gv = (name: string) => dataTag.popOBJ(name),
+        const gv = (name: string) => dataTag.getOBJ(name),
             value = gv('ssr' +'-' + name) ?? gv(name);
 
         return value ?? {};
