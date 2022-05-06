@@ -32,13 +32,14 @@ export default async function registerExtension(filePath: string, smallPath: str
     const promises = [];
     for(const file of svelteFiles){
         clearModule(resolve(file)); // delete old imports
-        promises.push(registerExtension(file, BasicSettings.relative(file), sessionInfo))
+        promises.push(registerExtension(file, BasicSettings.relative(file), sessionInfo));
     }
 
     await Promise.all(promises);
     const { js, css, warnings } = svelte.compile(code, <any>options);
     PrintSvelteWarn(warnings, filePath, map);
 
+    await EasyFs.makePathReal(inStaticFile, getTypes.Static[1]);
     await EasyFs.writeFile(fullImportPath, js.code);
 
     if (css.code) {
