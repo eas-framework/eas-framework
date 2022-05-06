@@ -7,16 +7,14 @@ import Base64Id from '../../StringMethods/Id';
 import registerExtension from '../../ImportFiles/ForStatic/Svelte/ssr';
 import ImportWithoutCache, {  } from '../../ImportFiles/redirectCJS';
 import { SessionBuild } from '../../CompileCode/Session';
-import { Capitalize } from '../../ImportFiles/ForStatic/Svelte/preprocess';
 import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
-import JSON5 from 'json5'
 
 async function ssrHTML(dataTag: TagDataParser, FullPath: string, smallPath: string,sessionInfo: SessionBuild) {
     const getV = (name: string) => {
-        const gv = (name: string) => dataTag.popAnyDefault(name,'').trim(),
-            value = gv('ssr' + Capitalize(name)) || gv(name);
+        const gv = (name: string) => dataTag.popOBJ(name),
+            value = gv('ssr' +'-' + name) ?? gv(name);
 
-        return value ? JSON5.parse(`{${value}}`) : {};
+        return value ?? {};
     };
     const buildPath = await registerExtension(FullPath, smallPath, sessionInfo);
     const mode = await ImportWithoutCache(buildPath);
@@ -37,7 +35,7 @@ export default async function BuildCode(type: StringTracker, dataTag: TagDataPar
     const id = dataTag.popAnyDefault('id', Base64Id(inWebPath)),
         have = (name: string) => {
             const value = dataTag.popAnyDefault(name, '').trim();
-            return value ? `,${name}:{${value}}` : '';
+            return value ? `,${name}:${value || '{}'}` : '';
         }, selector = dataTag.popHaveDefault('selector');
 
     const ssr = !selector && dataTag.popBoolean('ssr') ? await ssrHTML(dataTag, FullPath, SmallPath, sessionInfo) : '';

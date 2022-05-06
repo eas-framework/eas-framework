@@ -68,6 +68,10 @@ export default class TagDataParser {
         return value instanceof StringTracker ? value.eq : value;
     }
 
+    popOBJ(key: string): {[key: string | number]: any} | null {
+        return this.popItem(key)?.obj
+    }
+
     popBoolean(key: string, defaultValue?: boolean) {
         return Boolean(this.popString(key) ?? defaultValue)
     }
@@ -138,15 +142,20 @@ export default class TagDataParser {
 
     extends(attr: TagDataParser) {
         for (const data of attr.valueArray) {
-            const have = this.valueArray.find(x => x.key.eq.toLowerCase() == data.key.eq.toLowerCase());
+            let key = data.key.eq.toLocaleLowerCase();
+            const isClass = key == 'extends-class';
 
-            const isClass = data.key.eq.toLocaleLowerCase() == 'class';
+            if (isClass)
+                key = 'class';
+
+            const have = this.valueArray.find(x => x.key.eq.toLowerCase() == key);
+
             if (isClass && have) {
                 if(have.value instanceof StringTracker)
                     have.value = have.value.Plus(' ', data.value).trimStart();
                 else
                     have.value = data.value;
-            } else if(!have || isClass){
+            } else if(!have){
                 this.valueArray.unshift({...data});
             }
         }

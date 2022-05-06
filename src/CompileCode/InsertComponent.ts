@@ -153,7 +153,7 @@ export default class InsertComponent extends InsertComponentBase {
         return this.addDefaultValues(foundSetters, fileData);
     }
 
-    async buildTagBasic(fileData: StringTracker, tagData: TagDataParser, path: string, SmallPath: string, pathName: string, sessionInfo: SessionBuild, BetweenTagData?: StringTracker) {
+    async buildTagBasic(fileData: StringTracker, tagData: TagDataParser, path: string, SmallPath: string, pathName: string, sessionInfo: SessionBuild, BetweenTagData?: StringTracker, extendsAttributes? : TagDataParser) {
         fileData = await this.PluginBuild.BuildComponent(fileData, path, pathName, sessionInfo);
 
         fileData = this.parseComponentProps(tagData, fileData);
@@ -162,7 +162,7 @@ export default class InsertComponent extends InsertComponentBase {
 
         pathName = pathName + ' -> ' + SmallPath;
 
-        fileData = await this.StartReplace(fileData, pathName, sessionInfo);
+        fileData = await this.StartReplace(fileData, pathName, sessionInfo, extendsAttributes);
 
         fileData = await ParseDebugInfo(fileData, `${pathName} ->\n${SmallPath}`);
 
@@ -181,16 +181,19 @@ export default class InsertComponent extends InsertComponentBase {
         return mapAttributes;
     }
 
-    async insertTagData(pathName: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, sessionInfo }: { sessionInfo: SessionBuild, BetweenTagData?: StringTracker }) {
+    async insertTagData(pathName: string, type: StringTracker, dataTag: StringTracker, { BetweenTagData, extendsAttributes, sessionInfo }: { sessionInfo: SessionBuild, BetweenTagData?: StringTracker, extendsAttributes?: TagDataParser }) {
         const dataParser = new TagDataParser(dataTag), BuildIn = IsInclude(type.eq);
         await dataParser.parser();
+        extendsAttributes && dataParser.extends(extendsAttributes);
+        extendsAttributes = null;
 
         let fileData: StringTracker, SearchInComment = true, AllPathTypes: PathTypes = {}, addStringInfo: string;
 
         if (BuildIn) {//check if it build in component
-            const { compiledString, checkComponents } = await StartCompiling(pathName, type, dataParser, BetweenTagData ?? new StringTracker(), this, sessionInfo);
+            const { compiledString, checkComponents, addAttributes } = await StartCompiling(pathName, type, dataParser, BetweenTagData ?? new StringTracker(), this, sessionInfo);
             fileData = compiledString;
             SearchInComment = checkComponents;
+            extendsAttributes = addAttributes;
         } else {
 
             //rebuild formatted component
@@ -243,7 +246,7 @@ export default class InsertComponent extends InsertComponentBase {
         if (SearchInComment && (fileData.length > 0 || BetweenTagData)) {
             const { SmallPath, FullPath } = AllPathTypes;
 
-            fileData = await this.buildTagBasic(fileData, dataParser, BuildIn ? type.eq : FullPath, BuildIn ? type.eq : SmallPath, pathName, sessionInfo, BetweenTagData);
+            fileData = await this.buildTagBasic(fileData, dataParser, BuildIn ? type.eq : FullPath, BuildIn ? type.eq : SmallPath, pathName, sessionInfo, BetweenTagData, extendsAttributes);
             addStringInfo && fileData.AddTextBeforeNoTrack(addStringInfo);
         }
 
@@ -276,7 +279,7 @@ export default class InsertComponent extends InsertComponentBase {
         return startData;
     }
 
-    async StartReplace(data: StringTracker, pathName: string, sessionInfo: SessionBuild): Promise<StringTracker> {
+    async StartReplace(data: StringTracker, pathName: string, sessionInfo: SessionBuild, extendsAttributes?: TagDataParser): Promise<StringTracker> {
         let find: number;
 
         const promiseBuild: (StringTracker | Promise<StringTracker>)[] = [];
@@ -318,7 +321,7 @@ export default class InsertComponent extends InsertComponentBase {
             if (startFrom.at(findEndOfSmallTag - 1).eq == '/') {//small tag
                 promiseBuild.push(
                     this.CheckMinHTML(this.CheckMinHTMLText(cutStartData)),
-                    this.insertTagData(pathName, tagType, inTag, { sessionInfo })
+                    this.insertTagData(pathName, tagType, inTag, { sessionInfo, extendsAttributes })
                 );
 
                 data = NextTextTag;
@@ -348,10 +351,18 @@ export default class InsertComponent extends InsertComponentBase {
             const NextDataClose = NextTextTag.substring(BetweenTagDataCloseIndex);
             const NextDataAfterClose = BetweenTagDataCloseIndex != null ? NextDataClose.substring(BaseReader.findEndOfDef(NextDataClose.eq, '>') + 1) : NextDataClose; // search for the close of a big tag just if the tag is valid
 
-            promiseBuild.push(
-                this.CheckMinHTML(cutStartData),
-                this.insertTagData(pathName, tagType, inTag, { BetweenTagData, sessionInfo })
-            );
+            promiseBuild.push(this.CheckMinHTML(cutStartData)) // add the data before the tag
+            
+            if(tagType.eq == 'result'){ //result component - wait for previous children components
+                promiseBuild.push((async () => {
+                    await Promise.all([...promiseBuild])
+                    return this.insertTagData(pathName, tagType, inTag, { BetweenTagData, sessionInfo, extendsAttributes })
+                })());
+            } else {
+                promiseBuild.push(
+                    this.insertTagData(pathName, tagType, inTag, { BetweenTagData, sessionInfo, extendsAttributes })
+                );
+            }
 
             data = NextDataAfterClose;
         }

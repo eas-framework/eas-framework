@@ -15,8 +15,9 @@ import InsertComponent from '../CompileCode/InsertComponent';
 import record, { updateRecords, perCompile as perCompileRecord, postCompile as postCompileRecord, deleteBeforeReBuild } from './Components/record';
 import search from './Components/search';
 import TagDataParser from '../CompileCode/XMLHelpers/TagDataParser';
+import extendsAttributes from './Components/extends';
 
-export const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown", "record", "search"];
+export const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown", "record", "search", "extends", "result"];
 
 export function StartCompiling(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     let reData: Promise<BuildInComponent>;
@@ -57,6 +58,10 @@ export function StartCompiling(pathName: string, type: StringTracker, dataTag: T
             break;
         case "markdown":
             reData = markdown(type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            break;
+        case "extends":
+        case "result":
+            reData = extendsAttributes(BetweenTagData, dataTag)
             break;
         default:
             console.error("Component is not build yet");

@@ -1,0 +1,12 @@
+@[model='../server' title='Extends Result']
+<@body/>
+<extends counter={current: 1}>
+    <Increase folder/>
+    <Increase folder/>
+    <Increase folder/>
+    <hr/>
+    <result>
+        <PrintCounter folder/>
+    </result>
+</extends>
+
