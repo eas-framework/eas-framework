@@ -1,0 +1,8 @@
+@[model='../server' title='Client CSR']
+<@body/>
+@compile {
+    dependence('/compile/dependence/nested/data.serv.txt');
+    import {readFile} from 'fs/promises';
+    const data = await readFile(__dirname + '/nested/data.serv.txt', 'utf8')
+    write(data)
+}

@@ -38,7 +38,7 @@ export default class CRunTime {
     private methods(attributes?: StringAnyMap) {
         const __localpath = '/' + smallPathToPage(this.sessionInfo.smallPath);
         return {
-            string: 'script,style,define,store,page__filename,page__dirname,__localpath,attributes',
+            string: 'script,style,define,store,page__filename,page__dirname,__localpath,attributes,dependence',
             funcs: [
                 this.sessionInfo.script.bind(this.sessionInfo),
                 this.sessionInfo.style.bind(this.sessionInfo),
@@ -47,7 +47,15 @@ export default class CRunTime {
                 this.sessionInfo.fullPath,
                 path.dirname(this.sessionInfo.fullPath),
                 __localpath,
-                attributes || {}
+                attributes || {},
+                (filePath: string) => {
+                    if(path.isAbsolute(filePath)){
+                        filePath = path.join(getTypes.Static[2],filePath);
+                    } else {
+                        filePath = path.join(this.script.extractInfo(), '..', filePath);
+                    }
+                    return this.sessionInfo.dependence(filePath)
+                }
             ]
         }
     }
