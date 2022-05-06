@@ -35,13 +35,6 @@ export default async function BuildScript(inStaticPath: string, isDebug: boolean
         };
     }
 
-
-    const sourceFileClient = js.map.sources[0].substring(1);
-
-    if(isDebug){
-        js.map.sources[0] = sourceFileClient;
-    }
-
     if (SomePlugins("MinJS") || SomePlugins("MinAll")) {
         try {
             const { code, map } = await transform(js.code, {
@@ -67,7 +60,6 @@ export default async function BuildScript(inStaticPath: string, isDebug: boolean
         js.code += toURLComment(js.map);
         
         if (css.code) {
-            css.map.sources[0] = sourceFileClient;
             css.code += toURLComment(css.map, true);
         }
     }
