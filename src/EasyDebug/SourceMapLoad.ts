@@ -27,9 +27,9 @@ function mergeInfoStringTracker(original: StringTracker, generated: StringTracke
     const originalLines = original.split('\n');
     for (const item of generated.getDataArray()) {
         const originalLine = originalLines[item.line - 1]
-        const {line, char, info}  = originalLine?.DefaultInfoText ?? StringTracker.emptyInfo;
+        const {line, char, info}  = originalLine && originalLine.at(item.char - 1).DefaultInfoText || StringTracker.emptyInfo;
         
-        item.char = originalLine && originalLine.at(item.char - 1).DefaultInfoText.char || char;
+        item.char = char;
         item.line = line;
         item.info = info;
     }

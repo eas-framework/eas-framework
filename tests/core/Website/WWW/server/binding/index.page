@@ -11,7 +11,7 @@
     <input type="submit" value="Submit"/>
 </form>
 
-<connect sendTo="connect" name="conServer" validate="3.8..9.0, 8..30"/>
+<connect sendTo="connect" name="conServer" validate="3.8..9.0, 8-30"/>
 <script>
     function sendConnect(num = 3.3, key = "rgergrhe54rhgrrthgeg"){
         conServer(num, key).then(x => console.log(x))

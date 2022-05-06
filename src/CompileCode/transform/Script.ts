@@ -98,7 +98,7 @@ export async function ScriptToEASScriptLastProcesses(text: StringTracker, isType
             ...returnStatement.variables
         }, true),
 
-        minify: sessionInfo.debug,
+        minify: !sessionInfo.debug,
         filename: sessionInfo.smallPath,
         sourceMaps: true
     };
