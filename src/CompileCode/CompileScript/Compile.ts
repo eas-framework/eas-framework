@@ -102,7 +102,7 @@ export default class CRunTime {
             } catch(err){
                 const [funcName, printText] = createNewPrint({
                     errorName: err,
-                    text: err.message,
+                    text: `${err.message}, on file -> ${this.sessionInfo.fullPath}`,
                     type: 'error'
                 });
                 print[funcName](printText);

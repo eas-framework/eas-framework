@@ -64,13 +64,13 @@ export default class ParseBasePage {
     }
 
     async loadSettings(pagePath: string, smallPath: string, pageName: string, { attributes, dynamicCheck}: { attributes?: StringAnyMap, dynamicCheck?: boolean }) {
-        const run = new CRunTime(this.code, this.sessionInfo, smallPath, this.isTs);
-        this.code = await run.compile(attributes);
-
         await this.parseBase(this.code);
         if(this.nonDynamic(dynamicCheck)){
             return false;
         }
+        
+        const run = new CRunTime(this.clearData, this.sessionInfo, smallPath, this.isTs);
+        this.clearData = await run.compile(attributes);
         
         await this.loadCodeFile(pagePath, smallPath, this.isTs, pageName);
 
