@@ -213,6 +213,7 @@ async function makeDefinition(obj: any, urlFrom: string, defineObject: any, Requ
  */
 async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: string, isDebug: boolean, nextPrase: () => Promise<any>) {
     const allowErrorInfo = !GetPlugin("SafeDebug") && isDebug, makeMassage = (e: any) => (isDebug ? print.error(e) : null) + (allowErrorInfo ? `, message: ${e.message}` : '');
+    
     const method = Request.method;
     let methodObj = fileModule[method] || fileModule.default[method]; //Loading the module by method
     let haveMethod = true;
@@ -223,41 +224,28 @@ async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: s
     }
 
     const baseMethod = methodObj;
-
     const defineObject = {};
 
-    const dataDefine = await makeDefinition(methodObj, urlFrom, defineObject, Request, Response, makeMassage); // root level definition
-    if((<any>dataDefine).error) return Response.json(dataDefine);
-    urlFrom = <string>dataDefine;
+    let nestedURL: string;
 
-    let nestedURL = findBestUrlObject(methodObj, urlFrom);
-
-    //parse the url path
-    for(let i = 0; i< 2; i++){
-        while ((nestedURL = findBestUrlObject(methodObj, urlFrom))) {
-            const dataDefine = await makeDefinition(methodObj, urlFrom, defineObject, Request, Response, makeMassage);
-            if((<any>dataDefine).error) return Response.json(dataDefine);
-            urlFrom = <string>dataDefine;
-    
-            urlFrom = trimType('/', urlFrom.substring(nestedURL.length));
+    do { //parse the url path
+        if(nestedURL){
             methodObj = methodObj[nestedURL];
+            urlFrom = trimType('/', urlFrom.substring(nestedURL.length));
         }
+        
+        const dataDefine = await makeDefinition(methodObj, urlFrom, defineObject, Request, Response, makeMassage);
+        if((<any>dataDefine).error) return Response.json(dataDefine);
 
-        if(!haveMethod){ // check if that a method
-            haveMethod = true;
-            methodObj = methodObj[method];
-        }
-    }
+        urlFrom = <string>dataDefine;
+    } while(nestedURL = findBestUrlObject(methodObj, urlFrom));
 
     methodObj = methodObj?.func && methodObj || baseMethod; // if there is an 'any' method
-
-
     if (!methodObj?.func)
         return false;
 
-    const leftData = urlFrom.split('/');
+    const leftData = urlFrom ? urlFrom.split('/'): [];
     const urlData = [];
-
 
     let error: string;
     if (methodObj.validateURL) {
@@ -273,6 +261,7 @@ async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: s
         }
     } else
         urlData.push(...leftData);
+
 
     if (!error && methodObj.validateFunc) {
         let validate: any;
@@ -292,26 +281,25 @@ async function MakeCall(fileModule: any, Request: any, Response: any, urlFrom: s
         return Response.json({ error });
 
     const finalStep = await nextPrase(); // parse data from methods - post, get... + cookies, session...
-
-    let apiResponse: any, newResponse: any;
+    let apiResponse: any;
     try {
         apiResponse = await methodObj.func(Request, Response, urlData, defineObject, leftData);
     } catch (e) {
         if (allowErrorInfo)
-            newResponse = { error: e.message }
+            apiResponse = { error: e.message }
         else
-            newResponse = { error: '500 - Internal Server Error' };
+            apiResponse = { error: '500 - Internal Server Error' };
     }
 
     if (typeof apiResponse == 'string')
-            newResponse = { text: apiResponse };
-        else 
-            newResponse = apiResponse || newResponse;
+            apiResponse = { text: apiResponse };
 
     finalStep();  // save cookies + code
 
-    if (newResponse != null)
-        Response.json(newResponse);
+    if (apiResponse != null) // the response handled on the method
+        Response.json(apiResponse);
+    else if(!Response.finished) // the response is already sent
+        Response.end()
 
     return true;
 }

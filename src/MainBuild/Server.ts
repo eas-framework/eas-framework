@@ -8,6 +8,7 @@ import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import formidable from 'formidable';
 import { UpdateGreenLock } from './ListenGreenLock';
 import http from 'http';
+import updateRequestAttributes from '../Plugins/HTTP';
 
 
 async function requestAndSettings(req: Request, res: Response) {
@@ -93,6 +94,8 @@ async function StartApp(Server?) {
  * @param {Response} res - Response
  */
 async function ParseRequest(req: Request, res: Response) {
+    updateRequestAttributes(req, res);
+    
     if (req.method == 'POST') {
         if (req.headers['content-type']?.startsWith?.('application/json')) {
             Settings.middleware.bodyParser(req, res, () => requestAndSettings(req, res));

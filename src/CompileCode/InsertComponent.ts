@@ -3,7 +3,7 @@ import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import { ParseDebugInfo, CreateFilePath, PathTypes, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug';
 import { AllBuildIn, IsInclude, StartCompiling } from '../BuildInComponents/index';
 import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/StringTracker';
-import AddPlugin from '../Plugins/Index';
+import AddPlugin from '../Plugins/Syntax';
 import {CompileInFileFunc, StringArrayOrObject, StringAnyMap } from './XMLHelpers/CompileTypes';
 import { createNewPrint } from '../OutputInput/Logger';
 import { InsertComponentBase, BaseReader, pool } from './BaseReader/Reader';

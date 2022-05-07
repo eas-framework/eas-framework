@@ -3,7 +3,7 @@ import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import { print } from '../OutputInput/Console';
 import InsertComponent from './InsertComponent';
 import { PageTemplate } from './ScriptTemplate';
-import AddPlugin from '../Plugins/Index';
+import AddPlugin from '../Plugins/Syntax';
 import { CreateFilePath, ParseDebugLine, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug';
 import * as extricate from './XMLHelpers/Extricate';
 import StringTracker from '../EasyDebug/StringTracker';

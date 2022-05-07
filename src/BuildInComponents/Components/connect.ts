@@ -50,7 +50,7 @@ export function addFinalizeBuild(pageData: StringTracker, sessionInfo: SessionBu
             message:${typeof i.message == 'string' ? `"${i.message}"` : i.message},
             validator:[${(i.validator && i.validator.map(compileValues).join(',')) || ''}]
         }`
-    }, {returnData: true})
+    }, { returnData: true })
 }
 
 export async function handelConnector(thisPage: any, connector: any) {
@@ -59,19 +59,14 @@ export async function handelConnector(thisPage: any, connector: any) {
 
     thisPage.setResponse('');
 
-    const betterJSON = (obj: any) => {
-        thisPage.Response.setHeader('Content-Type', 'application/json');
-        thisPage.Response.end(JSON.stringify(obj));
-    }
-
     if (!connector.validator.length || isValid === true)
-        betterJSON(await connector.sendTo(...values));
+        thisPage.Response.json(await connector.sendTo(...values));
 
     else if (connector.notValid)
-        betterJSON(await connector.notValid(...<any>isValid));
+        thisPage.Response.json(await connector.notValid(...<any>isValid));
 
     else if (connector.message)
-        betterJSON({
+        thisPage.Response.json({
             error: typeof connector.message == 'string' ? connector.message : (<any>isValid).shift()
         });
     else
