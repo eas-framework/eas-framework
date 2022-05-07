@@ -5,6 +5,7 @@ import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem';
 import {fileURLToPath} from "url";
 import { SplitFirst } from '../StringMethods/Splitting';
 import { toURLComment } from './SourceMap';
+import { StringMap } from '../CompileCode/XMLHelpers/CompileTypes';
 export abstract class SourceMapBasic {
     protected map: SourceMapGenerator;
     protected fileDirName: string;
@@ -43,6 +44,7 @@ export abstract class SourceMapBasic {
 }
 
 export default class SourceMapStore extends SourceMapBasic {
+    metaMap: StringMap = {}
     private storeString = '';
     private actionLoad: { name: string, data: any[] }[] = [];
 

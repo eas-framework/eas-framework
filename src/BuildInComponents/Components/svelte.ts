@@ -8,6 +8,7 @@ import registerExtension from '../../ImportFiles/ForStatic/Svelte/ssr';
 import ImportWithoutCache, {  } from '../../ImportFiles/redirectCJS';
 import { SessionBuild } from '../../CompileCode/Session';
 import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
+import {v4 as uuid} from 'uuid';
 
 async function ssrHTML(dataTag: TagDataParser, FullPath: string, smallPath: string,sessionInfo: SessionBuild) {
     const getV = (name: string) => {
@@ -32,7 +33,7 @@ export default async function BuildCode(type: StringTracker, dataTag: TagDataPar
 
     sessionInfo.style('/' + inWebPath + '.css');
 
-    const id = dataTag.popAnyDefault('id', Base64Id(inWebPath)),
+    const id = dataTag.popAnyDefault('id', Base64Id(uuid())),
         have = (name: string) => {
             const value = dataTag.popAnyDefault(name, '').trim();
             return value ? `,${name}:${value || '{}'}` : '';
@@ -40,11 +41,17 @@ export default async function BuildCode(type: StringTracker, dataTag: TagDataPar
 
     const ssr = !selector && dataTag.popBoolean('ssr') ? await ssrHTML(dataTag, FullPath, SmallPath, sessionInfo) : '';
 
+    const addString = sessionInfo.addScriptStylePage('module', dataTag, type);
 
-    sessionInfo.addScriptStylePage('module', dataTag, type).addText(
-`import App${id} from '/${inWebPath}';
+    const haveImport = addString.metaMap[inWebPath]; //if this module already imported, not need to import again
+    if(!haveImport){ // not imported yet
+        addString.metaMap[inWebPath] = id;
+    }
+
+    addString.addText(
+`${haveImport ? '': `import App${id} from '/${inWebPath}';`}
 const target${id} = document.querySelector("${selector ? selector : '#' + id}");
-target${id} && new App${id}({
+target${id} && new App${haveImport ?? id}({
     target: target${id}
     ${have('props') + have('options')}${ssr ? ', hydrate: true' : ''}
 });`);
