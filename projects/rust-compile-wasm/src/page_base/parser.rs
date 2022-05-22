@@ -1,6 +1,8 @@
+use std::cell::Ref;
+
 use crate::{
     actions::base_reader::{ find_end_of_def_char},
-    better_string::{ b_string::BetterString},
+    better_string::{ b_string::BetterString, r_string::RefString, u_string::UString},
 };
 
 use lazy_static::lazy_static;
@@ -28,7 +30,7 @@ pub struct PageBaseJSON {
     pub end: usize
 }
 struct TrimBetterIndex {
-    text: BetterString,
+    text: RefString,
     increase_index:usize
 }
 
@@ -47,8 +49,8 @@ impl BaseParser {
         }
     }
 
-    fn skip_escape_for_char(mut text: BetterString, search: &char) -> i32{
-        let mut index_escape = text.index_of_better(&ESCAPE_START);
+    fn skip_escape_for_char(mut text: RefString, search: &char) -> i32{
+        let mut index_escape = text.index_of_better(&*ESCAPE_START);
         let mut have_end= find_end_of_def_char(&text, search);
         let mut add_index = 0;
 
@@ -57,7 +59,7 @@ impl BaseParser {
             text = text.substring_start(substring);
             add_index += substring;
 
-            let end_index = text.index_of_better(&ESCAPE_END);
+            let end_index = text.index_of_better(&*ESCAPE_END);
 
             if end_index != None {
                 let substring = end_index.unwrap() + ESCAPE_END.len();
@@ -67,7 +69,7 @@ impl BaseParser {
                 return (text.len() + add_index)as i32;
             }
 
-            index_escape = text.index_of_better(&ESCAPE_START);
+            index_escape = text.index_of_better(&*ESCAPE_START);
             have_end= find_end_of_def_char(&text, &']');
         }
 
@@ -78,8 +80,8 @@ impl BaseParser {
         add_index as i32 + have_end
     }
 
-    pub fn find_block(&mut self, mut text: BetterString) {
-        let index = text.index_of_better(&SEARCH_START);
+    pub fn find_block(&mut self, mut text: RefString) {
+        let index = text.index_of_better(&*SEARCH_START);
 
         if index == None {
             return;
@@ -88,7 +90,7 @@ impl BaseParser {
         let start = index.unwrap();
         text = text.substring_start(start + SEARCH_START.len());
 
-        let have_end= BaseParser::skip_escape_for_char(text.clone(), &']');
+        let have_end= BaseParser::skip_escape_for_char(text.copy(), &']');
 
         if have_end == -1 {
             return;
@@ -101,8 +103,8 @@ impl BaseParser {
         self.values.full_parser(text.substring(0, have_end_usize).trim_end(), start +SEARCH_START.len());
     }
 
-    pub fn builder(&mut self, text: BetterString) -> PageBaseJSON {
-        self.find_block(text.clone());
+    pub fn builder(&mut self, text: RefString) -> PageBaseJSON {
+        self.find_block(text.copy());
 
         let mut values = vec![];
 

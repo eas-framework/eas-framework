@@ -2,7 +2,7 @@ use crate::{
     actions::{
         base_reader::{block_skip_text, find_end_of_q, find_end_of_word},
     },
-    better_string::b_string::BetterString,
+    better_string::{b_string::BetterString, r_string::RefString, u_string::UString},
 };
 
 use lazy_static::lazy_static;
@@ -35,7 +35,7 @@ pub struct HTMLAttrBlock {
 }
 
 struct TrimBetterIndex {
-    text: BetterString,
+    text: RefString,
     increase_index: usize,
 }
 
@@ -48,7 +48,7 @@ impl HTMLAttr {
         HTMLAttr { values: vec![] }
     }
 
-    fn trim_start(text: BetterString) -> TrimBetterIndex {
+    fn trim_start(text: RefString) -> TrimBetterIndex {
         let trim_text = text.trim_start();
         let trim_text_len = trim_text.len();
 
@@ -73,7 +73,7 @@ impl HTMLAttr {
         return true;
     }
 
-    fn parse_inside(&mut self, mut text: BetterString, mut add_index: usize) {
+    fn parse_inside(&mut self, mut text: RefString, mut add_index: usize) {
         let trim_that = HTMLAttr::trim_start(text);
         let space = trim_that.increase_index > 0;
         text = trim_that.text;
@@ -158,15 +158,15 @@ impl HTMLAttr {
         }
     }
 
-    pub fn full_parser(&mut self, mut text: BetterString, add_index: usize) {
-        let mut index_escape = text.index_of_better(&ESCAPE_START);
+    pub fn full_parser(&mut self, mut text: RefString, add_index: usize) {
+        let mut index_escape = text.index_of_better(&*ESCAPE_START);
         let mut rebuild_text: BetterString = BetterString::new("");
 
         while index_escape != None {
             rebuild_text = rebuild_text.concat(&text.substring_end(index_escape.unwrap()));
             text = text.substring_start(index_escape.unwrap() + ESCAPE_START.len());
 
-            let end_index = text.index_of_better(&ESCAPE_END);
+            let end_index = text.index_of_better(&*ESCAPE_END);
             let end_with_escape;
 
             if end_index == None {
@@ -181,9 +181,9 @@ impl HTMLAttr {
             ));
 
             text = text.substring_start(end_with_escape);
-            index_escape = text.index_of_better(&ESCAPE_START);
+            index_escape = text.index_of_better(&*ESCAPE_START);
         }
 
-        self.parse_inside(rebuild_text.concat(&text), add_index);
+        self.parse_inside(rebuild_text.concat(&text).as_ref(), add_index);
     }
 }

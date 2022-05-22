@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 
-use crate::{actions::base_reader::find_end_of_def, better_string::b_string::BetterString};
+use crate::{actions::base_reader::find_end_of_def, better_string::{b_string::BetterString, u_string::UString, r_string::RefString}};
 
 lazy_static! {
     static ref END_LINE: BetterString = BetterString::new("\n");
@@ -31,7 +31,7 @@ impl EJS {
         }
     }
 
-    pub fn insert_script(&mut self, mut text: BetterString, mut add_index: usize) {
+    pub fn insert_script(&mut self, mut text: RefString, mut add_index: usize) {
         if text.is_empty() {
             return;
         }
@@ -56,7 +56,7 @@ impl EJS {
 
             add_index += 1;
             text = text.substring_start(1);
-            let find_print = find_end_of_def(&text, vec![&END_CHAR, &END_LINE, &self.end_script]);
+            let find_print = find_end_of_def(&text, vec![&*END_CHAR, &*END_LINE, &self.end_script]);
             let find_print_usize;
 
             if find_print == -1 {
@@ -86,7 +86,7 @@ impl EJS {
             name = "no-track".to_owned();
         }
 
-        if text.starts_with(&DEBUG) {
+        if text.starts_with(&*DEBUG) {
             // debug info
             add_start += DEBUG.len();
             name = "debug".to_owned();
@@ -99,7 +99,7 @@ impl EJS {
         });
     }
 
-    pub fn builder(&mut self, mut text: BetterString, mut add_index: usize) {
+    pub fn builder(&mut self, text: &RefString, mut add_index: usize) {
         if text.is_empty() {
             return;
         }
@@ -124,7 +124,7 @@ impl EJS {
         });
 
         let substring = start_num + self.start_script.len();
-        text = text.substring_start(substring);
+        let text = &text.substring_start(substring);
         add_index += substring;
 
         let end = text.index_of_better(&self.end_script).unwrap_or(text.len());
@@ -132,6 +132,6 @@ impl EJS {
         self.insert_script(text.substring_end(end), add_index); // insert script block
 
         let substring = end + self.end_script.len();
-        self.builder(text.substring_start(substring), add_index + substring);
+        self.builder(&text.substring_start(substring), add_index + substring);
     }
 }

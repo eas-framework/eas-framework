@@ -1,4 +1,4 @@
-use super::b_string::BetterString;
+use super::u_string::UString;
 
 pub fn index_default_plus(index: Option<usize>, plus: usize) -> usize {
     if index == None {
@@ -8,7 +8,7 @@ pub fn index_default_plus(index: Option<usize>, plus: usize) -> usize {
     index.unwrap() + plus
 }
 
-pub fn first_non_alphabetic(text: &BetterString, find: char, skip: Vec<char>) -> i32 {
+pub fn first_non_alphabetic<T: UString>(text: &T, find: char, skip: Vec<char>) -> i32 {
     for i in 0..text.len() {
         let c = text.at(i);
 

@@ -1,6 +1,8 @@
 use crate::better_string::b_string::BetterString;
 use crate::actions::base_actions::*;
 use crate::actions::base_reader;
+use crate::better_string::r_string::RefString;
+use crate::better_string::u_string::UString;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use regex::Regex;
@@ -40,7 +42,7 @@ impl InsertComponent {
         }
     }
 
-    fn find_special_tag(&self, tag: &BetterString) -> Option<&Vec<BetterString>> {
+    fn find_special_tag<T: UString>(&self, tag: &T) -> Option<&Vec<BetterString>> {
         for i in self.skip_special_tag.iter() {            
             if tag.starts_with(&i[0]) {
                 return Some(i);
@@ -49,7 +51,7 @@ impl InsertComponent {
         None
     }
 
-    fn char_html_element_with_cache(&mut self, text: &BetterString, search: &BetterString, search_string: &str, as_big_tag: bool,add_index: usize) -> i32 {
+    fn char_html_element_with_cache<T: UString, S: UString>(&mut self, text: &T, search: &S, search_string: &str, as_big_tag: bool,add_index: usize) -> i32 {
         let found = self.cache.iter().find(|x| x.index == add_index && x.search == search_string);
 
         if found.is_some() {
@@ -67,7 +69,7 @@ impl InsertComponent {
         get_index
     }
 
-    fn find_close_char_html_element(&mut self, text: &BetterString, search: &BetterString, as_big_tag: bool,add_index: usize, in_tag: bool) -> i32 {
+    fn find_close_char_html_element<T: UString, S: UString>(&mut self, text: &T, search: &S, as_big_tag: bool,add_index: usize, in_tag: bool) -> i32 {
         let chars_len = text.len();
     
         if chars_len < search.len() {
@@ -97,7 +99,7 @@ impl InsertComponent {
                         continue;
                     }
     
-                     let found = self.find_close_char_html_element(&sub_text, &HTML_CLOSE_BETTER, false, 0, true) as usize;
+                     let found = self.find_close_char_html_element(&sub_text, &*HTML_CLOSE_BETTER, false, 0, true) as usize;
     
                     i += found;
     
@@ -108,9 +110,9 @@ impl InsertComponent {
                         
                         let tag_type = &split_max_2(&max_find, &' ')[0];
                         let mut end_tag_index;
-                        let skip_tag = self.simple_skip.iter().any(|x| x.eq(&tag_type));
+                        let skip_tag = self.simple_skip.iter().any(|x| x.eq(tag_type));
                         
-                        let find_end = &HTML_SMALL_CLOSE_BETTER.concat(&tag_type);
+                        let find_end = &HTML_SMALL_CLOSE_BETTER.concat(tag_type);
     
                         let next_index_from_start =
                             add_index + copy_start_index + found + 1;
@@ -152,7 +154,7 @@ impl InsertComponent {
                     let len_tag_info1 = tag_info[1].len();
     
                     
-                    let end_script = sub_text.substring_start(len_tag_info0).index_of_better(&tag_info[1].concat(&HTML_CLOSE_BETTER));
+                    let end_script = sub_text.substring_start(len_tag_info0).index_of_better(&tag_info[1].concat(&*HTML_CLOSE_BETTER));
                     if end_script != None {
                         i += end_script.unwrap() + len_tag_info0 + len_tag_info1 + 1;
                     } else {
@@ -166,13 +168,13 @@ impl InsertComponent {
     }
 
     pub fn find_close_char(&mut self, text: &str, search: &str)  -> i32 {
-        self.find_close_char_html_element(&BetterString::new(text), &BetterString::new(search), false, 0, true)
+        self.find_close_char_html_element(&RefString::new(&text.chars().collect()), &RefString::new(&search.chars().collect()), false, 0, true)
 
     }
 
     pub fn public_html_element(&mut self, text: &str, search: &str) -> i32 {
         let be_search = "</".to_owned() + search;
-        self.find_close_char_html_element(&BetterString::new(text), &BetterString::new(&be_search), false, 0, false)
+        self.find_close_char_html_element(&RefString::new(&text.chars().collect()), &RefString::new(&be_search.chars().collect()), false, 0, false)
     }
 
     pub fn clear(&mut self) {

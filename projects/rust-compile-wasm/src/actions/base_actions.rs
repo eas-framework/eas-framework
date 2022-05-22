@@ -1,14 +1,14 @@
-use crate::better_string::b_string::BetterString;
+use crate::better_string::{b_string::BetterString, u_string::UString};
 
 pub fn find_char_arr(arr: [&char; 3], value: &&char) -> bool{
     arr.iter().any(|x:&&char| x == value)
 }
 
-pub fn split_max_2(text: &BetterString, sp: &char) -> Vec<BetterString> {
+pub fn split_max_2<T: UString>(text: &T, sp: &char) -> Vec<T> {
     let split = text.index_of_char(sp);
 
     if split.is_none() {
-        return vec![text.clone()];
+        return vec![text.copy()];
     }
     
     let index = split.unwrap();

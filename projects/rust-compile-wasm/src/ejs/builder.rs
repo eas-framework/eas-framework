@@ -1,16 +1,19 @@
-use crate::better_string::b_string::BetterString;
+use crate::better_string::{u_string::UString, b_string::BetterString, r_string::RefString};
 
 use super::ejs_syntax::EJS;
 
 pub fn rebuild_ejs(text: &str) -> String {
-    let better_text = BetterString::new(text);
+    let chars = text.chars().collect();
+    let better_text = RefString::new(&chars);
     let mut builder = EJS::new(BetterString::new("<%"), BetterString::new("%>"));
-    builder.builder(better_text.clone(), 0);
+    builder.builder(&better_text, 0);
 
     let mut output = String::new();
 
     for i in builder.values {
         let substring = better_text.substring(i.start, i.end).to_string();
+
+        // println!("current: {}, type: {}, all: {}", &substring, i.name, output);
 
         output += &match i.name.as_str() {
             "text" => substring,
@@ -20,7 +23,8 @@ pub fn rebuild_ejs(text: &str) -> String {
             "debug" => format!("<%{{?debug_file?}}{}%>", substring),
             "no-track" => format!("<%!{}%>", substring),
             _ => "Error".to_owned(),
-        }
+        };
+
     }
 
     output
@@ -28,7 +32,7 @@ pub fn rebuild_ejs(text: &str) -> String {
 
 pub fn output_json(text: &str, start: &str, end: &str) -> String {
     let mut builder = EJS::new(BetterString::new(start), BetterString::new(end));
-    builder.builder(BetterString::new(text), 0);
+    builder.builder(&RefString::new(&text.chars().collect()), 0);
 
     serde_json::to_string(&builder.values).unwrap()
 }

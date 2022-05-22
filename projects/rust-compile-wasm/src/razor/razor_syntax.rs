@@ -2,7 +2,7 @@ use crate::{
     actions::base_reader::{
         block_skip_text, find_end_of_def_char, find_end_of_def_word,
     },
-    better_string::{b_action::first_non_alphabetic, b_string::BetterString},
+    better_string::{b_action::first_non_alphabetic, b_string::BetterString, u_string::UString},
 };
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -59,12 +59,13 @@ pub struct Razor {
     pub values: Vec<RazorBlock>,
 }
 
+
 impl Razor {
     pub fn new() -> Self {
         Razor { values: vec![] }
     }
 
-    fn find_first_word(text: &BetterString) -> Option<usize> {
+    fn find_first_word<T: UString>(text: &T) -> Option<usize> {
         for i in 0..text.len() {
             let c = text.at(i);
 
@@ -79,7 +80,7 @@ impl Razor {
         None
     }
 
-    fn skip_it(&mut self, text: &BetterString, split_index: usize, add_index: usize, space: usize) {
+    fn skip_it<T: UString>(&mut self, text: &T, split_index: usize, add_index: usize, space: usize) {
         self.values.push(RazorBlock {
             name: TEXT.to_string(),
             start: add_index,
@@ -97,14 +98,14 @@ impl Razor {
         });
     }
 
-    fn syntax_start(
+    fn syntax_start<T: UString>(
         &mut self,
-        text: &BetterString,
+        text: &T,
         add_index: usize,
-    ) -> (BetterString, BetterString, usize, usize) {
+    ) -> (T, T, usize, usize) {
         let start_parentheses = first_non_alphabetic(text, '(', vec![' ']);
 
-        let mut text = text.clone();
+        let mut text = text.copy();
         let mut next_index = 0;
         if start_parentheses > 0 {
             next_index = start_parentheses as usize + 1;
@@ -134,12 +135,12 @@ impl Razor {
         (main_data, after_main, connect_index, after_main_index)
     }
 
-    fn switch_parser(&mut self, text: &BetterString, add_index: usize) {
+    fn switch_parser<T: UString>(&mut self, text: &T, add_index: usize) {
         let (mut main_data, after_main, mut add_index, after_main_index) =
-            self.syntax_start(&text, add_index);
+            self.syntax_start(text, add_index);
 
         loop {
-            let case = main_data.index_of_better(&CASE);
+            let case = main_data.index_of_better(&*CASE);
 
             if case == None {
                 break;
@@ -155,10 +156,10 @@ impl Razor {
 
             let next_text = main_data.substring_start(start_case);
 
-            let mut end_case = find_end_of_def_word(&next_text, &CASE);
+            let mut end_case = find_end_of_def_word(&next_text, &*CASE);
 
             if end_case == -1 {
-                end_case = find_end_of_def_word(&next_text, &BREAK);
+                end_case = find_end_of_def_word(&next_text, &*BREAK);
 
                 if end_case == -1 {
                     end_case = next_text.len() as i32;
@@ -185,7 +186,7 @@ impl Razor {
         self.builder(&after_main, after_main_index);
     }
 
-    fn has_next(text: &BetterString, check_vector: &Vec<BetterString>) -> bool {
+    fn has_next<T: UString, C: UString>(text: &T, check_vector: &Vec<C>) -> bool {
         for word in check_vector {
             let index = text.index_of_better(word);
 
@@ -203,14 +204,14 @@ impl Razor {
         false
     }
 
-    fn long_syntax(
+    fn long_syntax<T: UString, C: UString>(
         &mut self,
-        text: &BetterString,
+        text: &T,
         add_index: usize,
-        check_vector: &Vec<BetterString>,
+        check_vector: &Vec<C>,
     ) {
         let (main_data, after_main, add_index, after_main_index) =
-            self.syntax_start(&text, add_index);
+            self.syntax_start(text, add_index);
 
         self.builder(&main_data, add_index);
 
@@ -224,9 +225,9 @@ impl Razor {
         self.builder(&after_main, after_main_index);
     }
 
-    fn small_syntax(&mut self, text: &BetterString, add_index: usize) {
+    fn small_syntax<T: UString>(&mut self, text: &T, add_index: usize) {
         let (main_data, after_main, add_index, after_main_index) =
-            self.syntax_start(&text, add_index);
+            self.syntax_start(text, add_index);
 
         self.builder(&main_data, add_index);
 
@@ -234,7 +235,7 @@ impl Razor {
         self.builder(&after_main, after_main_index);
     }
 
-    fn handel_write(&mut self, text: &BetterString, add_index: usize, mut name: &str) {
+    fn handel_write<T: UString>(&mut self, text: &T, add_index: usize, mut name: &str) {
         let escape_script = text.at(0) == ':';
         let escape_script_usize = escape_script as usize;
         let is_parenthesis = text.at(escape_script_usize) == '(';
@@ -296,7 +297,7 @@ impl Razor {
         });
     }
 
-    pub fn builder(&mut self, text: &BetterString, mut add_index: usize) {
+    pub fn builder<T: UString>(&mut self, text: &T, mut add_index: usize) {
         let index = text.index_of_char(&RAZOR_CHAR);
 
         if index == None {
@@ -313,7 +314,7 @@ impl Razor {
 
         if RAZOR_CHAR.eq(&text.at(index + 1)) {
             // escape character @@
-            self.skip_it(&text, index+1, add_index, 1);
+            self.skip_it(text, index+1, add_index, 1);
             return;
         }
 
@@ -327,7 +328,7 @@ impl Razor {
 
             add_index += index+2;
             let text = text.substring_start(index+2);
-            let index = text.index_of_better(&COMMENT_END);
+            let index = text.index_of_better(&*COMMENT_END);
             let num_index;
 
             if index == None {

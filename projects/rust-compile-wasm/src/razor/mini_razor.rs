@@ -2,7 +2,7 @@ use crate::{
     actions::base_reader::{
         block_skip_text
     },
-    better_string::{ b_string::BetterString},
+    better_string::{ b_string::BetterString, u_string::UString},
 };
 
 
@@ -10,6 +10,7 @@ pub struct MiniRazor {
     pub values: Vec<usize>,
     pub find: BetterString
 }
+
 
 impl MiniRazor {
     pub fn new(find: &str) -> Self {
@@ -19,7 +20,7 @@ impl MiniRazor {
         }
     }
 
-    fn curly_brackets(&mut self, text: &BetterString, mut add_index: usize) {
+    fn curly_brackets<T: UString>(&mut self, text: &T, mut add_index: usize) {
 
         let start_switch = text.index_of_char(&'{').unwrap() + 1;
         let next = text.substring_start(start_switch);
@@ -34,7 +35,7 @@ impl MiniRazor {
     }
 
 
-    pub fn builder(&mut self, text: &BetterString, add_index: usize) {
+    pub fn builder<T: UString>(&mut self, text: &T, add_index: usize) {
         let index = text.index_of_better(&self.find);
 
         if index == None {

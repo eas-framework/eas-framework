@@ -1,13 +1,13 @@
-use crate::better_string::b_string::BetterString;
+use crate::better_string::{b_string::BetterString, u_string::UString};
 
 pub static TEXT_BLOCK: [&'static char; 3] = [&'"', &'\'', &'`'];
 
-fn not_escaped(text: &BetterString, index: usize) -> bool {
+fn not_escaped<T: UString>(text: &T, index: usize) -> bool {
     let back_one: char = text.at_minus(index, 1);
     back_one != '\\' || back_one == '\\' && text.at_minus(index, 2) == '\\'
 }
 
-pub fn find_end_of_q(text: &BetterString, q_type: char) -> usize {
+pub fn find_end_of_q<T: UString>(text: &T, q_type: char) -> usize {
     let length = text.len();
     for i in 0..length {
         if text.at(i) == q_type && not_escaped(text, i) {
@@ -18,7 +18,7 @@ pub fn find_end_of_q(text: &BetterString, q_type: char) -> usize {
     length
 }
 
-pub fn find_end_of_def(text: &BetterString, end_type: Vec<&BetterString>) -> i32 {
+pub fn find_end_of_def<T: UString, V: UString>(text: &T, end_type: Vec<&V>) -> i32 {
     let length = text.len();
 
     let mut i = 0;
@@ -32,7 +32,7 @@ pub fn find_end_of_def(text: &BetterString, end_type: Vec<&BetterString>) -> i32
 
         let next = text.substring_start(i);
 
-        if end_type.iter().any(|x| next.starts_with(x)) {
+        if end_type.iter().any(|x| next.starts_with(x.to_owned())) {
             return i as i32;
         }
 
@@ -42,7 +42,7 @@ pub fn find_end_of_def(text: &BetterString, end_type: Vec<&BetterString>) -> i32
     -1
 }
 
-pub fn find_end_of_def_word(text: &BetterString, end_type: &BetterString) -> i32 {
+pub fn find_end_of_def_word<T: UString, E: UString>(text: &T, end_type: &E) -> i32 {
     let length = text.len();
 
     let mut i = 0;
@@ -64,7 +64,7 @@ pub fn find_end_of_def_word(text: &BetterString, end_type: &BetterString) -> i32
     -1
 }
 
-pub fn find_end_of_word(text: &BetterString) -> usize {
+pub fn find_end_of_word<T: UString>(text: &T) -> usize {
     let length = text.len();
 
     let mut i = 0;
@@ -81,7 +81,7 @@ pub fn find_end_of_word(text: &BetterString) -> usize {
     length
 }
 
-pub fn find_end_of_def_char(text: &BetterString, end_type: &char) -> i32 {
+pub fn find_end_of_def_char<T: UString>(text: &T, end_type: &char) -> i32 {
     let length = text.len();
 
     let mut i = 0;
@@ -100,7 +100,7 @@ pub fn find_end_of_def_char(text: &BetterString, end_type: &char) -> i32 {
     -1
 }
 
-pub fn block_skip_text(text: &BetterString, char_types: Vec<char>) -> i32 {
+pub fn block_skip_text<T: UString>(text: &T, char_types: Vec<char>) -> i32 {
     let mut count_have = 1;
     let mut i = 0;
 
