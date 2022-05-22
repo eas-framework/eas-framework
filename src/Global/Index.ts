@@ -7,7 +7,7 @@ import {print} from '../OutputInput/Console'
 declare global {
     let LocalSql: LocalSql
     let dump: typeof console
-    let debug: boolean
+    let __DEBUG__: boolean
 }
 
 export {LocalSql, print as dump};

@@ -1,5 +1,7 @@
-@[model=Website title="Home Page"]
-<@body/>
+@[model=Website]
+<@title>
+Home Page
+<@body>
 <markdown>
 # Welcome to EAS Testing Website
 
