@@ -67,7 +67,7 @@
     "puppeteer": "^13.5.2",
     "sass": "^1.49.8",
     "selfsigned": "^2.0.1",
-    "source-map": "^0.7.3",
+    "source-map": "^0.8.0-beta.0",
     "source-map-js": "^0.6.2",
     "source-map-support": "^0.5.20",
     "sql.js": "^1.6.2",

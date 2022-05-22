@@ -30,7 +30,7 @@ async function testPages(name, filter){
             await dialog.accept("This is a test");
         });
     
-        await page.goto(`http://localhost:${Settings.serve.port + p}`, { timeout: 5000, waitUntil: 'networkidle2' });
+        await page.goto(`http://localhost:${Settings.serve.port + p}`, { timeout: 999999999, waitUntil: 'networkidle2' });
         await page.screenshot({ path: `./tests/core/screenshots/${p.replace(/\//g, '_')}.png` })
         page.close()
 

@@ -93,25 +93,38 @@ async function StartApp(Server?) {
  * @param {Request} req - The incoming request.
  * @param {Response} res - Response
  */
-async function ParseRequest(req: Request, res: Response) {
+function ParseRequest(req: Request, res: Response) {
     updateRequestAttributes(req, res);
-    
-    if (req.method == 'POST') {
-        if (req.headers['content-type']?.startsWith?.('application/json')) {
-            Settings.middleware.bodyParser(req, res, () => requestAndSettings(req, res));
-        } else {
-            new formidable.IncomingForm(Settings.middleware.formidable).parse(req, (err, fields, files) => {
+
+    return new Promise(async (resolve: any) => {
+        if (req.method === 'POST') {
+
+            if (req.headers['content-type']?.startsWith?.('application/json')) {
+                Settings.middleware.bodyParser(req, res, async () => {
+                    await requestAndSettings(req, res)
+                    resolve();
+                });
+                return;
+            }
+
+
+            const form = new formidable.IncomingForm();
+            form.parse(req, async (err, fields, files) => {
                 if (err) {
                     print.error(err);
                 }
-                req.fields = fields;
+                req.body = fields;
                 req.files = files;
-                requestAndSettings(req, res);
+                await requestAndSettings(req, res);
+                resolve();
             });
+
+            return;
         }
-    } else {
-        requestAndSettings(req, res);
-    }
+        
+        await requestAndSettings(req, res);
+        resolve();
+    })
 }
 
 async function StartListing(app, Server) {

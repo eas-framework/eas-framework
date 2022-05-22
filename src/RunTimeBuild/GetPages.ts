@@ -94,8 +94,8 @@ async function ParseBasicInfo(Request: Request | any, Response: Response, code: 
         Request.body = false;
 
 
-    if (Request.closed)
-        return;
+    if (Response.headersSent)
+        throw new Error('Response headers already sent');
 
 
     await new Promise(next => Settings.Cookies(Request, Response, next));
