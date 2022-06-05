@@ -32,7 +32,8 @@ pub fn rebuild_ejs(text: &str) -> String {
 
 pub fn output_json(text: &str, start: &str, end: &str) -> String {
     let mut builder = EJS::new(BetterString::new(start), BetterString::new(end));
-    builder.builder(&RefString::new(&text.chars().collect()), 0);
+    let chars: Vec<char> = text.chars().collect();
+    builder.builder(&RefString::new(&chars), 0);
 
     serde_json::to_string(&builder.values).unwrap()
 }

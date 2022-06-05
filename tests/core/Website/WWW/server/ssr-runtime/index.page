@@ -1,7 +1,8 @@
-@[model='../server' title="SSR RunTime" codeFile=inherit]
-<@body/>
+#[model='../server' title="SSR RunTime" codeFile=inherit]
+<content:body>
 <p>Pooki</p>
-@{
-    include './component.inte'
-    include '../index'
+@include('./component.integ')
+
+@code {
+    await include('../index')
 }

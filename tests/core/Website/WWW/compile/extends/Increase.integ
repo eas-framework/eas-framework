@@ -1,0 +1,4 @@
+#code {
+    attrs.counter.current++
+}
+<p>Counter Now: #(attrs.counter.current)</p>

@@ -84,14 +84,15 @@ interface GlobalSettings {
         validPath: ((url: string, req?: Request, res?: Response<any>) => boolean | Promise<boolean>)[],
         errorPages?: fileByUrl.ErrorPages
         urlStop?: string[],
-        ignoreTypes?: string[],
-        ignorePaths?: string[],
+        allowExt?: string[], // extends allowed file extensions, only thous can be served - default list on StaticFiles.ts
+        ignoreExt?: string[], // ignore file extensions - override default allowed extension (default - common server files)
+        ignorePaths?: string[], // hide paths from the server
         sitemap?:boolean | {
             rules?: boolean,
             urlStop?: boolean,
             errorPages?: boolean,
             validPath?: boolean,
-            file?: string // file in static folder
+            file?: string // where to save the sitemap
         }
     },
     serveLimits: serveLimits

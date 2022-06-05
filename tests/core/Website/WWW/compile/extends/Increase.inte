@@ -1,6 +1,0 @@
-@compile {
-    attributes.counter.current++
-}
-<p>Counter Now: @compile {
-    write(attributes.counter.current)
-}</p>

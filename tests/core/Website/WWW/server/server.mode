@@ -1,1 +1,0 @@
-@[model='TestBreadcrumb' title='Server' link='server/index' body=inherit pageTitle='<:title/>']

@@ -72,10 +72,10 @@ export class InsertComponentBase {
     }
 }
 
-type ParseBlocks = { name: string, start: number, end: number }[]
+export type ParseBlocks = { name: string, start: number, end: number }[]
 
-export async function RazorToEJS(text: string): Promise<ParseBlocks> {
-    return JSON.parse(await pool.exec('RazorToEJS', [text]));
+export async function RazorToEJS(text: string, compile?: boolean): Promise<ParseBlocks> {
+    return JSON.parse(await pool.exec(compile ? 'RazorToEJSCompile': 'RazorToEJS', [text]));
 }
 
 export async function RazorToEJSMini(text: string, find: string): Promise<number[]> {

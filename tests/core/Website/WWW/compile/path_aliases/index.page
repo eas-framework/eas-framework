@@ -1,6 +1,6 @@
-@[model='../server' title='Path Aliases']
-<@body/>
-@{
+#[model='../server' title='Path Aliases']
+<content:body>
+@code {
     import {func} from '@imr/from1.serv'
 }
-@func()
+@(func())

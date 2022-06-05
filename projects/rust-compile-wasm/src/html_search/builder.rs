@@ -168,13 +168,19 @@ impl InsertComponent {
     }
 
     pub fn find_close_char(&mut self, text: &str, search: &str)  -> i32 {
-        self.find_close_char_html_element(&RefString::new(&text.chars().collect()), &RefString::new(&search.chars().collect()), false, 0, true)
+        let text_chars: Vec<char> = text.chars().collect();
+        let search_chars: Vec<char> = search.chars().collect();
+
+        self.find_close_char_html_element(&RefString::new(&text_chars), &RefString::new(&search_chars), false, 0, true)
 
     }
 
     pub fn public_html_element(&mut self, text: &str, search: &str) -> i32 {
         let be_search = "</".to_owned() + search;
-        self.find_close_char_html_element(&RefString::new(&text.chars().collect()), &RefString::new(&be_search.chars().collect()), false, 0, false)
+
+        let text_chars: Vec<char> = text.chars().collect();
+        let search_chars: Vec<char> = be_search.chars().collect();
+        self.find_close_char_html_element(&RefString::new(&text_chars), &RefString::new(&search_chars), false, 0, false)
     }
 
     pub fn clear(&mut self) {

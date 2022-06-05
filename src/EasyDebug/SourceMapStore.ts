@@ -76,7 +76,7 @@ export default class SourceMapStore extends SourceMapBasic {
                 continue;
             }
 
-            if (!waitNextLine && line && info) {
+            if (!waitNextLine && line && info && text.trim()) {
                 waitNextLine = true;
                 this.map.addMapping({
                     original: { line, column: 0 },

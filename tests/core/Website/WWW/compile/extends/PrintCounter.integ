@@ -1,0 +1,1 @@
+<p>Counter Last: #(attrs.counter.current)</p>

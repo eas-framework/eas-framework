@@ -1,5 +1,3 @@
-@[model='../server' title="TypeScript - Import Type"]
-<@body/>
-@{
-   stop();
-}
+#[model='../server' title="TypeScript - Import Type"]
+<content:body>
+@stop()

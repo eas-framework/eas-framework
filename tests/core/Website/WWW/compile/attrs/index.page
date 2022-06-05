@@ -1,0 +1,6 @@
+#[model='../server' title='Rest of Attributes']
+<content:body>
+<textarea style="width: 100%;height: 300px;">
+    <Test id="moo" folder move="" my_o=([1,2,3]) data-move=({a:2, n: true})/>
+</textarea>
+<Test id="moo" folder move="" my_o=([1,2,3]) data-move=({a:2, n: true})/>

@@ -1,0 +1,5 @@
+#default('name', 'Missing name')
+
+<li class="nav-item">
+    <a class="nav-link" href="#(attrs.link)">#(attrs.name)</a>
+</li>

@@ -1,8 +1,8 @@
-@[model='../server' title='Record']
-<@body/>
-<record>
+#[model='../server' title='Record']
+<content:body>
+<eas-record>
     <a href="./page2">page 2</a>
     <h1>This been recorded</h1>
 
     Some more text
-</record>
+</eas-record>

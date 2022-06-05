@@ -9,6 +9,7 @@ import EasyFs from '../OutputInput/EasyFs';
 import { createNewPrint } from '../OutputInput/Logger';
 import { CheckDependencyChange } from '../OutputInput/StoreDeps';
 import { SplitFirst } from '../StringMethods/Splitting';
+import createDateWriter from './DataWriter';
 import { RemoveEndType } from './FileTypes';
 import RequireFile from './ImportFileRuntime';
 import { BasicSettings, getTypes } from './SearchFileSystem';
@@ -188,38 +189,7 @@ function BuildPage(LoadPageFunc: (...data: any[]) => void, run_script_name: stri
     return (async function (Response: Response, Request: Request, Post: { [key: string]: any } | null, Query: { [key: string]: any }, Cookies: { [key: string]: any }, Session: { [key: string]: any }, Files: Files, isDebug: boolean) {
         const out_run_script = { text: '' };
 
-        function ToStringInfo(str: any) {
-            const asString = str?.toString?.();
-            if (asString == null || asString.startsWith('[object Object]')) {
-                return JSON.stringify(str, null, 2);
-            }
-            return asString;
-        }
-
-        function setResponse(text: any) {
-            out_run_script.text = ToStringInfo(text);
-        }
-
-        function write(text = '') {
-            out_run_script.text += ToStringInfo(text);
-        };
-
-        function writeSafe(str = '') {
-            str = ToStringInfo(str);
-
-            for (const i of str) {
-                out_run_script.text += '&#' + i.charCodeAt(0) + ';';
-            }
-        }
-
-        function echo(arr: string[], ...params: any[]) {
-            for (const i in params) {
-                out_run_script.text += arr[i];
-                writeSafe(params[i]);
-            }
-
-            out_run_script.text += arr.at(-1);
-        }
+        const {setResponse, write, writeSafe, echo} = createDateWriter(out_run_script, isDebug);
 
         let redirectPath: any = false;
 

@@ -41,7 +41,7 @@ export type inTagCache = {
     scriptModule: string[]
 }
 
-const StaticFilesInfo = new StoreJSON('ShortScriptNames');
+export const StaticFilesInfo = new StoreJSON('ShortScriptNames');
 
 /* The SessionBuild class is used to build the head of the page */
 export class SessionBuild {
@@ -55,7 +55,6 @@ export class SessionBuild {
         script: [],
         scriptModule: []
     }
-    cacheCompileScript: any = {}
     cacheComponent: cacheComponent = {}
     compileRunTimeStore: StringAnyMap = {}
     dependencies: StringNumberMap = {}
@@ -65,8 +64,21 @@ export class SessionBuild {
         return this.debug && this._safeDebug;
     }
 
+    // virtual temp elements - *not need to copy when extend*
+    runtimeScript = new StringTracker() // the 'codeFile' connected to a string
+    sitemapBuild = new StringTracker()
+
     constructor(public smallPath: string, public fullPath: string, public typeName?: string, public debug?: boolean, private _safeDebug?: boolean) {
         this.BuildScriptWithPrams = this.BuildScriptWithPrams.bind(this);
+    }
+
+    unshiftRuntimeScript(script: StringTracker){
+        this.runtimeScript = script.Plus(this.runtimeScript);
+    }
+
+    connectSitemapXML(script: StringTracker | true){
+        if(script instanceof StringTracker)
+            this.sitemapBuild.Plus(script)
     }
 
     style(url: string, attributes?: StringAnyMap) {
@@ -171,7 +183,7 @@ export class SessionBuild {
             this.inScriptStyle.push({ ...i, value: i.value.clone() })
         }
 
-        const copyObjects = ['cacheCompileScript', 'cacheComponent', 'dependencies'];
+        const copyObjects = ['cacheComponent', 'dependencies'];
 
         for (const c of copyObjects) {
             Object.assign(this[c], from[c]);

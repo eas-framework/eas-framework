@@ -16,52 +16,54 @@ import record, { updateRecords, perCompile as perCompileRecord, postCompile as p
 import search from './Components/search';
 import TagDataParser from '../CompileCode/XMLHelpers/TagDataParser';
 import extendsAttributes from './Components/extends';
+import { frameworkShortName } from '../RunTimeBuild/SearchFileSystem';
 
-export const AllBuildIn = ["client", "script", "style", "page", "connect", "isolate", "form", "head", "svelte", "markdown", "record", "search", "extends", "result"];
+const CLIENT = frameworkShortName + '-client', PAGE = frameworkShortName + '-page', ISOLATE = frameworkShortName + '-isolate', SVELTE = frameworkShortName + '-svelte', MARKDOWN = frameworkShortName + '-markdown', CONNECT = frameworkShortName + '-connect', FORM = frameworkShortName + '-form', RECORD = frameworkShortName + '-record', SEARCH = frameworkShortName + '-search', RESULT = frameworkShortName + '-result', EXTENDS = frameworkShortName + '-extends';
+export const AllBuildIn = ["script", "style", "head", EXTENDS, RESULT, CLIENT, PAGE, CONNECT, ISOLATE, FORM, SVELTE, MARKDOWN, RECORD, SEARCH];
 
 export function StartCompiling(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     let reData: Promise<BuildInComponent>;
 
     switch (type.eq.toLowerCase()) {
-        case "client":
+        case CLIENT:
             reData = client(pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
-        case "record":
-            reData = record( pathName, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+        case RECORD:
+            reData = record(pathName, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
-        case "search":
-            reData = search( pathName, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+        case SEARCH:
+            reData = search(pathName, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
-        case "script":
-            reData = script( pathName, type, dataTag, BetweenTagData, sessionInfo);
-            break;
-        case "style":
-            reData = style( pathName, type, dataTag, BetweenTagData, sessionInfo);
-            break;
-        case "page":
+        case PAGE:
             reData = page(pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
-        case "connect":
+        case CONNECT:
             reData = connect(type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
-        case "form":
+        case FORM:
             reData = form(pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
-        case "isolate":
+        case ISOLATE:
             reData = isolate(BetweenTagData);
+            break;
+        case SVELTE:
+            reData = svelte(type, dataTag, sessionInfo);
+            break;
+        case MARKDOWN:
+            reData = markdown(type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
+            break;
+        case EXTENDS:
+        case RESULT:
+            reData = extendsAttributes(BetweenTagData, dataTag)
             break;
         case "head":
             reData = head(pathName, type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
             break;
-        case "svelte":
-            reData = svelte(type, dataTag, sessionInfo);
+        case "script":
+            reData = script(pathName, type, dataTag, BetweenTagData, sessionInfo);
             break;
-        case "markdown":
-            reData = markdown(type, dataTag, BetweenTagData, InsertComponent, sessionInfo);
-            break;
-        case "extends":
-        case "result":
-            reData = extendsAttributes(BetweenTagData, dataTag)
+        case "style":
+            reData = style(pathName, type, dataTag, BetweenTagData, sessionInfo);
             break;
         default:
             console.error("Component is not build yet");
@@ -92,18 +94,18 @@ export function handelConnectorService(type: string, thisPage: any, connector: a
         return handelConnectorForm(thisPage, connector);
 }
 
-export async function perCompile() {
+export async function componentPerCompile() {
     perCompileRecord()
 }
 
-export async function postCompile() {
+export async function componentPostCompile() {
     postCompileRecord()
 }
 
-export async function perCompilePage(sessionInfo: SessionBuild, fullCompilePath: string){
+export async function componentPerCompilePage(sessionInfo: SessionBuild) {
     sessionInfo.debug && deleteBeforeReBuild(sessionInfo.smallPath);
 }
 
-export async function postCompilePage(sessionInfo: SessionBuild, fullCompilePath: string){
-    
+export async function componentPostCompilePage(sessionInfo: SessionBuild) {
+
 }

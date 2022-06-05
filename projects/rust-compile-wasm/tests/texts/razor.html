@@ -1,6 +1,37 @@
 <p>@@</p>
+@*This is a comment*@
 @default(hi)[]
+#define('name', 'value')
+<:data-reader id=code>
+    @section('name')
+</:data-reader>
+@code {
+    data
+}
+<:reader/>
+@for(const me in ([1,2] + [,4,5])){
+    @switch(me){
+        case 1:
+        <div>wow</div>
+        case 8:
+            <p>1</p>
+            break;
+        
+        case 2:
+            <p>2</p>
 
-@me
+            break;
+        
+        default:
+            <p>3</p>
+
+            break;
+        
+    }
+}
+
+@function me(){
+    <p>@Hi</p>
+}
 
 <div>@:app</div>

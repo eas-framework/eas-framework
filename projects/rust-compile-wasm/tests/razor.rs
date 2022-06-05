@@ -8,7 +8,7 @@ fn check_build() {
 
     let contents = fs::read_to_string(file+"/tests/texts/razor.html").unwrap();
 
-    let rebuild = rust_assembly::razor::builder::convert_ejs(&contents);
+    let rebuild = rust_assembly::razor::builder::convert_ejs_runtime(&contents);
 
     println!("before {} after: {}", contents, rebuild);
 }

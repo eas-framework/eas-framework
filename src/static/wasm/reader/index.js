@@ -1,7 +1,11 @@
 import {promises} from 'fs';
 import { fileURLToPath } from 'url';
 const wasmModule = new WebAssembly.Module(await promises.readFile(fileURLToPath(import.meta.url + '/../build.wasm')));
-const wasmInstance = new WebAssembly.Instance(wasmModule, {});
+const wasmInstance = new WebAssembly.Instance(wasmModule, {
+    __wbindgen_placeholder__: {
+        __wbindgen_throw: () => {}
+    }
+});
 const wasm = wasmInstance.exports;
 
 let WASM_VECTOR_LEN = 0;
@@ -99,7 +103,11 @@ export function build_stream(text) {
         var r0 = getInt32Memory0()[retptr / 4 + 0];
         var r1 = getInt32Memory0()[retptr / 4 + 1];
         return getStringFromWasm0(r0, r1);
-    } finally {
+    } catch(e){
+        console.log(text);
+    }
+    
+    finally {
         wasm.__wbindgen_add_to_stack_pointer(16);
         wasm.__wbindgen_free(r0, r1);
     }

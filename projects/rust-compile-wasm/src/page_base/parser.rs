@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use super::html_attr::{HTMLAttr, ESCAPE_START, ESCAPE_END};
 
 lazy_static! {
-    static ref SEARCH_START: BetterString = BetterString::new("@[");
+    static ref SEARCH_START: BetterString = BetterString::new("#[");
 }
 
 #[derive(Serialize, Deserialize)]
