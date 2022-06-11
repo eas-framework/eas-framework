@@ -52,7 +52,7 @@
     "cookie-encrypter": "^1.0.1",
     "express-session": "^1.17.2",
     "fast-xml-parser": "^4.0.8",
-    "formidable": "^2.0.1",
+    "formidable": "^3.2.4",
     "github-markdown-css": "^5.1.0",
     "greenlock-express": "^4.0.3",
     "highlight.js": "^11.4.0",
@@ -72,7 +72,7 @@
     "source-map-js": "^0.6.2",
     "source-map-support": "^0.5.20",
     "sql.js": "^1.6.2",
-    "svelte": "^3.44.1",
+    "svelte": "^3.48.0",
     "uuid": "^8.3.2",
     "workerpool": "^6.1.5"
   },
