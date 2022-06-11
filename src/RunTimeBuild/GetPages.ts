@@ -315,8 +315,8 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
 }
 
 function urlFix(url: string) {
-    if (url == '/') {
-        url = '/index';
+    if (url.endsWith('/')) {
+        url += 'index';
     }
 
     return decodeURIComponent(url);

@@ -18,7 +18,13 @@ import {Export as ExportRam} from '../RunTimeBuild/FunctionScript'
 import { TransformSettings } from '../CompileCode/transform/Script';
 import { SyntaxSettings } from '../CompileCode/transform/EasySyntax';
 import { DevAllowWebsiteExtensions, DevIgnoredWebsiteExtensions, updateDevAllowWebsiteExtensions, updateDevIgnoredWebsiteExtensions } from '../ImportFiles/StaticFiles';
-import { GlobalSitemapBuilder } from '../CompileCode/XMLHelpers/SitemapBuilder';
+import { cacheSitemap, GlobalSitemapBuilder } from '../CompileCode/XMLHelpers/SitemapBuilder';
+
+export const MB_IN_BYTES = 1048576;
+
+export const MINUIT_MILLISECONDS = 60 * 1000;
+export const HOUR_MILLISECONDS = MINUIT_MILLISECONDS * 60;
+export const DAY_MILLISECONDS = 86400000;
 
 const
     CookiesSecret = uuidv4().substring(0, 32),
@@ -27,7 +33,7 @@ const
 
     CookiesMiddleware = cookieParser(CookiesSecret),
     CookieEncrypterMiddleware = cookieEncrypter(CookiesSecret, {}),
-    CookieSettings = { httpOnly: true, signed: true, maxAge: 86400000 * 30 };
+    CookieSettings = { httpOnly: true, signed: true, maxAge: DAY_MILLISECONDS * 30 };
 
 fileByUrl.Settings.Cookies = <any>CookiesMiddleware;
 fileByUrl.Settings.CookieEncrypter = <any>CookieEncrypterMiddleware;
@@ -178,6 +184,12 @@ export const Export: ExportSettings = {
             },
             set file(value){
                 GlobalSitemapBuilder.location = value
+            },
+            get updateAfterHours(){
+                return cacheSitemap.internal / HOUR_MILLISECONDS
+            },
+            set updateAfterHours(value){
+                cacheSitemap.internal = value * HOUR_MILLISECONDS
             }
         },
         get errorPages() {
@@ -195,10 +207,10 @@ export const Export: ExportSettings = {
             fileByUrl.Settings.CacheDays = value;
         },
         get cookiesExpiresDays(){
-            return CookieSettings.maxAge / 86400000;
+            return CookieSettings.maxAge / DAY_MILLISECONDS;
         },
         set cookiesExpiresDays(value){
-            CookieSettings.maxAge = value * 86400000;
+            CookieSettings.maxAge = value * DAY_MILLISECONDS;
         },
         set sessionTotalRamMB(value: number) {
             if(serveLimits.sessionTotalRamMB == value) return
@@ -262,10 +274,10 @@ export const Export: ExportSettings = {
 
 export function buildFormidable() {
     formidableServer = {
-        maxFileSize: Export.serveLimits.fileLimitMB * 1048576,
+        maxFileSize: Export.serveLimits.fileLimitMB * MB_IN_BYTES,
         uploadDir: SystemData + "/UploadFiles/",
         multiples: true,
-        maxFieldsSize: Export.serveLimits.requestLimitMB * 1048576
+        maxFieldsSize: Export.serveLimits.requestLimitMB * MB_IN_BYTES
     };
 }
 
@@ -281,13 +293,13 @@ export function buildSession() {
     }
 
     SessionStore = session({
-        cookie: { maxAge: Export.serveLimits.sessionTimeMinutes * 60 * 1000, sameSite: true },
+        cookie: { maxAge: Export.serveLimits.sessionTimeMinutes * MINUIT_MILLISECONDS, sameSite: true },
         secret: SessionSecret,
         resave: false,
         saveUninitialized: false,
         store: new MemoryStore({
-            checkPeriod: Export.serveLimits.sessionCheckPeriodMinutes * 60 * 1000,
-            max: Export.serveLimits.sessionTotalRamMB * 1048576
+            checkPeriod: Export.serveLimits.sessionCheckPeriodMinutes * MINUIT_MILLISECONDS,
+            max: Export.serveLimits.sessionTotalRamMB * MB_IN_BYTES
         })
     });
 }

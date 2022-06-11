@@ -9,6 +9,7 @@ Changing eas-framework syntax to be more explicit and easy to understand
 
 - new templating syntax
 - more explicit extensions: mode -> model, inte -> integ (integration)
+- better sitemap generator - within page template + hooks
 
 ### Separated syntax for each runtime:
 - Compile runtime, for script that run once when the page build - sign with '#'

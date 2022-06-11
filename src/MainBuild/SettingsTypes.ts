@@ -93,6 +93,7 @@ interface GlobalSettings {
             errorPages?: boolean,
             validPath?: boolean,
             file?: string // where to save the sitemap
+            updateAfterHours?: number // update sitemap on new request after x hours
         }
     },
     serveLimits: serveLimits

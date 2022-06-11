@@ -298,22 +298,20 @@ async function markdownTheme(filePath: string, checked: boolean) {
         }
 }
 
-async function SitemapFile(Request: Request, filePath: string, checked: boolean) {
-    if(filePath != GlobalSitemapBuilder.location)
+async function SitemapFile(Request: Request, filePath: string) {
+    if (filePath != GlobalSitemapBuilder.location)
         return;
 
     const fullPath = path.join(getTypes.Static[0], GlobalSitemapBuilder.location);
 
-    if (checked || await EasyFs.existsFile(fullPath)){
-        const content = await onSitemapRequest(Request);
+    const content = await onSitemapRequest(Request);
+    if (!content) return; // if the content is null, then the sitemap is not ready yet
 
-        return {
-            type: 'xml',
-            inServer: fullPath,
-            content: content
-        }
+    return {
+        type: 'xml',
+        inServer: fullPath,
+        content: content
     }
-
 }
 
 
@@ -333,8 +331,8 @@ export async function serverBuild(Request: Request, isDebug: boolean, path: stri
         await serverBuildByType(Request, path, checked) ||
         await markdownTheme(path, checked) ||
         await markdownCodeTheme(path, checked) ||
-        getStatic.find(x => x.path == path) || 
-        SitemapFile(Request, path, checked);
+        getStatic.find(x => x.path == path) ||
+        SitemapFile(Request, path);
 }
 
 /**

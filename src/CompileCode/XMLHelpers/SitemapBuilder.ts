@@ -6,9 +6,11 @@ import { XMLParser } from 'fast-xml-parser';
 import { SessionBuild } from '../Session';
 import { Export } from '../../MainBuild/Settings';
 import { DevIgnoredWebsiteExtensions } from '../../ImportFiles/StaticFiles';
-import EventEmitter from 'events';
 import { Request, Response } from '../../MainBuild/Types';
+import SitemapEventEmitter from './SitemapEventEmitter';
 
+const PROTOCOL = 'https://';
+const AUTO_DOMAIN = '__auto_domain__';  
 /**
  * It takes a string containing XML, parses it, and returns an array of SitemapItem objects
  * @param {string} fileContent - The content of the sitemap file.
@@ -31,9 +33,9 @@ async function parseSitemap(fileContent: string): Promise<SitemapItem[]> {
 }
 
 /* It's a class that builds a sitemap.xml file and saves it to a location */
-class SitemapBuilder {
-    private links = {};
-    private xmlns: string[] = [];
+export class SitemapBuilder {
+    links = {};
+    xmlns: string[] = [];
     private firstLoad = true;
     private loadPromise: Promise<any>;
     private cacheBuild: Buffer
@@ -69,10 +71,11 @@ class SitemapBuilder {
      */
     async link({ url, hide, xmlns, ...rest }: { url: string, hide?: boolean, xmlns?: string | string[] } & SitemapItem) {
         this.cacheBuild = null;
+        const formattedURL = new URL(url, PROTOCOL + AUTO_DOMAIN).href;
 
         if (hide) {
-            this.links[url] = null;
-            delete this.links[url];
+            this.links[formattedURL] = null;
+            delete this.links[formattedURL];
             return;
         };
 
@@ -87,7 +90,7 @@ class SitemapBuilder {
             this.xmlns.push(...xmlns.map(x => x.trim()))
         }
 
-        this.links[url] = { ...rest, ...this.links[url] };
+        this.links[formattedURL] = { ...rest, ...this.links[formattedURL] };
     }
 
     /**
@@ -112,7 +115,7 @@ class SitemapBuilder {
 
         if (!Object.keys(this.links).length) return; // if empty
 
-        const sitemap = new SitemapStream({ hostname: 'https://__auto_domain__', ...this.options });
+        const sitemap = new SitemapStream(this.options);
         const savePromise = streamToPromise(sitemap);
 
         for (const url in this.links) {
@@ -136,9 +139,10 @@ class SitemapBuilder {
      * @returns The promise of the file being written.
      */
     private async saveContent(content: Buffer) {
+        if(!content) return;
         await this.loadPromise;
 
-        await EasyFs.makePathReal(path.dirname(this.savePath), getTypes.Static[0]);
+        await EasyFs.makePathReal(this.savePath, getTypes.Static[0]);
         return EasyFs.writeFile(this.fullPath, content);
     }
 
@@ -278,57 +282,51 @@ async function urlBuilder(filePath: string, arrayType: string[]) {
 
     return filePath;
 }
+export const sitemapEventEmitter = new SitemapEventEmitter();
 
-export interface SitemapEvent {
-    /* When the sitemap is request and the build process is trigger */
-    on(event: 'request', listener: (sitemapBuilder: SitemapBuilder) => void): this;
-    once(event: 'request', listener: (sitemapBuilder: SitemapBuilder) => void): this;
-    addListener(event: 'request', listener: (sitemapBuilder: SitemapBuilder) => void): this;
-
-    /* When a build process ends */
-    on(event: 'response', listener: (sitemapBuilder: SitemapBuilder) => void): this;
-    once(event: 'response', listener: (sitemapBuilder: SitemapBuilder) => void): this;
-    addListener(event: 'response', listener: (sitemapBuilder: SitemapBuilder) => void): this;
-}
-
-export class SitemapEvent extends EventEmitter {
-}
-
-export const SitemapEventEmitter = new SitemapEvent();
 
 /**
- * > It takes a sitemap builder and a request object, and returns a string of the sitemap with the
- * domain replaced
- * @param {SitemapBuilder} GlobalSitemapBuilder - This is the sitemap builder that you created in the
- * previous step.
- * @param {Request} req - The request object from the express route.
- * @returns A string of the sitemap.
+ * > This function replaces the string `__auto_domain__` with the domain name of the current request
+ * @param {string} sitemapText - The text of the sitemap.xml file.
+ * @param {Request} req - The request object from the HTTP request.
+ * @returns The sitemapText is being returned.
  */
-async function replaceSitemapGlobals(GlobalSitemapBuilder: SitemapBuilder, req: Request) {
-    let sitemapText = (await GlobalSitemapBuilder.build()).toString()
-    sitemapText = sitemapText.replaceAll('__auto_domain__', req.headers.host)
+function replaceSitemapGlobals(sitemapText: string, req: Request) {
+    sitemapText = sitemapText.replaceAll(AUTO_DOMAIN, req.headers.host)
     return sitemapText;
 }
 
 /**
  * It clones the global sitemap builder, calls all the listeners, and then returns the result sitemap
- * @param {Request} req - Request - The request object
  * @returns Sitemap string
  */
-export async function onSitemapRequest(req: Request) {
-    const listeners = SitemapEventEmitter.listeners('request');
+async function createSiteMapWithoutCache() {
+    const listeners = sitemapEventEmitter.listeners('request');
+    const stringSiteMap = async (builder: SitemapBuilder) => (await builder.build())?.toString();
+
     if (listeners.length == 0) {
-        return replaceSitemapGlobals(GlobalSitemapBuilder, req);
+        return stringSiteMap(GlobalSitemapBuilder);
     }
 
     const siteMapBuilder = GlobalSitemapBuilder.clone();
 
-    const wait = [];
-    for (const listener of listeners) {
-        wait.push(listener(siteMapBuilder));
-    }
-    await Promise.all(wait);
+    await sitemapEventEmitter.emit('request', siteMapBuilder);
+    await sitemapEventEmitter.emit('response', siteMapBuilder);
 
-    SitemapEventEmitter.emit('response', siteMapBuilder);
-    return replaceSitemapGlobals(siteMapBuilder, req);
+    return stringSiteMap(siteMapBuilder);
+}
+
+
+export let cacheSitemap = {internal: 0, lastCheck: 0, data: null};
+/**
+ * > If the cache is older than the cache interval, then create a new sitemap and update the cache
+ * @param {Request} req - Request - The request object from the client.
+ * @returns A sitemap
+ */
+export async function onSitemapRequest(req: Request): Promise<string | null> {
+    if(Date.now() - cacheSitemap.lastCheck > cacheSitemap.internal){
+        cacheSitemap.data = await createSiteMapWithoutCache();
+        cacheSitemap.lastCheck = Date.now();
+    }
+    return cacheSitemap.data && replaceSitemapGlobals(cacheSitemap.data, req);
 }
