@@ -1,3 +1,3 @@
-@[model='../server' title='Import Page']
-<@body/>
-<page from="/index"/>
+#[model='../server' title='Import Page']
+<content:body>
+<eas-page from="/index"/>

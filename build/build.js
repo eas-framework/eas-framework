@@ -1,6 +1,8 @@
 import fsExtra from 'fs-extra';
 import path from 'path';
 import {build} from 'esbuild-wasm'
+import { args } from './tools/StreamCommand.js';
+import './buildprojects.js';
 
 const __dirname = path.resolve();
 
@@ -18,7 +20,6 @@ for(const i of filesToCopy){
 const fromScript = copyFrom + 'scripts/';
 await fsExtra.ensureDir(copyTo+'scripts/');
 
-const production = process.argv.includes('production');
 const {dependencies, name: packageName} = await fsExtra.readJSON(__dirname + '/package.json');
 
 build({
@@ -30,10 +31,10 @@ build({
     outdir: copyTo,
     format: 'esm',
     target: 'node17',
-    minify: production,
-    sourcemap: production ? undefined: 'inline',
+    minify: args.production,
+    sourcemap: args.production ? undefined: 'inline',
     define: {
-        debug: !production,
+        debug: !args.production,
         esbuild: true,
         packageName: `'${packageName}'`
     }

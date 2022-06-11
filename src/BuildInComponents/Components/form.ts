@@ -10,7 +10,7 @@ import { addFinalizeBuildAnyConnection } from './serv-connect/connect-node';
 
 export default async function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
 
-    const sendTo = dataTag.popAnyDefault('sendTo', '').trim();
+    const sendTo = dataTag.popAnyDefault('server-fn', '').trim();
 
     if (!sendTo)  // special action not found
         return {
@@ -20,9 +20,9 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
         }
 
 
-    const name = dataTag.popAnyDefault('name', uuid()).trim(), validator: string = dataTag.popHaveDefault('validate'), orderDefault: string = dataTag.popHaveDefault('order'), notValid: string = dataTag.popHaveDefault('notValid'), responseSafe = dataTag.popBoolean('safe');
+    const name = dataTag.popAnyDefault('server-id', uuid()).trim(), validator: string = dataTag.popHaveDefault('validate'), orderDefault: string = dataTag.popHaveDefault('order'), notValid: string = dataTag.popHaveDefault('error-fn'), responseSafe = dataTag.popBoolean('escape-response');
 
-    const message = dataTag.popAnyDefault('message', sessionInfo.debug && !InsertComponent.SomePlugins("SafeDebug")); // show error message
+    const message = dataTag.popAnyDefault('error-msg', sessionInfo.debug && !InsertComponent.SomePlugins("SafeDebug")); // show error message
     let order = [];
 
     const validatorArray = validator && validator.split(',').map(x => { // Checking if there is an order information, for example "prop1: string, prop3: num, prop2: bool"

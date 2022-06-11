@@ -96,7 +96,7 @@ export default class ParseBasePage {
 
     private rebuild() {
         if (!this.valueArray.length) return this.clearData;
-        const build = new StringTracker(null, '@[');
+        const build = new StringTracker(null, '#[');
 
         for (const { key, value, char } of this.valueArray) {
             if (value !== true) {
@@ -117,7 +117,7 @@ export default class ParseBasePage {
         for (const name of parse.byValue('inherit')) {
             if(ignoreInherit.includes(name.toLowerCase())) continue;
             parse.pop(name)
-            build.AddTextAfterNoTrack(`<@${name}><:${name}/></@${name}>`)
+            build.AddTextAfterNoTrack(`<content:${name}><:${name}/></content:${name}>`)
         }
 
         parse.rebuild();
@@ -139,7 +139,7 @@ export default class ParseBasePage {
         if (haveName != -1)
             return this.valueArray.splice(haveName, 1)[0].value;
 
-        const asTag = getDataTags(this.clearData, [name], '@');
+        const asTag = getDataTags(this.clearData, [name], 'content:');
 
         if (!asTag.found[0]) return;
 
@@ -218,49 +218,8 @@ export default class ParseBasePage {
         }
     }
 
-    private loadSetting(name = 'define', limitArguments = 2) {
-        const have = this.clearData.indexOf(`@${name}(`);
-        if (have == -1) return false;
-
-        const argumentArray: StringTracker[] = [];
-
-        const before = this.clearData.substring(0, have);
-        let workData = this.clearData.substring(have + 8).trimStart();
-
-        for (let i = 0; i < limitArguments; i++) { // arguments reader loop
-            const quotationSign = workData.at(0).eq;
-
-            const endQuote = BaseReader.findEntOfQ(workData.eq.substring(1), quotationSign);
-
-            argumentArray.push(workData.substring(1, endQuote));
-
-            const afterArgument = workData.substring(endQuote + 1).trimStart();
-            if (afterArgument.at(0).eq != ',') {
-                workData = afterArgument;
-                break;
-            }
-
-            workData = afterArgument.substring(1).trimStart();
-        }
-
-        workData = workData.substring(workData.indexOf(')') + 1);
-        this.clearData = before.trimEnd().Plus(workData.trimStart());
-
-        return argumentArray;
-    }
-
-    private loadDefine(moreDefine: StringAnyMap) {
-        let lastValue = this.loadSetting();
-
-        const values: (StringTracker | string)[][] = [];
-        while (lastValue) {
-            values.unshift(lastValue);
-            lastValue = this.loadSetting();
-        }
-
-        values.unshift(...Object.entries(moreDefine))
-
-        for (const [name, value] of values) {
+    private loadDefine(defineValues: StringAnyMap) {
+        for (const [name, value] of Object.entries(defineValues)) {
             this.clearData = this.clearData.replaceAll(`:${name}:`, value);
         }
     }

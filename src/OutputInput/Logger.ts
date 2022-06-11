@@ -31,8 +31,8 @@ export function createNewPrint({ id, text, type = "warn", errorName }: PreventLo
         let about = '-'.repeat(10) + (type == 'error' ? chalk.bold(type) : type) + '-'.repeat(10)
         return [logType,
             about + '\n' +
-            chalk.blue(splitColor.shift() || '') + '\n' +
-            mainMessage + '\n' +
+            (chalk.blue(splitColor.shift() || '') + '\n' +
+            mainMessage).trim() + '\n' +
             chalk.red(`Error-Code: ${errorName}`) + '\n' +
             '-'.repeat(type.length + 20) + '\n']
     }

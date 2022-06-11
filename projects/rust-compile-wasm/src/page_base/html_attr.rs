@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 lazy_static! {
     pub static ref ESCAPE_START: BetterString = BetterString::new("<%");
     pub static ref ESCAPE_END: BetterString = BetterString::new("%>");
-    pub static ref JS_OBJECT: Vec<Vec<char>> = vec![vec!['{', '}'], vec!['[', ']'], vec!['(', ')']];
+    pub static ref JS_OBJECT: Vec<Vec<char>> = vec![vec!['(', ')']];
     pub static ref LITERAL_JS_OBJECT_START: char = '(';
 }
 

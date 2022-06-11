@@ -1,6 +1,9 @@
+use std::vec;
+
 use crate::{
-    actions::base_reader::{
-        block_skip_text, find_end_of_def_char, find_end_of_def_word,
+    actions::{
+        base_actions::{find_min_but, find_min_but_none},
+        base_reader::{block_skip_text, find_end_of_def_char, find_end_of_def_word},
     },
     better_string::{b_action::first_non_alphabetic, b_string::BetterString, u_string::UString},
 };
@@ -15,19 +18,26 @@ struct RazorSyntaxBlock {
 lazy_static! {
     static ref TEXT: String = String::from("text");
     static ref SCRIPT: String = String::from("script");
-    static ref RAZOR_CHAR: char = '@';
+    static ref DEFAULT_RAZOR_KEYWORD: BetterString = BetterString::new("@");
     static ref COMMENT_CHAR: char = '*';
-    static ref COMMENT_END: BetterString =
-        BetterString::new(&(COMMENT_CHAR.to_string() + &RAZOR_CHAR.to_string()));
+    static ref SWITCH: String = String::from("switch");
     static ref CASE: BetterString = BetterString::new("case");
+    static ref CASE_DEFAULT: BetterString = BetterString::new("default");
     static ref BREAK: BetterString = BetterString::new("break");
+    static ref CODE_BLOCK_WORD: BetterString = BetterString::new("code");
+    static ref CODE_BLOCK_START: char = '{';
+    static ref CODE_BLOCK_END: char = '}';
     static ref NOT_RAZOR_WORDS: Vec<String> = vec![
         String::from("default"),
         String::from("ConnectHere"),
         String::from("ConnectHereForm")
     ];
-    static ref RAZOR_SYNTAX_SMALL: Vec<String> =
-        vec![String::from("for"), String::from("function")];
+    static ref RAZOR_SYNTAX_SMALL: Vec<String> = vec![
+        String::from("for"),
+        String::from("function"),
+        String::from("async"),
+        String::from("export")
+    ];
     static ref RAZOR_SYNTAX: Vec<RazorSyntaxBlock> = vec![
         RazorSyntaxBlock {
             start: String::from("if"),
@@ -38,9 +48,7 @@ lazy_static! {
             data: vec![BetterString::new("do")]
         }
     ];
-    static ref LITERAL_SCRIPT: Vec<String> = vec![
-        String::from("debugger")
-    ];
+    static ref LITERAL_SCRIPT: Vec<String> = vec![String::from("debugger")];
     static ref ADD_TO_SCRIPT: Vec<String> = vec![
         String::from("include"),
         String::from("import"),
@@ -57,12 +65,61 @@ pub struct RazorBlock {
 
 pub struct Razor {
     pub values: Vec<RazorBlock>,
+    pub s_razor_keyword: BetterString,
+    pub s_razor_comment_end: BetterString,
+    pub s_switch: bool,
+    pub s_small_syntax: bool,
+    pub s_base_syntax: bool,
+    pub s_write_start_with: Vec<BetterString>,
+    pub s_handle_write: bool,
+    pub s_escape: bool,
+    pub s_comment: bool,
+    pub s_literal: Vec<String>,
+    pub s_add_to_script: Vec<String>,
+    pub s_not_razor_words: Vec<String>,
+    pub s_razor_code_block_syntax: bool,
 }
 
-
 impl Razor {
-    pub fn new() -> Self {
-        Razor { values: vec![] }
+    pub fn default() -> Self {
+        let mut s_razor_comment_end = COMMENT_CHAR.to_string();
+        s_razor_comment_end.push_str(&DEFAULT_RAZOR_KEYWORD.to_string());
+
+        Self {
+            values: vec![],
+            s_razor_keyword: DEFAULT_RAZOR_KEYWORD.copy(), // @
+            s_razor_comment_end: BetterString::new(&s_razor_comment_end), // *@
+            s_switch: true,                                // alow switch
+            s_small_syntax: true, // small syntax keywords - for function, async, export
+            s_base_syntax: true,  // more complex keywords like - if, else, else if, while do
+            s_handle_write: true, // alow write - printing syntax like <%= %>
+            s_write_start_with: vec![], // if there any, then all write will be ignored, but if they start with one of thous, then they will be printed
+            s_escape: true,             // allow escape by doubling keyword - @@
+            s_comment: true,            // allow comment - @* *@
+            s_literal: vec![], // keyword that will used as code block (not writing) like 'debugger'
+            s_add_to_script: vec![], // special keywords that will be handel at build time
+            s_not_razor_words: vec![], // escape keywords literally
+            s_razor_code_block_syntax: true, // allow code block syntax - @code { }
+        }
+    }
+
+    pub fn default_false() -> Self {
+        Self {
+            values: vec![],
+            s_razor_keyword: BetterString::new(""),
+            s_razor_comment_end: BetterString::new(""),
+            s_switch: false,
+            s_small_syntax: false,
+            s_base_syntax: false,
+            s_write_start_with: vec![],
+            s_handle_write: false,
+            s_escape: false,
+            s_comment: true,
+            s_literal: vec![],
+            s_add_to_script: vec![],
+            s_not_razor_words: vec![],
+            s_razor_code_block_syntax: false,
+        }
     }
 
     fn find_first_word<T: UString>(text: &T) -> Option<usize> {
@@ -80,29 +137,34 @@ impl Razor {
         None
     }
 
-    fn skip_it<T: UString>(&mut self, text: &T, split_index: usize, add_index: usize, space: usize) {
+    fn skip_it<T: UString>(
+        &mut self,
+        text: &T,
+        split_index: usize,
+        add_index: usize,
+        space: usize,
+    ) {
         self.values.push(RazorBlock {
             name: TEXT.to_string(),
             start: add_index,
-            end: split_index + add_index
+            end: split_index + add_index,
         });
 
-        self.builder(&text.substring_start(split_index +space), add_index + split_index +space);
+        self.builder(
+            &text.substring_start(split_index + space),
+            add_index + split_index + space,
+        );
     }
 
     fn syntax_end(&mut self, index: usize) {
         self.values.push(RazorBlock {
             start: index - 1,
             end: index,
-            name: SCRIPT.to_owned()
+            name: SCRIPT.to_owned(),
         });
     }
 
-    fn syntax_start<T: UString>(
-        &mut self,
-        text: &T,
-        add_index: usize,
-    ) -> (T, T, usize, usize) {
+    fn syntax_start<T: UString>(&mut self, text: &T, add_index: usize) -> (T, T, usize, usize) {
         let start_parentheses = first_non_alphabetic(text, '(', vec![' ']);
 
         let mut text = text.copy();
@@ -110,7 +172,7 @@ impl Razor {
         if start_parentheses > 0 {
             next_index = start_parentheses as usize + 1;
             text = text.substring_start(next_index);
-            let end_parenthesis = block_skip_text(&text, vec!['(', ')']) as usize+1;
+            let end_parenthesis = block_skip_text(&text, vec!['(', ')']) as usize + 1;
             text = text.substring_start(end_parenthesis);
             next_index += end_parenthesis;
         }
@@ -123,7 +185,7 @@ impl Razor {
         self.values.push(RazorBlock {
             start: add_index,
             end: connect_index,
-            name: SCRIPT.to_owned()
+            name: SCRIPT.to_owned(),
         });
 
         let end_main = block_skip_text(&text, vec!['{', '}']) as usize;
@@ -140,9 +202,10 @@ impl Razor {
             self.syntax_start(text, add_index);
 
         loop {
-            let case = main_data.index_of_better(&*CASE);
+            let case_index = main_data.index_of_better(&*CASE);
+            let default_index = main_data.index_of_better(&*CASE_DEFAULT);
 
-            if case == None {
+            if case_index == None && default_index == None {
                 break;
             }
 
@@ -151,22 +214,18 @@ impl Razor {
             self.values.push(RazorBlock {
                 start: add_index,
                 end: add_index + start_case,
-                name: SCRIPT.to_owned()
+                name: SCRIPT.to_owned(),
             });
 
             let next_text = main_data.substring_start(start_case);
 
-            let mut end_case = find_end_of_def_word(&next_text, &*CASE);
+            let end_case_break = find_end_of_def_word(&next_text, &*BREAK);
+            let end_case_case = find_end_of_def_word(&next_text, &*CASE);
 
-            if end_case == -1 {
-                end_case = find_end_of_def_word(&next_text, &*BREAK);
-
-                if end_case == -1 {
-                    end_case = next_text.len() as i32;
-                }
-            }
-
-            let end_case_usize = end_case as usize;
+            let end_case_usize = find_min_but(
+                vec![next_text.len() as i32, end_case_break, end_case_case],
+                -1,
+            ) as usize;
 
             self.builder(
                 &next_text.substring_end(end_case_usize),
@@ -179,7 +238,7 @@ impl Razor {
         self.values.push(RazorBlock {
             start: add_index,
             end: add_index + main_data.len(),
-            name: SCRIPT.to_owned()
+            name: SCRIPT.to_owned(),
         });
 
         self.syntax_end(after_main_index);
@@ -190,13 +249,7 @@ impl Razor {
         for word in check_vector {
             let index = text.index_of_better(word);
 
-            if index != None
-                && text
-                    .substring_end(index.unwrap())
-                    .trim_start()
-                    .len()
-                    == 0
-            {
+            if index != None && text.substring_end(index.unwrap()).trim_start().len() == 0 {
                 return true;
             }
         }
@@ -236,16 +289,24 @@ impl Razor {
     }
 
     fn handel_write<T: UString>(&mut self, text: &T, add_index: usize, mut name: &str) {
+        if self.s_write_start_with.len() > 0
+            && !self.s_write_start_with.iter().any(|x| text.starts_with(x))
+        {
+            self.values.push(RazorBlock {
+                start: add_index - 1,
+                end: add_index,
+                name: TEXT.to_string(),
+            });
+
+            return self.builder(text, add_index);
+        }
+
         let escape_script = text.at(0) == ':';
         let escape_script_usize = escape_script as usize;
         let is_parenthesis = text.at(escape_script_usize) == '(';
 
         if name == "auto" {
-            name = if escape_script {
-                "escape"
-            } else {
-                "print"
-            }
+            name = if escape_script { "escape" } else { "print" }
         }
 
         if is_parenthesis {
@@ -255,7 +316,7 @@ impl Razor {
             self.values.push(RazorBlock {
                 start,
                 end: start + end_index,
-                name: name.to_owned(),
+                name: name.to_string(),
             });
 
             self.builder(&text.substring_start(end_index + 1), start + end_index + 1);
@@ -272,14 +333,18 @@ impl Razor {
                     vec![char, if char == '(' { ')' } else { ']' }],
                 ) as usize
                     + 1;
-            } else if !char.is_alphabetic() && (!char.is_ascii_digit() || escape_script_usize == i) && char != '_' && char != '$' && ((char == '?' && text.at(i + 1) != '.')
+            } else if !char.is_alphabetic()
+                && (!char.is_ascii_digit() || escape_script_usize == i)
+                && char != '_'
+                && char != '$'
+                && ((char == '?' && text.at(i + 1) != '.')
                     || (char == '.' && !text.at(i + 1).is_alphabetic())
                     || char != '.' && char != '?')
             {
                 self.values.push(RazorBlock {
                     start: escape_script_usize + add_index,
                     end: i + add_index,
-                    name: name.to_owned(),
+                    name: name.to_string(),
                 });
 
                 let substring = i + (if char == ';' { 1 } else { 0 });
@@ -293,42 +358,86 @@ impl Razor {
         self.values.push(RazorBlock {
             start: escape_script_usize + add_index,
             end: i + add_index,
-            name: name.to_owned(),
+            name: name.to_string(),
         });
     }
 
+    pub fn code_block<T: UString>(&mut self, next_text: &T, mut add_index: usize) -> bool {
+        if !next_text.starts_with(&*CODE_BLOCK_WORD) {
+            return false;
+        }
+
+        let mut next_text = next_text.substring_start(CODE_BLOCK_WORD.len());
+        if !Razor::has_next(
+            &next_text,
+            &vec![BetterString::new(&CODE_BLOCK_START.to_string())],
+        ) {
+            return false;
+        }
+
+        let start_block = next_text.index_of_char(&CODE_BLOCK_START).unwrap() + 1;
+        next_text = next_text.substring_start(start_block);
+        add_index += start_block + CODE_BLOCK_WORD.len();
+
+        let end_main = block_skip_text(
+            &next_text,
+            vec![CODE_BLOCK_START.to_owned(), CODE_BLOCK_END.to_owned()],
+        ) as usize;
+        let end_index = add_index + end_main;
+
+        self.values.push(RazorBlock {
+            name: SCRIPT.to_string(),
+            start: add_index,
+            end: end_index,
+        });
+
+        self.builder(&next_text.substring_start(end_main + 1), end_index + 1);
+
+        true
+    }
+
     pub fn builder<T: UString>(&mut self, text: &T, mut add_index: usize) {
-        let index = text.index_of_char(&RAZOR_CHAR);
+        let index = text.index_of_better(&self.s_razor_keyword);
 
         if index == None {
             self.values.push(RazorBlock {
                 name: TEXT.to_string(),
                 start: add_index,
-                end: text.len() + add_index
+                end: text.len() + add_index,
             });
 
             return;
         }
 
         let index = index.unwrap() as usize;
+        let after_razor_keyword = index + self.s_razor_keyword.len();
 
-        if RAZOR_CHAR.eq(&text.at(index + 1)) {
+        let razor_keyword_place = &text.substring(
+            after_razor_keyword,
+            after_razor_keyword + self.s_razor_keyword.len(),
+        );
+        if self.s_escape && self.s_razor_keyword.eq(razor_keyword_place) {
             // escape character @@
-            self.skip_it(text, index+1, add_index, 1);
+            self.skip_it(
+                text,
+                after_razor_keyword,
+                add_index,
+                self.s_razor_keyword.len(),
+            );
             return;
         }
 
-        if COMMENT_CHAR.eq(&text.at(index + 1)) {
+        if self.s_comment && COMMENT_CHAR.eq(&text.at(after_razor_keyword)) {
             // comment
             self.values.push(RazorBlock {
                 name: TEXT.to_string(),
                 start: add_index,
-                end: index + add_index
+                end: index + add_index,
             });
 
-            add_index += index+2;
-            let text = text.substring_start(index+2);
-            let index = text.index_of_better(&*COMMENT_END);
+            add_index += after_razor_keyword + 1;
+            let text = text.substring_start(after_razor_keyword + 1);
+            let index = text.index_of_better(&self.s_razor_comment_end);
             let num_index;
 
             if index == None {
@@ -337,10 +446,13 @@ impl Razor {
                 num_index = index.unwrap();
             }
 
-            let next_text = text.substring_start(num_index + 2);
+            let next_text = text.substring_start(num_index + self.s_razor_keyword.len() + 1);
 
             if next_text.len() > 0 {
-                self.builder(&next_text, add_index + num_index + 2);
+                self.builder(
+                    &next_text,
+                    add_index + num_index + self.s_razor_keyword.len() + 1,
+                );
             }
             return;
         }
@@ -349,13 +461,13 @@ impl Razor {
             // add text before razor sign
             name: TEXT.to_string(),
             start: add_index,
-            end: index + add_index
+            end: index + add_index,
         });
 
-        add_index +=  index + 1;
+        add_index += after_razor_keyword;
 
-        let next_text_with_sign = text.substring_start(index );
-        let next_text = next_text_with_sign.substring_start( 1);
+        let next_text_with_sign = text.substring_start(index);
+        let next_text = next_text_with_sign.substring_start(self.s_razor_keyword.len());
         let first_word_index = Razor::find_first_word(&next_text);
 
         if first_word_index != None {
@@ -363,61 +475,61 @@ impl Razor {
             let first_word = next_text.substring_end(index);
             let first_word_string = first_word.to_string();
 
-            if NOT_RAZOR_WORDS.contains(&first_word_string) {
-                self.skip_it(&next_text_with_sign, first_word.len()+1, add_index-1, 0);
+            if self.s_not_razor_words.contains(&first_word_string) {
+                self.skip_it(
+                    &next_text_with_sign,
+                    first_word.len() + 1,
+                    add_index - self.s_razor_keyword.len(),
+                    0,
+                );
                 return;
             }
 
-            if first_word_string == "switch" {
+            if self.s_switch && SWITCH.eq(&first_word_string) {
                 self.switch_parser(&next_text, add_index);
                 return;
             }
 
-            if RAZOR_SYNTAX_SMALL.contains(&first_word_string) {
+            if self.s_small_syntax && RAZOR_SYNTAX_SMALL.contains(&first_word_string) {
                 self.small_syntax(&next_text, add_index);
                 return;
             }
 
-            let syntax = RAZOR_SYNTAX.iter().find(|x| x.start == first_word_string);
+            if self.s_base_syntax {
+                let syntax = RAZOR_SYNTAX.iter().find(|x| x.start == first_word_string);
 
-            if syntax.is_some() {
-                self.long_syntax(&next_text, add_index, &syntax.unwrap().data);
-                return;
+                if syntax.is_some() {
+                    self.long_syntax(&next_text, add_index, &syntax.unwrap().data);
+                    return;
+                }
             }
 
-            if LITERAL_SCRIPT.contains(&first_word_string) {
+            if self.s_literal.contains(&first_word_string) {
                 let end = add_index + first_word.len();
                 self.values.push(RazorBlock {
                     name: SCRIPT.to_owned(),
                     start: add_index,
-                    end
+                    end,
                 });
                 self.builder(&next_text.substring_start(first_word.len()), end);
                 return;
             }
 
-            if ADD_TO_SCRIPT.contains(&first_word_string) {
-                self.handel_write(&next_text, add_index , &first_word_string);
+            if self.s_add_to_script.contains(&first_word_string) {
+                self.handel_write(&next_text, add_index, &first_word_string);
                 return;
             }
         }
 
-        if next_text.at(0) == '{' {
-            let next_text = next_text.substring_start(1);
-            let end_main = block_skip_text(&next_text, vec!['{', '}']) as usize;
-            let end_index = add_index + 1 + end_main;
-
-            self.values.push(RazorBlock {
-                name: SCRIPT.to_owned(),
-                start: add_index + 1,
-                end: end_index,
-            });
-
-            self.builder(&next_text.substring_start(end_main+1), end_index+1);
+        if self.s_razor_code_block_syntax && self.code_block(&next_text, add_index) {
             return;
         }
 
-        self.handel_write(&next_text, add_index , "auto");
+        if self.s_handle_write {
+            self.handel_write(&next_text, add_index, "auto");
+        } else {
+            self.builder(&next_text, add_index);
+        }
     }
 
     pub fn optimize(&mut self) {
@@ -431,29 +543,33 @@ impl Razor {
         let real_len = len_values - 1;
 
         let mut optimize_v = vec![];
+        let mut has_changes = false;
 
         while i < real_len {
             let value = &self.values[i];
             let next = &self.values[i + 1];
 
-            let script = SCRIPT.to_owned();
-            if value.name == script && next.name == value.name && value.end == next.start { // connect close scripts
+            if next.name == value.name && value.end == next.start {
+                // connect close scripts
                 optimize_v.push(RazorBlock {
-                    name: script,
+                    name: next.name.to_string(),
                     start: value.start,
                     end: next.end,
                 });
                 i += 2;
+                has_changes = true;
                 continue;
             }
 
-            if value.start ==value.end && (value.name == script || value.name == TEXT.to_owned()) { // ignore empty blocks
+            if value.start == value.end {
+                // ignore empty blocks
                 i += 1;
                 continue;
             }
 
-            optimize_v.push(RazorBlock { // push all other blocks
-                name: value.name.to_owned(),
+            optimize_v.push(RazorBlock {
+                // push all other blocks
+                name: value.name.to_string(),
                 start: value.start,
                 end: value.end,
             });
@@ -463,12 +579,17 @@ impl Razor {
         if i == real_len {
             let last = self.values.last().unwrap();
             optimize_v.push(RazorBlock {
-                name: last.name.to_owned(),
+                name: last.name.to_string(),
                 start: last.start,
                 end: last.end,
             });
-        } 
+        }
 
         self.values = optimize_v;
+
+        if has_changes {
+            // optimize again, for better result
+            self.optimize();
+        }
     }
 }

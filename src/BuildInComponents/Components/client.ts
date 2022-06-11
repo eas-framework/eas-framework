@@ -27,7 +27,7 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
 
     let scriptInfo = await template(
         sessionInfo.BuildScriptWithPrams,
-        dataTag.popAnyTracker('name', 'connect'),
+        dataTag.popAnyTracker('fn-name', 'connect'),
         dataTag.popAnyTracker('params', ''),
         dataTag.popAnyDefault('selector', ''),
         BetweenTagData,

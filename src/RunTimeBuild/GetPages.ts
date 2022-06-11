@@ -2,11 +2,12 @@ import EasyFs from '../OutputInput/EasyFs';
 import { print } from '../OutputInput/Console';
 import { getTypes, BasicSettings } from './SearchFileSystem';
 import { FastCompile as FastCompile } from './SearchPages';
-import { GetFile as GetStaticFile, serverBuild } from '../ImportFiles/StaticFiles';
+import { allowedStaticFile, GetFile as GetStaticFile, serverBuild } from '../ImportFiles/StaticFiles';
 import { Request, Response } from '@tinyhttp/app';
 import * as FuncScript from './FunctionScript';
 import MakeApiCall from './ApiCall';
 import { CheckDependencyChange, pageDeps } from '../OutputInput/StoreDeps';
+import { GlobalSitemapBuilder } from '../CompileCode/XMLHelpers/SitemapBuilder';
 const { Export } = FuncScript;
 
 export interface ErrorPages {
@@ -160,8 +161,8 @@ async function deleteRequestFiles(array: string[]) {
 async function isURLPathAFile(Request: Request | any, url: string, code: number) {
     if (code == 200) {
         const fullPageUrl = getTypes.Static[0] + url;
-        //check that is not server file
-        if (await serverBuild(Request, Settings.DevMode, url) || await EasyFs.existsFile(fullPageUrl))
+        // check if the file exists and allowed
+        if (await allowedStaticFile(fullPageUrl) || await serverBuild(Request, Settings.DevMode, url))
             return fullPageUrl;
     }
 }
@@ -297,7 +298,8 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
     const makeDeleteArray = makeDeleteRequestFilesArray(Request)
 
     if (FileInfo) {
-        Settings.CacheDays && Response.setHeader("Cache-Control", "max-age=" + (Settings.CacheDays * 24 * 60 * 60));
+        if (Settings.CacheDays && url != GlobalSitemapBuilder.location) // if the page is not the sitemap and the cache is enabled
+            Response.setHeader("Cache-Control", "max-age=" + (Settings.CacheDays * 24 * 60 * 60));
         await GetStaticFile(url, Settings.DevMode, Request, Response);
         deleteRequestFiles(makeDeleteArray);
         return;
@@ -313,8 +315,8 @@ async function DynamicPage(Request: Request | any, Response: Response | any, url
 }
 
 function urlFix(url: string) {
-    if (url == '/') {
-        url = '/index';
+    if (url.endsWith('/')) {
+        url += 'index';
     }
 
     return decodeURIComponent(url);

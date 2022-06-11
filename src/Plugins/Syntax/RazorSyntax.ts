@@ -1,15 +1,19 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { RazorToEJS, RazorToEJSMini } from '../../CompileCode/BaseReader/Reader';
+import { ParseBlocks, RazorToEJS, RazorToEJSMini } from '../../CompileCode/BaseReader/Reader';
+import JSParser from '../../CompileCode/JSParser';
+import { StringMap } from '../../CompileCode/XMLHelpers/CompileTypes';
 
 
-const addWriteMap = {
-    "include": "await ",
-    "import": "await ",
-    "transfer": "return await "
-}
-
-export default async function ConvertSyntax(text: StringTracker, options?: any) {
-    const values = await RazorToEJS(text.eq);
+/**
+ * It takes a string, a list of blocks, a map of names to strings, and a string to add to the beginning
+ * of each block, and returns a string
+ * @param {StringTracker} text - The text to be parsed.
+ * @param {ParseBlocks} values - The values that were parsed from the Razor file.
+ * @param {StringMap} addWriteMap - This is a map of the names of the blocks to the script that will be add
+ * @param [addToEJSSign] - This is the sign that will be added to the beginning of the EJS code.
+ * @returns A string
+ */
+function RazorToEJSBuilder(text: StringTracker, values: ParseBlocks, addWriteMap: StringMap, addToEJSSign = ''){
     const build = new StringTracker();
 
     for (const i of values) {
@@ -19,20 +23,31 @@ export default async function ConvertSyntax(text: StringTracker, options?: any) 
                 build.Plus(substring);
                 break;
             case "script":
-                build.Plus$`<%${substring}%>`;
+                build.Plus$`<%${addToEJSSign}${substring}%>`;
                 break;
             case "print":
-                build.Plus$`<%=${substring}%>`;
+                build.Plus$`<%${addToEJSSign}=${substring}%>`;
                 break;
             case "escape":
-                build.Plus$`<%:${substring}%>`;
+                build.Plus$`<%${addToEJSSign}:${substring}%>`;
                 break;
             default:
-                build.Plus$`<%${addWriteMap[i.name]}${substring}%>`;
+                build.Plus$`<%${addToEJSSign + addWriteMap[i.name]}${substring}%>`;
         }
     }
 
     return build;
+}
+
+const addWriteMap = {
+    "include": "await ",
+    "import": "await ",
+    "transfer": "return await "
+}
+
+export default async function ConvertSyntax(text: StringTracker, options?: any) {
+    const values = await RazorToEJS(text.eq);
+    return RazorToEJSBuilder(text, values, addWriteMap);
 }
 
 /**
@@ -56,4 +71,21 @@ export async function ConvertSyntaxMini(text: StringTracker, find: string, addEJ
     build.Plus(text.substring((values.at(-1)??-1) + 1));
 
     return build;
+}
+
+
+const addWriteCompileMap = {
+    "default": "attr"
+}
+
+export async function ConvertSyntaxCompile(text: StringTracker, smallPath: string, options?: any) {
+
+    const values  = await RazorToEJS(text.eq, true);
+
+    text = RazorToEJSBuilder(text, values, addWriteCompileMap, '*');
+
+    const parser = new JSParser(text, smallPath, '<%*', '%>');
+    await parser.findScripts();
+
+    return parser;
 }

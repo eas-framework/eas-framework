@@ -1,12 +1,12 @@
-@[model='../../server' title='Record']
-<@body/>
-<record>
+#[model='../../server' title='Record']
+<content:body>
+<eas-record>
     <h1>Page 3 record</h1>
-    @compile {
+    #code {
         write('booooooooooo')
     }
-    @{
+    @code {
         write('<br/>runtime')
     }
     page's 3 text
-</record>
+</eas-record>

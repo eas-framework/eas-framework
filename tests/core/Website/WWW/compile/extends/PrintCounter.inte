@@ -1,3 +1,0 @@
-<p>Counter Last: @compile {
-    write(attributes.counter.current)
-}</p>

@@ -1,11 +1,11 @@
-import {Dirent} from 'fs';
+import { Dirent } from 'fs';
 import EasyFs from '../OutputInput/EasyFs';
-import {cwd} from 'process';
+import { cwd } from 'process';
 import path from 'path';
-import {fileURLToPath} from 'url'
-import { CutTheLast , SplitFirst} from '../StringMethods/Splitting';
+import { fileURLToPath } from 'url'
+import { CutTheLast, SplitFirst } from '../StringMethods/Splitting';
 
-function getDirname(url: string){
+function getDirname(url: string) {
     return path.dirname(fileURLToPath(url));
 }
 
@@ -13,49 +13,62 @@ const SystemData = path.join(getDirname(import.meta.url), '/SystemData');
 
 let WebSiteFolder_ = "WebSite";
 
-const StaticName = 'WWW', LogsName = 'Logs', ModulesName = 'node_modules';
-
-const StaticCompile = SystemData + `/${StaticName}Compile/`;
-const CompileLogs = SystemData + `/${LogsName}Compile/`;
-const CompileModule = SystemData + `/${ModulesName}Compile/`;
+const frameworkShortName = "eas";
+const StaticName = 'WWW', LogsName = 'Logs', ModulesName = 'node_modules', ModelsName = 'Models', ComponentsName = 'Components';
 
 const workingDirectory = cwd() + '/';
 
 function GetFullWebSitePath() {
-    return path.join(workingDirectory,WebSiteFolder_, '/');
+    return path.join(workingDirectory, WebSiteFolder_, '/');
 }
+
+function GetSource(name: string) {
+    return path.join(GetFullWebSitePath(), name, '/')
+}
+
+function GetCompile(name: string) {
+    return path.join(SystemData, name + 'Compile', '/');
+}
+
 let fullWebSitePath_ = GetFullWebSitePath();
 
-function GetSource(name) {
-    return  GetFullWebSitePath() + name + '/'
-}
-
 /* A object that contains all the paths of the files in the project. */
+const defaultStatic = GetCompile(StaticName);
 const getTypes = {
     Static: [
         GetSource(StaticName),
-        StaticCompile,
+        defaultStatic,
         StaticName
     ],
     Logs: [
         GetSource(LogsName),
-        CompileLogs,
+        GetCompile(LogsName),
         LogsName
     ],
+    Models: [
+        GetSource(ModelsName),
+        defaultStatic,
+        ModelsName
+    ],
+    Components: [
+        GetSource(ComponentsName),
+        defaultStatic,
+        ComponentsName
+    ],
     node_modules: [
-        GetSource('node_modules'),
-        CompileModule,
+        GetSource(ModulesName),
+        GetCompile(ModulesName),
         ModulesName
     ],
-    get [StaticName](){
+    get [StaticName]() {
         return getTypes.Static;
     }
 }
 
 const pageTypes = {
     page: "page",
-    model: "mode",
-    component: "inte"
+    model: "model",
+    component: "integ"
 }
 
 
@@ -65,9 +78,9 @@ const BasicSettings = {
     pageTypesArray: [],
 
     pageCodeFile: {
-        page: [pageTypes.page+".js", pageTypes.page+".ts"],
-        model: [pageTypes.model+".js", pageTypes.model+".ts"],
-        component: [pageTypes.component+".js", pageTypes.component+".ts"]
+        page: [pageTypes.page + ".js", pageTypes.page + ".ts"],
+        model: [pageTypes.model + ".js", pageTypes.model + ".ts"],
+        component: [pageTypes.component + ".js", pageTypes.component + ".ts"]
     },
 
     pageCodeFileArray: [],
@@ -95,15 +108,15 @@ const BasicSettings = {
         getTypes.Static[0] = GetSource(StaticName);
         getTypes.Logs[0] = GetSource(LogsName);
     },
-    get tsConfig(){
-        return fullWebSitePath_ + 'tsconfig.json'; 
+    get tsConfig() {
+        return fullWebSitePath_ + 'tsconfig.json';
     },
     async tsConfigFile() {
-        if(await EasyFs.existsFile(this.tsConfig)){
+        if (await EasyFs.existsFile(this.tsConfig)) {
             return await EasyFs.readFile(this.tsConfig);
         }
     },
-    relative(fullPath: string){
+    relative(fullPath: string) {
         return path.relative(fullWebSitePath_, fullPath)
     }
 }
@@ -127,12 +140,16 @@ export async function DeleteInDirectory(path) {
     }
 }
 
-export function smallPathToPage(smallPath: string){
-    return CutTheLast('.', SplitFirst('/', smallPath).pop());
+function firstLinkSplit(smallPath: string) {
+    return smallPath.split('<line>').pop();
 }
 
-export function getTypeBySmallPath(smallPath: string){
-    return getTypes[SplitFirst('/', smallPath).shift()];
+export function smallPathToPage(smallPath: string) {
+    return CutTheLast('.', SplitFirst('/', firstLinkSplit(smallPath)).pop());
+}
+
+export function getTypeBySmallPath(smallPath: string) {
+    return getTypes[SplitFirst('/', firstLinkSplit(smallPath)).shift()];
 }
 
 
@@ -142,5 +159,6 @@ export {
     SystemData,
     workingDirectory,
     getTypes,
-    BasicSettings
+    BasicSettings,
+    frameworkShortName
 }

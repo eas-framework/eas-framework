@@ -1,6 +1,9 @@
 import {name} from '../../../package.json'
-import {Settings} from '@eas-framework/server'
+import {Settings, SitemapEvents} from '@eas-framework/server'
 
+SitemapEvents.addListener('request', async (sitemapBuilder) => {
+    await sitemapBuilder.link({url: './wow', changefreq: 'daily', priority: 0.8});
+})
 Settings.compile.compileSyntax.push("TypeScript")
 
 import {func} from './WWW/server/import/from1.serv.ts'
@@ -50,9 +53,12 @@ export default {
             // }
         },
         sitemap: {
-            // file: 'SmaP.serv.ts'
+            file: 'loop/sitemap.xml',
+            updateAfterHours: 0 // update sitemap on new request after x hours
         },
         ignoreTypes: ["json"], // ignore file extension (auto ignore common server files)
+        allowExt: ['wasm'], // extends allowed file extensions (default basic server files)
+        ignoreExt: ['json'], // ignore file extensions - override default allowed extension (default - common server files)
         ignorePaths: ["/Private"],
         validPath: [(url, req, res) => url.substring(3, 5) != 'hi'] // check url path, if one of the methods return false, then the server returns a 404
     }, 

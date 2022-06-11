@@ -28,7 +28,7 @@ async function ssrHTML(dataTag: TagDataParser, FullPath: string, smallPath: stri
 
 export default async function BuildCode(type: StringTracker, dataTag: TagDataParser, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const LastSmallPath = type.extractInfo(), LastFullPath = BasicSettings.fullWebSitePath + LastSmallPath;
-    const { SmallPath, FullPath } = CreateFilePath(LastFullPath, LastSmallPath, dataTag.popHaveDefault('from'), getTypes.Static[2], 'svelte');
+    const { SmallPath, FullPath } = CreateFilePath(LastFullPath, LastSmallPath, dataTag.popHaveDefault('file'), getTypes.Static[2], 'svelte');
     const inWebPath = relative(getTypes.Static[2], SmallPath).replace(/\\/gi, '/');
 
     sessionInfo.style('/' + inWebPath + '.css');

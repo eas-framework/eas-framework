@@ -24,8 +24,7 @@ impl RefString {
     }
 
     pub fn eq(&self, text: &RefString) -> bool {
-        if self.length == text.length
-        {
+        if self.length == text.length {
             if self.start_skip == text.start_skip && self.chars == text.chars {
                 return true;
             }
@@ -81,7 +80,6 @@ impl UString for RefString {
         }
     }
 
-
     fn trim_start(&self) -> RefString {
         let mut i = 0;
         for current in 0..self.length {
@@ -96,7 +94,7 @@ impl UString for RefString {
         self.substring_start(i)
     }
 
-     fn trim_end(&self) -> RefString {
+    fn trim_end(&self) -> RefString {
         let mut i = 0;
         for current in self.length..0 {
             let c = self.at(current);
@@ -110,10 +108,9 @@ impl UString for RefString {
         self.substring(0, self.length - i)
     }
 
-     fn trim(&self) -> RefString {
+    fn trim(&self) -> RefString {
         self.trim_start().trim_end()
     }
-
 
     fn include_char(&self, char: &char) -> bool {
         unsafe { (*self.chars).contains(char) }
@@ -163,7 +160,12 @@ impl UString for RefString {
     fn index_of_better<T: UString>(&self, find: &T) -> Option<usize> {
         let mut i = 0;
 
-        'main: while i < self.length {
+        if self.length < find.len() {
+            return None;
+        }
+
+        let length = self.length - find.len();
+        'main: while i <= length {
             let this_char = self.at(i);
 
             if find.at(0) == this_char {
@@ -184,7 +186,8 @@ impl UString for RefString {
     }
 
     fn index_of(&self, find: &str) -> Option<usize> {
-        self.index_of_better(&RefString::new(&find.chars().collect()))
+        let chars: Vec<char> = find.chars().collect();
+        self.index_of_better(&RefString::new(&chars))
     }
 
     fn index_of_char(&self, find: &char) -> Option<usize> {

@@ -1,7 +1,7 @@
-@[model='../server' title="Sass"]
-<@body/>
+#[model='../server' title="Sass"]
+<content:body>
 <style lang="sass">
-    @@import './from1.sass'
+    @import './from1.sass'
 
     main
         div

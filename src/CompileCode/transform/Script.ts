@@ -74,7 +74,7 @@ class EnableReturnStatement {
 }
 
 /**
- * It takes a script and transform to EAS-Framework script
+ * It takes a script and transform to 'Framework' script
  * @param {StringTracker} text - The text to be transformed.
  * @param {boolean} isTypescript - Whether the file is a typescript file or not.
  * @param {SessionBuild} sessionInfo - SessionBuild

@@ -71,7 +71,7 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
   }
 
   if (savePath) {
-    await EasyFs.makePathReal(path.dirname(savePath));
+    await EasyFs.makePathReal(savePath);
     await EasyFs.writeFile(savePath, Result);
   }
   return Result;

@@ -1,5 +1,5 @@
-@[model='../server' title='Search']
-<@body/>
+#[model='../server' title='Search']
+<content:body>
 <search>
     <a href="./page2">page 2</a>
     <h1 id="title">This been recorded</h1>

@@ -184,13 +184,11 @@ export default class StringTracker {
      * @returns this string (not new string)
      */
     public Plus(...data: any[]): StringTracker {
-        let lastinfo = this.DefaultInfoTextLast;
         for (const i of data) {
             if (i instanceof StringTracker) {
-                lastinfo = i.DefaultInfoTextLast;
                 this.AddClone(i);
             } else {
-                this.AddTextAfter(String(i), lastinfo.info, lastinfo.line, lastinfo.char);
+                this.AddTextAfterNoTrack(String(i));
             }
         }
 
@@ -204,22 +202,20 @@ export default class StringTracker {
      * @param values all the values
      */
     public Plus$(texts: TemplateStringsArray, ...values: (StringTracker | any)[]): StringTracker {
-        let lastValue: StringTrackerDataInfo = this.DefaultInfoTextLast;
         for (const i in values) {
             const text = texts[i];
             const value = values[i];
 
-            this.AddTextAfter(text, lastValue?.info, lastValue?.line, lastValue?.char);
+            this.AddTextAfterNoTrack(text);
 
             if (value instanceof StringTracker) {
                 this.AddClone(value);
-                lastValue = value.DefaultInfoTextLast;
             } else if (value != null) {
-                this.AddTextAfter(String(value), lastValue?.info, lastValue?.line, lastValue?.char);
+                this.AddTextAfterNoTrack(String(value));
             }
         }
 
-        this.AddTextAfter(texts[texts.length - 1], lastValue?.info, lastValue?.line, lastValue?.char);
+        this.AddTextAfterNoTrack(texts[texts.length - 1]);
 
         return this;
     }

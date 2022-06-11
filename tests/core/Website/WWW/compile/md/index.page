@@ -1,18 +1,18 @@
-@[model='../server' title='Import Page']
-<@body/>
-<markdown copy-code="📋">
+#[model='../server' title='Import Page']
+<content:body>
+<eas-markdown copy-code="📋">
 # Code
 ```js
 var i = 9; //very long comment
 ```
-</markdown>
+</eas-markdown>
 
-<markdown copy-code="Copy">
+<eas-markdown copy-code="Copy">
 # Code
 ```js
 var i = 9; //very long comment
 ```
-</markdown>
+</eas-markdown>
 <Mark folder>
 Create a new project and install EAS-Framework
 ```bash
@@ -59,4 +59,4 @@ Create `.vscode/launch.json`
 ```
 </Mark>
 
-<markdown file="mark"/>
+<eas-markdown file="mark"/>

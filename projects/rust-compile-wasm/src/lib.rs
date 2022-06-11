@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![feature(once_cell)]
 
 mod actions;
 mod html_search;
@@ -83,7 +84,12 @@ pub fn find_end_of_q(text: &str, q_type: char) -> usize {
 
 #[wasm_bindgen]
 pub fn razor_to_ejs(text: &str) -> String {
-    razor::builder::output_json(text)
+    razor::builder::output_json_runtime(text)
+}
+
+#[wasm_bindgen]
+pub fn razor_to_ejs_compile(text: &str) -> String {
+    razor::builder::output_json_compile(text)
 }
 
 #[wasm_bindgen]

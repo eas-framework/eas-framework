@@ -2,9 +2,9 @@
 
 use std::{cmp::min, iter::FromIterator};
 
-use regex::Regex;
 use super::r_string::RefString;
 use super::u_string::UString;
+use regex::Regex;
 
 pub struct BetterString {
     chars: Vec<char>,
@@ -19,20 +19,17 @@ impl BetterString {
         BetterString { chars, length }
     }
 
-     pub fn repeat( char: char, length: usize) -> BetterString {
+    pub fn repeat(char: char, length: usize) -> BetterString {
         let mut chars = vec![];
 
         for _ in 0..length {
             chars.push(char);
         }
 
-        BetterString {
-            chars,
-            length
-        }
+        BetterString { chars, length }
     }
 
-    pub fn concat<T: UString>(&self, text: &T) -> BetterString{
+    pub fn concat<T: UString>(&self, text: &T) -> BetterString {
         let mut chars = self.chars.to_owned();
         chars.extend(text.to_string().chars());
 
@@ -44,27 +41,26 @@ impl BetterString {
 }
 
 impl UString for BetterString {
-
-     fn copy(&self) -> BetterString {
+    fn copy(&self) -> BetterString {
         BetterString {
             chars: self.chars.to_owned(),
             length: self.length,
         }
     }
 
-     fn substring(&self, start: usize, end: usize) -> BetterString {
+    fn substring(&self, start: usize, end: usize) -> BetterString {
         BetterString {
             chars: self.chars[start..end].to_vec(),
             length: end - start,
         }
     }
 
-     fn substring_start(&self, index: usize) -> BetterString {
+    fn substring_start(&self, index: usize) -> BetterString {
         if index >= self.length {
             return BetterString {
                 chars: vec![],
-                length: 0
-            }
+                length: 0,
+            };
         }
         BetterString {
             chars: self.chars[index..].to_vec(),
@@ -72,43 +68,48 @@ impl UString for BetterString {
         }
     }
 
-     fn substring_end(&self, index: usize) -> BetterString {
+    fn substring_end(&self, index: usize) -> BetterString {
         BetterString {
             chars: self.chars[..index].to_vec(),
             length: min(self.length, index),
         }
     }
 
-     fn include_char(&self, char: &char) -> bool {
+    fn include_char(&self, char: &char) -> bool {
         self.chars.contains(char)
     }
 
-     fn at(&self, index: usize) -> char {
+    fn at(&self, index: usize) -> char {
         if self.length <= index {
             return ' ';
         }
         self.chars[index]
     }
 
-     fn at_minus(&self, index: usize, minus: usize) -> char {
+    fn at_minus(&self, index: usize, minus: usize) -> char {
         if minus > index {
             return ' ';
         }
         self.chars[index - minus]
     }
 
-     fn len(&self) -> usize {
+    fn len(&self) -> usize {
         self.length
     }
 
-     fn is_empty(&self) -> bool {
+    fn is_empty(&self) -> bool {
         self.length == 0
     }
 
     fn index_of_better<T: UString>(&self, find: &T) -> Option<usize> {
         let mut i = 0;
 
-        'main: while i < self.length {
+        if self.length < find.len() {
+            return None;
+        }
+
+        let length = self.length - find.len();
+        'main: while i <= length {
             let this_char = self.at(i);
 
             if find.at(0) == this_char {
@@ -135,14 +136,14 @@ impl UString for BetterString {
 
         for c in 0..find.len() {
             if find.at(c) != self.at(c) {
-                return false
+                return false;
             }
         }
 
         true
     }
 
-     fn trim_start(&self) -> BetterString {
+    fn trim_start(&self) -> BetterString {
         let mut i = 0;
         for current in 0..self.length {
             let c = self.chars[current];
@@ -156,7 +157,7 @@ impl UString for BetterString {
         self.substring_start(i)
     }
 
-     fn trim_end(&self) -> BetterString {
+    fn trim_end(&self) -> BetterString {
         let mut i = 0;
         for current in self.length..0 {
             let c = self.chars[current];
@@ -170,11 +171,11 @@ impl UString for BetterString {
         self.substring(0, self.length - i)
     }
 
-     fn trim(&self) -> BetterString {
+    fn trim(&self) -> BetterString {
         self.trim_start().trim_end()
     }
 
-    fn eq<T: UString>(&self, text: &T) -> bool{
+    fn eq<T: UString>(&self, text: &T) -> bool {
         if text.len() != self.length {
             return false;
         }
@@ -182,11 +183,11 @@ impl UString for BetterString {
         self.starts_with(text)
     }
 
-     fn index_of(&self, find: &str) -> Option<usize> {
+    fn index_of(&self, find: &str) -> Option<usize> {
         self.index_of_better(&BetterString::new(find))
     }
 
-     fn index_of_char(&self, find: &char) -> Option<usize> {
+    fn index_of_char(&self, find: &char) -> Option<usize> {
         let mut i = 0;
 
         while i < self.length {
@@ -202,7 +203,7 @@ impl UString for BetterString {
         None
     }
 
-     fn search(&self, re: &Regex) -> Option<u32> {
+    fn search(&self, re: &Regex) -> Option<u32> {
         let this_string = &self.to_string();
         let found = re.shortest_match(this_string);
 
@@ -215,7 +216,7 @@ impl UString for BetterString {
         Option::Some(this_string[..start].chars().count() as u32)
     }
 
-     fn to_string(&self) -> String {
+    fn to_string(&self) -> String {
         String::from_iter(&self.chars)
     }
 

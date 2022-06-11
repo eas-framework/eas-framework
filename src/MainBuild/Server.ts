@@ -9,6 +9,8 @@ import formidable from 'formidable';
 import { UpdateGreenLock } from './ListenGreenLock';
 import http from 'http';
 import updateRequestAttributes from '../Plugins/HTTP';
+import { StartReadCommands } from './Commands';
+
 
 
 async function requestAndSettings(req: Request, res: Response) {
@@ -42,7 +44,7 @@ async function changeURLRules(req: Request, res: Response) {
 }
 
 async function filerURLRules(req: Request, res: Response, url: string) {
-    let notValid: any = Settings.routing.ignorePaths.find(i => url.startsWith(i)) || Settings.routing.ignoreTypes.find(i => url.endsWith('.'+i));
+    let notValid: any = Settings.routing.ignorePaths.find(i => url.startsWith(i));
     
     if(!notValid) {
         for(const valid of Settings.routing.validPath){ // check if url isn't valid
@@ -61,7 +63,7 @@ async function filerURLRules(req: Request, res: Response, url: string) {
     await fileByUrl.DynamicPage(req, res, url.substring(1));
 }
 
-let appOnline: {close: () => void, server: http.Server}
+export let appOnline: {close: () => void, server: http.Server}
 
 /**
  * It starts the server and then calls StartListing
@@ -144,6 +146,8 @@ export default async function StartServer({ SitePath = './', HttpServer = Update
     buildFirstLoad();
     await requireSettings();
     await StartApp(HttpServer);
+
+    StartReadCommands() // start the command line
     return appOnline
 }
 

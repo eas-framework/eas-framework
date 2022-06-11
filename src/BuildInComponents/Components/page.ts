@@ -1,5 +1,5 @@
 import StringTracker from '../../EasyDebug/StringTracker';
-import { StringNumberMap, BuildInComponent, StringAnyMap } from '../../CompileCode/XMLHelpers/CompileTypes';
+import { BuildInComponent } from '../../CompileCode/XMLHelpers/CompileTypes';
 import { BasicSettings, getTypes, smallPathToPage } from '../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../OutputInput/EasyFs';
 import { createNewPrint } from '../../OutputInput/Logger';
@@ -13,7 +13,9 @@ import TagDataParser from '../../CompileCode/XMLHelpers/TagDataParser';
 import JSParser from '../../CompileCode/JSParser';
 
 function InFolderPagePath(inputPath: string, smallPath: string) {
-    if (inputPath[0] == '.') {
+    if (inputPath[0] == '/') {
+        inputPath = inputPath.substring(1);
+    } else {
         inputPath = path_node.join(smallPath, '/../', inputPath);
     }
 
@@ -26,7 +28,6 @@ function InFolderPagePath(inputPath: string, smallPath: string) {
 const cacheMap: { [key: string]: { CompiledData: StringTracker, newSession: SessionBuild } } = {};
 export default async function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const filepath = dataTag.popHaveDefault("from");
-
     const inStatic = InFolderPagePath(filepath, smallPathToPage(type.extractInfo()));
 
     const FullPath = getTypes.Static[0] + inStatic, SmallPath = getTypes.Static[2] + '/' + inStatic;

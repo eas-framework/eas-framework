@@ -3,12 +3,12 @@ import sourceMapSupport from 'source-map-support';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import puppeteer from 'puppeteer'
-import fs from 'fs-extra' 
+import fs from 'fs-extra'
 
 sourceMapSupport.install({ hookRequire: true });
 
 //activate server
-const { default: Server, Settings, waitProductionBuild, PageTimeLogger } = await import('../../dist/index.js');
+const { default: Server, Settings, waitProductionBuild, PageTimeLogger, GlobalSitemapBuilder } = await import('../../dist/index.js');
 await Server({ SitePath: './tests/core/Website' });
 
 //load pages
@@ -17,13 +17,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 async function testPages(name, filter){
     await fs.emptyDir(__dirname + '/screenshots/')
     await fs.writeFile(__dirname + '/screenshots/.gitkeep', '')
-    
-    const paths = await promises.readFile(path.join(__dirname, 'Website', 'WWW', 'sitemap.txt'), 'utf8')
-
+        
     const browser = await puppeteer.launch({ headless: true })
-    const pathSplit = paths.split('\n');
+    const pathSplit = Object.keys(GlobalSitemapBuilder.links);
     for (const index in pathSplit) {
-        const p = pathSplit[index];
+        const p = pathSplit[index].split('__auto_domain__').pop();
         const page = await browser.newPage()
     
         page.on('dialog', async (dialog) => {

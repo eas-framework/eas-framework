@@ -1,5 +1,5 @@
-@[model='../server' title="API"]
-<@body/>
+#[model='../server' title="API"]
+<content:body>
 <h1>API</h1>
 <p>First create some records for the search API</p>
 <a href="../../compile/search/index">create record</a> and restart the server
@@ -16,6 +16,6 @@
         openLink.innerText = link;
     }
     search.addEventListener('input', updateLink);
-    updateLink()
-    fetch(openLink.href)
+    updateLink();
+    fetch(openLink.href);
 </script>

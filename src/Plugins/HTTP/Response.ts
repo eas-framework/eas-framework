@@ -1,7 +1,7 @@
 import { Response } from "../../MainBuild/Types";
 
 function json(data: any){
-    this.setHeader('Content-Type', 'application/json');
+    this.type('json');
     this.end(JSON.stringify(data));
     return this
 }
