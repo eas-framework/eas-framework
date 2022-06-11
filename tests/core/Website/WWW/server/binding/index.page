@@ -1,6 +1,6 @@
 #[model='../server' title="Data Binding" codeFile=inherit]
 <content:body>
-<eas-form server-fn="checkData" validate="email:email, func: n => n.length, password:6-30,numInt: 2..10, numFloat: 2.0..10.5, str: 3-20, re: /abc/gi">
+<eas-form server-fn="checkData" @(Post ? '': 'id="form_data"') validate="email:email, func: n => n.length, password:6-30,numInt: 2..10, numFloat: 2.0..10.5, str: 3-20, re: /abc/gi">
     <input type="email" name="email" placeholder="Email" value="@(Post.email)"/>
     <input type="password" name="password" placeholder="Password" value="@(Post.password)"/>
     <input type="text" name="numInt" placeholder="Int" value="@(Post.numInt)"/>
@@ -17,4 +17,5 @@
         conServer(num, key).then(x => console.log(x))
     }
     sendConnect()
+    window.form_data?.submit()
 </script>
