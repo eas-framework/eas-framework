@@ -289,7 +289,7 @@ async function markdownTheme(filePath: string, checked: boolean) {
         fileName = '-' + fileName;
 
 
-    const fullPath = workingDirectory + 'node_modules/github-markdown-css/github-markdown' + fileName.replace('.css', '.min.css');
+    const fullPath = workingDirectory + 'node_modules/github-markdown-css/github-markdown' + fileName.replace(/\.css$/, '.min.css');
 
     if (checked || await EasyFs.existsFile(fullPath))
         return {
