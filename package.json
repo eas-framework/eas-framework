@@ -71,7 +71,7 @@
     "source-map-js": "^0.6.2",
     "source-map-support": "^0.5.20",
     "sql.js": "^1.6.2",
-    "svelte": "^3.44.1",
+    "svelte": "^3.48.0",
     "uuid": "^8.3.2",
     "workerpool": "^6.1.5"
   },
