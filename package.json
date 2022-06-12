@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@sindresorhus/slugify": "^2.1.0",
-    "@swc/core": "^1.2.167",
+    "@swc/core": "^1.2.189",
     "@tinyhttp/app": "^2.0.12",
     "@tinyhttp/cookie-parser": "^2.0.4",
     "body-parser": "^1.19.0",
