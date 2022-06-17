@@ -49,5 +49,6 @@ export default async function registerExtension(filePath: string, smallPath: str
 
     await EasyFs.writeFile(fullCompilePath + '.css', css.code ?? '');
 
+    await new Promise(setTimeout);
     return fullImportPath;
 }

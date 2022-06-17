@@ -10,6 +10,7 @@ const ShowHelp =
     `An interactive prompts for fast commands.
 Helps you manage your developer server easily.`;
 
+/* istanbul ignore next */
 function checkCommand(name: string) {
     switch (name) {
         case 'help':

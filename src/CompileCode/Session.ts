@@ -109,7 +109,7 @@ export class SessionBuild {
     addScriptStyle(type: 'script' | 'style' | 'module', smallPath = this.smallPath) {
         let data = this.inScriptStyle.find(x => x.type == type && x.path == smallPath);
         if (!data) {
-            data = { type, path: smallPath, value: new SourceMapStore(smallPath, this.safeDebug, type == 'style', true) }
+            data = { type, path: smallPath, value: new SourceMapStore(smallPath, this.debug, type == 'style', true) }
             this.inScriptStyle.push(data);
         }
 

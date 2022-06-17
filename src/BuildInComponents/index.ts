@@ -19,7 +19,7 @@ import extendsAttributes from './Components/extends';
 import { frameworkShortName } from '../RunTimeBuild/SearchFileSystem';
 
 const CLIENT = frameworkShortName + '-client', PAGE = frameworkShortName + '-page', ISOLATE = frameworkShortName + '-isolate', SVELTE = frameworkShortName + '-svelte', MARKDOWN = frameworkShortName + '-markdown', CONNECT = frameworkShortName + '-connect', FORM = frameworkShortName + '-form', RECORD = frameworkShortName + '-record', SEARCH = frameworkShortName + '-search', RESULT = frameworkShortName + '-result', EXTENDS = frameworkShortName + '-extends';
-export const AllBuildIn = ["script", "style", "head", EXTENDS, RESULT, CLIENT, PAGE, CONNECT, ISOLATE, FORM, SVELTE, MARKDOWN, RECORD, SEARCH];
+export const AllBuildIn = ["head", EXTENDS, RESULT, CLIENT, PAGE, CONNECT, ISOLATE, FORM, SVELTE, MARKDOWN, RECORD, SEARCH, "script", "style"];
 
 export function StartCompiling(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, InsertComponent: InsertComponent, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     let reData: Promise<BuildInComponent>;

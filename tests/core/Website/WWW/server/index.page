@@ -7,4 +7,5 @@
 * [API](./api/index)
 * [SSR RunTime](./ssr-runtime/index)
 * [Data Binding](./binding/index)
+* [WASM Import](./wasm/index)
 </eas-markdown>

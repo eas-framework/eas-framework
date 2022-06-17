@@ -1,8 +1,8 @@
 #[model='../server' title='Search']
 <content:body>
-<search>
+<eas-search>
     <a href="./page2">page 2</a>
     <h1 id="title">This been recorded</h1>
 
     Some more text
-</search>
+</eas-search>
