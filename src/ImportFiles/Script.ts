@@ -283,7 +283,7 @@ export async function compileImport(globalPrams: string, scriptLocation: string,
       p = path.relative(p, typeArray[0]);
     else {
       if (p[0] == ".") {
-        p = path.join(inStaticLocationRelative, p);
+        p = path.join(path.dirname(inStaticLocationRelative), p);
 
       }
       else if (p[0] != "/")
