@@ -11,9 +11,9 @@
     "build:ts": "tsc --project production.tsconfig.json",
     "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
     "test": "npm run build && npm run test:dist",
-    "test:all": "npm run test with-production",
-    "test:server": "npm test only server",
-    "coverage": "c8 --reporter=lcov npm run test:dist rebuild coverage with-production",
+    "test:all": "npm run test production",
+    "test:server": "npm test only-server",
+    "coverage": "c8 --reporter=lcov npm run test:dist rebuild coverage production",
     "semantic-release": "semantic-release"
   },
   "release": {

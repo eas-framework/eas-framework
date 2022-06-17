@@ -16,6 +16,7 @@
     function sendConnect(num = 3.3, key = "rgergrhe54rhgrrthgeg"){
         conServer(num, key).then(x => console.log(x))
     }
-    sendConnect()
+    sendConnect() // not valid
+    sendConnect(3.8) // valid
     window.form_data?.submit()
 </script>
