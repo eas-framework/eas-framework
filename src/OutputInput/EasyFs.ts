@@ -1,4 +1,4 @@
-import fs, { Dirent, Stats, promises } from 'fs';
+import { Dirent, Stats, promises } from 'fs';
 import { print } from './Console';
 import path from 'path';
 
@@ -21,7 +21,7 @@ function promiseErrorHandle<T>(promise: Promise<any>, callback: (err: NodeJS.Err
 }
 
 function basicFSErrorHandler(method: string, ...values) {
-    return promiseErrorHandle(fs.promises[method](...values), (err) => {
+    return promiseErrorHandle(promises[method](...values), (err) => {
         if (err) {
             print.error(err);
         }
@@ -30,7 +30,7 @@ function basicFSErrorHandler(method: string, ...values) {
 }
 
 function exists(path: string): Promise<boolean> {
-    return promiseErrorHandle(fs.promises.stat(path), (err, stat) => Boolean(stat))
+    return promiseErrorHandle(promises.stat(path), (err, stat) => Boolean(stat))
 }
 
 /**
@@ -40,7 +40,7 @@ function exists(path: string): Promise<boolean> {
  * @returns the filed
  */
 function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue: any = {}): Promise<Stats | any> {
-    return promiseErrorHandle(fs.promises.stat(path), (err, stat) => {
+    return promiseErrorHandle(promises.stat(path), (err, stat) => {
         if (err && !ignoreError) {
             print.error(err);
         }
@@ -91,7 +91,7 @@ function unlink(path: string): Promise<boolean> {
  * @returns A boolean value.
  */
 async function unlinkIfExists(path: string): Promise<boolean> {
-    return promiseErrorHandle(fs.promises.unlink(path), err => {
+    return promiseErrorHandle(promises.unlink(path), err => {
         return !err;
     })
 }
@@ -104,7 +104,7 @@ async function unlinkIfExists(path: string): Promise<boolean> {
  * @returns A promise that resolves to an array of strings.
  */
 function readdir(path: string, options = {}): Promise<string[] | Buffer[] | Dirent[]> {
-    return promiseErrorHandle(fs.promises.readdir(path, options), (err, files) => {
+    return promiseErrorHandle(promises.readdir(path, options), (err, files) => {
         if (err) {
             print.error(err);
         }
@@ -118,7 +118,7 @@ function readdir(path: string, options = {}): Promise<string[] | Buffer[] | Dire
  * @returns A boolean value indicating whether the directory was created or not.
  */
 async function mkdirIfNotExists(path: string): Promise<boolean> {
-    return promiseErrorHandle(fs.promises.mkdir(path), err => {
+    return promiseErrorHandle(promises.mkdir(path), err => {
         return !err;
     })
 }
@@ -130,7 +130,7 @@ async function mkdirIfNotExists(path: string): Promise<boolean> {
  * @returns A promise.
  */
 function writeFile(path: string, content: string | NodeJS.ArrayBufferView): Promise<boolean> {
-    return promiseErrorHandle(fs.promises.writeFile(path, content), err => {
+    return promiseErrorHandle(promises.writeFile(path, content), err => {
         if (err) {
             print.error(err);
         }
@@ -195,19 +195,7 @@ async function readJsonFile(path: string, encoding?: BufferEncoding): Promise<an
 async function makePathReal(p: string, base = '') {
     p = path.dirname(p);
 
-    if (!await exists(base + p)) {
-        const all = p.split(/\\|\//);
-
-        let pString = '';
-        for (const i of all) {
-            if (pString.length) {
-                pString += '/';
-            }
-            pString += i;
-
-            await mkdirIfNotExists(base + pString);
-        }
-    }
+    return promiseErrorHandle(promises.mkdir(path.join(base, p), {recursive: true}), e => !e)
 }
 
 //types
@@ -216,7 +204,7 @@ export {
 }
 
 export default {
-    ...fs.promises,
+    ...promises,
     exists,
     existsFile,
     stat,
