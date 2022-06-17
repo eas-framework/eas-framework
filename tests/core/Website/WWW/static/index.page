@@ -1,9 +1,12 @@
-@[model='./server' title=Index]
-<@body/>
-<markdown>
+#[model='./server' title=Index]
+<content:sitemap>
+    <priority>0.3</priority>
+</content:sitemap>
+<content:body>
+<eas-markdown>
 * [Svelte](./svelte/index)
 * [Svelte SSR](./svelte/ssr)
 * [TypeScript](./typescript/index)
 * [TypeScript Decorators](./typescript/decorators)
 * [Sass](./sass/index)
-</markdown>
+</eas-markdown>

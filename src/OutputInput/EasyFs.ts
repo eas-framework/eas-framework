@@ -1,13 +1,36 @@
-import fs, {Dirent, Stats} from 'fs';
+import { Dirent, Stats, promises } from 'fs';
 import { print } from './Console';
 import path from 'path';
 
-function exists(path: string): Promise<boolean>{
-    return new Promise(res => {
-        fs.stat(path, (err, stat) => {
-            res(Boolean(stat));
-        });
+/**
+ * A function that takes a promise and a callback function. It returns a new promise that will resolve
+ * to the result of the callback function. If the promise is rejected, the callback function will be
+ * called with the error as the first argument.
+ * @param promise - The promise you want to handle
+ * @param {any} callback - The callback function that you want to use.
+ * @returns A promise that will resolve to the result of the callback function.
+ */
+function promiseErrorHandle<T>(promise: Promise<any>, callback: (err: NodeJS.ErrnoException, data?: any) => T): Promise<T> {
+    return new Promise(async res => {
+        try {
+            res(callback(null, await promise))
+        } catch (err) {
+            res(callback(err));
+        }
+    })
+}
+
+function basicFSErrorHandler(method: string, ...values) {
+    return promiseErrorHandle(promises[method](...values), (err) => {
+        if (err) {
+            print.error(err);
+        }
+        return !err;
     });
+}
+
+function exists(path: string): Promise<boolean> {
+    return promiseErrorHandle(promises.stat(path), (err, stat) => Boolean(stat))
 }
 
 /**
@@ -16,14 +39,12 @@ function exists(path: string): Promise<boolean>{
  * @param {filed to get from the stat object} filed 
  * @returns the filed
  */
-function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue:any = {}): Promise<Stats | any>{
-    return new Promise(res => {
-        fs.stat(path, (err, stat) => {
-            if(err && !ignoreError){
-                print.error(err);
-            }
-            res(filed && stat? stat[filed]: stat || defaultValue);
-        });
+function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue: any = {}): Promise<Stats | any> {
+    return promiseErrorHandle(promises.stat(path), (err, stat) => {
+        if (err && !ignoreError) {
+            print.error(err);
+        }
+        return filed && stat ? stat[filed] : stat || defaultValue;
     });
 }
 
@@ -33,7 +54,7 @@ function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue:
  * @param {any} [ifTrueReturn=true] - any = true
  * @returns A boolean value.
  */
-async function existsFile(path: string, ifTrueReturn: any = true): Promise<boolean>{
+async function existsFile(path: string, ifTrueReturn: any = true): Promise<boolean> {
     return (await stat(path, undefined, true)).isFile?.() && ifTrueReturn;
 }
 
@@ -42,15 +63,8 @@ async function existsFile(path: string, ifTrueReturn: any = true): Promise<boole
  * @param {string} path - The path to the directory you want to create.
  * @returns A promise.
  */
-function mkdir(path: string): Promise<boolean>{
-    return new Promise(res => {
-        fs.mkdir(path, (err) => {
-            if(err){
-                print.error(err);
-            }
-            res(!err);
-        });
-    });
+function mkdir(path: string): Promise<boolean> {
+    return basicFSErrorHandler('mkdir', path);
 }
 
 /**
@@ -58,15 +72,8 @@ function mkdir(path: string): Promise<boolean>{
  * @param {string} path - The path to the directory to be removed.
  * @returns A promise.
  */
-function rmdir(path: string): Promise<boolean>{
-    return new Promise(res => {
-        fs.rmdir(path, (err) => {
-            if(err){
-                print.error(err);
-            }
-            res(!err);
-        });
-    });
+function rmdir(path: string): Promise<boolean> {
+    return basicFSErrorHandler('rmdir', path);
 }
 
 /**
@@ -74,15 +81,8 @@ function rmdir(path: string): Promise<boolean>{
  * @param {string} path - The path to the file you want to delete.
  * @returns A promise.
  */
-function unlink(path: string): Promise<boolean>{
-    return new Promise(res => {
-        fs.unlink(path, (err) => {
-            if(err){
-                print.error(err);
-            }
-            res(!err);
-        });
-    });
+function unlink(path: string): Promise<boolean> {
+    return basicFSErrorHandler('unlink', path);
 }
 
 /**
@@ -90,11 +90,10 @@ function unlink(path: string): Promise<boolean>{
  * @param {string} path - The path to the file or directory to be unlinked.
  * @returns A boolean value.
  */
-async function unlinkIfExists(path: string): Promise<boolean>{
-    if(await exists(path)){
-        return await unlink(path);
-    }
-    return false;
+async function unlinkIfExists(path: string): Promise<boolean> {
+    return promiseErrorHandle(promises.unlink(path), err => {
+        return !err;
+    })
 }
 
 /**
@@ -104,15 +103,13 @@ async function unlinkIfExists(path: string): Promise<boolean>{
  * @param options - {
  * @returns A promise that resolves to an array of strings.
  */
-function readdir(path: string, options = {}): Promise<string[] | Buffer[] | Dirent[]>{
-    return new Promise(res => {
-        fs.readdir(path, options, (err, files) => {
-            if(err){
-                print.error(err);
-            }
-            res(files || []);
-        });
-    });
+function readdir(path: string, options = {}): Promise<string[] | Buffer[] | Dirent[]> {
+    return promiseErrorHandle(promises.readdir(path, options), (err, files) => {
+        if (err) {
+            print.error(err);
+        }
+        return files || [];
+    })
 }
 
 /**
@@ -120,10 +117,10 @@ function readdir(path: string, options = {}): Promise<string[] | Buffer[] | Dire
  * @param {string} path - The path to the directory you want to create.
  * @returns A boolean value indicating whether the directory was created or not.
  */
-async function mkdirIfNotExists(path: string): Promise<boolean>{
-    if(!await exists(path))
-        return await mkdir(path);
-    return false;
+async function mkdirIfNotExists(path: string): Promise<boolean> {
+    return promiseErrorHandle(promises.mkdir(path), err => {
+        return !err;
+    })
 }
 
 /**
@@ -132,15 +129,13 @@ async function mkdirIfNotExists(path: string): Promise<boolean>{
  * @param {string | NodeJS.ArrayBufferView} content - The content to write to the file.
  * @returns A promise.
  */
-function writeFile(path: string, content:  string | NodeJS.ArrayBufferView): Promise<boolean>{
-    return new Promise(res => {
-        fs.writeFile(path, content, (err) => {
-            if(err){
-                print.error(err);
-            }
-            res(!err);
-        });
-    });
+function writeFile(path: string, content: string | NodeJS.ArrayBufferView): Promise<boolean> {
+    return promiseErrorHandle(promises.writeFile(path, content), err => {
+        if (err) {
+            print.error(err);
+        }
+        return !err;
+    })
 }
 
 /**
@@ -153,7 +148,7 @@ function writeFile(path: string, content:  string | NodeJS.ArrayBufferView): Pro
 async function writeJsonFile(path: string, content: any): Promise<boolean> {
     try {
         return await writeFile(path, JSON.stringify(content));
-    } catch(err) {
+    } catch (err) {
         print.error(err);
     }
 
@@ -167,14 +162,12 @@ async function writeJsonFile(path: string, content: any): Promise<boolean> {
  * @param [encoding=utf8] - The encoding of the file. Defaults to utf8.
  * @returns A promise.
  */
-function readFile(path:string, encoding = 'utf8'): Promise<string|any>{
-    return new Promise(res => {
-        fs.readFile(path, <any>encoding, (err, data) => {
-            if(err){
-                print.error(err);
-            }
-            res(data || "");
-        });
+function readFile(path: string, encoding: BufferEncoding = 'utf8', ignoreError = false): Promise<string | any> {
+    return promiseErrorHandle(promises.readFile(path, { encoding }), (err, data) => {
+        if (err && !ignoreError) {
+            print.error(err);
+        }
+        return data || "";
     });
 }
 
@@ -184,10 +177,10 @@ function readFile(path:string, encoding = 'utf8'): Promise<string|any>{
  * @param {string} [encoding] - The encoding to use when reading the file. Defaults to utf8.
  * @returns A promise that resolves to an object.
  */
-async function readJsonFile(path:string, encoding?:string): Promise<any>{
+async function readJsonFile(path: string, encoding?: BufferEncoding): Promise<any> {
     try {
         return JSON.parse(await readFile(path, encoding));
-    } catch(err){
+    } catch (err) {
         print.error(err);
     }
 
@@ -199,22 +192,10 @@ async function readJsonFile(path:string, encoding?:string): Promise<any>{
  * @param p - The path to the file that needs to be created.
  * @param [base] - The base path to the file.
  */
-async function makePathReal(p:string, base = '') {
+async function makePathReal(p: string, base = '') {
     p = path.dirname(p);
 
-    if (!await exists(base + p)) {
-        const all = p.split(/\\|\//);
-
-        let pString = '';
-        for (const i of all) {
-            if (pString.length) {
-                pString += '/';
-            }
-            pString += i;
-
-            await mkdirIfNotExists(base + pString);
-        }
-    }
+    return promiseErrorHandle(promises.mkdir(path.join(base, p), {recursive: true}), e => !e)
 }
 
 //types
@@ -223,7 +204,7 @@ export {
 }
 
 export default {
-    ...fs.promises,
+    ...promises,
     exists,
     existsFile,
     stat,

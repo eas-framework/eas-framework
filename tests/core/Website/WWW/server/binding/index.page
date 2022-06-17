@@ -1,20 +1,22 @@
-@[model='../server' title="Data Binding" codeFile=inherit]
-<@body/>
-<form sendTo="checkData" validate="email:email, func: n => n.length, password:6-30,numInt: 2..10, numFloat: 2.0..10.5, str: 3-20, re: /abc/gi">
-    <input type="email" name="email" placeholder="Email" value="@Post.email"/>
-    <input type="password" name="password" placeholder="Password" value="@Post.password"/>
-    <input type="text" name="numInt" placeholder="Int" value="@Post.numInt"/>
-    <input type="text" name="numFloat" placeholder="Float" value="@Post.numFloat"/>
-    <input type="text" name="str" placeholder="String length" value="@Post.str"/>
-    <input type="text" name="re" placeholder="abc" value="@Post.re"/>
-    <input type="text" name="func" placeholder="any data" value="@Post.func"/>
+#[model='../server' title="Data Binding" codeFile=inherit]
+<content:body>
+<eas-form server-fn="checkData" @(Post ? '': 'id="form_data"') validate="email:email, func: n => n.length, password:6-30,numInt: 2..10, numFloat: 2.0..10.5, str: 3-20, re: /abc/gi">
+    <input type="email" name="email" placeholder="Email" value="@(Post.email)"/>
+    <input type="password" name="password" placeholder="Password" value="@(Post.password)"/>
+    <input type="text" name="numInt" placeholder="Int" value="@(Post.numInt)"/>
+    <input type="text" name="numFloat" placeholder="Float" value="@(Post.numFloat)"/>
+    <input type="text" name="str" placeholder="String length" value="@(Post.str)"/>
+    <input type="text" name="re" placeholder="abc" value="@(Post.re)"/>
+    <input type="text" name="func" placeholder="any data" value="@(Post.func)"/>
     <input type="submit" value="Submit"/>
-</form>
+</eas-form>
 
-<connect sendTo="connect" name="conServer" validate="3.8..9.0, 8-30"/>
+<eas-connect server-fn="connect" client-fn="conServer" validate="3.8..9.0, 8-30"/>
 <script>
     function sendConnect(num = 3.3, key = "rgergrhe54rhgrrthgeg"){
         conServer(num, key).then(x => console.log(x))
     }
-    sendConnect()
+    sendConnect() // not valid
+    sendConnect(3.8) // valid
+    window.form_data?.submit()
 </script>

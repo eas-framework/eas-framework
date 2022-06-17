@@ -11,10 +11,9 @@ import { SessionBuild } from '../CompileCode/Session';
 import { CheckDependencyChange, pageDeps } from '../OutputInput/StoreDeps';
 import { ExportSettings } from '../MainBuild/SettingsTypes';
 import { argv } from 'process';
-import { createSiteMap } from './SiteMap';
 import { extensionIs, isFileType } from './FileTypes';
-import { perCompile, postCompile, perCompilePage, postCompilePage } from '../BuildInComponents';
 import StringTracker from '../EasyDebug/StringTracker';
+import { perCompile, postCompile, perCompilePage , postCompilePage } from '../CompileCode/Events';
 
 async function compileFile(filePath: string, arrayType: string[], { isDebug, hasSessionInfo, nestedPage, nestedPageData, dynamicCheck }: { isDebug?: boolean, hasSessionInfo?: SessionBuild, nestedPage?: string, nestedPageData?: string, dynamicCheck?: boolean } = {}) {
     const startMeasureTime = performance.now();
@@ -27,9 +26,9 @@ async function compileFile(filePath: string, arrayType: string[], { isDebug, has
     const sessionInfo = hasSessionInfo ?? new SessionBuild(arrayType[2] + '/' + filePath, FullFilePath, arrayType[2], isDebug, GetPlugin("SafeDebug"));
     await sessionInfo.dependence('thisPage', FullFilePath);
 
-    await perCompilePage(sessionInfo, FullPathCompile);
+    await perCompilePage(sessionInfo, filePath, arrayType);
     const CompiledData = (await Insert(html, FullPathCompile, Boolean(nestedPage), nestedPageData, sessionInfo, dynamicCheck)) ?? new StringTracker();
-    await postCompilePage(sessionInfo, FullPathCompile);
+    await postCompilePage(sessionInfo, filePath, arrayType);
 
     if (!nestedPage && CompiledData.length) {
         await EasyFs.writeFile(FullPathCompile, CompiledData.StringWithTack(FullPathCompile));
@@ -120,9 +119,6 @@ export async function compileAll(Export: ExportSettings) {
             await i();
         }
         PageTimeLogger.dispatch('end-compile');
-        PageTimeLogger.dispatch('create-sitemap');
-        await createSiteMap(Export, state);
-        PageTimeLogger.dispatch('end-create-sitemap');
         state.export()
         pageDeps.save();
         postCompile()

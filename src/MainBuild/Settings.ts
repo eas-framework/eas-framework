@@ -13,11 +13,18 @@ import { Request, Response, NextFunction } from '@tinyhttp/app';
 import { Settings as createNewPrintSettings } from '../OutputInput/Logger';
 import MemorySession from 'memorystore';
 import { ExportSettings } from './SettingsTypes';
-import { debugSiteMap } from '../RunTimeBuild/SiteMap';
 import { settings as defineSettings } from '../CompileCode/CompileScript/PageBase';
 import {Export as ExportRam} from '../RunTimeBuild/FunctionScript'
 import { TransformSettings } from '../CompileCode/transform/Script';
 import { SyntaxSettings } from '../CompileCode/transform/EasySyntax';
+import { DevAllowWebsiteExtensions, DevIgnoredWebsiteExtensions, updateDevAllowWebsiteExtensions, updateDevIgnoredWebsiteExtensions } from '../ImportFiles/StaticFiles';
+import { cacheSitemap, GlobalSitemapBuilder } from '../CompileCode/XMLHelpers/SitemapBuilder';
+
+export const MB_IN_BYTES = 1048576;
+
+export const MINUIT_MILLISECONDS = 60 * 1000;
+export const HOUR_MILLISECONDS = MINUIT_MILLISECONDS * 60;
+export const DAY_MILLISECONDS = 86400000;
 
 const
     CookiesSecret = uuidv4().substring(0, 32),
@@ -26,7 +33,7 @@ const
 
     CookiesMiddleware = cookieParser(CookiesSecret),
     CookieEncrypterMiddleware = cookieEncrypter(CookiesSecret, {}),
-    CookieSettings = { httpOnly: true, signed: true, maxAge: 86400000 * 30 };
+    CookieSettings = { httpOnly: true, signed: true, maxAge: DAY_MILLISECONDS * 30 };
 
 fileByUrl.Settings.Cookies = <any>CookiesMiddleware;
 fileByUrl.Settings.CookieEncrypter = <any>CookieEncrypterMiddleware;
@@ -158,9 +165,33 @@ export const Export: ExportSettings = {
         rules: {},
         urlStop: [],
         validPath: baseValidPath,
-        ignoreTypes: baseRoutingIgnoreTypes,
+        get allowExt(){
+            return DevAllowWebsiteExtensions
+        },
+        set allowExt(value){
+            updateDevAllowWebsiteExtensions(value)
+        },
+        get ignoreExt(){
+            return DevIgnoredWebsiteExtensions;
+        },
+        set ignoreExt(value){
+            updateDevIgnoredWebsiteExtensions(value);
+        },
         ignorePaths: [],
-        sitemap: true,
+        sitemap: {
+            get file(){
+                return GlobalSitemapBuilder.location
+            },
+            set file(value){
+                GlobalSitemapBuilder.location = value
+            },
+            get updateAfterHours(){
+                return cacheSitemap.internal / HOUR_MILLISECONDS
+            },
+            set updateAfterHours(value){
+                cacheSitemap.internal = value * HOUR_MILLISECONDS
+            }
+        },
         get errorPages() {
             return fileByUrl.Settings.ErrorPages;
         },
@@ -176,10 +207,10 @@ export const Export: ExportSettings = {
             fileByUrl.Settings.CacheDays = value;
         },
         get cookiesExpiresDays(){
-            return CookieSettings.maxAge / 86400000;
+            return CookieSettings.maxAge / DAY_MILLISECONDS;
         },
         set cookiesExpiresDays(value){
-            CookieSettings.maxAge = value * 86400000;
+            CookieSettings.maxAge = value * DAY_MILLISECONDS;
         },
         set sessionTotalRamMB(value: number) {
             if(serveLimits.sessionTotalRamMB == value) return
@@ -243,10 +274,10 @@ export const Export: ExportSettings = {
 
 export function buildFormidable() {
     formidableServer = {
-        maxFileSize: Export.serveLimits.fileLimitMB * 1048576,
+        maxFileSize: Export.serveLimits.fileLimitMB * MB_IN_BYTES,
         uploadDir: SystemData + "/UploadFiles/",
         multiples: true,
-        maxFieldsSize: Export.serveLimits.requestLimitMB * 1048576
+        maxFieldsSize: Export.serveLimits.requestLimitMB * MB_IN_BYTES
     };
 }
 
@@ -262,28 +293,28 @@ export function buildSession() {
     }
 
     SessionStore = session({
-        cookie: { maxAge: Export.serveLimits.sessionTimeMinutes * 60 * 1000, sameSite: true },
+        cookie: { maxAge: Export.serveLimits.sessionTimeMinutes * MINUIT_MILLISECONDS, sameSite: true },
         secret: SessionSecret,
         resave: false,
         saveUninitialized: false,
         store: new MemoryStore({
-            checkPeriod: Export.serveLimits.sessionCheckPeriodMinutes * 60 * 1000,
-            max: Export.serveLimits.sessionTotalRamMB * 1048576
+            checkPeriod: Export.serveLimits.sessionCheckPeriodMinutes * MINUIT_MILLISECONDS,
+            max: Export.serveLimits.sessionTotalRamMB * MB_IN_BYTES
         })
     });
 }
 
 function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'ignore' | 'only' = 'ignore') {
     if(!json) return false;
-    let hasImpleated = false;
+    let hasImplanted = false;
     for (const i in json) {
         const include = rules.includes(i);
         if (rulesType == 'only' && include || rulesType == 'ignore' && !include) {
-            hasImpleated = true;
+            hasImplanted = true;
             to[i] = json[i];
         }
     }
-    return hasImpleated;
+    return hasImplanted;
 }
 
 /**
@@ -311,12 +342,12 @@ export async function requireSettings() {
 
     copyJSON(Export.compile, Settings.compile);
 
-    copyJSON(Export.routing, Settings.routing, ['ignoreTypes', 'validPath']);
+    copyJSON(Export.routing, Settings.routing, ['validPath', 'sitemap']);
+    copyJSON(Export.routing.sitemap, Settings.routing?.sitemap);
+
 
     //concat default values of routing
     const concatArray = (name: string, array: any[]) => Settings.routing?.[name] && (Export.routing[name] = Settings.routing[name].concat(array));
-
-    concatArray('ignoreTypes', baseRoutingIgnoreTypes);
     concatArray('validPath', baseValidPath);
 
     copyJSON(Export.serveLimits, Settings.serveLimits, ['cacheDays', 'cookiesExpiresDays'], 'only');
@@ -345,10 +376,6 @@ export async function requireSettings() {
     //need to down lasted so it won't interfere with 'importOnLoad'
     if (!copyJSON(Export.general, Settings.general, ['pageInRam'], 'only') && Settings.development) {
         pageInRamActivate = await compilationScan;
-    }
-
-    if(Export.development && Export.routing.sitemap){ // on production this will be checked after creating state
-        debugSiteMap(Export);
     }
 }
 

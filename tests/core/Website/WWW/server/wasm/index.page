@@ -1,0 +1,7 @@
+#[model='../server' codefile='inherit']
+<content:body>
+    <eas-connect client-fn="power" server-fn="power" validate="num, num"/>
+    <script>
+        power(2,8).then(x => console.log(x))
+    </script>
+</content:body>

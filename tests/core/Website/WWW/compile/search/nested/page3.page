@@ -1,12 +1,12 @@
-@[model='../../server' title='Search']
-<@body/>
-<search>
+#[model='../../server' title='Search']
+<content:body>
+<eas-search>
     <h1 id="moreTitle">Page 3 Search</h1>
-    @compile {
+    #code {
         write('booooooooooo')
     }
-    @{
+    @code{
         write('<br/>runtime')
     }
     page's 3 text
-</search>
+</eas-search>

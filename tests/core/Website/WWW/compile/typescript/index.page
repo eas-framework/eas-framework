@@ -1,5 +1,5 @@
-@[model='../server' title="TypeScript - Import Type"]
-<@body/>
-@{
+#[model='../server' title="TypeScript - Import Type"]
+<content:body>
+@code{
    import './from2.serv.ts'
 }

@@ -12,12 +12,12 @@ function template(name: string) {
 }
 
 export default async function BuildCode(type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, { SomePlugins }, sessionInfo: SessionBuild): Promise<BuildInComponent> {
-    const name = dataTag.popHaveDefault('name'),
-        sendTo = dataTag.popHaveDefault('sendTo'),
+    const name = dataTag.popHaveDefault('client-fn'),
+        sendTo = dataTag.popHaveDefault('server-fn'),
         validator = dataTag.popHaveDefault('validate'),
-        notValid = dataTag.popHaveDefault('notValid');
+        notValid = dataTag.popHaveDefault('error-fn');
 
-    const message = dataTag.popAnyDefault('message', sessionInfo.debug && !SomePlugins("SafeDebug")); // show error message
+    const message = dataTag.popAnyDefault('error-msg', sessionInfo.debug && !SomePlugins("SafeDebug")); // show error message
 
     sessionInfo.script(serveScript, { async: null })
     sessionInfo.addScriptStylePage('script', dataTag, type).addText(template(name)); // add script

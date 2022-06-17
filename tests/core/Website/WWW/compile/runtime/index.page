@@ -1,6 +1,6 @@
-@[model='../server' title=Runtime]
-<@body/>
-@compile{
+#[model='../server' title=Runtime]
+<content:body>
+#code {
     write(__dirname + '<br/>')
     write(__filename + '<br/>')
     write(page__dirname + '<br/>')

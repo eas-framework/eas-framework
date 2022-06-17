@@ -1,10 +1,12 @@
-<@model>Website</@model>
-<@title>Page Not Found</@title>
-<@body/>
-<style>
-    @@import '/absolute/style.sass';
-    body {
-        background-color: rgb(68, 11, 11);
-    }
-</style>
-<h1>Error - 404</h1>
+<content:model>Website</content:model>
+<content:title>Page Not Found</content:title>
+
+<content:body>
+    <style>
+        @import '/absolute/style.sass';
+
+        body {
+            background-color: rgb(68, 11, 11);
+        }
+    </style>
+    <h1>Error - 404</h1>

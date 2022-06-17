@@ -71,7 +71,7 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
   }
 
   if (savePath) {
-    await EasyFs.makePathReal(path.dirname(savePath));
+    await EasyFs.makePathReal(savePath);
     await EasyFs.writeFile(savePath, Result);
   }
   return Result;
@@ -246,34 +246,6 @@ export async function ImportFile(importFrom: string, InStaticPath: string, typeA
 
   return LoadImport([importFrom], InStaticPath, typeArray, { isDebug, useDeps, withoutCache });
 }
-
-// export async function RequireOnce(filePath: string, isDebug: boolean) {
-
-//   const tempFile = path.join(SystemData, `temp-${uuid()}.cjs`);
-
-//   await BuildScript(
-//     filePath,
-//     tempFile,
-//     CheckTs(filePath),
-//     isDebug,
-//   );
-
-//   const MyModule = await ImportWithoutCache(tempFile);
-//   EasyFs.unlink(tempFile);
-
-//   return await MyModule((path: string) => import(path));
-// }
-
-// export async function RequireCjsScript(content: string) {
-
-//   const tempFile = path.join(SystemData, `temp-${uuid()}.cjs`);
-//   await EasyFs.writeFile(tempFile, content);
-
-//   const model = await ImportWithoutCache(tempFile);
-//   EasyFs.unlink(tempFile);
-
-//   return model;
-// }
 
 /**
  * It takes a fake script location, a file location, a type array, and a boolean for whether or not it's

@@ -1,6 +1,6 @@
 import StringTracker, { StringTrackerDataInfo } from '../EasyDebug/StringTracker';
 import { LogToHTML } from '../OutputInput/Logger';
-import { BaseReader, EJSParser } from './BaseReader/Reader';
+import { BaseReader, EJSParser, ParseBlocks } from './BaseReader/Reader';
 import { ParseTextStream, ReBuildCodeString } from './transform/EasyScript';
 
 interface JSParserValues {
@@ -36,7 +36,7 @@ export default class JSParser {
     }
 
     ScriptWithInfo(text: StringTracker): StringTracker {
-        const WithInfo = new StringTracker(text.StartInfo);
+        const WithInfo = new StringTracker();
 
         const allScript = text.split('\n'), length = allScript.length;
         //new line for debug as new line start
@@ -48,7 +48,7 @@ export default class JSParser {
 
             if (i.eq.trim().length)
                 WithInfo.Plus(
-                    new StringTracker(null, `//!${this.forClientSide ? i.originalLineInfo: i.lineInfo}\n`), //small line info
+                    new StringTracker(null, `//!${this.forClientSide ? i.originalLineInfo : i.lineInfo}\n`), //small line info
                     i
                 )
 
@@ -61,8 +61,8 @@ export default class JSParser {
         return WithInfo;
     }
 
-    async findScripts() {
-        const values = await EJSParser(this.text.eq, this.start, this.end);
+    async findScripts(values?: ParseBlocks) {
+        values ??= await EJSParser(this.text.eq, this.start, this.end);
         this.values = [];
 
         for (const i of values) {
@@ -121,7 +121,7 @@ export default class JSParser {
     }
 
     BuildAll(isDebug: boolean) {
-        const runScript = new StringTracker(this.values[0]?.text?.StartInfo);
+        const runScript = new StringTracker();
 
         if (!this.values.length) {
             return runScript;
@@ -134,9 +134,9 @@ export default class JSParser {
                 }
             } else {
                 if (isDebug && i.type == 'script') {
-                    if(!this.forClientSide){
-                        runScript.Plus(
-                            new StringTracker(null, `\nrun_script_code=\`${JSParser.fixText(i.text)}\`;`)
+                    if (!this.forClientSide) {
+                        runScript.AddTextAfterNoTrack(
+                            `\nrun_script_code=\`${JSParser.fixText(i.text)}\`;`
                         );
                     }
                     runScript.Plus(
@@ -243,7 +243,7 @@ export class EnableGlobalReplace {
     }
 
     private RestoreAsCode(Data: GlobalReplaceArray) {
-        return new StringTracker(Data.text.StartInfo).Plus$`<%${Data.type == 'no-track' ? '!' : ''}${Data.text}%>`;
+        return new StringTracker().Plus$`<%${Data.type == 'no-track' ? '!' : ''}${Data.text}%>`;
     }
 
     public RestoreCode(code: StringTracker) {

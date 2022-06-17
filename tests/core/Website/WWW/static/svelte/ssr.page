@@ -1,4 +1,5 @@
-@[model='../server' title="Svelte SSR"]
-<@body/>
-<svelte from="./from1" props={count: 5} ssr/>
-<svelte from="./from1" props={count: 20} ssr/>
+#[model='../server' title="Svelte SSR"]
+<content:body>
+
+<eas-svelte file="./from1" props=({count: 5}) ssr/>
+<eas-svelte file="./from1" props=({count: 20}) ssr/>

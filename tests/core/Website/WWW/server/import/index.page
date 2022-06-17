@@ -1,5 +1,5 @@
-@[model='../server' codeFile='inherit' title="Import"]
-<@body/>
-@{
+#[model='../server' codeFile='inherit' title="Import"]
+<content:body>
+@code {
     message()
 }

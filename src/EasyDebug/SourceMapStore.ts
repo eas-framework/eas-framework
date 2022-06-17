@@ -61,8 +61,10 @@ export default class SourceMapStore extends SourceMapBasic {
     }
 
     private _addStringTracker(track: StringTracker, { text: text = track.eq } = {}) {
-        if (!this.debug)
-            return this._addText(text);
+        if (!this.debug){
+            this._addText(text)
+            return
+        }
 
         const DataArray = track.getDataArray(), length = DataArray.length;
         let waitNextLine = false;
@@ -76,11 +78,11 @@ export default class SourceMapStore extends SourceMapBasic {
                 continue;
             }
 
-            if (!waitNextLine && line && info) {
+            if (!waitNextLine && line && info && text.trim()) {
                 waitNextLine = true;
                 this.map.addMapping({
                     original: { line, column: 0 },
-                    generated: { line: this.lineCount, column: 0 },
+                    generated: { line: this.lineCount || 1, column: 0 },
                     source: this.getSource(info)
                 });
             }
@@ -112,8 +114,10 @@ export default class SourceMapStore extends SourceMapBasic {
     }
 
     private async _addSourceMapWithStringTracker(fromMap: RawSourceMap, track: StringTracker, text: string) {
-        if (!this.debug)
-            return this._addText(text);
+        if (!this.debug){
+            this._addText(text);
+            return;
+        }
 
         (await new SourceMapConsumer(fromMap)).eachMapping((m) => {
             const dataInfo = track.getLine(m.originalLine).getDataArray()[0];

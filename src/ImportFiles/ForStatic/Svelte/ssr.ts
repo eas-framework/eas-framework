@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import { SessionBuild } from "../../../CompileCode/Session";
 import  { Capitalize, preprocess } from "./preprocess";
 import * as svelte from 'svelte/compiler';
@@ -23,6 +23,7 @@ export default async function registerExtension(filePath: string, smallPath: str
 
     const inStaticFile = path.relative(getTypes.Static[2], smallPath);
     const fullCompilePath = getTypes.Static[1] + inStaticFile;
+    await EasyFs.makePathReal(inStaticFile, getTypes.Static[1]);
 
     const fullImportPath = fullCompilePath + '.ssr.cjs';
     const {svelteFiles, code, map, dependencies} = await preprocess(filePath, smallPath,sessionInfo.debug,fullImportPath,false,'.ssr.cjs');
@@ -39,7 +40,6 @@ export default async function registerExtension(filePath: string, smallPath: str
     const { js, css, warnings } = svelte.compile(code, <any>options);
     PrintSvelteWarn(warnings, filePath, map);
 
-    await EasyFs.makePathReal(inStaticFile, getTypes.Static[1]);
     await EasyFs.writeFile(fullImportPath, js.code);
 
     if (css.code) {

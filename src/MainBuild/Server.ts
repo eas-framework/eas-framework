@@ -9,6 +9,8 @@ import formidable from 'formidable';
 import { UpdateGreenLock } from './ListenGreenLock';
 import http from 'http';
 import updateRequestAttributes from '../Plugins/HTTP';
+import { StartReadCommands } from './Commands';
+
 
 
 async function requestAndSettings(req: Request, res: Response) {
@@ -42,7 +44,7 @@ async function changeURLRules(req: Request, res: Response) {
 }
 
 async function filerURLRules(req: Request, res: Response, url: string) {
-    let notValid: any = Settings.routing.ignorePaths.find(i => url.startsWith(i)) || Settings.routing.ignoreTypes.find(i => url.endsWith('.'+i));
+    let notValid: any = Settings.routing.ignorePaths.find(i => url.startsWith(i));
     
     if(!notValid) {
         for(const valid of Settings.routing.validPath){ // check if url isn't valid
@@ -61,7 +63,7 @@ async function filerURLRules(req: Request, res: Response, url: string) {
     await fileByUrl.DynamicPage(req, res, url.substring(1));
 }
 
-let appOnline: {close: () => void, server: http.Server}
+export let appOnline: {close: () => void, server: http.Server}
 
 /**
  * It starts the server and then calls StartListing
@@ -93,25 +95,36 @@ async function StartApp(Server?) {
  * @param {Request} req - The incoming request.
  * @param {Response} res - Response
  */
-async function ParseRequest(req: Request, res: Response) {
+function ParseRequest(req: Request, res: Response) {
     updateRequestAttributes(req, res);
-    
-    if (req.method == 'POST') {
-        if (req.headers['content-type']?.startsWith?.('application/json')) {
-            Settings.middleware.bodyParser(req, res, () => requestAndSettings(req, res));
-        } else {
-            new formidable.IncomingForm(Settings.middleware.formidable).parse(req, (err, fields, files) => {
+
+    return new Promise(async (resolve: any) => {
+        if (req.method === 'POST') {
+
+            if (req.headers['content-type']?.startsWith?.('application/json')) {
+                Settings.middleware.bodyParser(req, res, async () => {
+                    await requestAndSettings(req, res)
+                    resolve();
+                });
+                return;
+            }
+
+            formidable().parse(req, async (err, fields, files) => {
                 if (err) {
                     print.error(err);
                 }
-                req.fields = fields;
+                req.body = fields;
                 req.files = files;
-                requestAndSettings(req, res);
+                await requestAndSettings(req, res);
+                resolve();
             });
+
+            return;
         }
-    } else {
-        requestAndSettings(req, res);
-    }
+        
+        await requestAndSettings(req, res);
+        resolve();
+    })
 }
 
 async function StartListing(app, Server) {
@@ -131,6 +144,8 @@ export default async function StartServer({ SitePath = './', HttpServer = Update
     buildFirstLoad();
     await requireSettings();
     await StartApp(HttpServer);
+
+    StartReadCommands() // start the command line
     return appOnline
 }
 

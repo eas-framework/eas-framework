@@ -9,14 +9,23 @@
             "request": "launch",
             "name": "Launch Program",
             "program": "${workspaceFolder}/tests/core/index.js",
-            "args": ["--preserve-symlinks", "allowSourceDebug", "rebuild"], // allow source debug in browser and rebuild even on production mode
+            "args": [
+                "--preserve-symlinks",
+                "allowSourceDebug",
+                "rebuild",
+                "only",
+                "server"
+            ], // allow source debug in browser and rebuild even on production mode
             "pauseForSourceMap": true,
-            "smartStep": true,
-            "outFiles": ["${workspaceFolder}/dist/**/*.js", "${workspaceFolder}/node_modules"],
+            "smartStep": false,
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js",
+                "${workspaceFolder}/node_modules"
+            ],
             "skipFiles": [
                 "<node_internals>/**",
                 "{workspaceFolder}/**"
             ]
-          }
+        }
     ]
 }

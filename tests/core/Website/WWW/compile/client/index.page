@@ -1,18 +1,20 @@
-@[model='../server' title='Client CSR']
-<@body/>
-<div id="tasks"></div>
-<client name="addTask" params="text, time = Date.now()" selector="#tasks">
-    <div class="task">
-        <div class="task-text">
-            <span>@text</span>
+#[model='../server' title='Client CSR']
+<content:body>
+    <div id="tasks"></div>
+    <eas-client fn-name="addTask" params="text, time = Date.now()" selector="#tasks">
+        <div class="task">
+            <div class="task-text">
+                <span>@(text)</span>
+            </div>
+            <div class="task-time">
+                <span>@(new Date(time).toLocaleString())</span>
+            </div>
         </div>
-        <div class="task-time">
-            <span>@(new Date(time).toLocaleString())</span>
-        </div>
-    </div>
-</client>
-<script defer>
-    for(let i = 0; i < 3; i++){
-        addTask(prompt('Add task', 'Task '+i));
-    }
-</script>
+    </eas-client>
+    <script defer>
+        for(let i = 0; i < 3; i++){
+            addTask(prompt('Add task', 'Task '+i));
+            debugger
+        }
+    </script>
+</content:body>

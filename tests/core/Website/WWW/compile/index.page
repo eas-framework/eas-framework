@@ -1,6 +1,6 @@
-@[model='./server' title='Index']
-<@body/>
-<markdown>
+#[model='./server' title='Index']
+<content:body>
+<eas-markdown>
 * [Record](./record/index)
 * [Runtime](./runtime/index)
 * [More Runtime](./runtime/more_compile/index)
@@ -21,4 +21,5 @@
 * [Stop](./stop_method/index)
 * [Extends](./extends/index)
 * [Dependence](./dependence/index)
-</markdown>
+* [Attributes](./attrs/index)
+</eas-markdown>

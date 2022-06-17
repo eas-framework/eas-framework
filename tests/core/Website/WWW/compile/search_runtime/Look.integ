@@ -1,0 +1,6 @@
+<eas-search>
+#code {
+    define('copy', `<markdown>${attrs.reader}</markdown>`)
+}
+:copy:
+</eas-search>

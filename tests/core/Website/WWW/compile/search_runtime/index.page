@@ -1,5 +1,5 @@
-@[model='../server' title="Search + Runtime"]
-<@body/>
+#[model='../server' title="Search + Runtime"]
+<content:body>
 <Look folder>
 # Markdown it
 A lot of texts

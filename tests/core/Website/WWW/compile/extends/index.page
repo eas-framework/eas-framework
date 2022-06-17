@@ -1,12 +1,12 @@
-@[model='../server' title='Extends Result']
-<@body/>
-<extends counter={current: 1}>
+#[model='../server' title='Extends Result']
+<content:body>
+<eas-extends counter=({current: 1})>
     <Increase folder/>
     <Increase folder/>
     <Increase folder/>
     <hr/>
-    <result>
+    <eas-result>
         <PrintCounter folder/>
-    </result>
-</extends>
+    </eas-result>
+</eas-extends>
 

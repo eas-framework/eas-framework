@@ -1,7 +1,7 @@
-@[model='../server' title='Error check']
-<@body/>
+#[model='../server' title='Error check']
+<content:body>
 <Component folder/>
-@{
+@code {
     const declareVariable = {
 
 

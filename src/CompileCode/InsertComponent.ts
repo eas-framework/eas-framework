@@ -1,5 +1,5 @@
 import EasyFs from '../OutputInput/EasyFs';
-import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
+import { BasicSettings, getTypes } from '../RunTimeBuild/SearchFileSystem';
 import { ParseDebugInfo, CreateFilePath, PathTypes, AddDebugInfo } from './XMLHelpers/CodeInfoAndDebug';
 import { AllBuildIn, IsInclude, StartCompiling } from '../BuildInComponents/index';
 import StringTracker, { StringTrackerDataInfo, ArrayMatch } from '../EasyDebug/StringTracker';
@@ -14,6 +14,10 @@ import { print } from '../OutputInput/Console';
 import path from 'path';
 import TagDataParser from './XMLHelpers/TagDataParser';
 
+const IMPORT_SOURCE = 'importSource';
+const COMPONENT_READER = 'reader';
+const IMPORT_SOURCE_DIRECTORY = 'importSourceDirectory';
+export const SPECIAL_ATTRIBUTES = [IMPORT_SOURCE, IMPORT_SOURCE_DIRECTORY, COMPONENT_READER]
 
 interface DefaultValues {
     value: StringTracker,
@@ -40,7 +44,7 @@ export default class InsertComponent extends InsertComponentBase {
 
     constructor(PluginBuild: AddPlugin) {
         super();
-        this.dirFolder = 'Components';
+        this.dirFolder = getTypes.Components[2];
         this.PluginBuild = PluginBuild;
     }
 
@@ -112,51 +116,8 @@ export default class InsertComponent extends InsertComponentBase {
         return tagData;
     }
 
-    exportDefaultValues(fileData: StringTracker, foundSetters: DefaultValues[] = []) {
-        const indexBasic: ArrayMatch = fileData.match(/@default[\s]*\(([A-Za-z0-9{}()\[\]_\-$"'`%*&|\/\@\s]*?)\)[\s]*\[([A-Za-z0-9_\-,$\s]+)\]/);
-
-        if (indexBasic == null)
-            return { fileData, foundSetters };
-
-        const WithoutBasic = fileData.substring(0, indexBasic.index).Plus(fileData.substring(indexBasic.index + indexBasic[0].length));
-
-        const arrayValues = indexBasic[2].eq.split(',').map(x => x.trim());
-
-        foundSetters.push({
-            value: indexBasic[1],
-            elements: arrayValues
-        });
-
-        return this.exportDefaultValues(WithoutBasic, foundSetters);
-    }
-
-    addDefaultValues(arrayValues: DefaultValues[], fileData: StringTracker) {
-        for (const i of arrayValues) {
-            for (const be of i.elements) {
-                fileData = fileData.replaceAll('~' + be, i.value);
-            }
-        }
-
-        return fileData;
-    }
-
-    parseComponentProps(tagData: TagDataParser, component: StringTracker) {
-
-        // eslint-disable-next-line
-        let { fileData, foundSetters } = this.exportDefaultValues(component);
-
-        for (const {key,value} of tagData.valueArray) {
-            const re = new RegExp("\\~" + key, "gi");
-            fileData = fileData.replace(re, value);
-        }
-
-        return this.addDefaultValues(foundSetters, fileData);
-    }
-
     async buildTagBasic(fileData: StringTracker, tagData: TagDataParser, path: string, SmallPath: string, pathName: string, sessionInfo: SessionBuild, BetweenTagData?: StringTracker, extendsAttributes? : TagDataParser) {
         fileData = await this.PluginBuild.BuildComponent(fileData, path, pathName, sessionInfo);
-
-        fileData = this.parseComponentProps(tagData, fileData);
 
         fileData = fileData.replace(/<\:reader( )*\/>/gi, BetweenTagData ?? '');
 
@@ -172,8 +133,8 @@ export default class InsertComponent extends InsertComponentBase {
     static addSpacialAttributes(data: TagDataParser, type: StringTracker, BetweenTagData: StringTracker) {
         const importSource = '/' + type.extractInfo();
 
-        data.pushValue('importSource', importSource)
-        data.pushValue('importSourceDirectory', path.dirname(importSource))
+        data.pushValue(IMPORT_SOURCE, importSource)
+        data.pushValue(IMPORT_SOURCE_DIRECTORY, path.dirname(importSource))
 
         const  mapAttributes = data.map();
         mapAttributes.reader = BetweenTagData?.eq;
