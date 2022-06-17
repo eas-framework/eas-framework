@@ -4,6 +4,9 @@
   "description": "Node.js framework, with a lot of built in features",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=16.15.1"
+  },
   "scripts": {
     "postinstall": "node dist/scripts/install.js || echo 'Package is not built yet'",
     "prepare": "[ $CI = true ] || [ -d '.husky/_' ] || husky install",
