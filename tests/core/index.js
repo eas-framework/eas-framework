@@ -15,8 +15,10 @@ function fullTest(name, filter) {
     return runTest(name, GlobalSitemapBuilder, PageTimeLogger, filter, Settings.serve.port)
 }
 
+const onlyServer = process.argv.includes('only-server')
+
 // test on development environment
-if (!process.argv.includes('only-server'))
+if (!onlyServer)
     await fullTest("test", x => x)
 
 // test on production environment
@@ -27,5 +29,5 @@ if (process.argv.includes('production')) {
 }
 
 // close server if this only a test
-if (!process.argv.includes('server'))
+if (!onlyServer)
     process.exit(0)
