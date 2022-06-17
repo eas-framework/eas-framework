@@ -8,6 +8,7 @@ import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
 
 export default async function BuildCode(pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent> {
     const language = dataTag.popAnyDefault('lang', 'css');
+    BetweenTagData = BetweenTagData?.trim(); // remove spaces
 
     if(dataTag.popBoolean('server')){
         return styleWithServer(language, pathName, type, dataTag, BetweenTagData, sessionInfo);

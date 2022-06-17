@@ -109,9 +109,7 @@ function ParseRequest(req: Request, res: Response) {
                 return;
             }
 
-
-            const form = new formidable.IncomingForm();
-            form.parse(req, async (err, fields, files) => {
+            formidable().parse(req, async (err, fields, files) => {
                 if (err) {
                     print.error(err);
                 }

@@ -6,7 +6,8 @@ import { compileSass } from './sass';
 import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
 
 export default async function BuildCode(language: string, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent> {
-    const outStyleAsTrim = BetweenTagData.eq.trim();
+    
+    const outStyleAsTrim = BetweenTagData.eq;
     if (sessionInfo.cache.style.includes(outStyleAsTrim))
         return {
             compiledString: new StringTracker()

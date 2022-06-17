@@ -6,9 +6,8 @@ import { SessionBuild } from '../../../CompileCode/Session';
 import TagDataParser from '../../../CompileCode/XMLHelpers/TagDataParser';
 
 export default async function BuildCode(language: string,pathName: string, type: StringTracker, dataTag: TagDataParser, BetweenTagData: StringTracker, sessionInfo: SessionBuild): Promise<BuildInComponent> {
-
     const SaveServerCode = new EnableGlobalReplace();
-    await SaveServerCode.load(BetweenTagData.trimStart(), pathName);
+    await SaveServerCode.load(BetweenTagData, pathName);
 
     //eslint-disable-next-line 
     let { outStyle, compressed } = await compileSass(language, BetweenTagData, sessionInfo, await SaveServerCode.StartBuild());

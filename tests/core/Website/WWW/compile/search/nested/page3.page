@@ -1,6 +1,6 @@
 #[model='../../server' title='Search']
 <content:body>
-<search>
+<eas-search>
     <h1 id="moreTitle">Page 3 Search</h1>
     #code {
         write('booooooooooo')
@@ -9,4 +9,4 @@
         write('<br/>runtime')
     }
     page's 3 text
-</search>
+</eas-search>

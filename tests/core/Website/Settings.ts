@@ -11,7 +11,7 @@ import {test} from './testImport.ts'
 console.log(name, func, test)
 
 export default {
-    development: !process.argv.includes('prod'), // development mode, if off, then is optimize for production
+    development: !process.argv.includes('production'), // development mode, if off, then is optimize for production
 
     general: {
         pageInRam: true,

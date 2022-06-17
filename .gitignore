@@ -1,7 +1,7 @@
 node_modules/
 dist/
 .coverage/
-.dccache
+*.dccache
 sitemap.xml
 tests/core/screenshots/*.png
 tests/core/Website/WWW/loop/sitemap.xml
