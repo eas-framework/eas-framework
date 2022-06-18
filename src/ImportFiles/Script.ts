@@ -18,6 +18,7 @@ import { print } from "../OutputInput/Console";
 import { TransformJSC } from '../CompileCode/transpiler/settings';
 import { TransformSettings } from '../CompileCode/transform/Script';
 import EasySyntax from '../CompileCode/transform/EasySyntax';
+import { SessionBuild } from '../CompileCode/Session';
 
 
 function template(code: string, isDebug: boolean, dir: string, file: string, params?: string) {
@@ -36,7 +37,7 @@ function template(code: string, isDebug: boolean, dir: string, file: string, par
  * @param  - filePath: The path to the file you want to compile.
  * @returns The result of the script.
  */
-async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, templatePath = filePath, codeMinify = !isDebug, mergeTrack }: { codeMinify?: boolean, templatePath?: string, params?: string, mergeTrack?: StringTracker } = {}): Promise<string> {
+export async function BuildScript(filePath: string, savePath: string | null, isTypescript: boolean, isDebug: boolean, { params, templatePath = filePath, codeMinify = !isDebug, mergeTrack }: { codeMinify?: boolean, templatePath?: string, params?: string, mergeTrack?: StringTracker } = {}): Promise<string> {
   const Options: TransformOptions = {
 
     jsc: TransformJSC({
@@ -51,11 +52,11 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
     sourceMaps: isDebug ? (mergeTrack ? true : 'inline') : false,
     outputPath: savePath && path.relative(path.dirname(savePath), filePath)
   };
-  
+
   let Result = mergeTrack?.eq || await EasyFs.readFile(filePath);
 
   const CommonJSScript = await EasySyntax.BuildAndExportImports(Result)
-  Result = template(CommonJSScript,isDebug,path.dirname(templatePath),templatePath,params);
+  Result = template(CommonJSScript, isDebug, path.dirname(templatePath), templatePath, params);
 
   try {
     const { code, map } = await transform(Result, Options);
@@ -177,10 +178,8 @@ export default async function LoadImport(importFrom: string[], InStaticPath: str
     useDeps = useDeps[InStaticPath];
   }
 
-  const inheritanceCache = withoutCache[0] == InStaticPath;
-  if (inheritanceCache)
-    withoutCache.shift()
-  else if (!reBuild && SavedModules[SavedModulesPath] && !(SavedModules[SavedModulesPath] instanceof Promise))
+  const inheritanceCache = withoutCache.includes(InStaticPath);
+  if (!inheritanceCache && !reBuild && SavedModules[SavedModulesPath] && !(SavedModules[SavedModulesPath] instanceof Promise))
     return SavedModules[SavedModulesPath];
 
   function requireMap(p: string) {
@@ -245,56 +244,6 @@ export async function ImportFile(importFrom: string, InStaticPath: string, typeA
   }
 
   return LoadImport([importFrom], InStaticPath, typeArray, { isDebug, useDeps, withoutCache });
-}
-
-/**
- * It takes a fake script location, a file location, a type array, and a boolean for whether or not it's
- * a TypeScript file. It then compiles the script and returns a function that will run the module
- * This is for RunTime Compile Scripts
- * @param {string} globalPrams - string, scriptLocation: string, inStaticLocationRelative: string,
- * typeArray: string[], isTypeScript: boolean, isDebug: boolean, fileCode: string,  sourceMapComment:
- * string
- * @param {string} scriptLocation - The location of the script to be compiled.
- * @param {string} inStaticLocationRelative - The relative path to the file from the static folder.
- * @param {string[]} typeArray - [string, string]
- * @param {boolean} isTypeScript - boolean, isDebug: boolean, fileCode: string,  sourceMapComment:
- * string
- * @param {boolean} isDebug - If true, the code will be compiled with debug information.
- * @param {string} fileCode - The code that will be compiled and saved to the file.
- * @param {string} sourceMapComment - string
- * @returns A function that returns a promise.
- */
-export async function compileImport(globalPrams: string, scriptLocation: string, inStaticLocationRelative: string, typeArray: string[], isTypeScript: boolean, isDebug: boolean, mergeTrack?: StringTracker) {
-  await EasyFs.makePathReal(inStaticLocationRelative, typeArray[1]);
-
-  const fullSaveLocation = scriptLocation + ".cjs";
-  const templatePath = typeArray[0] + inStaticLocationRelative;
-
-  await BuildScript(
-    scriptLocation,
-    fullSaveLocation,
-    isTypeScript,
-    isDebug,
-    { params: globalPrams, mergeTrack, templatePath, codeMinify: false }
-  );
-
-  function requireMap(p: string) {
-    if (path.isAbsolute(p))
-      p = path.relative(p, typeArray[0]);
-    else {
-      if (p[0] == ".") {
-        p = path.join(path.dirname(inStaticLocationRelative), p);
-
-      }
-      else if (p[0] != "/")
-        return AliasOrPackage(p);
-    }
-
-    return LoadImport([templatePath], p, typeArray, { isDebug });
-  }
-
-  const MyModule = await ImportWithoutCache(fullSaveLocation);
-  return async (...arr: any[]) => await MyModule(requireMap, ...arr);
 }
 
 /**

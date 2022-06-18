@@ -69,16 +69,17 @@ static RAZOR_RUNTIME: SyncLazy<Mutex<Razor>> = SyncLazy::new(|| {
         String::from("include"),
         String::from("import"),
         String::from("transfer"),
+        String::from("stop"),
     ];
-    data_builder.s_literal = vec![String::from("debugger"), String::from("stop")];
+
+    data_builder.s_literal = vec![String::from("debugger")];
 
     data_builder.s_write_start_with = vec![
-        BetterString::new("("), 
-        BetterString::new("stop("),
+        BetterString::new("("),
         BetterString::new("include("),
         BetterString::new("import("),
         BetterString::new("transfer("),
-        BetterString::new("debugger"),
+        BetterString::new("stop("),
     ];
 
     Mutex::new(data_builder)
@@ -123,9 +124,11 @@ pub fn convert_ejs_mini(text: &str, name: &str) -> String {
         i += 4;
     }
 
-    re_build_text += &text_as_better
-        .substring_start(data_builder.values[i - 1] + 1)
-        .to_string();
+    if i > 0 {
+        re_build_text += &text_as_better
+            .substring_start(data_builder.values[i - 1] + 1)
+            .to_string();
+    }
 
     re_build_text
 }
@@ -143,15 +146,15 @@ pub fn output_mini_json(text: &str, name: &str) -> String {
 static RAZOR_COMPILE: SyncLazy<Mutex<Razor>> = SyncLazy::new(|| {
     let mut data_builder: Razor = Razor::default();
     data_builder.s_razor_keyword = BetterString::new("#");
-    data_builder.s_comment = false;
-    data_builder.s_add_to_script = vec![String::from("default")];
+    data_builder.s_comment = true;
+
+    data_builder.s_add_to_script = vec![String::from("default"), String::from("define")];
     data_builder.s_literal = vec![String::from("debugger")];
 
     data_builder.s_write_start_with = vec![
         BetterString::new("("),
-        BetterString::new("define("),
         BetterString::new("default("),
-        BetterString::new("debugger")
+        BetterString::new("define("),
     ];
 
     Mutex::new(data_builder)

@@ -2,7 +2,7 @@ use std::vec;
 
 use crate::{
     actions::{
-        base_actions::{find_min_but, find_min_but_none},
+        base_actions::{find_min_but},
         base_reader::{block_skip_text, find_end_of_def_char, find_end_of_def_word},
     },
     better_string::{b_action::first_non_alphabetic, b_string::BetterString, u_string::UString},
@@ -68,7 +68,7 @@ pub struct Razor {
     pub s_razor_keyword: BetterString,
     pub s_razor_comment_end: BetterString,
     pub s_switch: bool,
-    pub s_small_syntax: bool,
+    pub s_small_syntax: Vec<String>,
     pub s_base_syntax: bool,
     pub s_write_start_with: Vec<BetterString>,
     pub s_handle_write: bool,
@@ -90,7 +90,7 @@ impl Razor {
             s_razor_keyword: DEFAULT_RAZOR_KEYWORD.copy(), // @
             s_razor_comment_end: BetterString::new(&s_razor_comment_end), // *@
             s_switch: true,                                // alow switch
-            s_small_syntax: true, // small syntax keywords - for function, async, export
+            s_small_syntax: RAZOR_SYNTAX_SMALL.clone(), // small syntax keywords - for function, async, export
             s_base_syntax: true,  // more complex keywords like - if, else, else if, while do
             s_handle_write: true, // alow write - printing syntax like <%= %>
             s_write_start_with: vec![], // if there any, then all write will be ignored, but if they start with one of thous, then they will be printed
@@ -109,7 +109,7 @@ impl Razor {
             s_razor_keyword: BetterString::new(""),
             s_razor_comment_end: BetterString::new(""),
             s_switch: false,
-            s_small_syntax: false,
+            s_small_syntax: vec![],
             s_base_syntax: false,
             s_write_start_with: vec![],
             s_handle_write: false,
@@ -490,7 +490,7 @@ impl Razor {
                 return;
             }
 
-            if self.s_small_syntax && RAZOR_SYNTAX_SMALL.contains(&first_word_string) {
+            if self.s_small_syntax.contains(&first_word_string) {
                 self.small_syntax(&next_text, add_index);
                 return;
             }

@@ -1,0 +1,6 @@
+#[model='../server' title='Client CSR']
+<content:body>
+#define('wow', 999)
+
+<p>This is :wow:</p>
+</content:body>

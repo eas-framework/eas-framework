@@ -1,4 +1,5 @@
 import { componentPerCompile, componentPerCompilePage, componentPostCompile, componentPostCompilePage } from "../BuildInComponents";
+import { deleteCompileRuntimeDepsCache } from "../ImportFiles/compileImport";
 import { PageTimeLogger } from "../OutputInput/Logger";
 import { CacheCompileScript } from "./CompileScript/Compile";
 import { SessionBuild } from "./Session";
@@ -18,6 +19,7 @@ export async function postCompile() {
 
     //clear data
     CacheCompileScript.clear();
+    deleteCompileRuntimeDepsCache()
 }
 
 export async function perCompilePage(sessionInfo: SessionBuild, filePath: string, arrayType: string[]) {

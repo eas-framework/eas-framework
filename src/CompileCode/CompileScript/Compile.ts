@@ -1,6 +1,6 @@
 import path from "path";
 import StringTracker from "../../EasyDebug/StringTracker";
-import { compileImport } from "../../ImportFiles/Script";
+import compileImport from "../../ImportFiles/compileImport";
 import { print } from "../../OutputInput/Console";
 import EasyFs from "../../OutputInput/EasyFs";
 import { createNewPrint } from "../../OutputInput/Logger";
@@ -206,7 +206,7 @@ export default class CRunTime {
         const { string } = this.methods() // create methods
 
         // compiling and importing the script
-        const moduleScriptFunc = await compileImport(string, compilePath, filePath, typeArray, this.isTs, this.sessionInfo.debug, template);
+        const moduleScriptFunc = await compileImport(string, compilePath, filePath, typeArray, this.isTs, this.sessionInfo, template);
         const handelScriptBuild = this.createHandelScriptBuild(parser, moduleScriptFunc);
 
         // resolve the script builder, for all the users
