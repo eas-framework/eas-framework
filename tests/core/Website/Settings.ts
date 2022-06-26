@@ -56,7 +56,6 @@ export default {
             file: 'loop/sitemap.xml',
             updateAfterHours: 0 // update sitemap on new request after x hours
         },
-        ignoreTypes: ["json"], // ignore file extension (auto ignore common server files)
         allowExt: ['wasm'], // extends allowed file extensions (default basic server files)
         ignoreExt: ['json'], // ignore file extensions - override default allowed extension (default - common server files)
         ignorePaths: ["/Private"],

@@ -85,7 +85,7 @@ const BasicSettings = {
 
     pageCodeFileArray: [],
 
-    partExtensions: ['serv', 'api'],
+    partExtensions: ['hide', 'api'],
 
     ReqFileTypes: {
         js: "serv.js",

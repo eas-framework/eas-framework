@@ -1,0 +1,32 @@
+import { GlobalSettings } from "../GlobalSettings";
+import { hookSet } from "./Hook";
+import { clearPageFromRam, loadPageToRam } from "../../ProcessRequest/ScriptLoader/PageLoader";
+
+/**
+ * General settings hooks.
+ */
+
+/**
+ * If the value is true, load the page to RAM, otherwise clear the page from RAM
+ * @param {boolean} value - boolean - This is the value of the checkbox. If it's checked, it's true. If
+ * it's not checked, it's false.
+ */
+function updatePageInRam(value: boolean) {
+    if(value){
+        loadPageToRam()
+    } else {
+        clearPageFromRam()
+    }
+}
+hookSet(GlobalSettings.general, 'pageInRam', updatePageInRam)
+
+/**
+ * If the value is false, compile the pages
+ * @param {boolean} value - boolean - the value of the checkbox
+ */
+function updateDevelopment(value: boolean) {
+    if(!value){
+        //compile the pages
+    }
+}
+hookSet(GlobalSettings, 'development', updateDevelopment)
