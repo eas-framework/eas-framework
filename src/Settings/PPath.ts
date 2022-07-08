@@ -26,6 +26,10 @@ export default class PPath {
         return new PPath(path.dirname(this.small))
     }
 
+    get ext(){
+        return path.extname(this.nested)
+    }
+
     constructor(smallPath: string) {
         this.parse(smallPath)
     }
@@ -72,5 +76,9 @@ export default class PPath {
 
     toString() {
         return this.small
+    }
+
+    clone() {
+        return new PPath(this.small)
     }
 }

@@ -3,6 +3,7 @@ import { writeFile } from "node:fs/promises"
 import path from "node:path"
 import { GlobalSettings } from "../Settings/GlobalSettings"
 import { workingDirectory } from "../Settings/ProjectConsts"
+import { getLocationStack } from "../Util/Runtime"
 import { Capitalize, splitFirst } from "../Util/Strings"
 
 export const LEVELS = ['info', 'debug', 'warn', 'error', 'fatal']
@@ -43,19 +44,6 @@ function loggerFile() {
     return GlobalSettings.general.logger?.file && path.join(workingDirectory, GlobalSettings.general.logger.file)
 }
 
-/**
- * It takes a number, and returns the location of the function call that is that many levels up the
- * stack
- * @param {number} goBack - number
- * @returns The location of the error.
- */
-function getLogLocationStack(goBack: number) {
-    const [_, stack] = splitFirst(new Error().stack, 'at ')
-    const location = stack.split('\n')[goBack]
-
-    return location && splitFirst(location, 'at ').pop().trim() || ''
-}
-
 export interface LogData {
     toLogMessage(): string
     toConsole(stackLine: string, loggerName: string, errorCode: typeof LEVELS[number]): string
@@ -74,7 +62,7 @@ export default function emitLog(event: string, loggerName: string, data: LogData
     loggerEvent.emit(fullName, data); // listen with formatName - name + event + code
     loggerEvent.emit(event, data, code, loggerName); // listen to all event codes
 
-    const stack = getLogLocationStack(STACK_BACK + stackBack), file = loggerFile()
+    const stack = getLocationStack(STACK_BACK + stackBack), file = loggerFile()
     file && writeLogToFile(file, loggerName, event, stack, data, code);
 
 

@@ -1,12 +1,13 @@
 import PPath from "../../Settings/PPath";
 import JSONStorage from "../../Storage/JSONStorage";
 import type DepManager from "./DepManager";
-import { getChangeDate } from "./utils";
+import { getChangeDate, updateInAllTree } from "./utils";
 
+export type ShareOptions = {disableCache: boolean}
 export default class DepCreator {
     private cacheTime = {}
 
-    constructor(private manager: DepManager, private storage: JSONStorage) {
+    constructor(private manager: DepManager, private storage: JSONStorage, private shareOptions: ShareOptions= {disableCache: false}) {
 
     }
 
@@ -14,21 +15,30 @@ export default class DepCreator {
         this.storage.update(file.small, value)
     }
 
-    private async getNewTime(file: PPath) {
+    async getNewTime(file: PPath) {
+        if(this.shareOptions.disableCache){
+            return await getChangeDate(file)
+        }
+
         const fileString = file.small
         const newTime = this.cacheTime[fileString] ?? await getChangeDate(file)
         this.cacheTime[fileString] = newTime
         return newTime
     }
 
-    async isDepChanged(file: PPath) {
+    async isDepChanged(file: PPath, mustExits = false) {
+        const value = this.storage.store[file.small]
+        if(value === false){ // dep has changed in the past
+            return true
+        }
+
         const lastTime = this.manager.getSavedTime(file)
         const newTime = await this.getNewTime(file)
 
-        return newTime != lastTime || newTime == null
+        return newTime != lastTime || !mustExits && newTime == null
     }
 
-    private static flatTree(tree: any, files = []) {
+    private static flatTree(tree: any, files: PPath[] = []) {
         for(const key in tree) {
             const value = tree[key]
             const file = new PPath(key)
@@ -43,7 +53,12 @@ export default class DepCreator {
     }
 
     async treeChanged(file: PPath) {
-        const files = DepCreator.flatTree(this.storage.store[file.small])
+        const value = this.storage.store[file.small]
+        if(typeof value == 'boolean' || value == null){
+            return this.isDepChanged(file)
+        }
+
+        const files = DepCreator.flatTree(value)
         files.push(file)
 
         for(const f of files) {
@@ -55,11 +70,18 @@ export default class DepCreator {
         return false
     }
 
-    async updateDep(file: PPath) {
+    async updateDep(file: PPath, notToOthers = false) {
         const newTime = await this.getNewTime(file)
-        this.manager.timeUpdate(file, newTime)
-        newTime && this.update(file)
+        const lastTime = this.manager.getSavedTime(file)
 
+        this.manager.timeUpdate(file, newTime)
+
+        /* Updating the tree of dependencies, so others will see this dependency as changed */
+        if(notToOthers && newTime != lastTime){
+            updateInAllTree(file, false, this.storage.store)
+        }
+
+        newTime && this.update(file)
         return newTime
     }
 
@@ -70,7 +92,8 @@ export default class DepCreator {
         }
         const nested = new DepCreator(
             this.manager,
-            new JSONStorage(file.small, this.storage.store)
+            new JSONStorage(file.small, this.storage.store),
+            this.shareOptions
         )
         nested.cacheTime = this.cacheTime
         return nested

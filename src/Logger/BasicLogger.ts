@@ -68,3 +68,4 @@ export class BasicLogger {
 }
 
 export const SystemLog = new BasicLogger('System')
+export const AppLog = new BasicLogger('App')

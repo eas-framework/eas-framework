@@ -1,14 +1,13 @@
 import RequestWarper from "../ProcessURL/RequestWarper";
 import RequestParser from "./RequestParser";
+import fileSender from "./Senders/StaticFile";
 
-async function fileSender(warper: RequestWarper) {
-       
-}
 
-async function activatePage(parser: RequestParser) {
-    
-}
+
+
+
 
 export default async function switchContent(warper: RequestWarper){
-
+    const parser = new RequestParser(warper)
+    fileSender(parser)
 }

@@ -8,6 +8,6 @@ export default class STSInfo {
     }
 
     toString(){
-        return `${this.source.toString()}:${this.line}:${this.column}`
+        return `${this.source.small}:${this.line}:${this.column}`
     }
 }

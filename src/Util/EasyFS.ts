@@ -169,7 +169,7 @@ function readFile(path: string, encoding: BufferEncoding = 'utf8', ignoreError =
         if (err && !ignoreError) {
             SystemAutoError(err)
         }
-        return data || "";
+        return data;
     });
 }
 

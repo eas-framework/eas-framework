@@ -1,14 +1,14 @@
 import sass from 'sass';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from "node:url";
-import DepCreator from '../../../../../../ImportSystem/Dependencies/DepCreator';
-import PPath from '../../../../../../Settings/PPath';
-import { GlobalSettings } from '../../../../../../Settings/GlobalSettings';
-import EasyFS from '../../../../../../Util/EasyFS';
-import { importer, style, syntax, updateSourceToFile } from '../../../../../../Compilers/Sass/utils';
-import { logSassError } from '../../../../../../Compilers/Sass/Errors';
-import { toURLComment } from '../../../../../../SourceTracker/SourceMap/utils';
-import { makeWebURLSourceStaticFile } from '../../../../../../SourceTracker/SourceMap/SourceComputeTrack';
+import DepCreator from '../../../../../../../../ImportSystem/Dependencies/DepCreator';
+import PPath from '../../../../../../../../Settings/PPath';
+import { GlobalSettings } from '../../../../../../../../Settings/GlobalSettings';
+import EasyFS from '../../../../../../../../Util/EasyFS';
+import { importer, style, syntax, updateSourceToFile } from '../../../../../../../../Compilers/Sass/utils';
+import { logSassError } from '../../../../../../../../Compilers/Sass/Errors';
+import { toURLComment } from '../../../../../../../../SourceTracker/SourceMap/utils';
+import { makeWebURLSourceStaticFile } from '../../../../../../../../SourceTracker/SourceMap/SourceComputeTrack';
 
 export async function compileSass(file: PPath, deps: DepCreator, language: "sass" | "scss" | "css") {
     const fileData = await EasyFS.readFile(file.full)

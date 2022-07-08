@@ -1,5 +1,7 @@
 import { Options as TransformOptions, transform, JscConfig } from '@swc/core';
+import { GlobalSettings } from '../../Settings/GlobalSettings';
 import { StringMap } from '../../Settings/types';
+import { getPlugin } from '../../Settings/utils';
 
 export const esTarget = 'es2022';
 
@@ -34,4 +36,18 @@ export function TransformJSC(data?: JscConfig, vars?: StringMap, simplify?: bool
         target: esTarget,
         ...data
     })
+}
+
+export function GetScriptSettings(isTypescript: boolean) {
+    return {
+        syntax: isTypescript ? 'typescript' : 'ecmascript',
+        ...getPlugin((isTypescript ? 'TS' : 'JS') + "Options")
+    }
+}
+
+export function defaultVariables(){
+    return {
+        __DEBUG__: '' + GlobalSettings.development,
+        ...GlobalSettings.compile.globals
+    }
 }

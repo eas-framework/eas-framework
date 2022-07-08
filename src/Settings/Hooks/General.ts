@@ -1,6 +1,7 @@
 import { GlobalSettings } from "../GlobalSettings";
-import { hookSet } from "./Hook";
+import { hookSet, hookSetArray } from "./Hook";
 import { clearPageFromRam, loadPageToRam } from "../../ProcessRequest/ScriptLoader/PageLoader";
+import { reFilterExtension } from "../../ProcessRequest/ScriptLoader/Senders/StaticFile/CustomHooks/StaticExtension";
 
 /**
  * General settings hooks.
@@ -30,3 +31,7 @@ function updateDevelopment(value: boolean) {
     }
 }
 hookSet(GlobalSettings, 'development', updateDevelopment)
+
+/* It's a hook that runs the function `reFilterExtension` when the values of `allowExt` or `ignoreExt`
+change. */
+hookSetArray(GlobalSettings.routing, ["allowExt", "ignoreExt"], reFilterExtension);

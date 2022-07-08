@@ -79,5 +79,7 @@ export function SWCPrintErrorStringTracker(tracker: StringTracker, err: any) {
     });
 
     SystemLog.error('swc-error', new SWCStackError(parseError), 1);
+
+    return parseError
 }
 

@@ -90,7 +90,7 @@ interface GlobalSettings {
         allowExt?: string[], // extends allowed file extensions, only thous can be served - default list on StaticFiles.ts
         ignoreExt?: string[], // ignore file extensions - override default allowed extension (default - common server files)
         ignorePaths?: string[], // hide paths from the server
-        sitemap?:boolean | {
+        sitemap?: {
             rules?: boolean,
             urlStop?: boolean,
             errorPages?: boolean,

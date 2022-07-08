@@ -1,6 +1,6 @@
 import PPath from "../../Settings/PPath";
 import JSONStorage from "../../Storage/JSONStorage";
-import DepCreator from "./DepCreator";
+import DepCreator, { ShareOptions } from "./DepCreator";
 import { getChangeDate } from "./utils";
 
 export default class DepManager {
@@ -14,15 +14,15 @@ export default class DepManager {
 
     async timeUpdate(file: PPath, time?: number) {
         const change = time ?? await getChangeDate(file)
-        this.times.update(file.toString(), change)
+        this.times.update(file.small, change)
         return change
     }
 
     getSavedTime(file: PPath) {
-        return this.times.have(file.toString())
+        return this.times.have(file.small)
     }
 
-    createSession(){
-        return new DepCreator(this, this.deps)
+    createSession(shareOptions?: ShareOptions) {
+        return new DepCreator(this, this.deps, shareOptions)
     }
 }

@@ -1,12 +1,14 @@
 import path from "node:path"
-import compileSvelte from "../../../../../Compilers/Svelte/Client"
-import DepCreator from "../../../../../ImportSystem/Dependencies/DepCreator"
-import PPath from "../../../../../Settings/PPath"
+import compileSvelte from "../../../../../../../Compilers/Svelte/Client"
+import DepCreator from "../../../../../../../ImportSystem/Dependencies/DepCreator"
+import PPath from "../../../../../../../Settings/PPath"
 import { compileJS, compileJSX, compileTS, compileTSX } from "./Compilers/Script"
 import { compileSass } from "./Compilers/Style"
 
-export default async function compileByExtension(file: PPath, depSession: DepCreator) {
-    const ext = path.extname(file.nested).substring(1).toLowerCase()
+export const SUPPORTED_TYPES = ['js', 'ts', 'jsx', 'tsx', 'svelte', 'css', 'sass', 'scss'];
+
+export async function compileByExtension(file: PPath, depSession: DepCreator) {
+    const ext = file.ext.substring(1).toLowerCase()
 
     switch (ext) {
         case 'js':

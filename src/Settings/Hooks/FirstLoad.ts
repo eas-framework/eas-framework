@@ -1,3 +1,4 @@
+import { reFilterExtension } from "../../ProcessRequest/ScriptLoader/Senders/StaticFile/CustomHooks/StaticExtension";
 import {  buildBodyParserMiddleware, buildCookiesMiddleware, buildFormidableMiddlewareSettings, buildSessionMiddleware } from "./Middlewares";
 
 export default function firstLoad() {
@@ -5,4 +6,5 @@ export default function firstLoad() {
     buildBodyParserMiddleware()
     buildSessionMiddleware()
     buildCookiesMiddleware()
+    reFilterExtension()
 }

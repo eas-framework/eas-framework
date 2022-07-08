@@ -6,6 +6,10 @@ export default class StringTrackerStack {
 
     }
 
+    get hiddenStack(){
+        return this.stack
+    }
+
     get length(){
         return this.stack.length
     }

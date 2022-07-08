@@ -156,19 +156,18 @@ export default class StringTracker {
     }
 
     addTextBefore(text: string) {
-        const newTrack = new StringTracker()
+        const chars = []
         for (const char of text) {
-            newTrack.chars.push({
+            chars.push({
                 char,
                 stack: EMPTY_STACK
             })
         }
-        this.addClone(newTrack)
+        this.chars = chars.concat(this.chars)
     }
 
 
-
-    static fromTextFile(text: string, file: PPath) {
+    private static createSTByInfo(text: string, createStack: (line: number, column: number)=>STSInfo[]){
         const newString = new StringTracker();
         let line = 1, column = 1;
 
@@ -176,7 +175,7 @@ export default class StringTracker {
             newString.chars.push({
                 char,
                 stack: new StringTrackerStack(
-                    [new STSInfo(file, line, column)]
+                    createStack(line, column)
                 )
             })
 
@@ -189,6 +188,14 @@ export default class StringTracker {
         }
 
         return newString
+    }
+    static fromTextFile(text: string, file: PPath) {
+        return StringTracker.createSTByInfo(text, (line, column) => [new STSInfo(file, line, column)])
+    }
+
+    static fromST(text: string, file: PPath, source: StringTracker){
+        const stack = source.topCharStack
+        return StringTracker.createSTByInfo(text, (line, column) => stack.hiddenStack.concat([new STSInfo(file, line, column)]))
     }
 
     slice(start = 0, end = this.length): StringTracker {
@@ -513,8 +520,9 @@ export default class StringTracker {
 
         const ResultArray: ArrayMatch = [];
 
-        ResultArray[0] = this.slice(find.index, find.index + find.shift().length);
-        ResultArray.index = find.index;
+        const findIndex = this.charLength(find.index)
+        ResultArray[0] = this.slice(findIndex, findIndex + find.shift().length);
+        ResultArray.index = findIndex;
         ResultArray.input = this.clone();
 
         let nextMath = ResultArray[0].clone();
@@ -530,9 +538,9 @@ export default class StringTracker {
                 continue;
             }
 
-            const findIndex = nextMath.indexOf(e);
-            ResultArray.push(nextMath.slice(findIndex, findIndex + e.length));
-            nextMath = nextMath.slice(findIndex);
+            const findNextIndex = nextMath.indexOf(e);
+            ResultArray.push(nextMath.slice(findNextIndex, findNextIndex + e.length));
+            nextMath = nextMath.slice(findNextIndex);
         }
 
         return ResultArray;

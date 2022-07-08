@@ -1,12 +1,12 @@
 import { Options as TransformOptions, transform, ParserConfig } from '@swc/core'
-import { SWCPrintError } from '../../../../../../Compilers/SWC/Errors'
-import { TransformJSC } from '../../../../../../Compilers/SWC/Settings'
-import DepCreator from '../../../../../../ImportSystem/Dependencies/DepCreator'
-import { GlobalSettings } from '../../../../../../Settings/GlobalSettings'
-import PPath from '../../../../../../Settings/PPath'
-import { getPlugin, hasPlugin } from '../../../../../../Settings/utils'
-import { makeWebURLSourceStaticFile } from '../../../../../../SourceTracker/SourceMap/SourceComputeTrack'
-import EasyFS from '../../../../../../Util/EasyFS'
+import { SWCPrintError } from '../../../../../../../../Compilers/SWC/Errors'
+import { TransformJSC } from '../../../../../../../../Compilers/SWC/Settings'
+import DepCreator from '../../../../../../../../ImportSystem/Dependencies/DepCreator'
+import { GlobalSettings } from '../../../../../../../../Settings/GlobalSettings'
+import PPath from '../../../../../../../../Settings/PPath'
+import { getPlugin, hasPlugin } from '../../../../../../../../Settings/utils'
+import { makeWebURLSourceStaticFile } from '../../../../../../../../SourceTracker/SourceMap/SourceComputeTrack'
+import EasyFS from '../../../../../../../../Util/EasyFS'
 
 
 async function compileScript(file: PPath, deps: DepCreator, config?: ParserConfig, optionsName?: string) {
@@ -37,11 +37,11 @@ async function compileScript(file: PPath, deps: DepCreator, config?: ParserConfi
 }
 
 export function compileJS(file: PPath, deps: DepCreator) {
-    return compileScript(file, deps)
+    return compileScript(file, deps, null, 'JSOptions')
 }
 
 export function compileTS(file: PPath, deps: DepCreator) {
-    return compileScript(file, deps, { syntax: 'typescript', decorators: true })
+    return compileScript(file, deps, { syntax: 'typescript', decorators: true }, 'TSOptions')
 }
 
 export function compileJSX(file: PPath, deps: DepCreator) {

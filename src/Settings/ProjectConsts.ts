@@ -2,7 +2,8 @@ import path from "node:path"
 import { cwd } from "node:process"
 import { fileURLToPath } from "node:url"
 
-const StaticName = 'Static', StaticDirectory = 'WWW', ModulesName = 'node_modules', ModelsName = 'Models', ComponentsName = 'Components';
+const StaticName = 'Static', StaticSourceDirectory = 'WWW', ModulesName = 'node_modules', ModelsName = 'Models', ComponentsName = 'Components';
+const ModulesCompileDirectoryName = 'Modules'
 const CompileNameDirectory = 'Compile'
 
 function dirname(url: string) {
@@ -82,12 +83,12 @@ export function setDirectories(directory: string) {
         return path.join(SystemData, name + CompileNameDirectory);
     }
 
-    const StaticCompile = GetCompile(StaticDirectory)
+    const StaticCompile = GetCompile(StaticName)
     directories.Locate.Static = {
-        source: GetSource(StaticDirectory),
+        source: GetSource(StaticSourceDirectory),
         compile: StaticCompile,
         virtualName: StaticName,
-        dirName: StaticDirectory
+        dirName: StaticSourceDirectory
     }
 
     directories.Locate.Models = {
@@ -106,7 +107,7 @@ export function setDirectories(directory: string) {
 
     directories.Locate.node_modules = {
         source: GetSource(ModulesName),
-        compile: GetCompile(ModulesName),
+        compile: GetCompile(ModulesCompileDirectoryName),
         virtualName: ModulesName,
         dirName: ModulesName
     }

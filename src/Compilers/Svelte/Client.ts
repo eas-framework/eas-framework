@@ -74,13 +74,15 @@ export default async function compileSvelte(file: PPath, deps: DepCreator) {
             sveltePath: '/serv/svelte'
         })
         logSvelteWarn(compileSvelte.warnings, file, sourcemap)
+
+        await minify(compileSvelte.js, scriptLang)
+        addSourceMap(compileSvelte)
+    
+        await writeSvelteContent(compileSvelte, file)
+        await deps.updateDep(file)
+
+        return true
     } catch (err) {
         logSvelteError(err, file, sourcemap)
     }
-
-    await minify(compileSvelte.js, scriptLang)
-    addSourceMap(compileSvelte)
-
-    await writeSvelteContent(compileSvelte, file)
-    await deps.updateDep(file)
 }
