@@ -146,7 +146,8 @@ pub fn output_mini_json(text: &str, name: &str) -> String {
 static RAZOR_COMPILE: Lazy<Mutex<Razor>> = Lazy::new(|| {
     let mut data_builder: Razor = Razor::default();
     data_builder.s_razor_keyword = BetterString::new("#");
-    data_builder.s_comment = false;
+    data_builder.s_razor_comment_end = BetterString::new("*#");
+    data_builder.s_comment = true;
     data_builder.s_add_to_script = vec![String::from("default"),String::from("define")];
     data_builder.s_literal = vec![String::from("debugger")];
 

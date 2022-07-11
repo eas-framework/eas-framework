@@ -438,6 +438,7 @@ impl Razor {
             add_index += after_razor_keyword + 1;
             let text = text.substring_start(after_razor_keyword + 1);
             let index = text.index_of_better(&self.s_razor_comment_end);
+            println!("{}, {}", &text.to_string(), &self.s_razor_comment_end.to_string());
             let num_index;
 
             if index == None {

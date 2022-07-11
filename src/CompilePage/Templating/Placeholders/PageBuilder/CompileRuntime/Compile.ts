@@ -62,7 +62,7 @@ export default class CRunTime {
 
         // if there isn't any code, just return as is
         if (parser.values.length == 1 && parser.values[0].type === 'text') {
-            compileWait(() => this.script);
+            compileWait(() => parser.values[0].text);
             return;
         }
 
