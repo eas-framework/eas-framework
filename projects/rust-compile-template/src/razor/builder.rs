@@ -6,9 +6,8 @@ use crate::better_string::r_string::RefString;
 use crate::better_string::u_string::UString;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
-use std::lazy::SyncLazy;
+use once_cell::sync::Lazy;
 use std::sync::{Mutex, MutexGuard};
-
 /*Basic Methods */
 
 pub fn output_razor_blocks<T>(
@@ -61,7 +60,7 @@ pub fn transpile_to_ejs<T: UString>(
 }
 
 /*Razor runtime */
-static RAZOR_RUNTIME: SyncLazy<Mutex<Razor>> = SyncLazy::new(|| {
+static RAZOR_RUNTIME: Lazy<Mutex<Razor>> = Lazy::new(|| {
     let mut data_builder: Razor = Razor::default();
     data_builder.s_comment = false;
 
@@ -69,11 +68,13 @@ static RAZOR_RUNTIME: SyncLazy<Mutex<Razor>> = SyncLazy::new(|| {
         String::from("include"),
         String::from("import"),
         String::from("transfer"),
+        String::from("stop"),
     ];
-    data_builder.s_literal = vec![String::from("debugger"), String::from("stop")];
+    data_builder.s_literal = vec![String::from("debugger")];
 
     data_builder.s_write_start_with = vec![
-        BetterString::new("("), 
+        BetterString::new("("),
+        BetterString::new(":("),
         BetterString::new("stop("),
         BetterString::new("include("),
         BetterString::new("import("),
@@ -140,15 +141,16 @@ pub fn output_mini_json(text: &str, name: &str) -> String {
 }
 
 /*Razor compile */
-static RAZOR_COMPILE: SyncLazy<Mutex<Razor>> = SyncLazy::new(|| {
+static RAZOR_COMPILE: Lazy<Mutex<Razor>> = Lazy::new(|| {
     let mut data_builder: Razor = Razor::default();
     data_builder.s_razor_keyword = BetterString::new("#");
     data_builder.s_comment = false;
-    data_builder.s_add_to_script = vec![String::from("default")];
+    data_builder.s_add_to_script = vec![String::from("default"),String::from("define")];
     data_builder.s_literal = vec![String::from("debugger")];
 
     data_builder.s_write_start_with = vec![
         BetterString::new("("),
+        BetterString::new(":("),
         BetterString::new("define("),
         BetterString::new("default("),
         BetterString::new("debugger")

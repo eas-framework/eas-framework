@@ -1,1 +1,4 @@
+#code{
+    await new Promise(resolve => setTimeout(resolve, Math.random() * 1000));
+}
 <p>Counter Last: #(attrs.counter.current)</p>
