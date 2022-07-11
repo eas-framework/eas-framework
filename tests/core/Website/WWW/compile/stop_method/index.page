@@ -1,3 +1,4 @@
 #[model='../server' title="TypeScript - Import Type"]
 <content:body>
 @stop()
+<p>Wow</p>

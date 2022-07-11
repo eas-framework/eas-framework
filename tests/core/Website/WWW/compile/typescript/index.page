@@ -3,3 +3,4 @@
 @code{
    import './from2.serv.ts'
 }
+<p>See the console</p>

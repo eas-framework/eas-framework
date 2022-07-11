@@ -1,12 +1,11 @@
 #![allow(dead_code)]
 #![feature(once_cell)]
-
 mod actions;
+pub mod better_string;
+pub mod ejs;
 mod html_search;
 mod page_base;
 pub mod razor;
-pub mod ejs;
-pub mod better_string;
 use better_string::b_string::BetterString;
 use html_search::builder::InsertComponent;
 
@@ -16,20 +15,27 @@ use wasm_bindgen::prelude::*;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 use lazy_static::lazy_static;
-use std::sync::{ Mutex};
+use std::sync::Mutex;
 
-lazy_static!{
-    static ref COMPONENT_BUILDER: Mutex<InsertComponent> = Mutex::new(InsertComponent::new(vec![], vec![]));
+lazy_static! {
+    static ref COMPONENT_BUILDER: Mutex<InsertComponent> =
+        Mutex::new(InsertComponent::new(vec![], vec![]));
 }
 
 #[wasm_bindgen]
 pub fn find_close_char_html_elem(text: &str, search: &str) -> i32 {
-    COMPONENT_BUILDER.lock().unwrap().public_html_element(text, search)
+    COMPONENT_BUILDER
+        .lock()
+        .unwrap()
+        .public_html_element(text, search)
 }
 
 #[wasm_bindgen]
 pub fn find_close_char(text: &str, search: &str) -> i32 {
-    COMPONENT_BUILDER.lock().unwrap().find_close_char(text, search)
+    COMPONENT_BUILDER
+        .lock()
+        .unwrap()
+        .find_close_char(text, search)
 }
 
 #[wasm_bindgen]
@@ -49,30 +55,32 @@ pub fn find_end_block(text: &str, block: &str) -> i32 {
 
 #[wasm_bindgen]
 pub fn insert_component(skip_special_tag: &str, simple_skip: &str) {
-    let skip:Vec<Vec<String>> = serde_json::from_str(skip_special_tag).unwrap();
+    let skip: Vec<Vec<String>> = serde_json::from_str(skip_special_tag).unwrap();
     let simple: Vec<String> = serde_json::from_str(simple_skip).unwrap();
 
     let mut comp = COMPONENT_BUILDER.lock().unwrap();
 
-    comp.skip_special_tag = skip.iter().map(|x| x.iter().map(|b| BetterString::new(b)).collect()).collect();
+    comp.skip_special_tag = skip
+        .iter()
+        .map(|x| x.iter().map(|b| BetterString::new(b)).collect())
+        .collect();
     comp.simple_skip = simple.iter().map(|x| BetterString::new(x)).collect();
 }
 
-fn parse_end_type(end_type: &str) -> Vec<BetterString>{
+fn parse_end_type(end_type: &str) -> Vec<BetterString> {
     let end_t: Vec<String> = serde_json::from_str(end_type).unwrap();
-    let as_better: Vec<BetterString>= end_t.iter().map(|x| BetterString::new(x)).collect();
+    let as_better: Vec<BetterString> = end_t.iter().map(|x| BetterString::new(x)).collect();
     as_better
 }
 
 #[wasm_bindgen]
-pub fn find_end_of_def(text: &str, end_type: &str) -> i32{
-    let mut copy: Vec<&BetterString>  = vec![];
+pub fn find_end_of_def(text: &str, end_type: &str) -> i32 {
+    let mut copy: Vec<&BetterString> = vec![];
     let vec_better = parse_end_type(end_type);
 
     for i in vec_better.iter() {
         copy.push(&i);
     }
-
 
     actions::base_reader::find_end_of_def(&BetterString::new(text), copy)
 }
@@ -103,11 +111,11 @@ pub fn ejs_parse(text: &str, start: &str, end: &str) -> String {
 }
 
 #[wasm_bindgen]
-pub fn page_base_parser(text: &str) -> String{
+pub fn page_base_parser(text: &str) -> String {
     page_base::builder::page_base(text)
 }
 
 #[wasm_bindgen]
-pub fn html_attr_parser(text: &str) -> String{
+pub fn html_attr_parser(text: &str) -> String {
     page_base::builder::attr_json(text)
 }

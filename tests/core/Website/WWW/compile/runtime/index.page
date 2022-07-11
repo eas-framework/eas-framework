@@ -9,6 +9,6 @@
 }
 <br/>
 <h2>Inside Sample:</h2>
-<Sample folder="." atrOne="thisValue" thisTrue>
+<Sample folder="." atrOne="thisValue" thisTrue loop>
     <p>This cool</p>
 </Sample>
