@@ -6,3 +6,4 @@
         window.location.pathname = '@(redirect)';
     }, 3000);
 </script>
+<p>Redirect in 3 seconds</p>

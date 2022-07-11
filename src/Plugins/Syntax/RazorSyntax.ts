@@ -32,7 +32,7 @@ function RazorToEJSBuilder(text: StringTracker, values: ParseBlocks, addWriteMap
                 build.Plus$`<%${addToEJSSign}:${substring}%>`;
                 break;
             default:
-                build.Plus$`<%${addToEJSSign + addWriteMap[i.name]}${substring}%>`;
+                build.Plus$`<%${addToEJSSign + (addWriteMap[i.name] ?? '')}${substring}%>`;
         }
     }
 
