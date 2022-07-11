@@ -1,0 +1,3 @@
+#[model='../server' title='Razor comments']
+<content:body>
+<p>§+#* WOW this ris a comment *#+§</p>
