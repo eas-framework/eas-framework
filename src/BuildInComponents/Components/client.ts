@@ -23,7 +23,7 @@ export default async function BuildCode(pathName: string, type: StringTracker, d
 
     BetweenTagData = await InsertComponent.StartReplace(BetweenTagData, pathName, sessionInfo);
 
-    sessionInfo.script(serveScript, {async: null});
+    sessionInfo.script(serveScript, {defer: null});
 
     let scriptInfo = await template(
         sessionInfo.BuildScriptWithPrams,
