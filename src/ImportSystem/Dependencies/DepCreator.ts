@@ -77,7 +77,7 @@ export default class DepCreator {
         this.manager.timeUpdate(file, newTime)
 
         /* Updating the tree of dependencies, so others will see this dependency as changed */
-        if(notToOthers && newTime != lastTime){
+        if(!notToOthers && newTime != lastTime){
             updateInAllTree(file, false, this.storage.store)
         }
 

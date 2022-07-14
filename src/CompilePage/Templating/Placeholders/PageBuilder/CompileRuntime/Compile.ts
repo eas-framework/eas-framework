@@ -8,10 +8,10 @@ import { StringAnyMap } from "../../../../../Settings/types";
 import StringTracker from "../../../../../SourceTracker/StringTracker/StringTracker";
 import { hashString } from "../../../../../Util/Strings";
 import { SessionBuild } from "../../../../Session";
-import EJSParser from "../../../EJSParser";
+import EJSParser from "../../../EJSPArser";
 import { ConvertSyntaxCompile } from "../../../RazorTranspiler";
 import exportContext, { RuntimeContext } from "./ExportContext";
-import { rebuildCode, templateScript } from "./Template";
+import { templateScript } from "./ExportContext/STWriter";
 
 const COMPILE_EXTENSION = '.compile.js';
 
@@ -24,17 +24,16 @@ export default class CRunTime {
         this.hash = hashString(script.eq);
     }
     /**
-     * It takes a parser and a moduleScriptFunc, and returns a function that create the compile HTML
-     * @param {JSParser} parser - JSParser - this is the parser that will be used to rebuild the code.
+     * It takes a moduleScriptFunc, and returns a function that create the compile HTML
      * @param {any} moduleScriptFunc - This is the scripts module function.
      * @returns A function that takes funcs and writerArray and returns the compiled HTML.
      */
-    private createHandelScriptBuild(parser: EJSParser, moduleScriptFunc: any) {
-        return async ({ funcs, writerArray, define }: RuntimeContext) => {
+    private createHandelScriptBuild(moduleScriptFunc: any) {
+        return async ({ funcs, result, define }: RuntimeContext) => {
             this.define = define
             try {
                 await moduleScriptFunc(...funcs);
-                return rebuildCode(parser, writerArray);
+                return result;
             } catch (err) {
                 SystemError('compile-runtime-error', err, true)
             }
@@ -43,21 +42,22 @@ export default class CRunTime {
 
     private createScriptWait() {
         // make all users of the script wait for it to finish
-        let doForAll: (resolve: ({ funcs, writerArray }: RuntimeContext) => StringTracker | Promise<StringTracker>) => void;
+        let doForAll: (resolve: (data: RuntimeContext) => StringTracker | Promise<StringTracker>) => void;
 
         // temp promise to wait for the script to finish
-        const dataCache = { hash: this.hash, func: new Promise(r => doForAll = r) };
+        const dataCache = { hash: this.hash, func: new Promise(r => doForAll = r), parser: null };
         CacheCompileScript.set(this.sourceFile.small, dataCache);
 
         // resolve the promise, and update the cache, this async so it will appends after the return of 'compileScript' function
-        return async (func: any) => {
+        return async (func: any, parser?: EJSParser) => {
             dataCache.func = func;
+            dataCache.parser = parser
             doForAll(func);
         }
 
     }
 
-    private async compileScript(compileWait: (data: any) => any) {
+    private async compileScript(compileWait: (func: any, parser?: EJSParser) => void) {
         const parser = await ConvertSyntaxCompile(this.script);
 
         // if there isn't any code, just return as is
@@ -71,23 +71,32 @@ export default class CRunTime {
         compileFile.nested += COMPILE_EXTENSION
 
         // create the script by template
-        const scriptWithTemplate = templateScript(parser.values.filter(x => x.type != 'text').map(x => x.text));
+        const scriptWithTemplate = templateScript(parser);
 
         // compiling and importing the script
         const scriptBuilder = new STBuilder(scriptWithTemplate, GlobalSettings.compile.typescript)
-        const moduleScriptFunc = await new FileImporter(this.sourceFile, {builder: scriptBuilder, importLine: this.sourceFile.small, exportFile: compileFile, skipCache: ['recompile-file', 'skip-loading', 'skip-write-tree']}).createImport();
-        const handelScriptBuild = this.createHandelScriptBuild(parser, moduleScriptFunc);
+        const moduleScriptFunc = await new FileImporter(this.sourceFile, { builder: scriptBuilder, importLine: this.sourceFile.small, exportFile: compileFile, skipCache: ['recompile-file', 'skip-loading', 'skip-write-tree'] }).createImport();
+        const handelScriptBuild = this.createHandelScriptBuild(moduleScriptFunc);
 
         // resolve the script builder, for all the users
-        compileWait(handelScriptBuild);
+        compileWait(handelScriptBuild, parser);
 
     }
 
     private async compileFromCache(attributes?: StringAnyMap, importSource?: PPath) {
         const cacheCompile = CacheCompileScript.get(this.sourceFile.small);
+        const func = await cacheCompile.func
 
-        if (cacheCompile?.hash == this.hash)
-            return (await cacheCompile.func)(exportContext(this.sessionInfo, attributes, importSource));
+        if (cacheCompile?.hash == this.hash) {
+            return func(
+                exportContext(
+                    this.sessionInfo,
+                    cacheCompile.parser,
+                    attributes,
+                    importSource
+                )
+            );
+        }
         return false;
     }
 

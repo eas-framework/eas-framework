@@ -5,7 +5,9 @@ import PPath from "../../../../../../Settings/PPath";
 import { StringAnyMap } from "../../../../../../Settings/types";
 import StringTracker from "../../../../../../SourceTracker/StringTracker/StringTracker";
 import { SessionBuild } from "../../../../../Session";
+import EJSParser from "../../../../EJSPArser";
 import renderAttrs, { addImportSource } from "./renderAttrs";
+import STWriter from "./STWriter";
 
 const SCRIPT = 'script',
     STYLE = 'style',
@@ -24,13 +26,13 @@ const SCRIPT = 'script',
 export const COMPILE_PARAMS = [SCRIPT, STYLE, DEFINE, STORE, PAGE_FILENAME, PAGE_DIRNAME, LOCALPATH, ATTRIBUTES, DEPENDENCE, ATTRS_HTML, ATTRS_OBJECT_HTML, CREATE_DATE_WRITER, ATTRDEFAULT]
 
 type Writer = { text: string }
-function createContext(session: SessionBuild, attributes: StringAnyMap = {}, importSource?: PPath) {
+function createContext(session: SessionBuild, parser: EJSParser, attributes: StringAnyMap = {}, importSource?: PPath) {
     if (importSource) {
         addImportSource(attributes, importSource)
     }
 
     const define = {}
-    const writerArray: Writer[] = []
+    const contextWriter = new STWriter(parser)
 
     const exportObject = {
         [SCRIPT]: session.script.bind(session),
@@ -44,8 +46,9 @@ function createContext(session: SessionBuild, attributes: StringAnyMap = {}, imp
         [LOCALPATH]: path.join(path.sep, session.file.nested),
         [ATTRIBUTES]: attributes,
         [DEPENDENCE](file: string) {
-            session.dependence(
-                locationConnectorPPath(file, session.file)
+            session.dependencies.updateDep(
+                locationConnectorPPath(file, session.file),
+                true
             )
         },
         [ATTRS_HTML](attrs: StringAnyMap = attributes, ...onlySome: string[]) {
@@ -63,8 +66,7 @@ function createContext(session: SessionBuild, attributes: StringAnyMap = {}, imp
             return renderAttrs(attrs, onlySome, true);
         },
         [CREATE_DATE_WRITER](data: Writer) {
-            writerArray.unshift(data);
-            return createDateWriter(data)
+            return contextWriter.writer()
         },
         [ATTRDEFAULT](keys: string | string[], value: any) {
             if (!Array.isArray(keys)) {
@@ -77,21 +79,25 @@ function createContext(session: SessionBuild, attributes: StringAnyMap = {}, imp
         }
     }
 
-    return { exportObject, define, writerArray }
+    return {
+        exportObject,
+        define,
+        result: contextWriter.buildST
+    }
 }
 
 export type RuntimeContext = {
     funcs: any[],
-    writerArray: Writer[],
+    result: StringTracker,
     define: any
 }
 
-export default function exportContext(session: SessionBuild, attributes: StringAnyMap = {}, importSource?: PPath): RuntimeContext {
-    const { exportObject, define, writerArray } = createContext(session, attributes, importSource)
+export default function exportContext(session: SessionBuild, parser: EJSParser, attributes: StringAnyMap = {}, importSource?: PPath): RuntimeContext {
+    const { exportObject, define, result } = createContext(session, parser, attributes, importSource)
 
     return {
         funcs: Object.values(exportObject),
-        writerArray,
+        result,
         define
     }
 }
