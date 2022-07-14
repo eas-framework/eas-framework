@@ -20,6 +20,7 @@ const SCRIPT = 'script',
     DEPENDENCE = 'dependence',
     ATTRS_HTML = 'attrsHTML',
     ATTRS_OBJECT_HTML = 'attrsObjectHTML',
+    SPACE_ONE = 'spaceOne',
     CREATE_DATE_WRITER = 'createDateWriter',
     ATTRDEFAULT = 'attrdefault'
 
@@ -64,6 +65,12 @@ function createContext(session: SessionBuild, parser: EJSParser, attributes: Str
                 attrs = attributes;
             }
             return renderAttrs(attrs, onlySome, true);
+        },
+        [SPACE_ONE](text: string | boolean, value = text){
+            if(text) {
+                return ' ' + String(value).trim()
+            }
+            return ''
         },
         [CREATE_DATE_WRITER](data: Writer) {
             return contextWriter.writer()
