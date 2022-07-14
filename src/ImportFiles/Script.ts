@@ -184,16 +184,12 @@ export default async function LoadImport(importFrom: string[], InStaticPath: str
     return SavedModules[SavedModulesPath];
 
   function requireMap(p: string) {
-    if (path.isAbsolute(p))
-      p = path.relative(p, typeArray[0]);
-    else {
-      if (p[0] == ".") {
-        p = path.join(path.dirname(InStaticPath), p);
-      }
-      else if (p[0] != "/")
-        return AliasOrPackage(p);
+    if (p[0] == ".") {
+      p = path.join(path.dirname(InStaticPath), p);
     }
-
+    else if (p[0] != "/"){
+      return AliasOrPackage(p);
+    }
     return LoadImport([...importFrom, SavedModulesPath], p, typeArray, { isDebug, useDeps, withoutCache: inheritanceCache ? withoutCache : [] });
   }
 
