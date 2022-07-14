@@ -265,7 +265,7 @@ export default class InsertComponent extends InsertComponentBase {
             const startFrom = data.substring(find);
 
             //tag type 
-            const tagTypeEnd = startFrom.search('\ |/|\>|(<%)');
+            const tagTypeEnd = startFrom.search('\\s|/|\>|(<%)');
 
             const tagType = startFrom.substring(1, tagTypeEnd);
 
