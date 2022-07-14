@@ -38,7 +38,13 @@ export default class EasySyntax {
     }
 
     private actionStringExport(replaceToType: string, dataObject: string, index: string) {
-        return `${this.actionStringImport(replaceToType, dataObject, index)};Object.assign(exports, ${dataObject})`;
+        let values = dataObject
+            .trim()
+            .slice(1, - 1) // removing { and }
+            .split(',') // splitting by ,
+            .map(x => x.split(':').pop()) // getting values from key:value
+            .join(',') // {a:b, c:d} -> b,d
+        return `{${this.actionStringImport(replaceToType, dataObject, index)};Object.assign(exports, {${values}})}`;
     }
 
     private actionStringImportAll(replaceToType: string, index: string) {
@@ -86,7 +92,7 @@ export default class EasySyntax {
             }
 
             let DataObject: string;
-            const asToObject = (x:string) => x.replace(/\sas\s/g, ':');
+            const asToObject = (x: string) => x.replace(/\sas\s/g, ':');
 
             if (match[10] || data[0] == '*') {// import {a, b} from './path' **or** import * as a from './path'
                 DataObject = match[10] && asToObject(match[10]) || match[9];
@@ -152,6 +158,32 @@ export default class EasySyntax {
         this.replaceWithSpace(text => text.replace(new RegExp(`([^\\p{L}])${word}([\\s]*\\()`, 'gui'), (...match) => {
             return match[1] + toWord + match[2]
         }));
+    }
+
+    /**
+     * export * from './path'
+     */
+    private async exportAnyFrom(require = 'require') {
+        let newString = this.Build.CodeBuildText;
+        let match: RegExpMatchArray;
+
+        function Rematch() {
+            match = newString.match(/export\s*\*\s*from\s*<\|([0-9]+)\|\|>/);
+        }
+
+        Rematch();
+
+        while (match) {
+            const beforeMatch = newString.substring(0, match.index);
+            const afterMatch = newString.substring(match.index + match[0].length);
+            const index = match[1]
+
+            newString = beforeMatch + this.actionStringExportAll(require, index) + afterMatch
+
+            Rematch();
+        }
+
+        this.Build.CodeBuildText = newString;
     }
 
     private async exportVariable() {
@@ -246,6 +278,8 @@ export default class EasySyntax {
 
     async BuildImports(defineData?: { [key: string]: string }) {
         this.BuildImportType('import', 'require');
+
+        this.exportAnyFrom('require');
         this.BuildImportType('export', 'require', this.actionStringExport);
         this.BuildImportType('include');
 
