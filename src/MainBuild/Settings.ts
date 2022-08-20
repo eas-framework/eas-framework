@@ -325,6 +325,7 @@ function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'ignore' 
 function mergeNested1(target: any, from?: {[key: string]: {[key: string]: any}}){
     if(!from) return;
     for(const i in from){
+        target[i] ??= {};
         Object.assign(target[i], from[i]);
     }
 }
