@@ -16,6 +16,7 @@ export function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'i
         const include = rules.includes(i);
         if (rulesType == 'only' && include || rulesType == 'ignore' && !include) {
             hasImplanted = true;
+            to[i] ??= {};
             Object.assign(to[i], json[i]);
         }
     }
@@ -30,6 +31,7 @@ export function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'i
 export function mergeNested1(target: any, from?: {[key: string]: {[key: string]: any}}){
     if(!from) return;
     for(const i in from){
+        target[i] ??= {};
         Object.assign(target[i], from[i]);
     }
 }
