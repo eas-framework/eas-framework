@@ -1,7 +1,8 @@
 import { App as TinyApp } from '@tinyhttp/app'
 import { Request, Response } from './types'
 import formidable from 'formidable'
-import {firstValues} from 'formidable/src/helpers/firstValues.js'
+import { multipartType } from 'formidable/src/plugins/multipart.js'
+import { querystringType } from 'formidable/src/plugins/querystring.js'
 import { GlobalSettings } from '../Settings/GlobalSettings'
 import { SystemAutoError } from '../Logger/ErrorLogger'
 import processURL from './ProcessURL/ProcessURL'
@@ -11,6 +12,24 @@ let currentSettingsFile: string
 export function connectRequests(app: TinyApp, settingsFile: string) {
     currentSettingsFile = settingsFile
     app.all('*', parseRequest)
+}
+
+export function parseFormidableFields(form, fields, exceptions = []) {
+    /**
+     * Go over every field and check if an array with on item, if so then replace it with the item
+     */
+    if (form.type !== querystringType && form.type !== multipartType) {
+        return fields
+    }
+
+    return Object.fromEntries(
+        Object.entries(fields).map(([key, value]) => {
+            if (exceptions.includes(key) || !Array.isArray(value) || value.length) {
+                return [key, value];
+            }
+            return [key, value[0]];
+        }),
+    )
 }
 
 async function parseRequest(req: Request, res: Response) {
@@ -31,8 +50,8 @@ async function parseRequest(req: Request, res: Response) {
                 if (err) {
                     SystemAutoError(err)
                 }
-                req.body = firstValues(form, fields)
-                req.files = firstValues(form, files)
+                req.body = parseFormidableFields(form, fields)
+                req.files = parseFormidableFields(form, files)
                 await getCorrectResource(req, res)
                 resolve()
             })
