@@ -6,11 +6,11 @@ import * as fileByUrl from '../RunTimeBuild/GetPages';
 import { print } from '../OutputInput/Console';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
 import formidable from 'formidable';
-import { firstValues } from 'formidable/src/helpers/firstValues.js';
 import { UpdateGreenLock } from './ListenGreenLock';
 import http from 'http';
 import updateRequestAttributes from '../Plugins/HTTP';
 import { StartReadCommands } from './Commands';
+import { firstValuesOrFullArray } from './ParseRequest';
 
 
 
@@ -115,8 +115,8 @@ function ParseRequest(req: Request, res: Response) {
                 if (err) {
                     print.error(err);
                 }
-                req.body = firstValues(from, fields);
-                req.files = firstValues(from, files);
+                req.body = firstValuesOrFullArray(from, fields);
+                req.files = firstValuesOrFullArray(from, files);
                 await requestAndSettings(req, res);
                 resolve();
             });
