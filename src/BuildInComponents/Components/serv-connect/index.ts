@@ -52,16 +52,18 @@ for (const i in builtInConnectionRegex) {
 
 
 export function compileValues(value: string): string {
-    value = value.toLowerCase().trim();
+    const fixedValue = value.trim();
+    const lowerValue = fixedValue.toLowerCase()
 
-    if (builtInConnection.includes(value))
-        return `["${value}"]`;
+
+    if (builtInConnection.includes(lowerValue))
+        return `["${lowerValue}"]`;
 
     for (const [name, [test, getArgs]] of Object.entries(builtInConnectionRegex))
-        if ((<RegExp>test).test(value))
-            return `["${name}", ${(<any>getArgs)(value)}]`;
+        if ((<RegExp>test).test(fixedValue))
+            return `["${name}", ${(<any>getArgs)(fixedValue)}]`;
 
-    return `[${value}]`;
+    return `[${fixedValue}]`;
 }
 
 
