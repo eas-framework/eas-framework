@@ -2,6 +2,7 @@ import { GlobalSettings } from "../GlobalSettings";
 import { hookSet, hookSetArray } from "./Hook";
 import { clearPageFromRam, loadPageToRam } from "../../ProcessRequest/ScriptLoader/PageLoader";
 import { reFilterExtension } from "../../ProcessRequest/ScriptLoader/Senders/StaticFile/CustomHooks/StaticExtension";
+import { setDirectories } from "../ProjectConsts";
 
 /**
  * General settings hooks.
@@ -34,4 +35,9 @@ hookSet(GlobalSettings, 'development', updateDevelopment)
 
 /* It's a hook that runs the function `reFilterExtension` when the values of `allowExt` or `ignoreExt`
 change. */
-hookSetArray(GlobalSettings.routing, ["allowExt", "ignoreExt"], reFilterExtension);
+hookSetArray(GlobalSettings.routing, ["allowExt", "ignoreExt"], reFilterExtension)
+
+/**
+ * Update project directories when website directory changed
+ */
+hookSet(GlobalSettings, 'websiteDirectory', setDirectories)

@@ -24,7 +24,7 @@ export async function callImportOnLoadMethods(app: TinyApp, server: Server | Htt
     }
 }
 
-export async function loadSettings(settingsFile: string){
+export async function loadSettings(settingsFile = GlobalSettings.settingsFile){
     const settings: ExportSettings = await loadFile(settingsFile)
     if(!settings) return
 

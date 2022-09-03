@@ -109,6 +109,7 @@ interface GlobalSettings {
 export interface ExportSettings extends GlobalSettings {
     development: boolean,
     settingsFile: string,
+    websiteDirectory: string,
     middleware: {
         cookies: TinyhttpPlugin
         cookieEncrypter: TinyhttpPlugin
