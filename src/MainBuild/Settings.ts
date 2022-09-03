@@ -63,6 +63,12 @@ export const Export: ExportSettings = {
     get settingsPath() {
         return workingDirectory + BasicSettings.WebSiteFolder + "/Settings";
     },
+    get websiteDirectory(){
+        return BasicSettings.WebSiteFolder
+    },
+    set websiteDirectory(directory){
+        BasicSettings.WebSiteFolder = directory
+    },
     set development(value) {
         if(DevMode_ == value) return
         DevMode_ = value;
