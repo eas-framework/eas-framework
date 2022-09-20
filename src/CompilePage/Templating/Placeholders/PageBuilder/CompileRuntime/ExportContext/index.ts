@@ -1,13 +1,13 @@
 import path from "path";
-import { locationConnectorPPath } from "../../../../../../ImportSystem/unit";
-import createDateWriter from "../../../../../../RuntimeUtils/DataWriter";
-import PPath from "../../../../../../Settings/PPath";
-import { StringAnyMap } from "../../../../../../Settings/types";
-import StringTracker from "../../../../../../SourceTracker/StringTracker/StringTracker";
-import { SessionBuild } from "../../../../../Session";
-import EJSParser from "../../../../EJSPArser";
-import renderAttrs, { addImportSource } from "./renderAttrs";
-import STWriter from "./STWriter";
+import { locationConnectorPPath } from "../../../../../../ImportSystem/unit.js";
+import createDateWriter from "../../../../../../RuntimeUtils/DataWriter.js";
+import PPath from "../../../../../../Settings/PPath.js";
+import { StringAnyMap } from "../../../../../../Settings/types.js";
+import StringTracker from "../../../../../../SourceTracker/StringTracker/StringTracker.js";
+import { SessionBuild } from "../../../../../Session.js";
+import EJSParser from "../../../../EJSParser.js";
+import renderAttrs, { addImportSource } from "./renderAttrs.js";
+import STWriter from "./STWriter.js";
 
 const SCRIPT = 'script',
     STYLE = 'style',
@@ -24,7 +24,7 @@ const SCRIPT = 'script',
     CREATE_DATE_WRITER = 'createDateWriter',
     ATTRDEFAULT = 'attrdefault'
 
-export const COMPILE_PARAMS = [SCRIPT, STYLE, DEFINE, STORE, PAGE_FILENAME, PAGE_DIRNAME, LOCALPATH, ATTRIBUTES, DEPENDENCE, ATTRS_HTML, ATTRS_OBJECT_HTML, CREATE_DATE_WRITER, ATTRDEFAULT]
+export const COMPILE_PARAMS = [SCRIPT, STYLE, DEFINE, STORE, PAGE_FILENAME, PAGE_DIRNAME, LOCALPATH, ATTRIBUTES, DEPENDENCE, ATTRS_HTML, ATTRS_OBJECT_HTML, SPACE_ONE, CREATE_DATE_WRITER, ATTRDEFAULT]
 
 type Writer = { text: string }
 function createContext(session: SessionBuild, parser: EJSParser, attributes: StringAnyMap = {}, importSource?: PPath) {
@@ -72,7 +72,7 @@ function createContext(session: SessionBuild, parser: EJSParser, attributes: Str
             }
             return ''
         },
-        [CREATE_DATE_WRITER](data: Writer) {
+        [CREATE_DATE_WRITER]() {
             return contextWriter.writer()
         },
         [ATTRDEFAULT](keys: string | string[], value: any) {

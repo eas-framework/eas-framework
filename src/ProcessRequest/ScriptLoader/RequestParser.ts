@@ -1,4 +1,4 @@
-import RequestWarper from "../ProcessURL/RequestWarper";
+import RequestWarper from "../ProcessURL/RequestWarper.js";
 
 export default class RequestParser {
     private copyCookies: any;

@@ -26,3 +26,7 @@ Cargo.lock
 # mac files
 .DS_Store
 **/.DS_Store
+
+src/SystemData/*/**
+.pls_cache
+.swc

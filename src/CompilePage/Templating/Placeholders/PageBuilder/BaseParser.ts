@@ -1,5 +1,5 @@
-import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker";
-import { PageBaseParser } from "../../../ConnectRust/PageBase";
+import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker.js";
+import { PageBaseParser } from "../../../ConnectRust/PageBase.js";
 
 export type BaseParserBlock =  { key: string, value: StringTracker | true, char?: string }
 

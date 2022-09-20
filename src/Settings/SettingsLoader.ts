@@ -1,6 +1,6 @@
-import { copyJSON, mergeNested1 } from "../Util/MergeObjects"
-import { GlobalSettings } from "./GlobalSettings"
-import { ExportSettings } from "./types"
+import { copyJSON, mergeNested1 } from "../Util/MergeObjects.js"
+import { GlobalSettings } from "./GlobalSettings.js"
+import { ExportSettings } from "./types.js"
 import { Server } from "http";
 import { Http2Server } from "http2";
 import { App as TinyApp } from '@tinyhttp/app';
@@ -9,7 +9,7 @@ import { App as TinyApp } from '@tinyhttp/app';
 const DEFAULT_SETTINGS_FILE = 'Settings'
 const IMPORT_LOAD_METHOD = 'ServerStart'
 
-async function loadFile(settingsFile = DEFAULT_SETTINGS_FILE): any{
+async function loadFile(settingsFile = DEFAULT_SETTINGS_FILE): Promise<any>{
 
 }
 
@@ -39,3 +39,5 @@ export async function loadSettings(settingsFile = GlobalSettings.settingsFile){
 
     GlobalSettings.development = settings.development
 }
+
+GlobalSettings.reload = loadSettings

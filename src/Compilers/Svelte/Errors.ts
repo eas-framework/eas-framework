@@ -1,9 +1,9 @@
 import { Warning } from "svelte/types/compiler/interfaces";
 import { RawSourceMap, SourceMapConsumer, SourceMapGenerator } from "source-map";
-import { LogData } from "../../Logger/Logger";
-import { SystemLog } from "../../Logger/BasicLogger";
-import PPath from "../../Settings/PPath";
-import { Capitalize } from "../../Util/Strings";
+import { LogData } from "../../Logger/Logger.js";
+import { SystemLog } from "../../Logger/BasicLogger.js";
+import PPath from "../../Settings/PPath.js";
+import { Capitalize } from "../../Util/Strings.js";
 
 async function getOriginalLocation(sourceMap: RawSourceMap, ...locations: {line: number, column: number}[]){
     const map = await new SourceMapConsumer(sourceMap)

@@ -1,11 +1,16 @@
-import PPath from "../../../../Settings/PPath"
+import PPath from "../../../../Settings/PPath.js"
 
 const WaitImport = {}
 const CacheImport = {}
 
+type CacheItem = {
+    exports: any,
+    deps: any
+}
+
 export default class CacheWaitImport {
     private wait: any
-    private cache: any
+    private cache: {[key: string]: CacheItem}
     private resolveImportFunc: Function
 
     constructor(name: string, private file: PPath){
@@ -34,7 +39,7 @@ export default class CacheWaitImport {
         return this.cache[file.small]
     }
 
-    update(file: PPath, data: any){
+    update(file: PPath, data: CacheItem){
         this.cache[file.small] = data
         return data
     }

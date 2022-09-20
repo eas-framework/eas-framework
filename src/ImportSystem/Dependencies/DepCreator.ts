@@ -1,7 +1,7 @@
-import PPath from "../../Settings/PPath";
-import JSONStorage from "../../Storage/JSONStorage";
-import type DepManager from "./DepManager";
-import { getChangeDate, updateInAllTree } from "./utils";
+import PPath from "../../Settings/PPath.js";
+import JSONStorage from "../../Storage/JSONStorage.js";
+import type DepManager from "./DepManager.js";
+import { getChangeDate, updateInAllTree } from "./utils.js";
 
 export type ShareOptions = {disableCache: boolean}
 export default class DepCreator {
@@ -70,7 +70,7 @@ export default class DepCreator {
         return false
     }
 
-    async updateDep(file: PPath, notToOthers = false) {
+    async updateDep(file: PPath, notToOthers = false, value?: any) {
         const newTime = await this.getNewTime(file)
         const lastTime = this.manager.getSavedTime(file)
 
@@ -81,7 +81,7 @@ export default class DepCreator {
             updateInAllTree(file, false, this.storage.store)
         }
 
-        newTime && this.update(file)
+        newTime && this.update(file, value)
         return newTime
     }
 
@@ -97,5 +97,9 @@ export default class DepCreator {
         )
         nested.cacheTime = this.cacheTime
         return nested
+    }
+
+    getStoreJSON(file: PPath){
+        return this.storage.store[file.small]
     }
 }

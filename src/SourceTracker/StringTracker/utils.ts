@@ -1,5 +1,5 @@
 import path from "path";
-import StringTracker from "./StringTracker";
+import StringTracker from "./StringTracker.js";
 
 export function getLocationSourcePath(source: StringTracker, fullLastPath = false){
     const stack = source.topCharStack.hiddenStack

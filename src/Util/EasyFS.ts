@@ -1,6 +1,6 @@
 import { Dirent, Stats, promises, fstat } from 'node:fs';
 import path from 'node:path';
-import { SystemAutoError } from '../Logger/ErrorLogger';
+import { SystemAutoError } from '../Logger/ErrorLogger.js';
 
 /**
  * A function that takes a promise and a callback function. It returns a new promise that will resolve

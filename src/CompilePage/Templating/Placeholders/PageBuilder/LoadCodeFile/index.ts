@@ -1,15 +1,15 @@
-import { INHERIT } from "../utils";
-import PPath from "../../../../../Settings/PPath";
-import StringTracker from "../../../../../SourceTracker/StringTracker/StringTracker";
-import ArrayGetter from "../ArrayGetter";
-import { PageBuilder } from "../PageBuilder";
-import { locationConnectorPPath } from "../../../../../ImportSystem/unit";
+import { INHERIT } from "../utils.js";
+import PPath from "../../../../../Settings/PPath.js";
+import StringTracker from "../../../../../SourceTracker/StringTracker/StringTracker.js";
+import ArrayGetter from "../ArrayGetter.js";
+import { PageBuilder } from "../PageBuilder.js";
+import { locationConnectorPPath } from "../../../../../ImportSystem/unit.js";
 import path from "node:path";
-import { GlobalSettings } from "../../../../../Settings/GlobalSettings";
-import { SystemLog } from "../../../../../Logger/BasicLogger";
-import { SystemError } from "../../../../../Logger/ErrorLogger";
-import EasyFS from "../../../../../Util/EasyFS";
-import ConnectST from "../../TemplateConnector/ConnectST";
+import { GlobalSettings } from "../../../../../Settings/GlobalSettings.js";
+import { SystemLog } from "../../../../../Logger/BasicLogger.js";
+import { SystemError } from "../../../../../Logger/ErrorLogger.js";
+import EasyFS from "../../../../../Util/EasyFS.js";
+import ConnectST from "../../TemplateConnector/ConnectST.js";
 
 const CODE_FILE = 'codefile';
 

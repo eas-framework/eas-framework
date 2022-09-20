@@ -1,8 +1,8 @@
 import { fileURLToPath } from "node:url";
-import { LogPrint, SystemLog } from "../../Logger/BasicLogger";
-import { LogData } from "../../Logger/Logger";
-import StringTracker from "../../SourceTracker/StringTracker/StringTracker";
-import { Capitalize } from "../../Util/Strings";
+import { LogPrint, SystemLog } from "../../Logger/BasicLogger.js";
+import { LogData } from "../../Logger/Logger.js";
+import StringTracker from "../../SourceTracker/StringTracker/StringTracker.js";
+import { Capitalize } from "../../Util/Strings.js";
 
 export function getSassErrorLine({ sassStack }) {
     const loc = sassStack.match(/[0-9]+:[0-9]+/)[0].split(':').map(x => Number(x));

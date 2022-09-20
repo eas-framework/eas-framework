@@ -1,0 +1,35 @@
+[package]
+name = "swc_dynamic_imports"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.release]
+# This removes more dead code
+codegen-units = 1
+lto = true
+# Optimize for size
+opt-level = "s"
+# Optimize for performance, this is default so you don't need to specify it
+# opt-level = "z"
+
+# Strip debug symbols
+strip = "symbols"
+[dependencies]
+swc_common = "0.28.2"
+Inflector = "0.11.4"
+swc_ecma_transforms_base = "0.108.7"
+serde = "1.0.144"
+lazy_static = "1.4.0"
+swc_ecma_utils = "0.102.5"
+serde_json = "1.0.85"
+swc_ecma_ast = "0.91.2"
+swc_ecma_parser = "0.119.5"
+swc_core = { version = "0.23.5", features = ["plugin_transform"] }
+tracing = { version="0.1.36", features = ["release_max_level_info"] }
+
+# .cargo/config defines few alias to build plugin.
+# cargo build-wasi generates wasm-wasi32 binary
+# cargo build-wasm32 generates wasm32-unknown-unknown binary.

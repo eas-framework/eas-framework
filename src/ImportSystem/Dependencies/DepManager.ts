@@ -1,7 +1,7 @@
-import PPath from "../../Settings/PPath";
-import JSONStorage from "../../Storage/JSONStorage";
-import DepCreator, { ShareOptions } from "./DepCreator";
-import { getChangeDate } from "./utils";
+import PPath from "../../Settings/PPath.js";
+import JSONStorage from "../../Storage/JSONStorage.js";
+import DepCreator, { ShareOptions } from "./DepCreator.js";
+import { getChangeDate } from "./utils.js";
 
 export default class DepManager {
     private deps: JSONStorage

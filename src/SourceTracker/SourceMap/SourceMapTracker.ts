@@ -1,14 +1,9 @@
 import { SourceMapGenerator, RawSourceMap, SourceMapConsumer } from "source-map"
-import path from 'node:path'
-import { fileURLToPath } from "node:url"
-import { ScriptExtension } from "../../Settings/ProjectConsts"
-import { toURLComment } from "./utils"
-import PPath from "../../Settings/PPath"
-import StringTracker from "../StringTracker/StringTracker"
-import { backToOriginal } from "./SourceMapLoad"
-import { GlobalSettings } from "../../Settings/GlobalSettings"
-import STToSourceMapCompute from "./StringTrackerToSourceMap"
-import SourceComputeTrack from "./SourceComputeTrack"
+import PPath from "../../Settings/PPath.js"
+import StringTracker from "../StringTracker/StringTracker.js"
+import { backToOriginal } from "./SourceMapLoad.js"
+import { GlobalSettings } from "../../Settings/GlobalSettings.js"
+import STToSourceMapCompute from "./StringTrackerToSourceMap.js"
 
 export default class SourceMapTracker {
     private mainTracer = new StringTracker()

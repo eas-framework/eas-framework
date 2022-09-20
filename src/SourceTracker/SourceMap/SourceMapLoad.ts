@@ -1,9 +1,9 @@
 import path from "node:path";
 import { RawSourceMap, SourceMapConsumer } from "source-map";
 import { fileURLToPath } from "node:url";
-import PPath from "../../Settings/PPath";
-import StringTracker from "../StringTracker/StringTracker";
-import STSInfo from "../StringTracker/STSInfo";
+import PPath from "../../Settings/PPath.js";
+import StringTracker from "../StringTracker/StringTracker.js";
+import STSInfo from "../StringTracker/STSInfo.js";
 
 export default async function SourceMapToStringTracker(code: string, sourceMap: string | RawSourceMap) {
     const map = typeof sourceMap == 'string' ? JSON.parse(sourceMap) : sourceMap;

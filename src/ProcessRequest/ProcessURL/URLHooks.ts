@@ -1,4 +1,4 @@
-import RequestWarper from "./RequestWarper"
+import RequestWarper from "./RequestWarper.js"
 
 
 function defaultFile(warper: RequestWarper){

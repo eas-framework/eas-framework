@@ -1,7 +1,7 @@
-import StringTracker from "../../SourceTracker/StringTracker/StringTracker";
-import { EJSParserRust } from "../ConnectRust/EJS";
-import { findEndOfDef, ParseBlocks } from "../ConnectRust/utils";
-import { normalizeText } from "./utils";
+import StringTracker from "../../SourceTracker/StringTracker/StringTracker.js";
+import { EJSParserRust } from "../ConnectRust/EJS.js";
+import { findEndOfDef, ParseBlocks } from "../ConnectRust/utils.js";
+import { normalizeText } from "./utils.js";
 
 export const DEBUG_INFO_PREFIX = '{?debug_file?}';
 
@@ -15,16 +15,14 @@ export default class EJSParser {
     public text: StringTracker;
     public end: string;
     public type: string;
-    public path: string;
     public values: JSParserValues[];
     public forClientSide = false // will render for client side
 
-    constructor(text: StringTracker, path: string, start = "<%", end = "%>", type = 'script') {
+    constructor(text: StringTracker, start = "<%", end = "%>", type = 'script') {
         this.start = start;
         this.text = text;
         this.end = end;
         this.type = type;
-        this.path = path;
     }
 
     ReplaceValues(find: string, replace: string) {

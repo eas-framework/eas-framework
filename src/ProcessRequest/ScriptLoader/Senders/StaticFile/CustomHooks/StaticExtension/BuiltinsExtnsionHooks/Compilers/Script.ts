@@ -1,12 +1,12 @@
 import { Options as TransformOptions, transform, ParserConfig } from '@swc/core'
-import { SWCPrintError } from '../../../../../../../../Compilers/SWC/Errors'
-import { TransformJSC } from '../../../../../../../../Compilers/SWC/Settings'
-import DepCreator from '../../../../../../../../ImportSystem/Dependencies/DepCreator'
-import { GlobalSettings } from '../../../../../../../../Settings/GlobalSettings'
-import PPath from '../../../../../../../../Settings/PPath'
-import { getPlugin, hasPlugin } from '../../../../../../../../Settings/utils'
-import { makeWebURLSourceStaticFile } from '../../../../../../../../SourceTracker/SourceMap/SourceComputeTrack'
-import EasyFS from '../../../../../../../../Util/EasyFS'
+import { SWCPrintError } from '../../../../../../../../Compilers/SWC/Errors.js'
+import { TransformJSC } from '../../../../../../../../Compilers/SWC/Settings.js'
+import DepCreator from '../../../../../../../../ImportSystem/Dependencies/DepCreator.js'
+import { GlobalSettings } from '../../../../../../../../Settings/GlobalSettings.js'
+import PPath from '../../../../../../../../Settings/PPath.js'
+import { getPlugin, hasPlugin } from '../../../../../../../../Settings/utils.js'
+import { makeWebURLSourceStaticFile } from '../../../../../../../../SourceTracker/SourceMap/SourceComputeTrack.js'
+import EasyFS from '../../../../../../../../Util/EasyFS.js'
 
 
 async function compileScript(file: PPath, deps: DepCreator, config?: ParserConfig, optionsName?: string) {

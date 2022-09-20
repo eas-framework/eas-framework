@@ -1,19 +1,19 @@
 import path from "node:path";
-import { FileImporter } from "../../../../../ImportSystem/Loader";
-import STBuilder from "../../../../../ImportSystem/Loader/Builders/STBuilder";
-import { SystemError } from "../../../../../Logger/ErrorLogger";
-import { GlobalSettings } from "../../../../../Settings/GlobalSettings";
-import PPath from "../../../../../Settings/PPath";
-import { StringAnyMap } from "../../../../../Settings/types";
-import StringTracker from "../../../../../SourceTracker/StringTracker/StringTracker";
-import { hashString } from "../../../../../Util/Strings";
-import { SessionBuild } from "../../../../Session";
-import EJSParser from "../../../EJSPArser";
-import { ConvertSyntaxCompile } from "../../../RazorTranspiler";
-import exportContext, { RuntimeContext } from "./ExportContext";
-import { templateScript } from "./ExportContext/STWriter";
+import { FileImporter } from "../../../../../ImportSystem/Loader/index.js";
+import STBuilder from "../../../../../ImportSystem/Loader/Builders/STBuilder.js";
+import { SystemError } from "../../../../../Logger/ErrorLogger.js";
+import { GlobalSettings } from "../../../../../Settings/GlobalSettings.js";
+import PPath from "../../../../../Settings/PPath.js";
+import { StringAnyMap } from "../../../../../Settings/types.js";
+import StringTracker from "../../../../../SourceTracker/StringTracker/StringTracker.js";
+import { hashString } from "../../../../../Util/Strings.js";
+import { SessionBuild } from "../../../../Session.js";
+import EJSParser from "../../../EJSParser.js";
+import { ConvertSyntaxCompile } from "../../../RazorTranspiler.js";
+import exportContext, { RuntimeContext } from "./ExportContext/index.js";
+import { compileRuntimeScriptBuilder, compileRuntimeTemplateScript } from "./ExportContext/STWriter.js";
 
-const COMPILE_EXTENSION = '.compile.js';
+const COMPILE_EXTENSION = '.compile.cjs';
 
 export const CacheCompileScript = new Map();
 export default class CRunTime {
@@ -70,12 +70,12 @@ export default class CRunTime {
         const compileFile = this.sourceFile.clone()
         compileFile.nested += COMPILE_EXTENSION
 
-        // create the script by template
-        const scriptWithTemplate = templateScript(parser);
+        // convert the parser to StringTracker
+        const builtCompileScript = compileRuntimeScriptBuilder(parser);
 
         // compiling and importing the script
-        const scriptBuilder = new STBuilder(scriptWithTemplate, GlobalSettings.compile.typescript)
-        const moduleScriptFunc = await new FileImporter(this.sourceFile, { builder: scriptBuilder, importLine: this.sourceFile.small, exportFile: compileFile, skipCache: ['recompile-file', 'skip-loading', 'skip-write-tree'] }).createImport();
+        const scriptBuilder = new STBuilder(builtCompileScript, {typeScriptAlwaysTrue: GlobalSettings.compile.typescript, template: compileRuntimeTemplateScript})
+        const moduleScriptFunc = await new FileImporter(this.sourceFile, { builder: scriptBuilder, importLine: this.sourceFile.small, exportFile: compileFile, skipCache: ['recompile-file', 'skip-loading', 'skip-write-tree-on-build'] }).createImport();
         const handelScriptBuild = this.createHandelScriptBuild(moduleScriptFunc);
 
         // resolve the script builder, for all the users
@@ -85,7 +85,7 @@ export default class CRunTime {
 
     private async compileFromCache(attributes?: StringAnyMap, importSource?: PPath) {
         const cacheCompile = CacheCompileScript.get(this.sourceFile.small);
-        const func = await cacheCompile.func
+        const func = await cacheCompile?.func
 
         if (cacheCompile?.hash == this.hash) {
             return func(

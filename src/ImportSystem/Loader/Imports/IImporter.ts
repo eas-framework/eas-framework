@@ -1,5 +1,5 @@
-import PPath from "../../../Settings/PPath"
-import { getLocationStack } from "../../../Util/Runtime"
+import PPath from "../../../Settings/PPath.js"
+import { getLocationStack } from "../../../Util/Runtime.js"
 const STACK_BACK = 3;
 
 export default abstract class IImporter {

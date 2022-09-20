@@ -1,9 +1,9 @@
 import path from "node:path";
-import { DAY_MILLISECONDS } from "../../../../../Settings/BasicConts";
-import { GlobalSettings } from "../../../../../Settings/GlobalSettings";
-import { workingDirectory } from "../../../../../Settings/ProjectConsts";
-import EasyFS from "../../../../../Util/EasyFS";
-import RequestWarper from "../../../../ProcessURL/RequestWarper";
+import { DAY_MILLISECONDS } from "../../../../../Settings/BasicConts.js";
+import { GlobalSettings } from "../../../../../Settings/GlobalSettings.js";
+import { workingDirectory } from "../../../../../Settings/ProjectConsts.js";
+import EasyFS from "../../../../../Util/EasyFS.js";
+import RequestWarper from "../../../../ProcessURL/RequestWarper.js";
 
 export const NODE_MODULES = path.join(workingDirectory, 'node_modules')
 

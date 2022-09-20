@@ -1,6 +1,6 @@
 import path from "node:path";
-import { SystemData } from "../../../../../Settings/ProjectConsts";
-import RequestWarper from "../../../../ProcessURL/RequestWarper";
+import { SystemData } from "../../../../../Settings/ProjectConsts.js";
+import RequestWarper from "../../../../ProcessURL/RequestWarper.js";
 import { sendStaticFile } from "./utils";
 
 interface buildIn {

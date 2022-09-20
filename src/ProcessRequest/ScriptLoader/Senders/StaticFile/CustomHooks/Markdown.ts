@@ -1,7 +1,6 @@
 import path from "node:path";
-import { workingDirectory } from "../../../../../Settings/ProjectConsts";
-import RequestWarper from "../../../../ProcessURL/RequestWarper";
-import { NODE_MODULES, sendStaticFile } from "./utils";
+import RequestWarper from "../../../../ProcessURL/RequestWarper.js";
+import { NODE_MODULES, sendStaticFile } from "./utils.js";
 
 const MARKDOWN_CODE_THEME_NODE_MODULES = path.join(NODE_MODULES, 'highlight.js', 'styles');
 const GITHUB_THEME_NODE_MODULES = path.join(NODE_MODULES, 'github-markdown-css', 'github-markdown')

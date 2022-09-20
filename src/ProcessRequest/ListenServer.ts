@@ -2,13 +2,13 @@ import { Server, createServer } from "http";
 import { Http2Server } from "http2";
 import { App as TinyApp } from '@tinyhttp/app';
 import compression from 'compression';
-import { GlobalSettings } from "../Settings/GlobalSettings";
+import { GlobalSettings } from "../Settings/GlobalSettings.js";
 import {promisify} from 'node:util'
-import { callImportOnLoadMethods } from "../Settings/SettingsLoader";
-import { connectRequests } from "./ProcessData";
+import { callImportOnLoadMethods } from "../Settings/SettingsLoader.js";
+import { connectRequests } from "./ProcessData.js";
 
 
-export async function connectServer(server: Server | Http2Server = createServer(), settingsFile: string){
+export async function connectServer(server: Server | Http2Server = createServer(), settingsFile?: string){
     const app = new TinyApp();
     app.use(<any>compression());
 

@@ -1,11 +1,11 @@
-import RequestWarper from "../../../../ProcessURL/RequestWarper";
-import { markdownCodeTheme, markdownTheme } from "./Markdown";
-import serverPageByType from "./PageScript";
-import sitemapFile from "./Sitemap";
-import { sendFileByExtension } from "./StaticExtension/index";
-import staticFiles from "./StaticFiles";
-import { svelteStaticResources, svelteStyle } from "./Svelte";
-import unsafeDebugPages from "./UnsafeDebug";
+import RequestWarper from "../../../../ProcessURL/RequestWarper.js";
+import { markdownCodeTheme, markdownTheme } from "./Markdown.js";
+import serverPageByType from "./PageScript.js";
+import sitemapFile from "./Sitemap.js";
+import { sendFileByExtension } from "./StaticExtension/index.js";
+import staticFiles from "./StaticFiles.js";
+import { svelteStaticResources, svelteStyle } from "./Svelte.js";
+import unsafeDebugPages from "./UnsafeDebug.js";
 
 export async function sendStaticResource(warper: RequestWarper) {
     return await markdownCodeTheme(warper) ||

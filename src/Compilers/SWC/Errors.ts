@@ -1,7 +1,7 @@
 import { RawSourceMap, SourceMapConsumer } from 'source-map';
-import { SystemLog } from '../../Logger/BasicLogger';
-import { LogData } from '../../Logger/Logger';
-import StringTracker from '../../SourceTracker/StringTracker/StringTracker';
+import { SystemLog } from '../../Logger/BasicLogger.js';
+import { LogData } from '../../Logger/Logger.js';
+import StringTracker from '../../SourceTracker/StringTracker/StringTracker.js';
 
 
 export function parseSWCError(err: { message: string, stack: string, code: string }, changeLocations = (line: number, column: number, source: string) => { return { line, column, source } }) {

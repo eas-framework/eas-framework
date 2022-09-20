@@ -1,6 +1,6 @@
 import { JscConfig as TransformOptions } from '@swc/core';
 import { Request, Response, NextFunction } from '@tinyhttp/app';
-import type RequestWarper from '../ProcessRequest/ProcessURL/RequestWarper';
+import type RequestWarper from '../ProcessRequest/ProcessURL/RequestWarper.js';
 
 export type StringNumberMap = {[key: string]: number}
 export type StringAnyMap = {[key: string]: any};
@@ -73,6 +73,7 @@ interface GlobalSettings {
             level?: 'debug' | 'info' | 'warn' | 'error' | 'fatal' | 'off',
             file?: string
         }
+        pathAliases?: StringMap
     },
     compile?: {
         typescript?: boolean
@@ -80,7 +81,6 @@ interface GlobalSettings {
             "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning" | "markdown-parser")[],
         plugins?: pluginsOptions[]
         define: {[key: string]: string | number | boolean | null}
-        pathAliases?: StringMap
         globals?: StringMap
     },
     routing?: {
@@ -125,4 +125,5 @@ export interface ExportSettings extends GlobalSettings {
 
     implDev?: GlobalSettings,
     implProd?: GlobalSettings
+    reload?:(settingsFile?: string) => Promise<void>
 }

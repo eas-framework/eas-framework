@@ -1,5 +1,5 @@
-import { Capitalize } from "../Util/Strings"
-import emitLog, { LEVELS, LogData } from "./Logger"
+import { Capitalize } from "../Util/Strings.js"
+import emitLog, { LEVELS, LogData } from "./Logger.js"
 
 export abstract class LogPrint<T> implements LogData {
     constructor(protected data: T) {
@@ -41,9 +41,11 @@ export class BasicLogger {
     }
 
     time(event: string, data: LogData & {measureTime: number}, level: typeof LEVELS[number] = 'info', stackBack = 0) {
+        //@ts-ignore
         const startTime = performance.now()
 
         return () => {
+            //@ts-ignore
             const endTime = performance.now()
             data.measureTime = endTime - startTime
             this[level](event, data, stackBack + 1)

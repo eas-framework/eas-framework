@@ -1,7 +1,7 @@
-import PPath from "../../../../../../Settings/PPath";
-import { StringAnyMap } from "../../../../../../Settings/types";
-import StringTracker from "../../../../../../SourceTracker/StringTracker/StringTracker";
-import { COMPONENT_READER } from "../../../../Components/CompBuilder";
+import PPath from "../../../../../../Settings/PPath.js";
+import { StringAnyMap } from "../../../../../../Settings/types.js";
+import StringTracker from "../../../../../../SourceTracker/StringTracker/StringTracker.js";
+import { COMPONENT_READER } from "../../../../Components/CompBuilder.js";
 
 export const IMPORT_SOURCE = 'importSource';
 export const IMPORT_SOURCE_DIRECTORY = 'importSourceDirectory';

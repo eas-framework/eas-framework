@@ -1,7 +1,7 @@
 import path from "node:path";
-import { directories } from "../../../../../Settings/ProjectConsts";
-import RequestWarper from "../../../../ProcessURL/RequestWarper";
-import { sendStaticFile } from "./utils";
+import { directories } from "../../../../../Settings/ProjectConsts.js";
+import RequestWarper from "../../../../ProcessURL/RequestWarper.js";
+import { sendStaticFile } from "./utils.js";
 
 const pageInfoTypes = [{
     ext: '.pub.js',

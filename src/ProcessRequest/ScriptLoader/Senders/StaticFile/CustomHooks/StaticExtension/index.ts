@@ -1,9 +1,9 @@
-import { MSFiles } from "../../../../../../ImportSystem/Dependencies/StaticManagers";
-import { GlobalSettings } from "../../../../../../Settings/GlobalSettings";
-import RequestWarper from "../../../../../ProcessURL/RequestWarper";
-import { sendStaticFile } from "../utils";
-import { compileByExtension, SUPPORTED_TYPES } from "./BuiltinsExtnsionHooks";
-import { WebsiteAllowBasicExtensions } from "./CommonFileExtensions";
+import { MSFiles } from "../../../../../../ImportSystem/Dependencies/StaticManagers.js";
+import { GlobalSettings } from "../../../../../../Settings/GlobalSettings.js";
+import RequestWarper from "../../../../../ProcessURL/RequestWarper.js";
+import { sendStaticFile } from "../utils.js";
+import { compileByExtension, SUPPORTED_TYPES } from "./BuiltinsExtnsionHooks/index.js";
+import { WebsiteAllowBasicExtensions } from "./CommonFileExtensions.js";
 
 let allowArray = []
 export function reFilterExtension(){

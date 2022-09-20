@@ -1,4 +1,4 @@
-import { GlobalSettings } from "../Settings/GlobalSettings";
+import { GlobalSettings } from "../Settings/GlobalSettings.js";
 
 export default class DataWriter {
     constructor(private writeFunc: (text: string, override?: boolean) => void){

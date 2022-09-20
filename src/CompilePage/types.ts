@@ -1,7 +1,7 @@
-import STSInfo from "../SourceTracker/StringTracker/STSInfo"
-import { SessionBuild } from "./Session"
+import STSInfo from "../SourceTracker/StringTracker/STSInfo.js"
+import { SessionBuild } from "./Session.js"
 
-export type LastSession {
+export type LastSession = {
     session: SessionBuild,
     stack: STSInfo,
     params: string

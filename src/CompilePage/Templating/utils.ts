@@ -1,4 +1,4 @@
-import StringTracker from "../../SourceTracker/StringTracker/StringTracker";
+import StringTracker from "../../SourceTracker/StringTracker/StringTracker.js";
 
 export function normalizeText(text: StringTracker | string) {
     return text.replace(/\\/gi, '\\\\').replace(/`/gi, '\\`').replace(/\u0024/gi, '\\u0024');

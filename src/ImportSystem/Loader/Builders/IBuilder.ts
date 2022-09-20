@@ -1,11 +1,10 @@
-import { GlobalSettings } from "../../../Settings/GlobalSettings";
-import PPath from "../../../Settings/PPath";
+import { GlobalSettings } from "../../../Settings/GlobalSettings.js";
+import PPath from "../../../Settings/PPath.js";
 
 const REQUIRE_METHOD = 'require'
 export default abstract class IBuilder<T> {
 
     constructor(protected params: string[] = []){
-        this.params.unshift(REQUIRE_METHOD)
     }
 
     isTypeScript(file: PPath){

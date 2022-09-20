@@ -1,11 +1,11 @@
-import { SystemLog } from "../../../../Logger/BasicLogger";
-import { SystemError } from "../../../../Logger/ErrorLogger";
-import { GlobalSettings } from "../../../../Settings/GlobalSettings";
-import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker";
-import EasyFS from "../../../../Util/EasyFS";
-import { SessionBuild } from "../../../Session";
-import ArrayGetter from "./ArrayGetter";
-import BaseParser, { BaseParserBlock } from "./BaseParser";
+import { SystemLog } from "../../../../Logger/BasicLogger.js";
+import { SystemError } from "../../../../Logger/ErrorLogger.js";
+import { GlobalSettings } from "../../../../Settings/GlobalSettings.js";
+import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker.js";
+import EasyFS from "../../../../Util/EasyFS.js";
+import { SessionBuild } from "../../../Session.js";
+import ArrayGetter from "./ArrayGetter.js";
+import BaseParser, { BaseParserBlock } from "./BaseParser.js";
 
 export const DYNAMIC = 'dynamic'
 export const INHERIT = 'inherit'
@@ -41,7 +41,7 @@ export async function checkDynamicSSR(parser: BaseParser, session: SessionBuild)
 
 
 /**
- * It takes a parser and an array of values, and returns an array of values
+ * It takes a parser and an array of values and extract all the inherit values from it
  * @param {BaseParser} parser - The parser object
  * @param values - The array of values that are being filtered.
  * @effect {BaseParser} - remove objects from array that the value is 'inherit'

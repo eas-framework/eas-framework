@@ -1,10 +1,10 @@
-import PPath from "../../../../Settings/PPath";
-import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker";
-import { SessionBuild } from "../../../Session";
-import { BaseParserBlock } from "./BaseParser";
-import CRunTime from "./CompileRuntime/Compile";
-import PageParse from "./PageParse";
-import { checkDynamicSSR, filterInherit } from "./utils";
+import PPath from "../../../../Settings/PPath.js";
+import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker.js";
+import { SessionBuild } from "../../../Session.js";
+import { BaseParserBlock } from "./BaseParser.js";
+import CRunTime from "./CompileRuntime/Compile.js";
+import PageParse from "./PageParse.js";
+import { checkDynamicSSR, filterInherit } from "./utils.js";
 
 export class PageBuilder extends PageParse {
     inheritValues: BaseParserBlock[]
@@ -31,7 +31,7 @@ export class PageBuilder extends PageParse {
         this.content = await run.compile({}, previousSource);
     }
 
-    connectBaseToValues() {
+    connectBaseInheritToValues() {
         for (const { value, key } of this.inheritValues) {
             if (value instanceof StringTracker) {
                 this.values.push({ value, key })

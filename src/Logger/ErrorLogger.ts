@@ -1,5 +1,5 @@
-import { SystemLog } from "./BasicLogger";
-import { LogData } from "./Logger";
+import { SystemLog } from "./BasicLogger.js";
+import { LogData } from "./Logger.js";
 import chalk from 'chalk';
 
 

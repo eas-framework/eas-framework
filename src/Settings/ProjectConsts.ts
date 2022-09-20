@@ -10,7 +10,7 @@ function dirname(url: string) {
     return path.dirname(fileURLToPath(url))
 }
 
-export const SystemData = path.join(dirname(import.meta.url), 'SystemData')
+export const SystemData = path.join(dirname(import.meta.url), '..', 'SystemData')
 export const workingDirectory = cwd()
 
 export const ScriptExtension = {
@@ -116,3 +116,7 @@ export function setDirectories(directory: string) {
 export function relative(fullPath: string) {
     return path.relative(directories.fullWebsiteDirectory, fullPath)
 }
+
+function init(){
+    setDirectories('.')
+} init()

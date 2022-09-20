@@ -1,8 +1,8 @@
-import { GlobalSettings } from "../GlobalSettings";
-import { hookSet, hookSetArray } from "./Hook";
-import { clearPageFromRam, loadPageToRam } from "../../ProcessRequest/ScriptLoader/PageLoader";
-import { reFilterExtension } from "../../ProcessRequest/ScriptLoader/Senders/StaticFile/CustomHooks/StaticExtension";
-import { setDirectories } from "../ProjectConsts";
+import { GlobalSettings } from "../GlobalSettings.js";
+import { hookSet, hookSetArray } from "./Hook.js";
+import { clearPageFromRam, loadPageToRam } from "../../ProcessRequest/ScriptLoader/PageLoader.js";
+import { reFilterExtension } from "../../ProcessRequest/ScriptLoader/Senders/StaticFile/CustomHooks/StaticExtension/index.js";
+import { setDirectories } from "../ProjectConsts.js";
 
 /**
  * General settings hooks.

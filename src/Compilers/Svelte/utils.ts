@@ -1,7 +1,7 @@
 import { RawSourceMap } from "source-map";
-import PPath from "../../Settings/PPath";
-import { makeWebURLSourceStaticFile } from "../../SourceTracker/SourceMap/SourceComputeTrack";
-import { toURLComment } from "../../SourceTracker/SourceMap/utils";
+import PPath from "../../Settings/PPath.js";
+import { makeWebURLSourceStaticFile } from "../../SourceTracker/SourceMap/SourceComputeTrack.js";
+import { toURLComment } from "../../SourceTracker/SourceMap/utils.js";
 
 export function updateSourcesForWeb(map: RawSourceMap){
     map.sources = map.sources.map(file => makeWebURLSourceStaticFile(file))

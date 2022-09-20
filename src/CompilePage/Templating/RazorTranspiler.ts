@@ -1,8 +1,8 @@
-import { StringMap } from "../../Settings/types";
-import StringTracker from "../../SourceTracker/StringTracker/StringTracker";
-import { RazorToEJS, RazorToEJSCompile } from "../ConnectRust/Razor";
-import { ParseBlocks } from "../ConnectRust/utils";
-import EJSParser from "./EJSParser";
+import { StringMap } from "../../Settings/types.js";
+import StringTracker from "../../SourceTracker/StringTracker/StringTracker.js";
+import { RazorToEJS, RazorToEJSCompile } from "../ConnectRust/Razor.js";
+import { ParseBlocks } from "../ConnectRust/utils.js";
+import EJSParser from "./EJSParser.js";
 
 
 
@@ -25,16 +25,16 @@ function RazorToEJSBuilder(text: StringTracker, values: ParseBlocks, addWriteMap
                 build.plus(substring);
                 break;
             case "script":
-                build.plus$`<%${addToEJSSign}${substring}%>`;
+                build.plus$`<%${addToEJSSign}${substring}${addToEJSSign}%>`;
                 break;
             case "print":
-                build.plus$`<%${addToEJSSign}=${substring}%>`;
+                build.plus$`<%${addToEJSSign}=${substring}${addToEJSSign}%>`;
                 break;
             case "escape":
-                build.plus$`<%${addToEJSSign}:${substring}%>`;
+                build.plus$`<%${addToEJSSign}:${substring}${addToEJSSign}%>`;
                 break;
             default:
-                build.plus$`<%${addToEJSSign + addWriteMap[i.name]}${substring}%>`;
+                build.plus$`<%${addToEJSSign + addWriteMap[i.name]}${substring}${addToEJSSign}%>`;
         }
     }
 
@@ -63,7 +63,7 @@ export async function ConvertSyntaxCompile(text: StringTracker, options?: any) {
 
     text = RazorToEJSBuilder(text, values, addWriteCompileMap, '*');
 
-    const parser = new EJSParser(text, '<%*', '%>');
+    const parser = new EJSParser(text, '<%*', '*%>');
     await parser.findScripts();
 
     return parser;

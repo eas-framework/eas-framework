@@ -1,11 +1,11 @@
 import path from "node:path";
 import { argv } from "node:process";
 import prompts from "prompts";
-import { GlobalSettings } from "../../../../../Settings/GlobalSettings";
-import { directories } from "../../../../../Settings/ProjectConsts";
-import { hasPlugin, safeDebug } from "../../../../../Settings/utils";
-import RequestWarper from "../../../../ProcessURL/RequestWarper";
-import { sendStaticFile } from "./utils";
+import { GlobalSettings } from "../../../../../Settings/GlobalSettings.js";
+import { directories } from "../../../../../Settings/ProjectConsts.js";
+import { hasPlugin, safeDebug } from "../../../../../Settings/utils.js";
+import RequestWarper from "../../../../ProcessURL/RequestWarper.js";
+import { sendStaticFile } from "./utils.js";
 export const DEBUG_PAGE_EXTENSION = '.source'
 
 let debuggingWithSource: null | boolean = argv.includes('allowSourceDebug') || null;

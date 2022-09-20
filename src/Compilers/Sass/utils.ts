@@ -1,9 +1,9 @@
 import { RawSourceMap } from "source-map-js";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { GlobalSettings } from "../../Settings/GlobalSettings";
-import PPath from "../../Settings/PPath";
-import { directories } from "../../Settings/ProjectConsts";
-import DepCreator from "../../ImportSystem/Dependencies/DepCreator";
+import { GlobalSettings } from "../../Settings/GlobalSettings.js";
+import PPath from "../../Settings/PPath.js";
+import { directories } from "../../Settings/ProjectConsts.js";
+import DepCreator from "../../ImportSystem/Dependencies/DepCreator.js";
 
 export function syntax(language: 'sass' | 'scss' | 'css') {
     return language == 'sass' ? 'indented' : language;

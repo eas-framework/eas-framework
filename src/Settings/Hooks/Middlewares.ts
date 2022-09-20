@@ -1,10 +1,10 @@
 import bodyParser from "body-parser";
 import path from "node:path";
-import { MB_IN_BYTES, MINUIT_MILLISECONDS, UPLOAD_FILE_FOLDER } from "../BasicConts";
-import { GlobalSettings } from "../GlobalSettings";
-import { SystemData } from "../ProjectConsts";
+import { MB_IN_BYTES, MINUIT_MILLISECONDS, UPLOAD_FILE_FOLDER } from "../BasicConts.js";
+import { GlobalSettings } from "../GlobalSettings.js";
+import { SystemData } from "../ProjectConsts.js";
 import session from 'express-session';
-import { hookSet, hookSetArray, onlyISet, readOnly } from "./Hook";
+import { hookSet, hookSetArray, onlyISet, readOnly } from "./Hook.js";
 import cookieEncrypter from 'cookie-encrypter';
 import MemorySession from 'memorystore';
 import { cookieParser } from '@tinyhttp/cookie-parser';

@@ -1,8 +1,8 @@
 import path from "node:path"
 import { RawSourceMap } from "source-map"
-import PPath from "../../Settings/PPath"
-import { ScriptExtension } from "../../Settings/ProjectConsts"
-import { toURLComment } from "./utils"
+import PPath from "../../Settings/PPath.js"
+import { ScriptExtension } from "../../Settings/ProjectConsts.js"
+import { toURLComment } from "./utils.js"
 
 export function makeWebURLSourceStaticFile(file: string){
     return `/${file}?source=true`

@@ -1,9 +1,15 @@
-import { Options as TransformOptions, transform, JscConfig } from '@swc/core';
-import { GlobalSettings } from '../../Settings/GlobalSettings';
-import { StringMap } from '../../Settings/types';
-import { getPlugin } from '../../Settings/utils';
+import { Options as TransformOptions, transform, JscConfig, EsParserConfig } from '@swc/core';
+import { GlobalSettings } from '../../Settings/GlobalSettings.js';
+import { StringMap } from '../../Settings/types.js';
+import { getPlugin } from '../../Settings/utils.js';
 
-export const esTarget = 'es2022';
+export const ES_TARGET = 'es2022';
+export const TRANSFORM_MODULE = {
+    module: {
+        type: 'es6'
+    }
+}
+
 
 export function Decorators(data: JscConfig) {
     if (data.parser?.syntax != 'typescript')
@@ -32,8 +38,11 @@ export function TransformJSCVars(vars?: StringMap, simplify = false) {
 export function TransformJSC(data?: JscConfig, vars?: StringMap, simplify?: boolean): JscConfig {
     Object.assign(data, TransformJSCVars(vars ?? {}, simplify))
 
+    const parser = <EsParserConfig>(data.parser ??= <any>{})
+    parser.importAssertions = true
+
     return Decorators({
-        target: esTarget,
+        target: ES_TARGET,
         ...data
     })
 }

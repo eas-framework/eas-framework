@@ -1,9 +1,9 @@
-import { GlobalSettings } from "../../../../Settings/GlobalSettings";
-import PPath from "../../../../Settings/PPath";
-import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker";
-import { getLocationSourcePath } from "../../../../SourceTracker/StringTracker/utils";
-import EasyFS from "../../../../Util/EasyFS";
-import { DEBUG_INFO_PREFIX } from "../../EJSParser";
+import { GlobalSettings } from "../../../../Settings/GlobalSettings.js";
+import PPath from "../../../../Settings/PPath.js";
+import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker.js";
+import { getLocationSourcePath } from "../../../../SourceTracker/StringTracker/utils.js";
+import EasyFS from "../../../../Util/EasyFS.js";
+import { DEBUG_INFO_PREFIX } from "../../EJSParser.js";
 
 export default class ConnectST {
     public stContent: StringTracker

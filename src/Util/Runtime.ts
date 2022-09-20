@@ -1,4 +1,4 @@
-import { splitFirst } from "./Strings"
+import { splitFirst } from "./Strings.js"
 
 /**
  * It takes a number, and returns the location of the function call that is that many levels up the

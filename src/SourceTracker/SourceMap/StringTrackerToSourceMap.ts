@@ -1,8 +1,8 @@
 import path from "node:path";
 import { SourceMapGenerator } from "source-map";
-import PPath from "../../Settings/PPath";
-import StringTracker from "../StringTracker/StringTracker";
-import SourceComputeTrack from "./SourceComputeTrack";
+import PPath from "../../Settings/PPath.js";
+import StringTracker from "../StringTracker/StringTracker.js";
+import SourceComputeTrack from "./SourceComputeTrack.js";
 
 function STToSourceMap(st: StringTracker, file: PPath) {
     const map = new SourceMapGenerator({

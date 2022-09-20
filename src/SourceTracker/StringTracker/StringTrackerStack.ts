@@ -1,4 +1,4 @@
-import STSInfo from "./STSInfo";
+import STSInfo from "./STSInfo.js";
 
 export default class StringTrackerStack {
 

@@ -1,16 +1,14 @@
 import * as svelte from 'svelte/compiler'
 import { CompileOptions } from "svelte/types/compiler/interfaces"
-import DepCreator from "../../ImportSystem/Dependencies/DepCreator"
-import { GlobalSettings } from "../../Settings/GlobalSettings"
-import PPath from "../../Settings/PPath"
-import { makeWebURLSourceStaticFile } from '../../SourceTracker/SourceMap/SourceComputeTrack'
-import STToSourceMap from "../../SourceTracker/SourceMap/StringTrackerToSourceMap"
-import { toURLComment } from '../../SourceTracker/SourceMap/utils'
-import EasyFS from '../../Util/EasyFS'
-import { Capitalize } from "../../Util/Strings"
-import { logSvelteError, logSvelteWarn } from "./Errors"
-import { preprocess } from "./preprocess"
-import { addSourceMapComment, updateSourcesForLocal, updateSourcesForWeb } from './utils'
+import DepCreator from "../../ImportSystem/Dependencies/DepCreator.js"
+import { GlobalSettings } from "../../Settings/GlobalSettings.js"
+import PPath from "../../Settings/PPath.js"
+import STToSourceMap from "../../SourceTracker/SourceMap/StringTrackerToSourceMap.js"
+import EasyFS from '../../Util/EasyFS.js'
+import { Capitalize } from "../../Util/Strings.js"
+import { logSvelteError, logSvelteWarn } from "./Errors.js"
+import { preprocess } from "./Preprocess.js"
+import { addSourceMapComment, updateSourcesForLocal, updateSourcesForWeb } from './utils.js'
 
 function makeValidName(name: string){
     return name.replace(/^\d/, '_$&') // if name start with a digit add '_' on start

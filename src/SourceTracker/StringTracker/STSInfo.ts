@@ -1,4 +1,4 @@
-import PPath from "../../Settings/PPath";
+import PPath from "../../Settings/PPath.js";
 
 export default class STSInfo {
 

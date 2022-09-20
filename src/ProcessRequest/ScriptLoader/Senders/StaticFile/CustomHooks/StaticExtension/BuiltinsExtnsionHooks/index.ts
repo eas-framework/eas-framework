@@ -1,9 +1,9 @@
 import path from "node:path"
-import compileSvelte from "../../../../../../../Compilers/Svelte/Client"
-import DepCreator from "../../../../../../../ImportSystem/Dependencies/DepCreator"
-import PPath from "../../../../../../../Settings/PPath"
-import { compileJS, compileJSX, compileTS, compileTSX } from "./Compilers/Script"
-import { compileSass } from "./Compilers/Style"
+import compileSvelte from "../../../../../../../Compilers/Svelte/Client.js"
+import DepCreator from "../../../../../../../ImportSystem/Dependencies/DepCreator.js"
+import PPath from "../../../../../../../Settings/PPath.js"
+import { compileJS, compileJSX, compileTS, compileTSX } from "./Compilers/Script.js"
+import { compileSass } from "./Compilers/Style.js"
 
 export const SUPPORTED_TYPES = ['js', 'ts', 'jsx', 'tsx', 'svelte', 'css', 'sass', 'scss'];
 

@@ -1,11 +1,11 @@
 import path from "node:path";
-import compileSvelte from "../../../../../Compilers/Svelte/Client";
-import { MSFiles } from "../../../../../ImportSystem/Dependencies/StaticManagers";
-import { GlobalSettings } from "../../../../../Settings/GlobalSettings";
-import PPath from "../../../../../Settings/PPath";
-import { directories, workingDirectory } from "../../../../../Settings/ProjectConsts";
-import RequestWarper from "../../../../ProcessURL/RequestWarper";
-import { NODE_MODULES, sendStaticFile } from "./utils";
+import compileSvelte from "../../../../../Compilers/Svelte/Client.js";
+import { MSFiles } from "../../../../../ImportSystem/Dependencies/StaticManagers.js";
+import { GlobalSettings } from "../../../../../Settings/GlobalSettings.js";
+import PPath from "../../../../../Settings/PPath.js";
+import { directories, workingDirectory } from "../../../../../Settings/ProjectConsts.js";
+import RequestWarper from "../../../../ProcessURL/RequestWarper.js";
+import { NODE_MODULES, sendStaticFile } from "./utils.js";
 
 const NODE_MODULES_SVELTE = path.join(NODE_MODULES, 'svelte')
 

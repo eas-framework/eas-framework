@@ -1,8 +1,8 @@
 import path from "path";
-import { MPages } from "../../../ImportSystem/Dependencies/StaticManagers";
-import { GlobalSettings } from "../../../Settings/GlobalSettings";
-import { directories, ScriptExtension } from "../../../Settings/ProjectConsts";
-import RequestParser from "../RequestParser";
+import { MPages } from "../../../ImportSystem/Dependencies/StaticManagers.js";
+import { GlobalSettings } from "../../../Settings/GlobalSettings.js";
+import { directories, ScriptExtension } from "../../../Settings/ProjectConsts.js";
+import RequestParser from "../RequestParser.js";
 
 export default async function activatePage(parser: RequestParser) {
     const pageFile = parser.warper.path.clone()

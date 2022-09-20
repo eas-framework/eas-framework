@@ -1,5 +1,5 @@
-import RequestParser from "../../RequestParser";
-import { sendStaticResource } from "./CustomHooks/index";
+import RequestParser from "../../RequestParser.js";
+import { sendStaticResource } from "./CustomHooks/index.js";
 
 /**
  * > It sends a static resource to the client (only if it is a static resource)

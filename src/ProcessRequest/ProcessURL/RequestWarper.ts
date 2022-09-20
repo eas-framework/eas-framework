@@ -1,7 +1,7 @@
-import { GlobalSettings } from "../../Settings/GlobalSettings";
-import PPath from "../../Settings/PPath";
-import { directories } from "../../Settings/ProjectConsts";
-import { Request, Response } from "../types";
+import { GlobalSettings } from "../../Settings/GlobalSettings.js";
+import PPath from "../../Settings/PPath.js";
+import { directories } from "../../Settings/ProjectConsts.js";
+import { Request, Response } from "../types.js";
 
 const DEFAULT_ERROR_CODE = 500
 const START_ERROR_CODE = 400

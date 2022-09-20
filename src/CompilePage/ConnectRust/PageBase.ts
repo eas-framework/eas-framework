@@ -1,4 +1,4 @@
-import { pool } from "./Pool";
+import { pool } from "./Pool.js";
 
 type PageBaseParseValues = {
     start: number,

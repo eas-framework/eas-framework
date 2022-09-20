@@ -1,17 +1,23 @@
-import PPath from "../../../Settings/PPath";
-import StringTracker from "../../../SourceTracker/StringTracker/StringTracker";
-import EasyFS from "../../../Util/EasyFS";
-import { transpileCode, transpileStringTracker } from "./BaseBuilders";
-import IBuilder from "./IBuilder";
+import PPath from "../../../Settings/PPath.js";
+import StringTracker from "../../../SourceTracker/StringTracker/StringTracker.js";
+import { transpileCode, TranspilerTemplate, transpileStringTracker } from "./BaseBuilders.js";
+import IBuilder from "./IBuilder.js";
 
 export default class STBuilder extends IBuilder<any> {
+    private typeScriptAlwaysTrue: boolean
+    private template?: TranspilerTemplate
 
-    constructor(private content: StringTracker, private typeScriptAlwaysTrue?: boolean, params?: string[]) {
-        super(params)
+    constructor(private content: StringTracker, options: {typeScriptAlwaysTrue?: boolean, params?: string[], template?: TranspilerTemplate}) {
+        super(options.params)
+        this.typeScriptAlwaysTrue = options.typeScriptAlwaysTrue
+        this.template = options.template
     }
 
-    async build(file: PPath): Promise<string> {
-
-        return transpileStringTracker(this.content, file, this.params, this.typeScriptAlwaysTrue || this.isTypeScript(file))
+    build(file: PPath): Promise<string> {
+        return transpileStringTracker(this.content, file, {
+            params: this.params,
+            isTypescript: this.typeScriptAlwaysTrue || this.isTypeScript(file),
+            template: this.template
+        })
     }
 }

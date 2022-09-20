@@ -1,7 +1,7 @@
-import StringTracker, { ArrayMatch } from "../../../../SourceTracker/StringTracker/StringTracker";
+import StringTracker, { ArrayMatch } from "../../../../SourceTracker/StringTracker/StringTracker.js";
 const PLACE_HOLDER_TEXT = ':'
 const VALUE_TEXT = 'content:'
-const ALLOWED_NAME = '[a-z_-][A-Z0-9_-]'
+const ALLOWED_NAME = '[a-z_-][a-zA-Z0-9_-]*'
 
 export type PlaceHolder = {
     name: string,
@@ -39,7 +39,7 @@ export class FindPlaceHolderNames{
     }
 
     static placeholderRegex(name: string){
-        return new RegExp(`<${PLACE_HOLDER_TEXT+name}\\s*/>`, 'g')
+        return new RegExp(`<${PLACE_HOLDER_TEXT+name}\\s*/>`, 's')
     }
 }
 
@@ -57,9 +57,9 @@ export class FindPlaceholderValues {
     find(code: StringTracker){
         const value = <ArrayMatch>code.match(FindPlaceholderValues.regex)
 
-        if(value == null){
+        if(!value?.length){
             this.clearCode.plus(code)
-            return
+            return []
         }
 
         this.clearCode.plus(code.slice(0, value.index))
@@ -73,6 +73,6 @@ export class FindPlaceholderValues {
     }
 
     static valueRegex(name: string){
-        return new RegExp(`<${VALUE_TEXT}(${name})\\s*>(.*?)</${VALUE_TEXT}\\1\\s*>`, 'g')
+        return new RegExp(`<${VALUE_TEXT}(${name})\\s*>(.*?)</${VALUE_TEXT}\\1\\s*>`, 's')
     }
 }

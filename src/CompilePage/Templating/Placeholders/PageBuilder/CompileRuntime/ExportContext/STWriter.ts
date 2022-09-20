@@ -1,13 +1,13 @@
-import { COMPILE_PARAMS } from ".";
-import DataWriter from "../../../../../../RuntimeUtils/DataWriter";
-import StringTracker from "../../../../../../SourceTracker/StringTracker/StringTracker";
-import EJSParser from "../../../../EJSPArser";
+import { COMPILE_PARAMS } from "./index.js";
+import DataWriter from "../../../../../../RuntimeUtils/DataWriter.js";
+import StringTracker from "../../../../../../SourceTracker/StringTracker/StringTracker.js";
+import EJSParser from "../../../../EJSParser.js";
+import { DEFAULT_EXPORT_STRING } from "../../../../../../ImportSystem/Loader/Imports/FileImporter/NodeImporter.js";
 
-export function templateScript(parser: EJSParser) {
+export function compileRuntimeScriptBuilder(parser: EJSParser) {
     const scripts = parser.values.filter(x => x.type != 'text').map(x => x.text)
 
     const build = new StringTracker();
-    build.addTextAfter(`return async (${COMPILE_PARAMS.join(',')}) => {var {write, writeSafe, echo, __addStringTrackerByIndex} = createDateWriter();`)
 
     let counter = 0;
     for (const i of scripts) {
@@ -15,8 +15,14 @@ export function templateScript(parser: EJSParser) {
         build.plus(i)
     }
 
-    build.addTextAfter(`}`)
+    build.addTextAfter(`\n;__addStringTrackerByIndex(${counter});`)
     return build;
+}
+
+export function compileRuntimeTemplateScript(script: string) {
+    return `module.exports = async (${COMPILE_PARAMS.join(',')}) => {var {write, writeSafe, echo, __addStringTrackerByIndex} = createDateWriter();${
+        script
+    }}`
 }
 
 class DataWriterWithSTIndex extends DataWriter {

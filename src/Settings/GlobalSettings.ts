@@ -1,4 +1,4 @@
-import { ExportSettings } from "./types";
+import { ExportSettings } from "./types.js";
 import { v4 as uuidv4 } from 'uuid';
 const
     CookiesSecret = uuidv4().substring(0, 32),
@@ -35,14 +35,14 @@ export const GlobalSettings: ExportSettings = {
         pageInRam: false,
         logger: {
             level: 'debug'
-        }
+        },
+        pathAliases: {},
     },
     compile: {
         typescript: false,
         ignoreError: [],
         plugins: [],
         define: {},
-        pathAliases: {},
         globals: {},
     },
     routing: {

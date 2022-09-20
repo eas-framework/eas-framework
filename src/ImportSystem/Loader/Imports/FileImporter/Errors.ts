@@ -1,6 +1,6 @@
-import { LogData } from "../../../../Logger/Logger"
-import { Capitalize } from "../../../../Util/Strings"
-import IImporter from "../IImporter"
+import { LogData } from "../../../../Logger/Logger.js"
+import { Capitalize } from "../../../../Util/Strings.js"
+import IImporter from "../IImporter.js"
 
 export class CircleDependenciesError implements LogData {
     constructor(public stack: IImporter[]) {

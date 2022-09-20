@@ -1,5 +1,5 @@
-import { pool } from "./Pool";
-import { ParseBlocks } from "./utils";
+import { pool } from "./Pool.js";
+import { ParseBlocks } from "./utils.js";
 
 export async function RazorToEJS(text: string): Promise<ParseBlocks> {
     return JSON.parse(await pool.exec('RazorToEJS', [text]));

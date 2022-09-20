@@ -1,10 +1,10 @@
 import EventEmitter from "node:events"
 import { writeFile } from "node:fs/promises"
 import path from "node:path"
-import { GlobalSettings } from "../Settings/GlobalSettings"
-import { workingDirectory } from "../Settings/ProjectConsts"
-import { getLocationStack } from "../Util/Runtime"
-import { Capitalize, splitFirst } from "../Util/Strings"
+import { GlobalSettings } from "../Settings/GlobalSettings.js"
+import { workingDirectory } from "../Settings/ProjectConsts.js"
+import { getLocationStack } from "../Util/Runtime.js"
+import { Capitalize, splitFirst } from "../Util/Strings.js"
 
 export const LEVELS = ['info', 'debug', 'warn', 'error', 'fatal']
 const STACK_BACK = 3;
@@ -66,7 +66,7 @@ export default function emitLog(event: string, loggerName: string, data: LogData
     file && writeLogToFile(file, loggerName, event, stack, data, code);
 
 
-    if (getLevel(code) < currentLevel()) {
+    if (getLevel(code) >= currentLevel()) {
         writeToConsole(code, data, stack, loggerName)
     }
 }

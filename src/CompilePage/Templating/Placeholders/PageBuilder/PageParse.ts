@@ -1,6 +1,6 @@
-import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker";
-import { FindPlaceHolderNames, FindPlaceholderValues, PlaceHolder, PlaceholderValue } from "./FindPlaceHolders";
-import BaseParser from "./BaseParser";
+import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker.js";
+import { FindPlaceHolderNames, FindPlaceholderValues, PlaceHolder, PlaceholderValue } from "./FindPlaceHolders.js";
+import BaseParser from "./BaseParser.js";
 
 export default class PageParse {
     base: BaseParser

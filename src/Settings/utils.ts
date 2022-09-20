@@ -1,4 +1,4 @@
-import { GlobalSettings } from "./GlobalSettings";
+import { GlobalSettings } from "./GlobalSettings.js";
 const SAFE_DEBUG = 'SafeDebug';
 
 export function getPlugin(name: string): any {

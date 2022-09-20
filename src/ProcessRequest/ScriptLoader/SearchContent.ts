@@ -1,6 +1,6 @@
-import RequestWarper from "../ProcessURL/RequestWarper";
-import RequestParser from "./RequestParser";
-import fileSender from "./Senders/StaticFile";
+import RequestWarper from "../ProcessURL/RequestWarper.js";
+import RequestParser from "./RequestParser.js";
+import fileSender from "./Senders/StaticFile/index.js";
 
 
 

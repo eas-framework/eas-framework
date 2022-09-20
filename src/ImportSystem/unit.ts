@@ -1,5 +1,5 @@
 import path from "node:path"
-import PPath from "../Settings/PPath"
+import PPath from "../Settings/PPath.js"
 
 /**
  * It returns true if the first character of the given string is a path separator

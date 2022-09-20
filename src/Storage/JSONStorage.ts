@@ -1,6 +1,6 @@
 import path from "node:path"
-import { SystemData } from "../Settings/ProjectConsts"
-import EasyFS from "../Util/EasyFS"
+import { SystemData } from "../Settings/ProjectConsts.js"
+import EasyFS from "../Util/EasyFS.js"
 
 const fileLocation = path.join(SystemData, "system-storage.json")
 const dataObject = {}

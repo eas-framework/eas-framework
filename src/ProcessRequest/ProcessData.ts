@@ -3,10 +3,10 @@ import { Request, Response } from './types'
 import formidable from 'formidable'
 import { multipartType } from 'formidable/src/plugins/multipart.js'
 import { querystringType } from 'formidable/src/plugins/querystring.js'
-import { GlobalSettings } from '../Settings/GlobalSettings'
-import { SystemAutoError } from '../Logger/ErrorLogger'
-import processURL from './ProcessURL/ProcessURL'
-import { loadSettings } from '../Settings/SettingsLoader'
+import { GlobalSettings } from '../Settings/GlobalSettings.js'
+import { SystemAutoError } from '../Logger/ErrorLogger.js'
+import processURL from './ProcessURL/ProcessURL.js'
+import { loadSettings } from '../Settings/SettingsLoader.js'
 
 let currentSettingsFile: string
 export function connectRequests(app: TinyApp, settingsFile: string) {

@@ -8,12 +8,13 @@
     "node": ">=16.15.1"
   },
   "scripts": {
-    "postinstall": "node dist/scripts/install.js || echo 'Package is not built yet'",
+    "test": "mocha",
+    "postinstall": "echo 'Package is not built yet'",
     "prepare": "[ $CI = true ] || [ -d '.husky/_' ] || husky install",
     "build": "node build logs",
     "build:ts": "tsc --project production.tsconfig.json",
     "test:dist": "node --trace-warnings --inspect=127.0.0.1:9229 tests/core/index.js",
-    "test": "npm run build && npm run test:dist",
+    "test:build": "npm run build && npm run test:dist",
     "test:all": "npm run test production",
     "test:server": "npm test only-server",
     "coverage": "c8 --reporter=lcov npm run test:dist rebuild coverage production",
@@ -45,7 +46,7 @@
   },
   "dependencies": {
     "@sindresorhus/slugify": "^2.1.0",
-    "@swc/core": "^1.2.183",
+    "@swc/core": "^1.3.1",
     "@tinyhttp/app": "^2.0.20",
     "@tinyhttp/cookie-parser": "^2.0.4",
     "body-parser": "^1.19.0",
@@ -87,6 +88,7 @@
     "@types/express-session": "^1.17.4",
     "@types/formidable": "^2.0.5",
     "@types/fs-extra": "^9.0.13",
+    "@types/jest": "^29.0.0",
     "@types/markdown-it": "^12.2.3",
     "@types/markdown-it-attrs": "^4.1.0",
     "@types/node": "^16.11.6",
@@ -101,10 +103,12 @@
     "esbuild-wasm": "^0.14.36",
     "fs-extra": "^10.0.0",
     "husky": "^7.0.4",
+    "mocha": "^10.0.0",
     "puppeteer": "^14.2.1",
     "reflect-metadata": "^0.1.13",
     "semantic-release": "^19.0.2",
-    "typescript": "^4.6.2"
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.3"
   },
   "homepage": "https://eas-framework.ml"
 }

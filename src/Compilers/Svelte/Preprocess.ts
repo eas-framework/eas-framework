@@ -2,21 +2,19 @@
 import { extname } from 'node:path';
 import sass from 'sass';
 import { v4 as uuid } from 'uuid';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import PPath from '../../Settings/PPath';
-import { connectDependencies, importer, style, syntax } from '../Sass/utils';
-import { GlobalSettings } from '../../Settings/GlobalSettings';
-import StringTracker from '../../SourceTracker/StringTracker/StringTracker';
-import EasyFS from '../../Util/EasyFS';
+import PPath from '../../Settings/PPath.js';
+import { connectDependencies, importer, style, syntax } from '../Sass/utils.js';
+import { GlobalSettings } from '../../Settings/GlobalSettings.js';
+import StringTracker from '../../SourceTracker/StringTracker/StringTracker.js';
+import EasyFS from '../../Util/EasyFS.js';
 import { transform } from '@swc/core';
-import { TransformJSC } from '../SWC/Settings';
-import { getPlugin } from '../../Settings/utils';
-import { SWCPrintErrorStringTracker } from '../SWC/Errors';
-import { logSassErrorTracker } from '../Sass/Errors';
-import DepCreator from '../../ImportSystem/Dependencies/DepCreator';
-import { locationConnectorPPath } from '../../ImportSystem/unit';
-import { backToOriginal, backToOriginalSss } from '../../SourceTracker/SourceMap/SourceMapLoad';
+import { TransformJSC } from '../SWC/Settings.js';
+import { getPlugin } from '../../Settings/utils.js';
+import { SWCPrintErrorStringTracker } from '../SWC/Errors.js';
+import { logSassErrorTracker } from '../Sass/Errors.js';
+import DepCreator from '../../ImportSystem/Dependencies/DepCreator.js';
+import { locationConnectorPPath } from '../../ImportSystem/unit.js';
+import { backToOriginal, backToOriginalSss } from '../../SourceTracker/SourceMap/SourceMapLoad.js';
 
 async function SASSSvelte(content: StringTracker, lang: string, file: PPath, deps: DepCreator) {
     try {

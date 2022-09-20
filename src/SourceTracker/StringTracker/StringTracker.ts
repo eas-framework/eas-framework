@@ -1,7 +1,7 @@
-import PPath from "../../Settings/PPath";
-import { unicode } from "../../Util/Strings";
-import StringTrackerStack from "./StringTrackerStack";
-import STSInfo from "./STSInfo";
+import PPath from "../../Settings/PPath.js";
+import { unicode } from "../../Util/Strings.js";
+import StringTrackerStack from "./StringTrackerStack.js";
+import STSInfo from "./STSInfo.js";
 const EMPTY_STACK = new StringTrackerStack()
 
 export interface StringTrackerDataInfo {
@@ -153,6 +153,7 @@ export default class StringTracker {
                 stack: EMPTY_STACK
             })
         }
+        return this
     }
 
     addTextBefore(text: string) {
@@ -164,6 +165,7 @@ export default class StringTracker {
             })
         }
         this.chars = chars.concat(this.chars)
+        return this
     }
 
 
@@ -286,27 +288,19 @@ export default class StringTracker {
     public trimStart() {
         const newString = this.clone();
 
-        for (let i = 0; i < newString.chars.length; i++) {
-            const item = newString.chars[i];
-
-            if (item.char.trim() == '') {
-                newString.chars.shift();
-                i--;
-            }
+        while(newString.chars[0]?.char.trim() === ''){
+            newString.chars.shift();
         }
 
         return newString;
     }
 
     public trimEnd() {
+
         const newString = this.clone();
 
-        for (let i = newString.chars.length - 1; i >= 0; i--) {
-            const item = newString.chars[i];
-
-            if (item.char.trim() == '') {
-                newString.chars.pop();
-            }
+        while(newString.chars.at(-1)?.char.trim() === ''){
+            newString.chars.pop();
         }
 
         return newString;

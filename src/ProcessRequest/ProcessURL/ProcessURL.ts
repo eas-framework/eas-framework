@@ -1,9 +1,9 @@
-import { GlobalSettings } from '../../Settings/GlobalSettings'
-import PPath from '../../Settings/PPath'
-import { directories } from '../../Settings/ProjectConsts'
-import { Request, Response } from '../types'
-import RequestWarper from './RequestWarper'
-import URLHooks from './URLHooks'
+import { GlobalSettings } from '../../Settings/GlobalSettings.js'
+import PPath from '../../Settings/PPath.js'
+import { directories } from '../../Settings/ProjectConsts.js'
+import { Request, Response } from '../types.js'
+import RequestWarper from './RequestWarper.js'
+import URLHooks from './URLHooks.js'
 
 
 export default async function processURL(req: Request, res: Response) {
