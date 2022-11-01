@@ -63,6 +63,12 @@ export const Export: ExportSettings = {
     get settingsPath() {
         return workingDirectory + BasicSettings.WebSiteFolder + "/Settings";
     },
+    get websiteDirectory(){
+        return BasicSettings.WebSiteFolder
+    },
+    set websiteDirectory(directory){
+        BasicSettings.WebSiteFolder = directory
+    },
     set development(value) {
         if(DevMode_ == value) return
         DevMode_ = value;
@@ -325,6 +331,7 @@ function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'ignore' 
 function mergeNested1(target: any, from?: {[key: string]: {[key: string]: any}}){
     if(!from) return;
     for(const i in from){
+        target[i] ??= {};
         Object.assign(target[i], from[i]);
     }
 }

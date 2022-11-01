@@ -1,10 +1,9 @@
 export default function createDateWriter(out_run_script: {text: string}, isDebug: boolean){
     function ToStringInfo(str: any) {
-        const asString = str?.toString?.();
-        if (asString == null || asString.startsWith('[object Object]')) {
+        if (str instanceof Object) {
             return JSON.stringify(str, null, isDebug ? 2: 0);
         }
-        return asString;
+        return str?.toString();
     }
 
     function setResponse(text: any) {

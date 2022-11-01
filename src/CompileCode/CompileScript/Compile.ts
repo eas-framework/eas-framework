@@ -85,7 +85,7 @@ export default class CRunTime {
         const __localpath = '/' + smallPathToPage(this.sessionInfo.smallPath);
         return {
             writerArray,
-            string: 'script,style,define,store,page__filename,page__dirname,__localpath,attrs,dependence,attrsHTML,attrsObjectHTML,createDateWriter,attrdefault',
+            string: 'script,style,define,store,page__filename,page__dirname,__localpath,attrs,dependence,attrsHTML,attrsObjectHTML,createDateWriter,attrdefault,spaceOne',
             funcs: [
                 this.sessionInfo.script.bind(this.sessionInfo), // script
                 this.sessionInfo.style.bind(this.sessionInfo), // style
@@ -129,6 +129,12 @@ export default class CRunTime {
                     for (const key of keys) {
                         attributes[key] ??= value;
                     }
+                },
+                (text: string | boolean, value = text) => { // spaceOne
+                    if(text) {
+                        return ' ' + String(value).trim()
+                    }
+                    return ''
                 }
             ]
         }

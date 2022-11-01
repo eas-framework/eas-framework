@@ -1,7 +1,7 @@
 import { App as TinyApp } from '@tinyhttp/app';
 import type {Request, Response} from './Types';
 import compression from 'compression';
-import {Export as Settings, requireSettings, buildFirstLoad, pageInRamActivateFunc} from './Settings'
+import {Export as Settings, requireSettings, buildFirstLoad, pageInRamActivateFunc, Export} from './Settings'
 import * as fileByUrl from '../RunTimeBuild/GetPages';
 import { print } from '../OutputInput/Console';
 import { BasicSettings } from '../RunTimeBuild/SearchFileSystem';
@@ -10,6 +10,7 @@ import { UpdateGreenLock } from './ListenGreenLock';
 import http from 'http';
 import updateRequestAttributes from '../Plugins/HTTP';
 import { StartReadCommands } from './Commands';
+import { firstValuesOrFullArray } from './ParseRequest';
 
 
 
@@ -109,12 +110,13 @@ function ParseRequest(req: Request, res: Response) {
                 return;
             }
 
-            formidable().parse(req, async (err, fields, files) => {
+            const from = formidable({...Export.middleware.formidable}) 
+            from.parse(req, async (err, fields, files) => {
                 if (err) {
                     print.error(err);
                 }
-                req.body = fields;
-                req.files = files;
+                req.body = firstValuesOrFullArray(from, fields);
+                req.files = firstValuesOrFullArray(from, files);
                 await requestAndSettings(req, res);
                 resolve();
             });

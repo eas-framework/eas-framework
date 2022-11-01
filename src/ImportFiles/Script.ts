@@ -51,11 +51,11 @@ async function BuildScript(filePath: string, savePath: string | null, isTypescri
     sourceMaps: isDebug ? (mergeTrack ? true : 'inline') : false,
     outputPath: savePath && path.relative(path.dirname(savePath), filePath)
   };
-  
+
   let Result = mergeTrack?.eq || await EasyFs.readFile(filePath);
 
   const CommonJSScript = await EasySyntax.BuildAndExportImports(Result)
-  Result = template(CommonJSScript,isDebug,path.dirname(templatePath),templatePath,params);
+  Result = template(CommonJSScript, isDebug, path.dirname(templatePath), templatePath, params);
 
   try {
     const { code, map } = await transform(Result, Options);
@@ -184,16 +184,14 @@ export default async function LoadImport(importFrom: string[], InStaticPath: str
     return SavedModules[SavedModulesPath];
 
   function requireMap(p: string) {
-    if (path.isAbsolute(p))
-      p = path.relative(p, typeArray[0]);
-    else {
-      if (p[0] == ".") {
-        p = path.join(path.dirname(InStaticPath), p);
-      }
-      else if (p[0] != "/")
-        return AliasOrPackage(p);
+    if (p[0] == ".") {
+      p = path.join(path.dirname(InStaticPath), p);
     }
-
+    else if (p[0] == "/") {
+      p = p.substring(1);
+    } else {
+      return AliasOrPackage(p);
+    }
     return LoadImport([...importFrom, SavedModulesPath], p, typeArray, { isDebug, useDeps, withoutCache: inheritanceCache ? withoutCache : [] });
   }
 
@@ -279,18 +277,17 @@ export async function compileImport(globalPrams: string, scriptLocation: string,
   );
 
   function requireMap(p: string) {
-    if (path.isAbsolute(p))
-      p = path.relative(p, typeArray[0]);
+    if (p[0] == ".") {
+      p = path.join(path.dirname(inStaticLocationRelative), p);
+    }
+    else if (p[0] == "/"){
+      p = p.substring(1)
+    }
     else {
-      if (p[0] == ".") {
-        p = path.join(path.dirname(inStaticLocationRelative), p);
-
-      }
-      else if (p[0] != "/")
-        return AliasOrPackage(p);
+      return AliasOrPackage(p);
     }
 
-    return LoadImport([templatePath], p, typeArray, { isDebug });
+    return LoadImport([templatePath], p, getTypes.Static, { isDebug });
   }
 
   const MyModule = await ImportWithoutCache(fullSaveLocation);
@@ -331,8 +328,9 @@ export async function ImportFromWorkingDirectory(fullPath: string, isTypeScript:
         p = path.relative(getTypes.Static[0], path.join(path.dirname(fullPath), p));
 
       }
-      else if (p[0] != "/")
+      else if (p[0] != "/"){
         return AliasOrPackage(p);
+      }
     }
 
     return LoadImport([relative], p, getTypes.Static, { isDebug });

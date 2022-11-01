@@ -43,25 +43,27 @@ const builtInConnectionRegex = {
 
 const builtInConnectionNumbers = [...numbers];
 
-for(const i in builtInConnectionRegex){
+for (const i in builtInConnectionRegex) {
     const type = builtInConnectionRegex[i][3];
 
-    if(builtInConnectionNumbers.includes(type))
+    if (builtInConnectionNumbers.includes(type))
         builtInConnectionNumbers.push(i);
 }
 
 
 export function compileValues(value: string): string {
-    value = value.toLowerCase().trim();
+    const fixedValue = value.trim();
+    const lowerValue = fixedValue.toLowerCase()
 
-    if (builtInConnection.includes(value))
-        return `["${value}"]`;
+
+    if (builtInConnection.includes(lowerValue))
+        return `["${lowerValue}"]`;
 
     for (const [name, [test, getArgs]] of Object.entries(builtInConnectionRegex))
-        if ((<RegExp>test).test(value))
-            return `["${name}", ${(<any>getArgs)(value)}]`;
+        if ((<RegExp>test).test(fixedValue))
+            return `["${name}", ${(<any>getArgs)(fixedValue)}]`;
 
-    return `[${value}]`;
+    return `[${fixedValue}]`;
 }
 
 
@@ -95,27 +97,27 @@ export async function makeValidationJSON(args: any[], validatorArray: any[]): Pr
             default: {
                 const haveRegex = builtInConnectionRegex[element];
 
-                if(haveRegex){
+                if (haveRegex) {
                     returnNow = value == null || !haveRegex[2](elementArgs, value);
                     break;
                 }
 
                 isDefault = true;
                 if (element instanceof RegExp)
-                    returnNow = (!element.test(value)) && 'regex - ' + value;
+                    returnNow = (!element.test(value)) && 'regex - ' + element.toString();
                 else if (typeof element == 'function')
                     returnNow = (!await element(value)) && 'function - ' + (element.name || 'anonymous');
             }
         }
 
         if (returnNow) {
-            let info = `Validation failed at filed ${Number(i)+1} - ${isDefault ? returnNow : 'expected ' + element}`;
+            let info = `Validation failed at filed ${Number(i) + 1} - ${isDefault ? returnNow : 'expected ' + element}`;
 
-            if(elementArgs.length)
+            if (elementArgs.length)
                 info += `, arguments: ${JSON.stringify(elementArgs)}`;
 
             info += `, input: ${JSON.stringify(value)}`;
-            
+
             return [info, element, elementArgs, value];
         }
     }
@@ -134,7 +136,7 @@ export function parseValues(args: any[], validatorArray: any[]): any[] {
             parsed.push(parseFloat(value));
 
         else if (booleans.includes(element))
-            parsed.push(value === 'true' ? true : false);
+            parsed.push(value === 'true' || value === 'on' ? true : false);
 
         else
             parsed.push(value);

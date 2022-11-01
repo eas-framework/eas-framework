@@ -19,7 +19,7 @@ export default async function BuildCode(type: StringTracker, dataTag: TagDataPar
 
     const message = dataTag.popAnyDefault('error-msg', sessionInfo.debug && !SomePlugins("SafeDebug")); // show error message
 
-    sessionInfo.script(serveScript, { async: null })
+    sessionInfo.script(serveScript, { defer: null })
     sessionInfo.addScriptStylePage('script', dataTag, type).addText(template(name)); // add script
 
     sessionInfo.connectorArray.push({
