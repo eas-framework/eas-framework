@@ -1,14 +1,19 @@
-import { GlobalSettings } from "./GlobalSettings.js";
+import {GlobalSettings} from "./GlobalSettings.js";
+
 const SAFE_DEBUG = 'SafeDebug';
 
 export function getPlugin(name: string): any {
-    return GlobalSettings.compile.plugins.find((p: any) => p == name || p.name === name)
+    return GlobalSettings.compile.plugins.find((p: any) => p == name || p.name === name);
 }
 
-export function hasPlugin(name: string){
-    return getPlugin(name) != null
+export function hasPlugin(name: string) {
+    return getPlugin(name) != null;
 }
 
-export function safeDebug(){
-    return hasPlugin(SAFE_DEBUG)
+export function safeDebug() {
+    return hasPlugin(SAFE_DEBUG);
+}
+
+export function getFileExtension() {
+    return GlobalSettings.compile.typescript ? 'ts' : 'js';
 }

@@ -1,23 +1,23 @@
-import { Server, createServer } from "http";
-import { Http2Server } from "http2";
-import { App as TinyApp } from '@tinyhttp/app';
+import {createServer, Server} from "http";
+import {Http2Server} from "http2";
+import {App as TinyApp} from '@tinyhttp/app';
 import compression from 'compression';
-import { GlobalSettings } from "../Settings/GlobalSettings.js";
-import {promisify} from 'node:util'
-import { callImportOnLoadMethods } from "../Settings/SettingsLoader.js";
-import { connectRequests } from "./ProcessData.js";
+import {GlobalSettings} from "../Settings/GlobalSettings.js";
+import {promisify} from 'node:util';
+import {callImportOnLoadMethods} from "../Settings/SettingsLoader.js";
+import {connectRequests} from "./ProcessData.js";
 
 
-export async function connectServer(server: Server | Http2Server = createServer(), settingsFile?: string){
+export async function connectServer(server: Server | Http2Server = createServer(), settingsFile?: string) {
     const app = new TinyApp();
     app.use(<any>compression());
 
-    server.on('request', app.attach)
-    await callImportOnLoadMethods(app, server)
+    server.on('request', app.attach);
+    await callImportOnLoadMethods(app, server);
 
     //@ts-ignore
-    await promisify(server.listen)(GlobalSettings.serve.port)
-    console.log(`Server started on port ${GlobalSettings.serve.port}`)
+    await promisify(server.listen.bind(server))(GlobalSettings.serve.port);
+    console.log(`Server started on port ${GlobalSettings.serve.port}`);
 
-    connectRequests(app, settingsFile)
+    connectRequests(app, settingsFile);
 }

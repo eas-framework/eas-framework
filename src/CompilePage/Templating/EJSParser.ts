@@ -1,7 +1,7 @@
 import StringTracker from "../../SourceTracker/StringTracker/StringTracker.js";
-import { EJSParserRust } from "../ConnectRust/EJS.js";
-import { findEndOfDef, ParseBlocks } from "../ConnectRust/utils.js";
-import { normalizeText } from "./utils.js";
+import {EJSParserRust} from "../ConnectRust/EJS.js";
+import {findEndOfDef, ParseBlocks} from "../ConnectRust/utils.js";
+import {normalizeText} from "./utils.js";
 
 export const DEBUG_INFO_PREFIX = '{?debug_file?}';
 
@@ -16,7 +16,7 @@ export default class EJSParser {
     public end: string;
     public type: string;
     public values: JSParserValues[];
-    public forClientSide = false // will render for client side
+    public forClientSide = false; // will render for client side
 
     constructor(text: StringTracker, start = "<%", end = "%>", type = 'script') {
         this.start = start;
@@ -30,12 +30,12 @@ export default class EJSParser {
     }
 
     findEndOfDefGlobal(text: StringTracker) {
-        const eq = text.eq
+        const eq = text.eq;
         const find = findEndOfDef(eq, [';', '\n', this.end]);
         return find != -1 ? find + 1 : eq.length;
     }
 
-    ScriptWithInfo(text: StringTracker): StringTracker {
+    scriptWithInfo(text: StringTracker): StringTracker {
         const WithInfo = new StringTracker();
 
         const allScript = text.split('\n'), length = allScript.length;
@@ -46,11 +46,11 @@ export default class EJSParser {
         let count = 1;
         for (const i of allScript) {
 
-            if (i.eq.trim().length){
-                WithInfo.addTextAfter(`//!${i.topCharStack.toString()}\n`)
-                WithInfo.plus(i)
+            if (i.eq.trim().length) {
+                WithInfo.addTextAfter(`//!${i.topCharStack.toString()}\n`);
+                WithInfo.plus(i);
             }
-  
+
             if (count != length) {
                 WithInfo.addTextAfter('\n');
                 count++;
@@ -78,13 +78,13 @@ export default class EJSParser {
                     type = 'script';
                     break;
                 case "debug":
-                    substring = new StringTracker().plus$`\nrun_script_name = \`${normalizeText(substring)}\``
+                    substring = new StringTracker().plus$`\nrun_script_name = \`${normalizeText(substring)}\``;
                     type = 'no-track';
                     break;
             }
 
-            if (type != 'text' && !substring.endsWith(';')){
-                substring.addTextAfter(';')
+            if (type != 'text' && !substring.endsWith(';')) {
+                substring.addTextAfter(';');
             }
 
             this.values.push({
@@ -132,7 +132,7 @@ export default class EJSParser {
                         );
                     }
                     runScript.plus(
-                        this.ScriptWithInfo(i.text)
+                        this.scriptWithInfo(i.text)
                     );
                 } else {
                     runScript.plus(i.text);
@@ -143,8 +143,8 @@ export default class EJSParser {
         return runScript;
     }
 
-    static async RunAndExport(text: StringTracker, path: string, isDebug: boolean, forClientSide?: boolean) {
-        const parser = new EJSParser(text, path);
+    static async RunAndExport(text: StringTracker, isDebug: boolean, forClientSide?: boolean) {
+        const parser = new EJSParser(text);
         await parser.findScripts();
         parser.forClientSide = forClientSide;
         return parser.BuildAll(isDebug);

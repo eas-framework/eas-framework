@@ -1,8 +1,9 @@
 import PPath from "../../../src/Settings/PPath.js";
-import { directories } from "../../../src/Settings/ProjectConsts.js";
+import {directories} from "../../../src/Settings/ProjectConsts.js";
 import StringTracker from "../../../src/SourceTracker/StringTracker/StringTracker.js";
 
-export const websiteModel = StringTracker.fromTextFile(`
+export function getWebsiteModel() {
+    return StringTracker.fromTextFile(`
 #[codeFile='inherit']
 <!DOCTYPE html>
 <html lang="en" me=more>
@@ -50,29 +51,5 @@ export const websiteModel = StringTracker.fromTextFile(`
     </main>
 </body>
 
-</html>`, PPath.fromNested(directories.Locate.Models, 'website.model'));
-
-export const websiteSimpleModel = StringTracker.fromTextFile(`
-#[model=web title=inherit codeFile='inherit']
-
-<content:head>
-    <script>
-        alert(#(Math.random()))
-    </script>
-    <:head/>
-</content:head>
-
-<content:body>
-    <main class="flex-shrink-0 pt-5">
-        <div class="container mt-5">
-            <:body />
-        </div>
-    </main>
-
-    <!-- HTML Comment -->
-
-    @for(let i = 0; i < 100; i++){
-        @:(i*2)
-    }
-</content:body>
-`, PPath.fromNested(directories.Locate.Models, 'website.model'));
+</html>`, PPath.fromNested(directories.Locate.static, 'models/site.model'));
+}

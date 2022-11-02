@@ -1,0 +1,8 @@
+#[model='/models/site' title='Home Page' codefile='inherit']
+<content:body>
+    --Main Content--
+</content:body>
+
+<content:footer>
+    --footer Content--
+</content:footer>

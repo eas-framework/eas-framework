@@ -1,18 +1,17 @@
 import sass from 'sass';
-import path from 'path';
-import { fileURLToPath, pathToFileURL } from "node:url";
+import {fileURLToPath, pathToFileURL} from "node:url";
 import DepCreator from '../../../../../../../../ImportSystem/Dependencies/DepCreator.js';
 import PPath from '../../../../../../../../Settings/PPath.js';
-import { GlobalSettings } from '../../../../../../../../Settings/GlobalSettings.js';
+import {GlobalSettings} from '../../../../../../../../Settings/GlobalSettings.js';
 import EasyFS from '../../../../../../../../Util/EasyFS.js';
-import { importer, style, syntax, updateSourceToFile } from '../../../../../../../../Compilers/Sass/utils.js';
-import { logSassError } from '../../../../../../../../Compilers/Sass/Errors.js';
-import { toURLComment } from '../../../../../../../../SourceTracker/SourceMap/utils.js';
-import { makeWebURLSourceStaticFile } from '../../../../../../../../SourceTracker/SourceMap/SourceComputeTrack.js';
+import {importer, style, syntax, updateSourceToFile} from '../../../../../../../../Compilers/Sass/utils.js';
+import {logSassError} from '../../../../../../../../Compilers/Sass/Errors.js';
+import {toURLComment} from '../../../../../../../../SourceTracker/SourceMap/utils.js';
+import {makeWebURLSourceStaticFile} from '../../../../../../../../SourceTracker/SourceMap/SourceComputeTrack.js';
 
 export async function compileSass(file: PPath, deps: DepCreator, language: "sass" | "scss" | "css") {
-    const fileData = await EasyFS.readFile(file.full)
-    let dataResult = '/*Compilation Error*/'
+    const fileData = await EasyFS.readFile(file.full);
+    let dataResult = '/*Compilation Error*/';
 
     try {
         const result = await sass.compileStringAsync(fileData, {
@@ -24,10 +23,10 @@ export async function compileSass(file: PPath, deps: DepCreator, language: "sass
         });
 
         if (result?.loadedUrls) { // add loaded urls to dependencies
-            const nestedDeps = deps.nestedDepFile(file)
+            const nestedDeps = deps.nestedDepFile(file);
             for (const file of result.loadedUrls) {
                 const fullPath = fileURLToPath(<any>file);
-                nestedDeps.updateDep(PPath.fromFull(fullPath));
+                await nestedDeps.updateDep(PPath.fromFull(fullPath));
             }
         }
 
@@ -44,12 +43,12 @@ export async function compileSass(file: PPath, deps: DepCreator, language: "sass
                 )
             );
 
-            dataResult += toURLComment(JSON.stringify(result.sourceMap), true)
+            dataResult += toURLComment(JSON.stringify(result.sourceMap), true);
         }
     } catch (err) {
         logSassError(err);
     }
 
-    await EasyFS.writeFileAndPath(file.compile, dataResult)
-    await deps.updateDep(file)
+    await EasyFS.writeFileAndPath(file.compile, dataResult);
+    await deps.updateDep(file);
 }

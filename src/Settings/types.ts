@@ -1,10 +1,9 @@
-import { JscConfig as TransformOptions } from '@swc/core';
-import { Request, Response, NextFunction } from '@tinyhttp/app';
-import type RequestWarper from '../ProcessRequest/ProcessURL/RequestWarper.js';
+import {JscConfig as TransformOptions} from '@swc/core';
+import {NextFunction, Request, Response} from '@tinyhttp/app';
 
-export type StringNumberMap = {[key: string]: number}
-export type StringAnyMap = {[key: string]: any};
-export type StringMap = {[key: string]: string};
+export type StringNumberMap = { [key: string]: number }
+export type StringAnyMap = { [key: string]: any };
+export type StringMap = { [key: string]: string };
 
 export interface ErrorPages {
     notFound?: {
@@ -28,15 +27,15 @@ type TinyhttpPlugin = (req: Request, res: Response<any>, next?: NextFunction) =>
 
 
 export interface JSXOptions extends TransformOptions {
-    name: "JSXOptions"
+    name: "JSXOptions";
 }
 
 export interface TSXOptions extends TransformOptions {
-    name: "TSXOptions"
+    name: "TSXOptions";
 }
 
 export interface transformOptions extends TransformOptions {
-    name: "transformOptions"
+    name: "transformOptions";
 }
 
 export interface Markdown {
@@ -53,7 +52,14 @@ export interface Markdown {
     hljsClass: boolean
 }
 
-type pluginsOptions = "minify" | "not-minify-HTML" | "safe-debug" | JSXOptions | TSXOptions | transformOptions | Markdown;
+type pluginsOptions =
+    "minify"
+    | "not-minify-HTML"
+    | "safe-debug"
+    | JSXOptions
+    | TSXOptions
+    | transformOptions
+    | Markdown;
 
 export interface serveLimits {
     cacheDays?: number,
@@ -67,29 +73,27 @@ export interface serveLimits {
 
 interface GlobalSettings {
     general?: {
-        pageInRam?: boolean,
         importOnLoad?: string[],
         logger?: {
             level?: 'debug' | 'info' | 'warn' | 'error' | 'fatal' | 'off',
             file?: string
         }
-        pathAliases?: StringMap
+        pathAlias?: StringMap
     },
     compile?: {
         typescript?: boolean
         ignoreError?: ("close-tag" | "component-not-found" | "ts-warning" | "js-warning" | "page-not-found" | "sass-import-not-found" |
             "css-warning" | "compilation-error" | "jsx-warning" | "tsx-warning" | "markdown-parser")[],
         plugins?: pluginsOptions[]
-        define: {[key: string]: string | number | boolean | null}
+        define: { [key: string]: string | number | boolean | null }
         globals?: StringMap
     },
     routing?: {
-        rules?: {[key: string]: ((warper: RequestWarper) => string | Promise<string>)},
         errorPages?: ErrorPages
-        urlStop?: string[],
         allowExt?: string[], // extends allowed file extensions, only thous can be served - default list on StaticFiles.ts
         ignoreExt?: string[], // ignore file extensions - override default allowed extension (default - common server files)
         ignorePaths?: string[], // hide paths from the server
+        rewriteURL: StringMap, // https://www.npmjs.com/package/express-urlrewrite
         sitemap?: {
             rules?: boolean,
             urlStop?: boolean,
@@ -125,5 +129,5 @@ export interface ExportSettings extends GlobalSettings {
 
     implDev?: GlobalSettings,
     implProd?: GlobalSettings
-    reload?:(settingsFile?: string) => Promise<void>
+    reload?: (settingsFile?: string) => Promise<void>
 }

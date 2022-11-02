@@ -1,19 +1,19 @@
-import RequestWarper from "./RequestWarper.js"
+import RequestWrapper from "./RequestWrapper.js";
 
 
-function defaultFile(warper: RequestWarper){
-    if(warper.path.nested.endsWith('/')){
-        warper.path.join('index')
+function defaultFile(wrapper: RequestWrapper) {
+    if (wrapper.path.nested.endsWith('/')) {
+        wrapper.path.join('index');
     }
 }
 
-function hidePath(warper: RequestWarper){
-    if(warper.path.nested.includes('.hide.')){
-        warper.makeNotFound()
+function hidePath(wrapper: RequestWrapper) {
+    if (wrapper.path.nested.includes('.hide.')) {
+        wrapper.makeNotFound();
     }
 }
 
-export default function URLHooks(warper: RequestWarper){
-    defaultFile(warper)
-    hidePath(warper)
+export default function URLHooks(wrapper: RequestWrapper) {
+    defaultFile(wrapper);
+    hidePath(wrapper);
 }

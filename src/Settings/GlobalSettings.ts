@@ -1,8 +1,9 @@
-import { ExportSettings } from "./types.js";
-import { v4 as uuidv4 } from 'uuid';
+import {ExportSettings} from "./types.js";
+import {v4 as uuidv4} from 'uuid';
+
 const
     CookiesSecret = uuidv4().substring(0, 32),
-    SessionSecret = uuidv4()
+    SessionSecret = uuidv4();
 
 type BuildStatus = {
     name: 'ok' | 'compiling',
@@ -12,7 +13,7 @@ type BuildStatus = {
 export const buildStatus: BuildStatus = {
     name: 'ok',
     wait: null
-}
+};
 
 const HookBuilt = null;
 export const GlobalSettings: ExportSettings = {
@@ -25,18 +26,17 @@ export const GlobalSettings: ExportSettings = {
         session: HookBuilt,
         bodyParser: HookBuilt,
         formidable: HookBuilt
-    }, 
+    },
     secret: {
         cookies: CookiesSecret,
         session: SessionSecret,
     },
     general: {
         importOnLoad: [],
-        pageInRam: false,
         logger: {
             level: 'debug'
         },
-        pathAliases: {},
+        pathAlias: {},
     },
     compile: {
         typescript: false,
@@ -46,11 +46,10 @@ export const GlobalSettings: ExportSettings = {
         globals: {},
     },
     routing: {
-        rules: {},
-        urlStop: [],
         allowExt: [],
         ignoreExt: [],
         ignorePaths: [],
+        rewriteURL: {},
         sitemap: {
             file: 'sitemap.xml',
             updateAfterHours: 0
@@ -79,4 +78,4 @@ export const GlobalSettings: ExportSettings = {
         port: 3000,
         http2: false,
     }
-}
+};

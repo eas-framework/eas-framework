@@ -1,17 +1,19 @@
-import { App as TinyApp } from '@tinyhttp/app'
-import { Request, Response } from './types'
-import formidable from 'formidable'
-import { multipartType } from 'formidable/src/plugins/multipart.js'
-import { querystringType } from 'formidable/src/plugins/querystring.js'
-import { GlobalSettings } from '../Settings/GlobalSettings.js'
-import { SystemAutoError } from '../Logger/ErrorLogger.js'
-import processURL from './ProcessURL/ProcessURL.js'
-import { loadSettings } from '../Settings/SettingsLoader.js'
+import {App as TinyApp} from '@tinyhttp/app';
+import {Request, Response} from './types';
+import formidable from 'formidable';
+import {multipartType} from 'formidable/src/plugins/multipart.js';
+import {querystringType} from 'formidable/src/plugins/querystring.js';
+import {GlobalSettings} from '../Settings/GlobalSettings.js';
+import {SystemAutoError} from '../Logger/ErrorLogger.js';
+import processURL from './ProcessURL/ProcessURL.js';
+import {loadSettings} from '../Settings/SettingsLoader.js';
+import switchContent from './ScriptLoader/SearchContent.js';
 
-let currentSettingsFile: string
+let currentSettingsFile: string;
+
 export function connectRequests(app: TinyApp, settingsFile: string) {
-    currentSettingsFile = settingsFile
-    app.all('*', parseRequest)
+    currentSettingsFile = settingsFile;
+    app.all('*', parseRequest);
 }
 
 export function parseFormidableFields(form, fields, exceptions = []) {
@@ -19,7 +21,7 @@ export function parseFormidableFields(form, fields, exceptions = []) {
      * Go over every field and check if an array with on item, if so then replace it with the item
      */
     if (form.type !== querystringType && form.type !== multipartType) {
-        return fields
+        return fields;
     }
 
     return Object.fromEntries(
@@ -29,41 +31,40 @@ export function parseFormidableFields(form, fields, exceptions = []) {
             }
             return [key, value[0]];
         }),
-    )
+    );
 }
 
 async function parseRequest(req: Request, res: Response) {
-    await loadSettings(currentSettingsFile)
+    await loadSettings(currentSettingsFile);
 
     if (req.method === 'POST') {
         return new Promise(async (resolve: any) => {
             if (req.headers['content-type']?.startsWith?.('application/json')) {
                 GlobalSettings.middleware.bodyParser(req, res, async () => {
-                    await getCorrectResource(req, res)
-                    resolve()
-                })
-                return
+                    await getCorrectResource(req, res);
+                    resolve();
+                });
+                return;
             }
 
-            const form = formidable(GlobalSettings.middleware.formidable)
+            const form = formidable(GlobalSettings.middleware.formidable);
             form.parse(req, async (err, fields, files) => {
                 if (err) {
-                    SystemAutoError(err)
+                    SystemAutoError(err);
                 }
-                req.body = parseFormidableFields(form, fields)
-                req.files = parseFormidableFields(form, files)
-                await getCorrectResource(req, res)
-                resolve()
-            })
-        })
+                req.body = parseFormidableFields(form, fields);
+                req.files = parseFormidableFields(form, files);
+                await getCorrectResource(req, res);
+                resolve();
+            });
+        });
     }
 
-    await getCorrectResource(req, res)
+    await getCorrectResource(req, res);
 }
 
 async function getCorrectResource(req: Request, res: Response) {
-    const warper = await processURL(req, res)
+    const wrapper = await processURL(req, res);
 
-
-    
+    await switchContent(wrapper);
 }

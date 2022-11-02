@@ -1,6 +1,6 @@
-import { Dirent, Stats, promises, fstat } from 'node:fs';
+import {Dirent, promises, Stats} from 'node:fs';
 import path from 'node:path';
-import { SystemAutoError } from '../Logger/ErrorLogger.js';
+import {SystemAutoError} from '../Logger/ErrorLogger.js';
 
 /**
  * A function that takes a promise and a callback function. It returns a new promise that will resolve
@@ -13,36 +13,36 @@ import { SystemAutoError } from '../Logger/ErrorLogger.js';
 function promiseErrorHandle<T>(promise: Promise<any>, callback?: (err: NodeJS.ErrnoException, data?: any) => T): Promise<T> {
     return new Promise(async res => {
         try {
-            res(callback?.(null, await promise))
+            res(callback?.(null, await promise));
         } catch (err) {
             res(callback?.(err));
         }
-    })
+    });
 }
 
 function basicFSErrorHandler(method: string, ...values) {
     return promiseErrorHandle(promises[method](...values), (err) => {
         if (err) {
-            SystemAutoError(err)
+            SystemAutoError(err);
         }
         return !err;
     });
 }
 
 function exists(path: string): Promise<boolean> {
-    return promiseErrorHandle(promises.stat(path), (err, stat) => Boolean(stat))
+    return promiseErrorHandle(promises.stat(path), (err, stat) => Boolean(stat));
 }
 
 /**
- * 
- * @param {path of the file} path 
- * @param {filed to get from the stat object} filed 
+ *
+ * @param {path of the file} path
+ * @param {filed to get from the stat object} filed
  * @returns the filed
  */
 function stat(path: string, filed?: string, ignoreError?: boolean, defaultValue: any = {}): Promise<Stats | any> {
     return promiseErrorHandle(promises.stat(path), (err, stat) => {
         if (err && !ignoreError) {
-            SystemAutoError(err)
+            SystemAutoError(err);
         }
         return filed && stat ? stat[filed] : stat || defaultValue;
     });
@@ -93,7 +93,7 @@ function unlink(path: string): Promise<boolean> {
 async function unlinkIfExists(path: string): Promise<boolean> {
     return promiseErrorHandle(promises.unlink(path), err => {
         return !err;
-    })
+    });
 }
 
 /**
@@ -106,10 +106,10 @@ async function unlinkIfExists(path: string): Promise<boolean> {
 function readdir(path: string, options = {}): Promise<string[] | Buffer[] | Dirent[]> {
     return promiseErrorHandle(promises.readdir(path, options), (err, files) => {
         if (err) {
-            SystemAutoError(err)
+            SystemAutoError(err);
         }
         return files || [];
-    })
+    });
 }
 
 /**
@@ -117,10 +117,10 @@ function readdir(path: string, options = {}): Promise<string[] | Buffer[] | Dire
  * @param {string} path - The path to the directory you want to create.
  * @returns A boolean value indicating whether the directory was created or not.
  */
-async function mkdirIfNotExists(path: string, options?: {recursive: boolean}): Promise<boolean> {
+async function mkdirIfNotExists(path: string, options?: { recursive: boolean }): Promise<boolean> {
     return promiseErrorHandle(promises.mkdir(path, options), err => {
         return !err;
-    })
+    });
 }
 
 /**
@@ -132,14 +132,13 @@ async function mkdirIfNotExists(path: string, options?: {recursive: boolean}): P
 function writeFile(path: string, content: string | NodeJS.ArrayBufferView): Promise<boolean> {
     return promiseErrorHandle(promises.writeFile(path, content), err => {
         if (err) {
-            SystemAutoError(err)
+            SystemAutoError(err);
         }
         return !err;
-    })
+    });
 }
 
 
-promises.appendFile
 /**
  * `writeJsonFile` is a function that takes a path and a content and writes the content to the file at
  * the path
@@ -151,7 +150,7 @@ async function writeJsonFile(path: string, content: any): Promise<boolean> {
     try {
         return await writeFile(path, JSON.stringify(content));
     } catch (err) {
-        SystemAutoError(err)
+        SystemAutoError(err);
     }
 
     return false;
@@ -165,9 +164,9 @@ async function writeJsonFile(path: string, content: any): Promise<boolean> {
  * @returns A promise.
  */
 function readFile(path: string, encoding: BufferEncoding = 'utf8', ignoreError = false): Promise<string | any> {
-    return promiseErrorHandle(promises.readFile(path, { encoding }), (err, data) => {
+    return promiseErrorHandle(promises.readFile(path, {encoding}), (err, data) => {
         if (err && !ignoreError) {
-            SystemAutoError(err)
+            SystemAutoError(err);
         }
         return data;
     });
@@ -183,7 +182,7 @@ async function readJsonFile(path: string, encoding?: BufferEncoding): Promise<an
     try {
         return JSON.parse(await readFile(path, encoding));
     } catch (err) {
-        SystemAutoError(err)
+        SystemAutoError(err);
     }
 
     return {};
@@ -195,14 +194,14 @@ async function readJsonFile(path: string, encoding?: BufferEncoding): Promise<an
  * @param content - the content to write to the file.
  */
 async function writeFileAndPath(filePath: string, content: string) {
-    await promiseErrorHandle(promises.mkdir(path.dirname(filePath), {recursive: true}));
+    await mkdirIfNotExists(path.dirname(filePath), {recursive: true});
     await writeFile(filePath, content);
 }
 
 //types
 export {
     Dirent
-}
+};
 
 export default {
     ...promises,
@@ -220,4 +219,4 @@ export default {
     unlinkIfExists,
     readdir,
     writeFileAndPath
-}
+};

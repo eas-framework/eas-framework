@@ -1,14 +1,13 @@
-import { Options as TransformOptions, transform } from '@swc/core';
-import {v4 as uuid} from 'uuid';
-import { normalizeText } from '../../CompilePage/Templating/utils.js';
+import {Options as TransformOptions, transform} from '@swc/core';
+import {normalizeText} from '../../CompilePage/Templating/utils.js';
 import StringTracker from '../../SourceTracker/StringTracker/StringTracker.js';
-import { SessionBuild } from '../../CompilePage/Session.js';
-import { defaultVariables, GetScriptSettings, TransformJSC } from '../SWC/Settings.js';
-import { GlobalSettings } from '../../Settings/GlobalSettings.js';
-import { backToOriginal } from '../../SourceTracker/SourceMap/SourceMapLoad.js';
-import { SWCPrintErrorStringTracker } from '../SWC/Errors.js';
-import { relative } from '../../Settings/ProjectConsts.js';
-import { addEASPlugin } from './EASSyntax.js';
+import {SessionBuild} from '../../CompilePage/Session.js';
+import {defaultVariables, GetScriptSettings, TransformJSC} from '../SWC/Settings.js';
+import {GlobalSettings} from '../../Settings/GlobalSettings.js';
+import {backToOriginal} from '../../SourceTracker/SourceMap/SourceMapLoad.js';
+import {SWCPrintErrorStringTracker} from '../SWC/Errors.js';
+import {relative} from '../../Settings/ProjectConsts.js';
+import {addEASPlugin} from './EASSyntax.js';
 
 function ErrorTemplate(info: string) {
     return `module.exports = () => (DataObject) => DataObject.out_run_script.text += \`${normalizeText(`Syntax Error: ${info}`)}\``;
@@ -22,7 +21,7 @@ export async function PluginScript(text: StringTracker, sessionInfo: SessionBuil
             parser: GetScriptSettings(true)
         }),
 
-        filename: sessionInfo.file.name,
+        filename: sessionInfo.file.small,
         sourceMaps: true
     };
     addEASPlugin(options)
@@ -43,22 +42,21 @@ export async function PluginScript(text: StringTracker, sessionInfo: SessionBuil
 /**
  * It takes a script and transform to 'Framework' script
  * @param {StringTracker} text - The text to be transformed.
- * @param {boolean} isTypescript - Whether the file is a typescript file or not.
  * @param {SessionBuild} sessionInfo - SessionBuild
  * @returns A function that takes a StringTracker, a boolean, and a SessionBuild and returns a Promise
  * of a StringTracker.
  */
-export async function ScriptToEASScriptLastProcesses(text: StringTracker, isTypescript: boolean, sessionInfo: SessionBuild): Promise<StringTracker> {
+export async function ScriptToEASScriptLastProcesses(text: StringTracker, sessionInfo: SessionBuild): Promise<StringTracker> {
     text = text.trim();
     const options: TransformOptions = {
         jsc: TransformJSC({
-            parser: GetScriptSettings(isTypescript),
+            parser: GetScriptSettings(GlobalSettings.compile.typescript),
         }, {
             ...defaultVariables()
         }, true),
 
         minify: !GlobalSettings.development,
-        filename: sessionInfo.file.name,
+        filename: sessionInfo.file.small,
         sourceMaps: true
     }
     addEASPlugin(options, {transformStopToReturn: true})

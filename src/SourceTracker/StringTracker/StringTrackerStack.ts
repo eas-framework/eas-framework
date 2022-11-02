@@ -6,27 +6,30 @@ export default class StringTrackerStack {
 
     }
 
-    get hiddenStack(){
-        return this.stack
+    get hiddenStack() {
+        return this.stack;
     }
 
-    get length(){
-        return this.stack.length
+    get length() {
+        return this.stack.length;
     }
 
     push(info: STSInfo) {
-        this.stack.push(info)
+        this.stack.push(info);
     }
 
-    top(){
-        return this.stack.at(-1)
+    top() {
+        return this.stack.at(-1);
     }
 
-    clone(){
-        return new StringTrackerStack([...this.stack])
+    clone() {
+        return new StringTrackerStack([...this.stack]);
     }
 
-    toString(){
-        return this.stack.map(info => info.toString()).join("->\n")
+    toString() {
+        return this.stack.map(info => info.toString()).join(" ->\n");
     }
 }
+
+export const EMPTY_STACK = new StringTrackerStack();
+Object.freeze(EMPTY_STACK.hiddenStack);

@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "mocha",
+    "test-web": "ts-node-esm tests/website/index.ts",
     "postinstall": "echo 'Package is not built yet'",
     "prepare": "[ $CI = true ] || [ -d '.husky/_' ] || husky install",
     "build": "node build logs",
@@ -55,6 +56,7 @@
     "compression": "^1.7.4",
     "cookie-encrypter": "^1.0.1",
     "express-session": "^1.17.2",
+    "express-urlrewrite": "^2.0.0",
     "fast-xml-parser": "^4.0.8",
     "formidable": "^3.2.4",
     "github-markdown-css": "^5.1.0",

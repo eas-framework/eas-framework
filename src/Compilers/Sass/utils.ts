@@ -1,8 +1,8 @@
-import { RawSourceMap } from "source-map-js";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { GlobalSettings } from "../../Settings/GlobalSettings.js";
+import {RawSourceMap} from "source-map-js";
+import {fileURLToPath, pathToFileURL} from "node:url";
+import {GlobalSettings} from "../../Settings/GlobalSettings.js";
 import PPath from "../../Settings/PPath.js";
-import { directories } from "../../Settings/ProjectConsts.js";
+import {directories} from "../../Settings/ProjectConsts.js";
 import DepCreator from "../../ImportSystem/Dependencies/DepCreator.js";
 
 export function syntax(language: 'sass' | 'scss' | 'css') {
@@ -29,19 +29,19 @@ export function importer(file: PPath) {
                 return new URL(
                     url.substring(1),
                     pathToFileURL(
-                        url[0] == '/' ? directories.Locate.Static.source : directories.Locate.node_modules.source
+                        url[0] == '/' ? directories.Locate.static.source : directories.Locate.node_modules.source
                     )
                 );
             }
 
             return new URL(url, pathToFileURL(file.full));
         }
-    }
+    };
 }
 
 export function connectDependencies(result: any, file: PPath, deps: DepCreator) {
     if (result?.loadedUrls) { // add loaded urls to dependencies
-        const nestedDeps = deps.nestedDepFile(file)
+        const nestedDeps = deps.nestedDepFile(file);
         for (const file of result.loadedUrls) {
             const fullPath = fileURLToPath(<any>file);
             nestedDeps.updateDep(PPath.fromFull(fullPath));

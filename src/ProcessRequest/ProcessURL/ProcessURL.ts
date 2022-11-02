@@ -1,48 +1,47 @@
-import { GlobalSettings } from '../../Settings/GlobalSettings.js'
-import PPath from '../../Settings/PPath.js'
-import { directories } from '../../Settings/ProjectConsts.js'
-import { Request, Response } from '../types.js'
-import RequestWarper from './RequestWarper.js'
-import URLHooks from './URLHooks.js'
-
+import {GlobalSettings} from '../../Settings/GlobalSettings.js';
+import PPath from '../../Settings/PPath.js';
+import {directories} from '../../Settings/ProjectConsts.js';
+import {Request, Response} from '../types.js';
+import RequestWrapper from './RequestWrapper.js';
+import URLHooks from './URLHooks.js';
+import URLRewrite from 'express-urlrewrite';
+import {promisify} from 'node:util';
+import {pathToFileURL} from 'node:url';
 
 export default async function processURL(req: Request, res: Response) {
-    const urlPath = PPath.fromNested(directories.Locate.Static, req.path)
-    const warper = new RequestWarper(urlPath, req, res)
+    const urlPath = PPath.fromNested(directories.Locate.static, req.path);
+    const wrapper = new RequestWrapper(urlPath, req, res);
 
-    URLHooks(warper) // basic hook to change the path
+    const basicURLHooks = () => {
+        URLHooks(wrapper); // basic hook to change the path
+        ignorePath(wrapper); // ignore the url if it starts with an ignore path
+    };
+    basicURLHooks();
 
-    urlStopRule(warper) // stop the url if it starts with a stop path
-    ignorePath(warper) // ignore the url if it starts with an ignore path
 
-    if(warper.notError){
-        await urlMethod(warper) // change the url if it starts with a method path
+    if (wrapper.notError) {
+        await URLRewriteRules(wrapper);
+
+        basicURLHooks();// doing again in case the url change...
     }
 
-    return warper
+    return wrapper;
 }
 
-function urlStopRule(warper: RequestWarper) {
-    for (let start of GlobalSettings.routing.urlStop) {
-        if (warper.path.nested.startsWith(start)) {
-            warper.path.nested = start
-            break
-        }
-    }
-}
+function ignorePath(wrapper: RequestWrapper) {
+    const notValid = GlobalSettings.routing.ignorePaths.find(i => wrapper.path.nested.startsWith(i));
 
-async function urlMethod(warper: RequestWarper) {
-    const methodName = Object.keys(GlobalSettings.routing.rules).find(start => warper.path.nested.startsWith(start));
-
-    if (methodName) {
-        warper.path.nested = await GlobalSettings.routing.rules[methodName](warper) ?? warper.path.nested;
+    if (notValid) {
+        wrapper.makeNotFound();
     }
 }
 
-function ignorePath(warper: RequestWarper){
-    const notValid = GlobalSettings.routing.ignorePaths.find(i => warper.path.nested.startsWith(i))
+export async function URLRewriteRules(wrapper: RequestWrapper) {
+    for (const source in GlobalSettings.routing.rewriteURL) {
+        const dest = GlobalSettings.routing.rewriteURL[source];
 
-    if(notValid){
-        warper.makeNotFound()
+        await promisify(URLRewrite(source, dest))(wrapper.req, wrapper.res);
     }
+
+    wrapper.path.nested = pathToFileURL(wrapper.req.url).pathname;
 }

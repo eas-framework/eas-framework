@@ -1,12 +1,11 @@
 import PPath from "../../Settings/PPath.js";
-import { unicode } from "../../Util/Strings.js";
-import StringTrackerStack from "./StringTrackerStack.js";
+import {unicode} from "../../Util/Strings.js";
+import StringTrackerStack, {EMPTY_STACK} from "./StringTrackerStack.js";
 import STSInfo from "./STSInfo.js";
-const EMPTY_STACK = new StringTrackerStack()
 
 export interface StringTrackerDataInfo {
-    char: string
-    stack: StringTrackerStack
+    char: string;
+    stack: StringTrackerStack;
 }
 
 interface StringIndexerInfo {
@@ -32,19 +31,19 @@ export default class StringTracker {
         return this.chars;
     }
 
-    public get topCharStack(){
-        for(let i = this.chars.length - 1; i >= 0; i--){
+    public get topCharStack() {
+        for (let i = this.chars.length - 1; i >= 0; i--) {
             const stack = this.chars[i].stack;
-            if(stack.length){
-                return stack
+            if (stack.length) {
+                return stack;
             }
         }
 
-        return EMPTY_STACK
+        return EMPTY_STACK;
     }
 
-    public get topSource(){
-        return this.topCharStack?.top()?.source
+    public get topSource() {
+        return this.topCharStack?.top()?.source;
     }
 
     /**
@@ -63,7 +62,7 @@ export default class StringTracker {
     }
 
     /**
-     * 
+     *
      * @returns copy of this string object
      */
     public clone(): StringTracker {
@@ -77,7 +76,7 @@ export default class StringTracker {
     }
 
     /**
-     * 
+     *
      * @param text any thing to connect
      * @returns connected string with all the text
      */
@@ -96,8 +95,8 @@ export default class StringTracker {
     }
 
     /**
-     * 
-     * @param data 
+     *
+     * @param data
      * @returns this string clone plus the new data connected
      */
     public clonePlus(...data: any[]): StringTracker {
@@ -151,25 +150,25 @@ export default class StringTracker {
             this.chars.push({
                 char,
                 stack: EMPTY_STACK
-            })
+            });
         }
-        return this
+        return this;
     }
 
     addTextBefore(text: string) {
-        const chars = []
+        const chars = [];
         for (const char of text) {
             chars.push({
                 char,
                 stack: EMPTY_STACK
-            })
+            });
         }
-        this.chars = chars.concat(this.chars)
-        return this
+        this.chars = chars.concat(this.chars);
+        return this;
     }
 
 
-    private static createSTByInfo(text: string, createStack: (line: number, column: number)=>STSInfo[]){
+    private static createSTByInfo(text: string, createStack: (line: number, column: number) => STSInfo[]) {
         const newString = new StringTracker();
         let line = 1, column = 1;
 
@@ -179,31 +178,34 @@ export default class StringTracker {
                 stack: new StringTrackerStack(
                     createStack(line, column)
                 )
-            })
+            });
 
             if (char == '\n') {
-                line++
-                column = 1
+                line++;
+                column = 1;
             } else {
-                column++
+                column++;
             }
         }
 
-        return newString
-    }
-    static fromTextFile(text: string, file: PPath) {
-        return StringTracker.createSTByInfo(text, (line, column) => [new STSInfo(file, line, column)])
+        return newString;
     }
 
-    static fromST(text: string, file: PPath, source: StringTracker){
-        const stack = source.topCharStack
-        return StringTracker.createSTByInfo(text, (line, column) => stack.hiddenStack.concat([new STSInfo(file, line, column)]))
+    static fromTextFile(text: string, file: PPath) {
+        return StringTracker.createSTByInfo(text, (line, column) => [new STSInfo(file, line, column)]);
+    }
+
+    static fromST(text: string, file: PPath, source: StringTracker) {
+        const hiddenStack = source.topCharStack.hiddenStack;
+        return StringTracker.createSTByInfo(text, (line, column) =>
+            hiddenStack.concat(new STSInfo(file, line, column))
+        );
     }
 
     slice(start = 0, end = this.length): StringTracker {
         const newString = new StringTracker();
 
-        newString.chars = this.chars.slice(start, end)
+        newString.chars = this.chars.slice(start, end);
 
         return newString;
     }
@@ -213,11 +215,11 @@ export default class StringTracker {
     }
 
     private atString(pos: number) {
-        return this.chars[pos]?.char
+        return this.chars[pos]?.char;
     }
 
     public atStack(pos: number) {
-        return this.chars[pos]?.stack
+        return this.chars[pos]?.stack;
     }
 
     public charCodeAt(pos: number) {
@@ -228,7 +230,7 @@ export default class StringTracker {
         return this.atString(pos).codePointAt(0);
     }
 
-    *[Symbol.iterator]() {
+    * [Symbol.iterator]() {
         for (const i of this.chars) {
             const char = new StringTracker();
             char.chars.push(i);
@@ -242,8 +244,8 @@ export default class StringTracker {
 
     /**
      * convert uft-16 length to count of chars
-     * @param index 
-     * @returns 
+     * @param index
+     * @returns
      */
     private charLength(index: number) {
         if (index <= 0) {
@@ -288,7 +290,7 @@ export default class StringTracker {
     public trimStart() {
         const newString = this.clone();
 
-        while(newString.chars[0]?.char.trim() === ''){
+        while (newString.chars[0]?.char.trim() === '') {
             newString.chars.shift();
         }
 
@@ -299,7 +301,7 @@ export default class StringTracker {
 
         const newString = this.clone();
 
-        while(newString.chars.at(-1)?.char.trim() === ''){
+        while (newString.chars.at(-1)?.char.trim() === '') {
             newString.chars.pop();
         }
 
@@ -443,14 +445,16 @@ export default class StringTracker {
     }
 
     public replace(searchValue: string | RegExp, replaceValue: StringTracker | string) {
-        return this.replaceWithTimes(this.regexInString(searchValue), replaceValue, searchValue instanceof RegExp ? undefined : 1)
+        return this.replaceWithTimes(this.regexInString(searchValue), replaceValue, searchValue instanceof RegExp ? undefined : 1);
     }
 
     public replacer(searchValue: RegExp, func: (data: ArrayMatch) => StringTracker) {
         let copy = this.clone(), splitToReplace: ArrayMatch;
+
         function ReMatch() {
             splitToReplace = copy.match(searchValue);
         }
+
         ReMatch();
 
         const newText = new StringTracker();
@@ -469,9 +473,11 @@ export default class StringTracker {
 
     public async replacerAsync(searchValue: RegExp, func: (data: ArrayMatch) => Promise<StringTracker>) {
         let copy = this.clone(), SplitToReplace: ArrayMatch;
+
         function ReMatch() {
             SplitToReplace = copy.match(searchValue);
         }
+
         ReMatch();
 
         const newText = new StringTracker();
@@ -489,7 +495,7 @@ export default class StringTracker {
     }
 
     public replaceAll(searchValue: string | RegExp, replaceValue: StringTracker | string) {
-        return this.replaceWithTimes(this.regexInString(searchValue), replaceValue)
+        return this.replaceWithTimes(this.regexInString(searchValue), replaceValue);
     }
 
     public matchAll(searchValue: string | RegExp): StringTracker[] {
@@ -514,7 +520,7 @@ export default class StringTracker {
 
         const ResultArray: ArrayMatch = [];
 
-        const findIndex = this.charLength(find.index)
+        const findIndex = this.charLength(find.index);
         ResultArray[0] = this.slice(findIndex, findIndex + find.shift().length);
         ResultArray.index = findIndex;
         ResultArray.input = this.clone();
@@ -557,6 +563,6 @@ export default class StringTracker {
             column = 0;
         }
 
-        return searchLine.chars.at(column - 1).stack.top()
+        return searchLine.chars.at(column - 1).stack.top();
     }
 }
