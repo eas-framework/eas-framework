@@ -73,9 +73,9 @@ export class SessionBuild {
         this.dependencies = SessionBuild.getPageDepsSession(file);
     }
 
-    static getPageDepsSession(file: PPath){
+    static getPageDepsSession(file: PPath) {
         return new DepManager(
-            new JSONStorage(file.small, pagesStorage[file.small] ??= {})
+            new JSONStorage(file.small, pagesStorage.store)
         ).createSession();
     }
 
@@ -109,23 +109,23 @@ export class SessionBuild {
     }
 
 
-    private static createName(text: string) {
+    static createFileName(text: string) {
         let length = 0;
         let key: string = null;
 
-        const values = Object.values(shortNames.store);
-        while (key == null || values.includes(key)) {
+        while (key == null || shortNames.haveValue(key)) {
             key = createId(text, ID_MIN_LENGTH + length).substring(length);
             length++;
         }
 
+        shortNames.update(text, key);
         return key;
     }
 
     private async addHeadTags() {
         const wait = [];
         for (const i of this.inScriptStyle) {
-            let url = shortNames.have(i.path.nested, () => SessionBuild.createName(i.path.nested)) + '.pub';
+            let url = shortNames.have(i.path.nested, () => SessionBuild.createFileName(i.path.nested)) + '.pub';
 
             switch (i.type) {
                 case 'script':

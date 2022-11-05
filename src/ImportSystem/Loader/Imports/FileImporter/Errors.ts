@@ -1,18 +1,19 @@
-import { LogData } from "../../../../Logger/Logger.js"
-import { Capitalize } from "../../../../Util/Strings.js"
-import IImporter from "../IImporter.js"
+import {LogData} from "../../../../Logger/Logger.js";
+import {Capitalize} from "../../../../Util/Strings.js";
+import IImporter from "../IImporter.js";
 
 export class CircleDependenciesError implements LogData {
     constructor(public stack: IImporter[]) {
 
     }
+
     toConsole(stackLine: string, loggerName: string, errorCode: string): string {
-        return `[${loggerName}::${Capitalize(errorCode)}]: ${this.toLogMessage()}`
+        return `[${loggerName}::${Capitalize(errorCode)}]: ${this.toLogMessage()}`;
     }
 
     toLogMessage(): string {
-        const stackLine = this.stack.map(x => x.importLine).join('\nat')
-        return `Circle Dependencies: ${stackLine}`
+        const stackLine = this.stack.map(x => x.importLine).join('\nat');
+        return `Circle Dependencies: ${stackLine}`;
     }
 }
 
@@ -20,11 +21,12 @@ export class ImportNotFound implements LogData {
     constructor(public importer: IImporter) {
 
     }
+
     toConsole(stackLine: string, loggerName: string, errorCode: string): string {
-        return `[${loggerName}::${Capitalize(errorCode)}]: ${this.toLogMessage()}`
+        return `[${loggerName}::${Capitalize(errorCode)}]: ${this.toLogMessage()}`;
     }
 
     toLogMessage(): string {
-        return `Import not found: ${this.importer.importLine}`
+        return `Import not found: ${this.importer.importLine}`;
     }
 }

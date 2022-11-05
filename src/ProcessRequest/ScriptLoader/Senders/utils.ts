@@ -5,7 +5,7 @@ import {StringAnyMap} from '../../../Settings/types.js';
  * @param method the method to cache
  * @param useCache return na unique id form the function argument, if you want to cache the value
  */
-export function cacheFunc<T>(method: (...args: any) => T, useCache: (...data: any) => string | void) {
+export function cacheFunc<T>(method: (...args: any) => T, useCache: (...data: any) => string | void = x => x) {
     const cacheData: StringAnyMap = {};
     return async (...args): Promise<T> => {
         const cacheId = useCache(...args);

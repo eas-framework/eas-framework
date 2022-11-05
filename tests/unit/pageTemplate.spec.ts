@@ -1,5 +1,4 @@
 import assert from 'assert';
-import '../../src/Settings/index.js';
 import BaseParser from '../../src/CompilePage/Templating/Placeholders/PageBuilder/PageParse.js';
 import {BaseParserBlock} from '../../src/CompilePage/Templating/Placeholders/PageBuilder/BaseParser.js';
 import {getWebsiteModel} from './contents/pageTemplate.js';

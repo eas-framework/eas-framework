@@ -4,7 +4,7 @@ import PPath from "../../../../Settings/PPath.js";
 import EasyFS from "../../../../Util/EasyFS.js";
 import {customImportFile, isCustomFile} from "../../../CustomImport/index.js";
 import DepCreator, {ShareOptions} from "../../../Dependencies/DepCreator.js";
-import {MPages} from "../../../Dependencies/StaticManagers.js";
+import {MImport} from "../../../Dependencies/StaticManagers.js";
 import {addExtension} from "../../Builders/BaseBuilders.js";
 import FileBuilder from "../../Builders/FileBuilder.js";
 import IBuilder from "../../Builders/IBuilder.js";
@@ -20,6 +20,19 @@ type CacheOptions = 'skip-loading' | // skip loading from cache
     'recompile-file' | // recompile even if there is no change
     'skip-write-tree-on-build' // don't write the dep tree when building the file
 
+export type FileImporterOptions = {
+    options?: any,
+    exportFile?: PPath,
+    session?: DepCreator,
+    importLine?: string,
+    importStack?: IImporter[],
+    skipCache?: CacheOptions[],
+    builder?: IBuilder<any>,
+    importParams?: any[],
+    allowAutoExtension?: boolean
+    allowNestedDep?: boolean
+    displayNotFoundError?: boolean
+}
 export default class FileImporter extends IImporter {
     public session: DepCreator;
     private skipCache: CacheOptions[];
@@ -28,8 +41,10 @@ export default class FileImporter extends IImporter {
     private alreadyCreated = false;
     private exportFile: PPath;
     private readonly importParams: any[];
-    private allowAutoExtension: boolean;
+    private readonly allowAutoExtension: boolean;
     private shareOptions: ShareOptions = {disableCache: false};
+    private readonly allowNestedDep: boolean;
+    private readonly displayNotFoundError: boolean;
 
     /**
      * Create a file importer
@@ -43,6 +58,9 @@ export default class FileImporter extends IImporter {
      * @param skipCache - prevent loading this import from the cache, if this equals to 'rebuild' then the file will be recompile even if there is no change
      * @param builder - custom compilation for the file content
      * @param importParams - extra prams for the import - something like 'require', '__filename'
+     * @param allowAutoExtension - allow to auto generate file extension
+     * @param allowNestedDep - if the nested dependency change then it will reload all the parents
+     * @param displayNotFoundError - log import not found error
      */
     constructor(file: PPath, {
         options,
@@ -53,16 +71,22 @@ export default class FileImporter extends IImporter {
         skipCache = [],
         builder = new FileBuilder(),
         importParams = [],
-        allowAutoExtension = true
-    }: { options?: any, exportFile?: PPath, session?: DepCreator, importLine?: string, importStack?: IImporter[], skipCache?: CacheOptions[], builder?: IBuilder<any>, importParams?: any[], allowAutoExtension?: boolean } = {}) {
+        allowAutoExtension = true,
+        allowNestedDep = true,
+        displayNotFoundError = true
+    }: FileImporterOptions = {}) {
         super(file, importLine, importStack, options);
-        this.skipCache = skipCache;
-        this.session = session ?? MPages.createSession(this.shareOptions);
+
+        this.session = session || MImport.createSession(this.shareOptions);
         this.cache = new CacheWaitImport(this.constructor.name, file);
+
+        this.skipCache = skipCache;
         this.builder = builder;
         this.exportFile = exportFile;
         this.importParams = importParams;
-        this.allowAutoExtension = allowAutoExtension ?? true;
+        this.allowAutoExtension = allowAutoExtension;
+        this.allowNestedDep = allowNestedDep;
+        this.displayNotFoundError = displayNotFoundError;
 
         //bind methods
         this.requireNestedFile = this.requireNestedFile.bind(this);
@@ -143,7 +167,7 @@ export default class FileImporter extends IImporter {
                 options,
                 importLine,
                 importStack,
-                session: this.session.nestedDepFile(this.file)
+                session: this.allowNestedDep && this.session.nestedDepFile(this.file)
             });
         }
 
@@ -163,25 +187,42 @@ export default class FileImporter extends IImporter {
         return exportModule.exports;
     }
 
+    async buildFileOnChange() {
+        if (this.skipCache.includes('recompile-file') || await this.session.treeChanged(this.file)) {
+            if (!await this.fileExits()) {
+                if (this.displayNotFoundError) {
+                    SystemLog.error('import-file-not-found', new ImportNotFound(this));
+                }
+                return false; // error file not found
+            }
+            await this.buildFile();
+        }
+        return true;
+    }
+
+    private async loadImportFromCache() {
+        if (await this.returnCache('treeChanged')) {
+            const {deps, exports} = this.cache.get(this.file);
+            this.imported = exports;
+            await this.updateFileDep(deps);
+            return true;
+        }
+        return false;
+    }
+
     private async importAndBuildFile() {
 
         await this.cache.waitSimultaneousImport();
         this.cache.makeOthersWait();
 
         try {
-            if (await this.returnCache('treeChanged')) {
-                const {deps, exports} = this.cache.get(this.file);
-                this.imported = exports;
-                await this.updateFileDep(deps);
+
+            if (await this.loadImportFromCache()) {
                 return;
             }
 
-            if (this.skipCache.includes('recompile-file') || await this.session.treeChanged(this.file)) {
-                if (!await this.fileExits()) {
-                    SystemLog.error('import-file-not-found', new ImportNotFound(this));
-                    return; // error file not found
-                }
-                await this.buildFile();
+            if (!await this.buildFileOnChange()) {
+                return; // error file not found
             }
 
             this.imported = await this.importFile();

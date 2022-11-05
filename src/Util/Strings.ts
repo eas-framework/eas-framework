@@ -1,8 +1,12 @@
 import {createHash} from 'node:crypto';
+
 interface globalString<T> {
     indexOf(string: string): number;
+
     lastIndexOf(string: string): number;
+
     startsWith(string: string): boolean;
+
     substring(start: number, end?: number): T;
 }
 
@@ -29,10 +33,10 @@ export function unicode(value: string) {
 }
 
 /* Create Id */
-export default function createId(text: string, max = 10){
+export default function createId(text: string, max = 10) {
     return Buffer.from(text).toString('base64').substring(0, max).replace(/\+/g, '_').replace(/\//g, '_');
 }
 
-export function hashString(text: string){
+export function hashString(text: string) {
     return createHash('md5').update(text).digest('hex');
 }

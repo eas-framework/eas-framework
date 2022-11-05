@@ -11,7 +11,7 @@ import {
 } from "./Middlewares.js";
 import './General.js';
 
-export default function firstLoad() {
+export default function initSettings() {
     buildFormidableMiddlewareSettings();
     buildBodyParserMiddleware();
     buildSessionMiddleware();

@@ -1,9 +1,8 @@
-import { StringMap } from "../../Settings/types.js";
+import {StringMap} from "../../Settings/types.js";
 import StringTracker from "../../SourceTracker/StringTracker/StringTracker.js";
-import { RazorToEJS, RazorToEJSCompile } from "../ConnectRust/Razor.js";
-import { ParseBlocks } from "../ConnectRust/utils.js";
+import {RazorToEJS, RazorToEJSCompile} from "../ConnectRust/Razor.js";
+import {ParseBlocks} from "../ConnectRust/utils.js";
 import EJSParser from "./EJSParser.js";
-
 
 
 /**
@@ -15,7 +14,7 @@ import EJSParser from "./EJSParser.js";
  * @param [addToEJSSign] - This is the sign that will be added to the beginning of the EJS code.
  * @returns A string
  */
-function RazorToEJSBuilder(text: StringTracker, values: ParseBlocks, addWriteMap: StringMap, addToEJSSign = ''){
+function RazorToEJSBuilder(text: StringTracker, values: ParseBlocks, addWriteMap: StringMap, addToEJSSign = '') {
     const build = new StringTracker();
 
     for (const i of values) {
@@ -45,7 +44,7 @@ const addWriteMap = {
     "include": "await ",
     "import": "await ",
     "transfer": "return await "
-}
+};
 
 export default async function ConvertSyntax(text: StringTracker, options?: any) {
     const values = await RazorToEJS(text.eq);
@@ -55,11 +54,11 @@ export default async function ConvertSyntax(text: StringTracker, options?: any) 
 
 const addWriteCompileMap = {
     "default": "attr"
-}
+};
 
 export async function ConvertSyntaxCompile(text: StringTracker, options?: any) {
 
-    const values  = await RazorToEJSCompile(text.eq);
+    const values = await RazorToEJSCompile(text.eq);
 
     text = RazorToEJSBuilder(text, values, addWriteCompileMap, '*');
 

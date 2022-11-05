@@ -1,7 +1,7 @@
 import PPath from "../../Settings/PPath.js";
 import EasyFS from "../../Util/EasyFS.js";
 
-export function getChangeDate(file: PPath) {
+export function getChangeDate(file: PPath): Promise<number | null> {
     return EasyFS.stat(file.full, 'mtimeMs', true, null);
 }
 

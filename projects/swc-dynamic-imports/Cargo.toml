@@ -4,7 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
+
+[profile.dev]
+opt-level = 0               # Use slightly better optimizations.
+overflow-checks = false     # Disable integer overflow checks.
 
 [profile.release]
 # This removes more dead code

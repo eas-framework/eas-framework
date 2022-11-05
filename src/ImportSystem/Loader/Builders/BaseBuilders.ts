@@ -96,7 +96,7 @@ export async function transpileCode(content: string, templatePath: PPath, {
     try {
         const {code, map} = await transform(content, options);
         const templateCode = codeTemplate?.(code) ?? code;
-        result = createTranspileEnvironment(templateCode, templatePath, params) + toURLCommentSourceMap(map);
+        result = createTranspileEnvironment(templateCode, templatePath, params) + (map ? toURLCommentSourceMap(map) : '');
     } catch (err) {
         SWCPrintError(err);
     }

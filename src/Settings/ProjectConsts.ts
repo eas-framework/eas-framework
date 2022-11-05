@@ -2,16 +2,18 @@ import path from "node:path";
 import {cwd} from "node:process";
 import {fileURLToPath} from "node:url";
 
-const StaticName = 'static', StaticSourceDirectory = 'src';
-const ModulesName = 'node_modules', ModuleSourceDirectory = 'node_modules';
-const CompileDirectory = '-compile';
+const SYSTEM_FILES_NAME = 'system', SYSTEM_FILES_DIRECTORY = 'dist';
+const STATIC_NAME = 'static', STATIC_SOURCE_DIRECTORY = 'src';
+const MODULES_NAME = 'node_modules', MODULE_SOURCE_DIRECTORY = 'node_modules';
 
-function dirname(url: string) {
+const COMPILE_DIRECTORY = '-compile';
+
+export function dirname(url: string) {
     return path.dirname(fileURLToPath(url));
 }
 
-export const SystemData = path.join(dirname(import.meta.url), '..', 'SystemData');
 export const workingDirectory = cwd();
+export const frameworkFiles = path.join(dirname(import.meta.url), '..');
 
 export const ScriptExtension = {
     pages: {
@@ -22,7 +24,7 @@ export const ScriptExtension = {
     get pagesArray(): string[] {
         return Object.values(this.pages);
     },
-    get SSRExtensions(){
+    get SSRExtensions() {
         return [this.pages.page, this.pages.component];
     },
     get pagesCodeFilesArray() {
@@ -43,7 +45,7 @@ export const ScriptExtension = {
             return ScriptExtension.partExtensions[1] + '.js';
         }
     },
-    scriptArray() {
+    get scriptArray() {
         return Object.values(this.script);
     }
 };
@@ -59,6 +61,7 @@ type Directories = {
     fullWebsiteDirectory: string
     Locate: {
         static: LocateDir,
+        system: LocateDir,
         node_modules: LocateDir
     }
 }
@@ -66,15 +69,19 @@ type Directories = {
 export const directories: Directories = {
     fullWebsiteDirectory: null,
     Locate: {
+        system: {
+            compile: frameworkFiles,
+            source: workingDirectory,
+            virtualName: SYSTEM_FILES_NAME,
+            dirName: path.parse(workingDirectory).name
+        },
         static: null,
         node_modules: null
     }
 };
 
 export function setDirectories(directory: string) {
-    const fullWebsiteDirectory = path.isAbsolute(directory) ?
-        directory :
-        path.join(workingDirectory, directory);
+    const fullWebsiteDirectory = path.isAbsolute(directory) ? directory : path.join(workingDirectory, directory);
     directories.fullWebsiteDirectory = fullWebsiteDirectory;
 
     function GetSource(name: string) {
@@ -82,21 +89,23 @@ export function setDirectories(directory: string) {
     }
 
     function GetCompile(name: string) {
-        return path.join(SystemData, name + CompileDirectory);
+        return path.join(directories.Locate.system.compile, name + COMPILE_DIRECTORY);
     }
 
+    directories.Locate.system.compile = GetSource(SYSTEM_FILES_DIRECTORY);
+
     directories.Locate.static = {
-        source: GetSource(StaticSourceDirectory),
-        compile: GetCompile(StaticName),
-        virtualName: StaticName,
-        dirName: StaticSourceDirectory
+        source: GetSource(STATIC_SOURCE_DIRECTORY),
+        compile: GetCompile(STATIC_NAME),
+        virtualName: STATIC_NAME,
+        dirName: STATIC_SOURCE_DIRECTORY
     };
 
     directories.Locate.node_modules = {
-        source: GetSource(ModuleSourceDirectory),
-        compile: GetCompile(ModulesName),
-        virtualName: ModulesName,
-        dirName: ModulesName
+        source: GetSource(MODULE_SOURCE_DIRECTORY),
+        compile: GetCompile(MODULES_NAME),
+        virtualName: MODULES_NAME,
+        dirName: MODULE_SOURCE_DIRECTORY
     };
 }
 

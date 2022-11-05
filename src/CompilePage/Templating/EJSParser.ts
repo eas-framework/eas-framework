@@ -47,7 +47,7 @@ export default class EJSParser {
         for (const i of allScript) {
 
             if (i.eq.trim().length) {
-                WithInfo.addTextAfter(`//!${i.topCharStack.toString()}\n`);
+                WithInfo.addTextAfter(`//!${i.topCharStack.toString().replaceAll('\n', ' ')}\n`);
                 WithInfo.plus(i);
             }
 

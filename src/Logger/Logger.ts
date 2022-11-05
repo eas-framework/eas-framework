@@ -1,12 +1,12 @@
-import EventEmitter from "node:events"
-import { writeFile } from "node:fs/promises"
-import path from "node:path"
-import { GlobalSettings } from "../Settings/GlobalSettings.js"
-import { workingDirectory } from "../Settings/ProjectConsts.js"
-import { getLocationStack } from "../Util/Runtime.js"
-import { Capitalize, splitFirst } from "../Util/Strings.js"
+import EventEmitter from "node:events";
+import {writeFile} from "node:fs/promises";
+import path from "node:path";
+import {GlobalSettings} from "../Settings/GlobalSettings.js";
+import {workingDirectory} from "../Settings/ProjectConsts.js";
+import {getLocationStack} from "../Util/Runtime.js";
+import {Capitalize} from "../Util/Strings.js";
 
-export const LEVELS = ['info', 'debug', 'warn', 'error', 'fatal']
+export const LEVELS = ['info', 'debug', 'warn', 'error', 'fatal'];
 const STACK_BACK = 3;
 
 /**
@@ -16,7 +16,7 @@ const STACK_BACK = 3;
  * @returns A function that takes two parameters, event and code, and returns a string.
  */
 function formatName(loggerName: string, event: string, code: typeof LEVELS[number]) {
-    return `${Capitalize(loggerName)}|${Capitalize(code)}|${event}`
+    return `${Capitalize(loggerName)}|${Capitalize(code)}|${event}`;
 }
 
 /**
@@ -25,7 +25,7 @@ function formatName(loggerName: string, event: string, code: typeof LEVELS[numbe
  * @returns The index of the level in the LEVELS array.
  */
 function getLevel(level: string) {
-    return LEVELS.indexOf(level)
+    return LEVELS.indexOf(level);
 }
 
 /**
@@ -33,7 +33,7 @@ function getLevel(level: string) {
  * @returns The current log level
  */
 function currentLevel() {
-    return getLevel(GlobalSettings.general.logger?.level ?? 'info')
+    return getLevel(GlobalSettings.general.logger?.level ?? 'info');
 }
 
 /**
@@ -41,15 +41,16 @@ function currentLevel() {
  * @returns The file path to the log file.
  */
 function loggerFile() {
-    return GlobalSettings.general.logger?.file && path.join(workingDirectory, GlobalSettings.general.logger.file)
+    return GlobalSettings.general.logger?.file && path.join(workingDirectory, GlobalSettings.general.logger.file);
 }
 
 export interface LogData {
-    toLogMessage(): string
-    toConsole(stackLine: string, loggerName: string, errorCode: typeof LEVELS[number]): string
+    toLogMessage(): string;
+
+    toConsole(stackLine: string, loggerName: string, errorCode: typeof LEVELS[number]): string;
 }
 
-export const loggerEvent = new EventEmitter()
+export const loggerEvent = new EventEmitter();
 /**
  * It emits an event, writes to a file if exits on global settings, and writes to the console if the log level is high enough
  * @param {string} event - The name of the event.
@@ -57,17 +58,17 @@ export const loggerEvent = new EventEmitter()
  * @param [code=info] - The log level, which is one of the following: info, debug, warn, error, fatal
  */
 export default function emitLog(event: string, loggerName: string, data: LogData, code: typeof LEVELS[number] = 'info', stackBack = 0) {
-    const fullName = formatName(loggerName, event, code)
+    const fullName = formatName(loggerName, event, code);
 
     loggerEvent.emit(fullName, data); // listen with formatName - name + event + code
     loggerEvent.emit(event, data, code, loggerName); // listen to all event codes
 
-    const stack = getLocationStack(STACK_BACK + stackBack), file = loggerFile()
+    const stack = getLocationStack(STACK_BACK + stackBack), file = loggerFile();
     file && writeLogToFile(file, loggerName, event, stack, data, code);
 
 
     if (getLevel(code) >= currentLevel()) {
-        writeToConsole(code, data, stack, loggerName)
+        writeToConsole(code, data, stack, loggerName);
     }
 }
 
@@ -79,9 +80,9 @@ export default function emitLog(event: string, loggerName: string, data: LogData
  */
 function writeToConsole(code: typeof LEVELS[number], data: LogData, stack: string, loggerName: string) {
     if (code in console) {
-        console[code](data.toConsole(stack, loggerName, code))
+        console[code](data.toConsole(stack, loggerName, code));
     } else {
-        console.error(data.toConsole(stack, loggerName, code))
+        console.error(data.toConsole(stack, loggerName, code));
     }
 }
 
@@ -95,7 +96,7 @@ function writeToConsole(code: typeof LEVELS[number], data: LogData, stack: strin
  * @returns A string with the event, stack, data, and code.
  */
 function formatFile(loggerName: string, event: string, stack: string, data: string, code: typeof LEVELS[number]) {
-    return `[${formatName(loggerName, event, code)} at ${stack} | ${new Date().toLocaleString()}] ${data}\n`
+    return `[${formatName(loggerName, event, code)} at ${stack} | ${new Date().toLocaleString()}] ${data}\n`;
 }
 
 /**
@@ -108,6 +109,6 @@ function formatFile(loggerName: string, event: string, stack: string, data: stri
  * @param code - typeof LEVELS[number]
  */
 function writeLogToFile(filePath: string, loggerName: string, event: string, stack: string, data: LogData, code: typeof LEVELS[number]) {
-    const string = formatFile(loggerName, event, stack, data.toLogMessage(), code)
-    writeFile(filePath, string, { flag: 'a' })
+    const string = formatFile(loggerName, event, stack, data.toLogMessage(), code);
+    writeFile(filePath, string, {flag: 'a'});
 }

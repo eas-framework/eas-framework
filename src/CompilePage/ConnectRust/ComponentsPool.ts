@@ -1,11 +1,10 @@
-import { SystemLog } from "../../Logger/BasicLogger.js";
 import StringTracker from "../../SourceTracker/StringTracker/StringTracker.js";
-import { closeTagError } from "../Templating/Components/Errors.js";
-import { pool } from "./Pool.js";
+import {closeTagError} from "../Templating/Components/Errors.js";
+import {pool} from "./Pool.js";
 
 function printErrors(text: StringTracker, errors: string) {
     for (const i of JSON.parse(errors).reverse()) {
-        closeTagError(i.type_name, text.at(Number(i.index)))
+        closeTagError(i.type_name, text.at(Number(i.index)));
     }
 }
 

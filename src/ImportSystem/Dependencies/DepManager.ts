@@ -4,10 +4,14 @@ import DepCreator, {ShareOptions} from "./DepCreator.js";
 import {getChangeDate} from "./utils.js";
 
 export default class DepManager {
-    private readonly deps: JSONStorage;
+    private deps: JSONStorage;
     private times: JSONStorage;
 
-    constructor(storage: JSONStorage) {
+    constructor(private storage: JSONStorage) {
+        this.init();
+    }
+
+    init(storage = this.storage) {
         this.times = new JSONStorage("times", storage.store);
         this.deps = new JSONStorage("deps", storage.store);
     }

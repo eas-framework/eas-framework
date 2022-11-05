@@ -1,23 +1,13 @@
 import packageExport from "./packageExport.js";
-//@ts-ignore-next-line
-const thisPackageName = typeof packageName == 'undefined' ? '@thisPackage': packageName;
+import thisPackage from '../../../../package.json' assert {type: 'json'};
 
-//@ts-ignore-next-line
-export const aliasNames = [thisPackageName]
-export default function ImportAlias(originalPath: string): any {
+export const aliasNames = [thisPackage.name];
+export default function importAlias(originalPath: string): any {
 
     switch (originalPath) {
-        case thisPackageName:
-            return packageExport()
+        case thisPackage.name:
+            return packageExport();
         default:
             return false;
     }
-}
-
-export function aliasOrPackage(originalPath: string) {
-    const hasAlias = ImportAlias(originalPath);
-    if (hasAlias) {
-        return hasAlias
-    }
-    return import(originalPath);
 }

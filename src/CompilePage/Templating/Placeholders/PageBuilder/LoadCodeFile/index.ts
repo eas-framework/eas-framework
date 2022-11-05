@@ -31,14 +31,22 @@ export default class LoadCodeFile {
         const data = this.getter.popAny(CODE_FILE);
 
         let file: PPath;
-        if (data === true || data.eq == INHERIT || data.eq[0] === '.') {
+        const fileInherit = data === true || data.eq == INHERIT || data.eq[0] === '.';
+        if (fileInherit) {
             file = this.source.topSource.clone();
         } else {
             file = locationConnectorPPath(data.eq, this.source.topSource);
         }
 
-        const ext = data != true && path.extname(data.eq) || '.' + getFileExtension();
-        file.nested += ext;
+        const ext = data != true && path.extname(data.eq);
+
+        if (!ext && !fileInherit) {
+            file.nested += data.topSource.ext; // inherit '.page', '.model', '.comp' extension
+        }
+
+        if (!ext && data instanceof StringTracker) {
+            file.nested += '.' + getFileExtension();
+        }
 
         return file;
     }

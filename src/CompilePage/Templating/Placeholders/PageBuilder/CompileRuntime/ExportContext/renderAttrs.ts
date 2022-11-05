@@ -1,11 +1,10 @@
 import PPath from "../../../../../../Settings/PPath.js";
-import { StringAnyMap } from "../../../../../../Settings/types.js";
-import StringTracker from "../../../../../../SourceTracker/StringTracker/StringTracker.js";
-import { COMPONENT_READER } from "../../../../Components/CompBuilder.js";
+import {StringAnyMap} from "../../../../../../Settings/types.js";
+import {COMPONENT_READER} from "../../../../Components/CompBuilder.js";
 
 export const IMPORT_SOURCE = 'importSource';
 export const IMPORT_SOURCE_DIRECTORY = 'importSourceDirectory';
-export const SPECIAL_ATTRIBUTES = [IMPORT_SOURCE, IMPORT_SOURCE_DIRECTORY, COMPONENT_READER]
+export const SPECIAL_ATTRIBUTES = [IMPORT_SOURCE, IMPORT_SOURCE_DIRECTORY, COMPONENT_READER];
 
 /**
  * It takes an object, and returns a string of the object's key-value pairs, formatted as HTML
@@ -25,9 +24,9 @@ export default function renderAttrs(attributes: StringAnyMap, onlySome: string[]
 
         if (typeof value === 'boolean' || value == null) {
             if (value) {
-                values.push(key)
+                values.push(key);
             }
-            continue
+            continue;
         }
 
         if (typeof value == 'string') {

@@ -38,7 +38,7 @@ impl CreateExports {
     }
 
     fn async_importer_str(&self, args: Vec<ExprOrSpread>) -> Box<Expr> {
-        async_importer(&DUMMY_SP, args, &self.exports.require_var_name.sym)
+        async_importer( args, &self.exports.require_var_name.sym)
     }
 
     fn create_export_all(&mut self, args: Vec<ExprOrSpread>) {

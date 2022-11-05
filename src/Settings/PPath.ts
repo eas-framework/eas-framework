@@ -1,109 +1,109 @@
-import path from "node:path"
-import { SystemError } from "../Logger/ErrorLogger.js"
-import { splitFirst } from "../Util/Strings.js"
-import { directories, LocateDir, relative } from "./ProjectConsts.js"
+import path from "node:path";
+import {SystemError} from "../Logger/ErrorLogger.js";
+import {splitFirst} from "../Util/Strings.js";
+import {directories, LocateDir, relative} from "./ProjectConsts.js";
 
 class PPathNotFound extends Error {
 
 }
 
 export default class PPath {
-    public locate: LocateDir
-    public nested: string
+    public locate: LocateDir;
+    public nested: string;
 
     get small() {
-        return path.join(this.locate.virtualName, this.nested)
+        return path.join(this.locate.virtualName, this.nested);
     }
 
     get full() {
-        return path.join(this.locate.source, this.nested)
+        return path.join(this.locate.source, this.nested);
     }
 
     get compile() {
-        return path.join(this.locate.compile, this.nested)
+        return path.join(this.locate.compile, this.nested);
     }
 
     get name() {
-        return this.nested.split(path.sep).pop()
+        return this.nested.split(path.sep).pop();
     }
 
     get dirname() {
-        const copy = this.clone()
-        copy.nested = path.join(path.dirname(this.nested), path.sep)
-        return copy
+        const copy = this.clone();
+        copy.nested = path.join(path.dirname(this.nested), path.sep);
+        return copy;
     }
 
     get ext() {
-        return path.extname(this.nested)
+        return path.extname(this.nested);
     }
 
     constructor(smallPath: string) {
-        this.parse(smallPath)
+        this.parse(smallPath);
     }
 
     static fromNested(locate: LocateDir, nested: string) {
-        return new PPath(path.join(locate.virtualName, nested))
+        return new PPath(path.join(locate.virtualName, nested));
     }
 
     static fromFull(full: string) {
-        const [name, rest] = splitFirst(relative(full), path.sep)
+        const [name, rest] = splitFirst(relative(full), path.sep);
 
-        for (const { virtualName, dirName } of Object.values(directories.Locate)) {
-            if (name === virtualName) {
-                return new PPath(path.join(dirName, rest))
+        for (const {dirName} of Object.values(directories.Locate)) {
+            if (name === dirName) {
+                return new PPath(path.join(name, rest));
             }
         }
 
-        return null
+        return null;
     }
 
     private parse(smallPath: string) {
-        const [type, rest] = splitFirst(smallPath, path.sep)
-        const locate = directories.Locate[type]
-        if(locate == null){
+        const [type, rest] = splitFirst(smallPath, path.sep);
+        const locate = directories.Locate[type];
+        if (locate == null) {
             SystemError(
                 'error-parsing-ppath',
-                new PPathNotFound(`Directories (locate) not found"`, {cause: `parsing the string "${smallPath}"`}),
+                new PPathNotFound(`Directories (locate.${type}) not found"`, {cause: `parsing the string "${smallPath}"`}),
                 true,
                 2
-            )
+            );
         }
 
-        this.locate = locate
-        this.nested = rest
+        this.locate = locate;
+        this.nested = rest;
     }
 
     /**
      * Does not create a clone only join
-     * @param paths 
-     * @returns 
+     * @param paths
+     * @returns
      */
     join(...paths: string[]) {
-        this.nested = path.join(this.nested, ...paths)
-        return this
+        this.nested = path.join(this.nested, ...paths);
+        return this;
     }
 
     relativeSmall(small: string) {
-        return path.relative(this.small, small)
+        return path.relative(this.small, small);
     }
 
     relativeFull(full: string) {
-        return path.relative(this.full, full)
+        return path.relative(this.full, full);
     }
 
     relativeCompile(compile: string) {
-        return path.relative(this.compile, compile)
+        return path.relative(this.compile, compile);
     }
 
     toString() {
-        return this.small
+        return this.small;
     }
 
     clone() {
-        const copy = <PPath>Object.create(this)
-        copy.locate = this.locate
-        copy.nested = this.nested
+        const copy = <PPath>Object.create(this);
+        copy.locate = this.locate;
+        copy.nested = this.nested;
 
-        return copy
+        return copy;
     }
 }

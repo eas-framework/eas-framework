@@ -27,7 +27,7 @@ async function askDebuggingWithSource() {
 
 export default async function unsafeDebugPages(wrapper: RequestWrapper) {
     const folderName = wrapper.path.nested.split(path.sep).shift();
-    const haveFolder = Object.values(directories.Locate).find(x => x.dirName == folderName);
+    const haveFolder = Object.values(directories.Locate).find(x => x.virtualName == folderName);
     const fileExt = path.extname(wrapper.path.nested);
 
     if (!GlobalSettings.development || safeDebug() || path.extname(fileExt) != DEBUG_PAGE_EXTENSION || !haveFolder || !await askDebuggingWithSource()) {

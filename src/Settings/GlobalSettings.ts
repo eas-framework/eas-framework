@@ -17,7 +17,7 @@ export const buildStatus: BuildStatus = {
 
 const HookBuilt = null;
 export const GlobalSettings: ExportSettings = {
-    settingsFile: "",
+    settingsFile: "app.config",
     websiteDirectory: ".",
     development: true,
     middleware: {

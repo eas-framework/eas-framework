@@ -18,14 +18,14 @@ pub fn stmt_expr(expr: Expr) -> Stmt{
     })
 }
 
-pub fn async_importer(span: &Span, args: Vec<ExprOrSpread>, import_method: &str) -> Box<Expr>{
+pub fn async_importer(args: Vec<ExprOrSpread>, import_method: &str) -> Box<Expr>{
 
     let importer = CallExpr {
-        span: span.to_owned(),
+        span: DUMMY_SP,
 
         callee: Callee::Expr(Box::new(Expr::Ident(Ident::new(
             import_method.to_owned().into(),
-            span.to_owned(),
+            DUMMY_SP,
         )))),
         args,
         type_args: None,

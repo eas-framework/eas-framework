@@ -1,4 +1,4 @@
-import { promises } from "fs";
+import {promises} from "fs";
 
 export default async function (path: string) {
     //@ts-ignore

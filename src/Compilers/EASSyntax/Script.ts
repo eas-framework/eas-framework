@@ -8,9 +8,10 @@ import {backToOriginal} from '../../SourceTracker/SourceMap/SourceMapLoad.js';
 import {SWCPrintErrorStringTracker} from '../SWC/Errors.js';
 import {relative} from '../../Settings/ProjectConsts.js';
 import {addEASPlugin} from './EASSyntax.js';
+import {EXPORT_STRING_EAS_SYNTAX} from '../../ImportSystem/Loader/Imports/FileImporter/NodeImporter.js';
 
 function ErrorTemplate(info: string) {
-    return `module.exports = () => (DataObject) => DataObject.out_run_script.text += \`${normalizeText(`Syntax Error: ${info}`)}\``;
+    return `${EXPORT_STRING_EAS_SYNTAX} = () => (DataObject) => DataObject.out_run_script.text += \`${normalizeText(`Syntax Error: ${info}`)}\``;
 }
 
 export async function PluginScript(text: StringTracker, sessionInfo: SessionBuild) {
@@ -24,16 +25,16 @@ export async function PluginScript(text: StringTracker, sessionInfo: SessionBuil
         filename: sessionInfo.file.small,
         sourceMaps: true
     };
-    addEASPlugin(options)
+    addEASPlugin(options);
 
     let result: StringTracker;
 
     try {
-        const { code, map } = await transform(text.eq, options);
+        const {code, map} = await transform(text.eq, options);
         result = map ? await backToOriginal(text, code, map) : new StringTracker(code);
     } catch (err) {
-        SWCPrintErrorStringTracker(text, err)
-        return new StringTracker(`/*Error -> ${text.topCharStack.toString()}*/`)
+        SWCPrintErrorStringTracker(text, err);
+        return new StringTracker(`/*Error -> ${text.topCharStack.toString()}*/`);
     }
 
     return result;
@@ -58,19 +59,19 @@ export async function ScriptToEASScriptLastProcesses(text: StringTracker, sessio
         minify: !GlobalSettings.development,
         filename: sessionInfo.file.small,
         sourceMaps: true
-    }
-    addEASPlugin(options, {transformStopToReturn: true})
+    };
+    addEASPlugin(options, {transformStopToReturn: true});
 
-    let result: StringTracker
+    let result: StringTracker;
 
     try {
-        const { code, map } = await transform(text.eq, options);
+        const {code, map} = await transform(text.eq, options);
         result = map ? await backToOriginal(text, code, map) : new StringTracker(code);
     } catch (err) {
         const parse = SWCPrintErrorStringTracker(text, err);
 
         if (GlobalSettings.development) {
-            parse.errorFile = relative(parse.errorFile)
+            parse.errorFile = relative(parse.errorFile);
             result = new StringTracker(ErrorTemplate(parse.simpleMessage));
         }
     }

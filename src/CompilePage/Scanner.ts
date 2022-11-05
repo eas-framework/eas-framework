@@ -1,34 +1,39 @@
 import easyFS from '../Util/EasyFS.js';
-import {directories, ScriptExtension} from '../Settings/ProjectConsts.js';
+import {directories} from '../Settings/ProjectConsts.js';
 import {Dirent} from 'fs';
 import PPath from '../Settings/PPath.js';
-import importPage from './ImportPage.js';
+import compileState from './State.js';
 
-async function scanForPages(nestedSearch = '', pages: PPath[] = []) {
+async function scanFilesState(nestedSearch = '') {
     const staticWebsite = PPath.fromNested(directories.Locate.static, nestedSearch);
     const files = <Dirent[]>await easyFS.readdir(staticWebsite.full, {withFileTypes: true});
 
     const promises = [];
-    for(const file of files){
+    for (const file of files) {
         const nestedJoin = staticWebsite.clone().join(file.name);
-        const fileExt = nestedJoin.ext.substring(1);
 
-        if(file.isDirectory()){
+        if (file.isDirectory()) {
             await easyFS.mkdirIfNotExists(nestedJoin.compile, {recursive: true});
-            promises.push(scanForPages(nestedJoin.nested, pages));
+            promises.push(scanFilesState(nestedJoin.nested));
 
-        } else if(ScriptExtension.SSRExtensions.includes(fileExt)){
-            pages.push(nestedJoin);
+        } else {
+            compileState.addFile(nestedJoin);
         }
     }
 
     await Promise.all(promises);
-    return pages;
 }
 
-export default async function compileAllPages(){
-    const pages = await scanForPages();
-    const pagesImport = pages.map(page => importPage(page, page.ext.substring(1)));
+export default async function compileAllPages() {
+    if (!await compileState.updateStateChangeTime()) {
+        await compileState.activate();
+        return;
+    }
 
-    await Promise.all(pagesImport);
+
+    compileState.clear();
+    await scanFilesState();
+    compileState.save();
+
+    await compileState.activate();
 }

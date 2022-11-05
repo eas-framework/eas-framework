@@ -1,12 +1,12 @@
 import path from "path";
-import { locationConnectorPPath } from "../../../../../../ImportSystem/unit.js";
+import {locationConnectorPPath} from "../../../../../../ImportSystem/unit.js";
 import createDateWriter from "../../../../../../RuntimeUtils/DataWriter.js";
 import PPath from "../../../../../../Settings/PPath.js";
-import { StringAnyMap } from "../../../../../../Settings/types.js";
+import {StringAnyMap} from "../../../../../../Settings/types.js";
 import StringTracker from "../../../../../../SourceTracker/StringTracker/StringTracker.js";
-import { SessionBuild } from "../../../../../Session.js";
+import {SessionBuild} from "../../../../../Session.js";
 import EJSParser from "../../../../EJSParser.js";
-import renderAttrs, { addImportSource } from "./renderAttrs.js";
+import renderAttrs, {addImportSource} from "./renderAttrs.js";
 import STWriter from "./STWriter.js";
 
 const SCRIPT = 'script',
@@ -22,24 +22,25 @@ const SCRIPT = 'script',
     ATTRS_OBJECT_HTML = 'attrsObjectHTML',
     SPACE_ONE = 'spaceOne',
     CREATE_DATE_WRITER = 'createDateWriter',
-    ATTRDEFAULT = 'attrdefault'
+    ATTRDEFAULT = 'attrdefault';
 
-export const COMPILE_PARAMS = [SCRIPT, STYLE, DEFINE, STORE, PAGE_FILENAME, PAGE_DIRNAME, LOCALPATH, ATTRIBUTES, DEPENDENCE, ATTRS_HTML, ATTRS_OBJECT_HTML, SPACE_ONE, CREATE_DATE_WRITER, ATTRDEFAULT]
+export const COMPILE_PARAMS = [SCRIPT, STYLE, DEFINE, STORE, PAGE_FILENAME, PAGE_DIRNAME, LOCALPATH, ATTRIBUTES, DEPENDENCE, ATTRS_HTML, ATTRS_OBJECT_HTML, SPACE_ONE, CREATE_DATE_WRITER, ATTRDEFAULT];
 
 type Writer = { text: string }
+
 function createContext(session: SessionBuild, parser: EJSParser, attributes: StringAnyMap = {}, importSource?: PPath) {
     if (importSource) {
-        addImportSource(attributes, importSource)
+        addImportSource(attributes, importSource);
     }
 
-    const define = {}
-    const contextWriter = new STWriter(parser)
+    const define = {};
+    const contextWriter = new STWriter(parser);
 
     const exportObject = {
         [SCRIPT]: session.script.bind(session),
         [STYLE]: session.style.bind(session),
         [DEFINE](key: any, value: any) {
-            define[String(key)] = value
+            define[String(key)] = value;
         },
         [STORE]: session.compileRunTimeStore,
         [PAGE_FILENAME]: session.file.full,
@@ -50,7 +51,7 @@ function createContext(session: SessionBuild, parser: EJSParser, attributes: Str
             session.dependencies.updateDep(
                 locationConnectorPPath(file, session.file),
                 true
-            )
+            );
         },
         [ATTRS_HTML](attrs: StringAnyMap = attributes, ...onlySome: string[]) {
             if (typeof attrs == 'string') {
@@ -66,14 +67,14 @@ function createContext(session: SessionBuild, parser: EJSParser, attributes: Str
             }
             return renderAttrs(attrs, onlySome, true);
         },
-        [SPACE_ONE](text: string | boolean, value = text){
-            if(text) {
-                return ' ' + String(value).trim()
+        [SPACE_ONE](text: string | boolean, value = text) {
+            if (text) {
+                return ' ' + String(value).trim();
             }
-            return ''
+            return '';
         },
         [CREATE_DATE_WRITER]() {
-            return contextWriter.writer()
+            return contextWriter.writer();
         },
         [ATTRDEFAULT](keys: string | string[], value: any) {
             if (!Array.isArray(keys)) {
@@ -84,13 +85,13 @@ function createContext(session: SessionBuild, parser: EJSParser, attributes: Str
                 attributes[key] ??= value;
             }
         }
-    }
+    };
 
     return {
         exportObject,
         define,
         result: contextWriter.buildST
-    }
+    };
 }
 
 export type RuntimeContext = {
@@ -100,11 +101,11 @@ export type RuntimeContext = {
 }
 
 export default function exportContext(session: SessionBuild, parser: EJSParser, attributes: StringAnyMap = {}, importSource?: PPath): RuntimeContext {
-    const { exportObject, define, result } = createContext(session, parser, attributes, importSource)
+    const {exportObject, define, result} = createContext(session, parser, attributes, importSource);
 
     return {
         funcs: Object.values(exportObject),
         result,
         define
-    }
+    };
 }

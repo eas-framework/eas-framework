@@ -1,4 +1,4 @@
-import { find_end_of_def, find_end_of_q, find_end_block } from '../../static/wasm/component/index.js';
+import {find_end_block, find_end_of_def, find_end_of_q} from '../../StaticFiles/wasm/component/index.js';
 
 export type ParseBlocks = { name: string, start: number, end: number }[]
 

@@ -1,35 +1,35 @@
-import { GlobalSettings } from "../Settings/GlobalSettings.js";
+import {GlobalSettings} from "../Settings/GlobalSettings.js";
 
 export default class DataWriter {
-    constructor(private writeFunc: (text: string, override?: boolean) => void){
-        this.setResponse = this.setResponse.bind(this)
-        this.write = this.write.bind(this)
-        this.writeSafe = this.writeSafe.bind(this)
-        this.echo = this.echo.bind(this)
+    constructor(private writeFunc: (text: string, override?: boolean) => void) {
+        this.setResponse = this.setResponse.bind(this);
+        this.write = this.write.bind(this);
+        this.writeSafe = this.writeSafe.bind(this);
+        this.echo = this.echo.bind(this);
     }
 
     static toStringInfo(str: any) {
         if (str instanceof Object) {
-            return JSON.stringify(str, null, GlobalSettings.development ? 2: 0);
+            return JSON.stringify(str, null, GlobalSettings.development ? 2 : 0);
         }
         return str?.toString();
     }
 
     static escape(str: string) {
-        let build = ''
+        let build = '';
         for (const i of str) {
             build += '&#' + i.charCodeAt(0) + ';';
         }
-        return build
+        return build;
     }
 
 
     setResponse(text: any) {
-        this.writeFunc(DataWriter.toStringInfo(text), true)
+        this.writeFunc(DataWriter.toStringInfo(text), true);
     }
 
     write(text = '') {
-        this.writeFunc(DataWriter.toStringInfo(text))
+        this.writeFunc(DataWriter.toStringInfo(text));
     }
 
     writeSafe(str = '') {
@@ -37,16 +37,16 @@ export default class DataWriter {
 
         this.writeFunc(
             DataWriter.escape(str)
-        )
+        );
     }
 
     echo(arr: string[], ...params: any[]) {
-        let build = ''
+        let build = '';
         for (const i in params) {
-            build += arr[i] + DataWriter.escape(params[i])
+            build += arr[i] + DataWriter.escape(params[i]);
         }
 
-        build += arr.at(-1)
-        this.writeFunc(build)
+        build += arr.at(-1);
+        this.writeFunc(build);
     }
 }

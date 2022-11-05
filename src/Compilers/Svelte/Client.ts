@@ -73,7 +73,7 @@ export default async function compileSvelte(file: PPath, deps: DepCreator) {
             hydratable: true,
             sveltePath: '/serv/svelte'
         });
-        logSvelteWarn(compileSvelte.warnings, file, sourcemap);
+        await logSvelteWarn(compileSvelte.warnings, file, sourcemap);
 
         await minify(compileSvelte.js, scriptLang);
         addSourceMap(compileSvelte);
@@ -83,6 +83,6 @@ export default async function compileSvelte(file: PPath, deps: DepCreator) {
 
         return true;
     } catch (err) {
-        logSvelteError(err, file, sourcemap);
+        await logSvelteError(err, file, sourcemap);
     }
 }

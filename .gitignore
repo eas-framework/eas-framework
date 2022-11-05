@@ -27,6 +27,7 @@ Cargo.lock
 .DS_Store
 **/.DS_Store
 
-src/SystemData/*/**
+tests/website/dist/*
 .pls_cache
 .swc
+/.ts-node/

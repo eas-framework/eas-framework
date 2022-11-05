@@ -1,4 +1,4 @@
-import { pool } from "./Pool.js";
+import {pool} from "./Pool.js";
 
 export async function HTMLAttrParser(text: string): Promise<{
     sk: number,
@@ -8,6 +8,6 @@ export async function HTMLAttrParser(text: string): Promise<{
     space: boolean,
     char: string
 }[]> {
-    const parse = await pool.exec('HTMLAttrParser', [text])
-    return JSON.parse(parse)
+    const parse = await pool.exec('HTMLAttrParser', [text]);
+    return JSON.parse(parse);
 }

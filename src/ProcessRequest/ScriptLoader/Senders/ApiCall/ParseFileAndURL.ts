@@ -7,9 +7,7 @@ import {GlobalSettings} from '../../../../Settings/GlobalSettings.js';
 import RequestParser from '../../RequestParser.js';
 
 function importFile(file: PPath) {
-    return new FileImporter(file, {
-        importLine: 'Api Call'
-    }).createImport();
+    return new FileImporter(file).createImport();
 }
 
 type APIURLInfo = { file: PPath, original: PPath };

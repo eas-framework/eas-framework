@@ -17,8 +17,8 @@ async function copyFiles(code){
 
     const __dirname = path.resolve();
    
-    const toPath = __dirname + '/../../src/static/wasm/easSyntax/';
-    const fromPath = __dirname + '/target/wasm32-unknown-unknown/release/';
+    const toPath = __dirname + '/../../src/StaticFiles/wasm/easSyntax/';
+    const fromPath = __dirname + `/target/wasm32-unknown-unknown/${RELEASE ? 'release': 'debug'}/`;
 
     promises.copyFile(fromPath + 'swc_dynamic_imports.wasm', toPath + 'build.wasm');
 

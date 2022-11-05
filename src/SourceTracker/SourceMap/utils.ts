@@ -1,10 +1,10 @@
-import { RawSourceMap, SourceMapConsumer, SourceMapGenerator } from "source-map";
+import {RawSourceMap, SourceMapConsumer, SourceMapGenerator} from "source-map";
 
 export function toURLComment(stringMap: string, isCss?: boolean) {
     let mapString = `sourceMappingURL=data:application/json;charset=utf-8;base64,${Buffer.from(stringMap).toString("base64")}`;
 
     if (isCss)
-        mapString = `/*# ${mapString}*/`
+        mapString = `/*# ${mapString}*/`;
     else
         mapString = '//# ' + mapString;
 
@@ -15,8 +15,8 @@ export async function mergeSourceMap(generatedMap: RawSourceMap, originalMap: Ra
     const original = await new SourceMapConsumer(originalMap);
     const newMap = new SourceMapGenerator();
     (await new SourceMapConsumer(generatedMap)).eachMapping(m => {
-        const location = original.originalPositionFor({line: m.originalLine, column: m.originalColumn})
-        if(!location.source) return;
+        const location = original.originalPositionFor({line: m.originalLine, column: m.originalColumn});
+        if (!location.source) return;
         newMap.addMapping({
             generated: {
                 column: m.generatedColumn,
@@ -27,7 +27,7 @@ export async function mergeSourceMap(generatedMap: RawSourceMap, originalMap: Ra
                 line: location.line
             },
             source: location.source
-        })
+        });
     });
 
     return newMap;

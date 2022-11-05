@@ -5,8 +5,8 @@ import ConvertSyntaxRazor from './Templating/RazorTranspiler.js';
 import appendComponents from './Templating/Components/index.js';
 import rewriteHTMLSyntax from './Templating/HTMLSyntax/index.js';
 import {pageBuildHTMLStage1, pageBuildHTMLStage2, pageBuildHTMLStage3, pageBuildStart} from './Events.js';
-import addScriptTemplate from './Templating/ScriptTemplate.js';
 import {ScriptToEASScriptLastProcesses} from '../Compilers/EASSyntax/Script.js';
+import makeCodeAScript, {addScriptTemplate} from './Templating/ScriptTemplate.js';
 
 export default async function compileFullPage(pagePath: PPath) {
     const session = new SessionBuild(pagePath);
@@ -19,12 +19,12 @@ export default async function compileFullPage(pagePath: PPath) {
     pageContent = await rewriteHTMLSyntax(pageContent);
 
     pageContent = await pageBuildHTMLStage1(pageContent, session);
-    pageContent = await addScriptTemplate(pageContent);
-    pageContent = await pageBuildHTMLStage2(pageContent, session);
-
+    pageContent = await makeCodeAScript(pageContent);
     pageContent = await ScriptToEASScriptLastProcesses(pageContent, session);
-    pageContent = await pageBuildHTMLStage3(pageContent, session);
 
+    pageContent = await pageBuildHTMLStage2(pageContent, session);
+    pageContent = await addScriptTemplate(pageContent);
+    pageContent = await pageBuildHTMLStage3(pageContent, session);
 
     return pageContent;
 }

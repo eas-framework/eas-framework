@@ -1,7 +1,7 @@
 import path from "node:path";
-import {SystemData} from "../../../../../Settings/ProjectConsts.js";
 import RequestWrapper from "../../../../ProcessURL/RequestWrapper.js";
 import {sendStaticFile} from "./utils.js";
+import {frameworkFiles} from '../../../../../Settings/ProjectConsts.js';
 
 interface buildIn {
     path?: string;
@@ -11,7 +11,7 @@ interface buildIn {
     content?: string;
 }
 
-const staticFilesDirectory = path.join(SystemData, '..', 'static', 'client');
+const staticFilesDirectory = () => path.join(frameworkFiles, 'StaticFiles', 'client');
 
 const staticInfo: buildIn[] = [{
     path: "serv/temp.js",
@@ -35,6 +35,6 @@ export default function staticFiles(wrapper: RequestWrapper) {
         return false;
     }
 
-    const fullFilePath = path.join(staticFilesDirectory, haveStringFile.inServer);
+    const fullFilePath = path.join(staticFilesDirectory(), haveStringFile.inServer);
     return sendStaticFile(fullFilePath, haveStringFile.type, wrapper);
 }

@@ -1,9 +1,10 @@
-import { Options as TransformOptions } from '@swc/core';
+import {Options as TransformOptions} from '@swc/core';
 import path from 'node:path';
-import { SystemData } from '../../Settings/ProjectConsts.js';
+import {frameworkFiles} from '../../Settings/ProjectConsts.js';
 
-const PLUGIN_URL = path.join(SystemData, '..', 'static', 'wasm', 'easSyntax', 'build.wasm')
-export async function addEASPlugin(options: TransformOptions, {transformStopToReturn = false} = {}) {
+const PLUGIN_URL = path.join(frameworkFiles, 'StaticFiles', 'wasm', 'easSyntax', 'build.wasm');
+
+export function addEASPlugin(options: TransformOptions, {transformStopToReturn = false} = {}) {
     options.jsc.experimental = {
         keepImportAssertions: true,
         plugins: [
@@ -11,10 +12,10 @@ export async function addEASPlugin(options: TransformOptions, {transformStopToRe
                 PLUGIN_URL,
                 {
                     importMethod: "require",
-                    stopMethod: transformStopToReturn ? "stop": "",
+                    stopMethod: transformStopToReturn ? "stop" : "",
                     stopMethodToKeyword: "return"
                 }
             ]
         ]
-    }
+    };
 }

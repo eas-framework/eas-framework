@@ -1,10 +1,10 @@
-import { transform, Options as transformOptions } from "@swc/core";
+import {Options as transformOptions, transform} from "@swc/core";
 import assert from "assert";
-import { defaultVariables, GetScriptSettings, TransformJSC, TRANSFORM_MODULE } from "../../src/Compilers/SWC/Settings.js";
-import { exampleScript } from "./contents/easJS.js";
-import { fileURLToPath } from 'url'
+import {defaultVariables, GetScriptSettings, TransformJSC} from "../../src/Compilers/SWC/Settings.js";
+import {exampleScript, exampleScriptExpectedOutput} from "./contents/easJS.js";
+import {fileURLToPath} from 'url';
 
-const PLUGIN_URL = fileURLToPath(new URL('../../src/static/wasm/easSyntax/build.wasm', import.meta.url))
+const PLUGIN_URL = fileURLToPath(new URL('../../src/StaticFiles/wasm/easSyntax/build.wasm', import.meta.url));
 
 const options: transformOptions = {
 
@@ -28,15 +28,12 @@ const options: transformOptions = {
 
         },
     }, defaultVariables(), true),
-    minify: true
+    minify: false
 };
 
 describe('EAS JS Syntax', () => {
     it('Simple swc compile test', async () => {
-        const { code, map } = await transform(exampleScript, options);
-        assert.equal(code,
-            `var _ddd=await require4("ddd");_export(exports,{a:()=>_ddd.a,b:()=>_ddd.b,c:()=>_ddd.c,k:()=>e,default:()=>me});var{default:Moo,bb:a1,cc}=await require4("./ddd",{type:"json"});Moo();a();bb();cc();await require4("fff");await require4("jdrjj");_return(2);_return;function me(){}`
-        )
-
-    })
-})
+        const {code, map} = await transform(exampleScript, options);
+        assert.equal(code, exampleScriptExpectedOutput);
+    });
+});

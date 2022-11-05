@@ -88,11 +88,6 @@ impl DynamicImports {
             }
             _ => ()
         }
-        if let ModuleItem::ModuleDecl(model) = decl {
-            if let ModuleDecl::Import(import) = model {
-                *decl = ModuleItem::Stmt(self.visit_mut_import_dec_like(import));
-            }
-        }
 
         remove_this
 
@@ -106,7 +101,7 @@ impl DynamicImports {
      */
     pub fn visit_mut_import_dec_like(&mut self, orig: &mut ImportDecl) -> Stmt {
         let mut args = vec![ExprOrSpread {
-            expr: Box::new(orig.src.take().into()),
+            expr: Box::new(Expr::Lit(Lit::Str(orig.src.clone().into()))),
             spread: None,
         }];
 
@@ -117,7 +112,7 @@ impl DynamicImports {
             })
         }
 
-        let importer_expr_await = async_importer(&orig.span, args, &self.import_method);
+        let importer_expr_await = async_importer(args, &self.import_method);
 
         let mut vars_props: Vec<ObjectPatProp> = vec![];
         let mut namespace_variable = None;
@@ -175,7 +170,7 @@ impl DynamicImports {
         if namespace_variable == None && vars_props.len() == 0 {
             return Stmt::Expr(ExprStmt {
                 expr: importer_expr_await,
-                span: DUMMY_SP
+                span: orig.span
             });
         }
 
@@ -183,7 +178,7 @@ impl DynamicImports {
         Stmt::Decl(Decl::Var(VarDecl {
             kind: VarDeclKind::Var,
             declare: false,
-            span: DUMMY_SP,
+            span: orig.span,
             decls: vec![namespace_variable.unwrap_or(VarDeclarator {
                 definite: false,
                 init: Some(importer_expr_await),

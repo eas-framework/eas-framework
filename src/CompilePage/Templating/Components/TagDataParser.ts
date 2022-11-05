@@ -1,6 +1,6 @@
 import JSON5 from "json5";
 import StringTracker from "../../../SourceTracker/StringTracker/StringTracker.js";
-import { HTMLAttrParser } from "../../ConnectRust/TagData.js";
+import {HTMLAttrParser} from "../../ConnectRust/TagData.js";
 
 export default class TagDataParser {
     valueArray: {
@@ -9,17 +9,17 @@ export default class TagDataParser {
         obj?: any,
         space: boolean,
         char?: string
-    }[] = []
+    }[] = [];
 
     constructor(private text?: StringTracker) {
 
     }
 
     async parser() {
-        if(!this.text) return;
+        if (!this.text) return;
         const parse = await HTMLAttrParser(this.text.eq);
 
-        for (const { char, ek, ev, sk, space, sv } of parse) {
+        for (const {char, ek, ev, sk, space, sv} of parse) {
             const value = sv == ev ? true : this.text.slice(sv, ev);
 
             let obj: any; // if js object
@@ -27,7 +27,7 @@ export default class TagDataParser {
                 obj = JSON5.parse(value.eq);
             }
 
-            this.valueArray.push({ char, space, key: this.text.slice(sk, ek), value, obj })
+            this.valueArray.push({char, space, key: this.text.slice(sk, ek), value, obj});
         }
     }
 
@@ -43,7 +43,7 @@ export default class TagDataParser {
     }
 
     popTracker(key: string): StringTracker | null | boolean {
-        return this.popItem(key)?.value
+        return this.popItem(key)?.value;
     }
 
     popHaveDefaultTracker<T = string>(key: string, value: T = <any>''): StringTracker | null | T {
@@ -57,20 +57,20 @@ export default class TagDataParser {
     }
 
     popString(key: string): string | null | boolean {
-        const value = this.popItem(key)?.value
+        const value = this.popItem(key)?.value;
         return value instanceof StringTracker ? value.eq : value;
     }
 
-    getOBJ(key: string): {[key: string | number]: any} | null {
-        return this.getItem(key)?.obj
+    getOBJ(key: string): { [key: string | number]: any } | null {
+        return this.getItem(key)?.obj;
     }
 
     popBoolean(key: string, defaultValue?: boolean) {
-        return Boolean(this.popString(key) ?? defaultValue)
+        return Boolean(this.popString(key) ?? defaultValue);
     }
 
     exists(key: string) {
-        return this.valueArray.find(x => x.key.eq.toLowerCase() == key) != null
+        return this.valueArray.find(x => x.key.eq.toLowerCase() == key) != null;
     }
 
     popHaveDefault<T = string>(key: string, value: T = <any>''): string | null | T {
@@ -97,15 +97,14 @@ export default class TagDataParser {
     rebuildSpace() {
         const newAttributes = new StringTracker();
 
-        for (const { value, char, key, space, obj } of this.valueArray) {
+        for (const {value, char, key, space, obj} of this.valueArray) {
             space && newAttributes.addTextAfter(' ');
 
             if (value === true) {
                 newAttributes.plus(key);
             } else if (obj) {
                 newAttributes.plus$`${key}="${JSON.stringify(obj)}"`;
-            }
-            else {
+            } else {
                 newAttributes.plus$`${key}=${char}${value}${char}`;
             }
         }
@@ -117,13 +116,13 @@ export default class TagDataParser {
         const have = this.valueArray.find(x => x.key.eq.toLowerCase() == key);
         if (have) return (have.value = new StringTracker(value));
 
-        this.valueArray.push({ key: new StringTracker(key), value: new StringTracker(value), char: '"', space: true });
+        this.valueArray.push({key: new StringTracker(key), value: new StringTracker(value), char: '"', space: true});
     }
 
     map() {
         const attrMap: { [key: string]: string | true | any } = {};
 
-        for (const { key, value, obj } of this.valueArray) {
+        for (const {key, value, obj} of this.valueArray) {
             if (obj)
                 attrMap[key.eq] = obj;
             else if (key)
@@ -144,17 +143,17 @@ export default class TagDataParser {
             const have = this.valueArray.find(x => x.key.eq.toLowerCase() == key);
 
             if (isClass && have) {
-                if(have.value instanceof StringTracker)
+                if (have.value instanceof StringTracker)
                     have.value = have.value.plus(' ', data.value).trimStart();
                 else
                     have.value = data.value;
-            } else if(!have){
+            } else if (!have) {
                 this.valueArray.unshift({...data});
             }
         }
     }
 
-    clone(){
+    clone() {
         const copy = new TagDataParser();
         copy.extends(this);
         return copy;

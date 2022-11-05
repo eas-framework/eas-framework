@@ -1,32 +1,33 @@
 {
-    "compilerOptions": {
-        "strict": false,
-        "target": "ESNEXT",
-        "experimentalDecorators": true,
-        "declarationDir": "dist",
-        "module": "esnext",
-        "declaration": true,
-        "preserveSymlinks": true,
-        "isolatedModules": true,
-        "esModuleInterop": true,
-        "downlevelIteration": true,
-        "noUnusedLocals": false,
-        "noImplicitAny": false,
-        "noUnusedParameters": false,
-        "preserveConstEnums": true,
-        "skipLibCheck": true,
-        "moduleResolution": "Node",
-        "sourceMap": true,
-        "allowUnusedLabels": true,
-        "allowUmdGlobalAccess": false,
-        "forceConsistentCasingInFileNames": true,
-        "allowSyntheticDefaultImports": true,
-        "emitDeclarationOnly": false,
-        "lib": [
-            "ESNext"
-        ]
-    },
-    "include": [
-        "src"
+  "compilerOptions": {
+    "strict": false,
+    "target": "ESNEXT",
+    "experimentalDecorators": true,
+    "declarationDir": "dist",
+    "module": "esnext",
+    "declaration": true,
+    "preserveSymlinks": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "noUnusedLocals": false,
+    "noImplicitAny": false,
+    "noUnusedParameters": false,
+    "preserveConstEnums": true,
+    "skipLibCheck": true,
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "allowUnusedLabels": true,
+    "allowUmdGlobalAccess": false,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "emitDeclarationOnly": false,
+    "resolveJsonModule": true,
+    "lib": [
+      "ESNext"
     ]
+  },
+  "include": [
+    "src"
+  ]
 }

@@ -1,19 +1,24 @@
 import {promises} from 'fs';
-import { fileURLToPath } from 'url';
-const loadPath = typeof esbuild !== 'undefined' ? '/../static/wasm/component/': '/../';
+import {fileURLToPath} from 'url';
+
+const loadPath = typeof esbuild !== 'undefined' ? '/../static/wasm/component/' : '/../';
 const wasmModule = new WebAssembly.Module(await promises.readFile(fileURLToPath(import.meta.url + loadPath + 'build.wasm')));
-const wasmInstance = new WebAssembly.Instance(wasmModule, {"./rust_assembly_bg.js": {
-        __wbindgen_throw: () => {}
-    }});
+const wasmInstance = new WebAssembly.Instance(wasmModule, {
+    "./rust_assembly_bg.js": {
+        __wbindgen_throw: () => {
+        }
+    }
+});
 const wasm = wasmInstance.exports;
 
 const lTextDecoder = typeof TextDecoder === 'undefined' ? (0, module.require)('util').TextDecoder : TextDecoder;
 
-let cachedTextDecoder = new lTextDecoder('utf-8', { ignoreBOM: true, fatal: true });
+let cachedTextDecoder = new lTextDecoder('utf-8', {ignoreBOM: true, fatal: true});
 
 cachedTextDecoder.decode();
 
 let cachedUint8Memory0;
+
 function getUint8Memory0() {
     if (cachedUint8Memory0.byteLength === 0) {
         cachedUint8Memory0 = new Uint8Array(wasm.memory.buffer);
@@ -33,20 +38,20 @@ let cachedTextEncoder = new lTextEncoder('utf-8');
 
 const encodeString = (typeof cachedTextEncoder.encodeInto === 'function'
     ? function (arg, view) {
-    return cachedTextEncoder.encodeInto(arg, view);
-}
+        return cachedTextEncoder.encodeInto(arg, view);
+    }
     : function (arg, view) {
-    const buf = cachedTextEncoder.encode(arg);
-    view.set(buf);
-    return {
-        read: arg.length,
-        written: buf.length
-    };
-});
+        const buf = cachedTextEncoder.encode(arg);
+        view.set(buf);
+        return {
+            read: arg.length,
+            written: buf.length
+        };
+    });
 
 function passStringToWasm0(arg, malloc, realloc) {
 
-    if (typeof(arg) !== 'string') throw new Error('expected a string argument');
+    if (typeof (arg) !== 'string') throw new Error('expected a string argument');
 
     if (realloc === undefined) {
         const buf = cachedTextEncoder.encode(arg);
@@ -83,11 +88,12 @@ function passStringToWasm0(arg, malloc, realloc) {
     WASM_VECTOR_LEN = offset;
     return ptr;
 }
+
 /**
-* @param {string} text
-* @param {string} search
-* @returns {number}
-*/
+ * @param {string} text
+ * @param {string} search
+ * @returns {number}
+ */
 export function find_close_char_html_elem(text, search) {
     const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
@@ -98,10 +104,10 @@ export function find_close_char_html_elem(text, search) {
 }
 
 /**
-* @param {string} text
-* @param {string} search
-* @returns {number}
-*/
+ * @param {string} text
+ * @param {string} search
+ * @returns {number}
+ */
 export function find_close_char(text, search) {
     const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
@@ -112,15 +118,17 @@ export function find_close_char(text, search) {
 }
 
 let cachedInt32Memory0;
+
 function getInt32Memory0() {
     if (cachedInt32Memory0.byteLength === 0) {
         cachedInt32Memory0 = new Int32Array(wasm.memory.buffer);
     }
     return cachedInt32Memory0;
 }
+
 /**
-* @returns {string}
-*/
+ * @returns {string}
+ */
 export function get_errors() {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -135,10 +143,10 @@ export function get_errors() {
 }
 
 /**
-* @param {string} text
-* @param {string} block
-* @returns {number}
-*/
+ * @param {string} text
+ * @param {string} block
+ * @returns {number}
+ */
 export function find_end_block(text, block) {
     const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
@@ -149,9 +157,9 @@ export function find_end_block(text, block) {
 }
 
 /**
-* @param {string} skip_special_tag
-* @param {string} simple_skip
-*/
+ * @param {string} skip_special_tag
+ * @param {string} simple_skip
+ */
 export function insert_component(skip_special_tag, simple_skip) {
     const ptr0 = passStringToWasm0(skip_special_tag, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
@@ -161,10 +169,10 @@ export function insert_component(skip_special_tag, simple_skip) {
 }
 
 /**
-* @param {string} text
-* @param {string} end_type
-* @returns {number}
-*/
+ * @param {string} text
+ * @param {string} end_type
+ * @returns {number}
+ */
 export function find_end_of_def(text, end_type) {
     const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
@@ -175,10 +183,10 @@ export function find_end_of_def(text, end_type) {
 }
 
 /**
-* @param {string} text
-* @param {string} q_type
-* @returns {number}
-*/
+ * @param {string} text
+ * @param {string} q_type
+ * @returns {number}
+ */
 export function find_end_of_q(text, q_type) {
     const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
@@ -187,9 +195,9 @@ export function find_end_of_q(text, q_type) {
 }
 
 /**
-* @param {string} text
-* @returns {string}
-*/
+ * @param {string} text
+ * @returns {string}
+ */
 export function razor_to_ejs(text) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -206,9 +214,9 @@ export function razor_to_ejs(text) {
 }
 
 /**
-* @param {string} text
-* @returns {string}
-*/
+ * @param {string} text
+ * @returns {string}
+ */
 export function razor_to_ejs_compile(text) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -225,10 +233,10 @@ export function razor_to_ejs_compile(text) {
 }
 
 /**
-* @param {string} text
-* @param {string} name
-* @returns {string}
-*/
+ * @param {string} text
+ * @param {string} name
+ * @returns {string}
+ */
 export function razor_to_ejs_min(text, name) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -247,11 +255,11 @@ export function razor_to_ejs_min(text, name) {
 }
 
 /**
-* @param {string} text
-* @param {string} start
-* @param {string} end
-* @returns {string}
-*/
+ * @param {string} text
+ * @param {string} start
+ * @param {string} end
+ * @returns {string}
+ */
 export function ejs_parse(text, start, end) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -272,9 +280,9 @@ export function ejs_parse(text, start, end) {
 }
 
 /**
-* @param {string} text
-* @returns {string}
-*/
+ * @param {string} text
+ * @returns {string}
+ */
 export function page_base_parser(text) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -291,9 +299,9 @@ export function page_base_parser(text) {
 }
 
 /**
-* @param {string} text
-* @returns {string}
-*/
+ * @param {string} text
+ * @returns {string}
+ */
 export function html_attr_parser(text) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
