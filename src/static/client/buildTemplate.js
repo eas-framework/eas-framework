@@ -4,7 +4,7 @@ class buildTemplate {
         this.script = script;
         this.setResponse = this.setResponse.bind(this);
         this.write = this.write.bind(this);
-        this.safeWrite = this.safeWrite.bind(this);
+        this.writeSafe = this.writeSafe.bind(this);
         this.sendToSelector = this.sendToSelector.bind(this);
     }
 
@@ -24,7 +24,7 @@ class buildTemplate {
         this.script.text += buildTemplate.ToStringInfo(text);
     };
 
-    safeWrite(str = '') {
+    writeSafe(str = '') {
         str = buildTemplate.ToStringInfo(str);
 
         for (const i of str) {
@@ -37,7 +37,8 @@ class buildTemplate {
         div.innerHTML = this.script.text;
 
         if(selector){
-            document.querySelector(selector).append(...div.children);
+            const appendToElement = selector instanceof Element ? selector: document.querySelector(selector);
+            appendToElement.append(...div.children);
         }
 
         return div.children;
