@@ -195,7 +195,9 @@ async function makeDefinition(obj: any, urlFrom: string, defineObject: any, Requ
             validate = 'Error on function validator' + makeMassage(e);
         }
 
-        return {error: typeof validate == 'string' ? validate: 'Error validating URL'};
+        if(!validate || typeof validate == 'string'){
+            return {error: typeof validate == 'string' ? validate: 'Error validating URL'};
+        }
     }
 
     return urlFrom || '';
