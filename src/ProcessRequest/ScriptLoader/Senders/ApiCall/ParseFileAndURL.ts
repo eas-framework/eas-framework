@@ -94,9 +94,9 @@ async function executeAPI(wrapper: RequestWrapperAPI, parser: RequestParser) {
     }
 
     if (typeof value === 'string') {
-        wrapper.APIResponse = {text: value};
+        wrapper.APIResponse = {message: value};
     } else {
-        wrapper.APIResponse = value;
+        wrapper.APIResponse = value ?? {message: 'ok'};
     }
 
     return true;

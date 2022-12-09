@@ -58,9 +58,20 @@ export class PageBuilder extends PageParse {
     }
 
     /**
+     * Add code from `<content:server>` to the script file place
+     */
+    private fillServerValue() {
+        const serverValue = new ArrayGetter(this.values).pop('server');
+        if (serverValue == null) return;
+
+        this.codeFileScript.plus(serverValue);
+    }
+
+    /**
      * Fill placeholders with values from previous page
      */
     private fillPlaceHolders() {
+        this.fillServerValue();
         if (!this.previous) return;
 
         let shift = 0;
