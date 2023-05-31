@@ -1,13 +1,13 @@
-import PPath from "../../../../Settings/PPath.js";
-import StringTracker from "../../../../SourceTracker/StringTracker/StringTracker.js";
-import {SessionBuild} from "../../../Session.js";
-import ArrayGetter from "./ArrayGetter.js";
-import {BaseParserBlock} from "./BaseParser.js";
-import CRunTime from "./CompileRuntime/Compile.js";
-import LoadCodeFile from "./LoadCodeFile/index.js";
-import PageParse from "./PageParse.js";
-import {checkDynamicSSR, filterInherit} from "./utils.js";
-import {findFileImport} from "../../../utils.js";
+import PPath from '../../../../Settings/PPath.js';
+import StringTracker from '../../../../SourceTracker/StringTracker/StringTracker.js';
+import {SessionBuild} from '../../../Session.js';
+import ArrayGetter from './ArrayGetter.js';
+import {BaseParserBlock} from './BaseParser.js';
+import CRunTime from './CompileRuntime/Compile.js';
+import LoadCodeFile from './LoadCodeFile/index.js';
+import PageParse from './PageParse.js';
+import {checkDynamicSSR, filterInherit} from './utils.js';
+import {findFileImport} from '../../../utils.js';
 import {directories, ScriptExtension} from '../../../../Settings/ProjectConsts.js';
 import easyFS from '../../../../Util/EasyFS.js';
 import {SystemLog} from '../../../../Logger/BasicLogger.js';
@@ -49,6 +49,7 @@ export class PageBuilder extends PageParse {
         this.fillPlaceHolders();
 
         this.parseValues();
+        this.fillServerValue();
 
         this.inheritValues = filterInherit(this.base);
         this.connectBaseInheritToValues();
@@ -71,7 +72,6 @@ export class PageBuilder extends PageParse {
      * Fill placeholders with values from previous page
      */
     private fillPlaceHolders() {
-        this.fillServerValue();
         if (!this.previous) return;
 
         let shift = 0;

@@ -11,7 +11,10 @@ export default class ArrayGetter<T> {
     }
 
     pop(name: string) {
-        return this.array.splice(this.array.findIndex(x => x.key === name), 1)[0]?.value;
+        const haveIndex = this.array.findIndex(x => x.key === name);
+        if (haveIndex != -1) {
+            return this.array.splice(haveIndex, 1)[0]?.value;
+        }
     }
 
     popAny(name: string) {
