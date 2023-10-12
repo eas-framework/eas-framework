@@ -1,7 +1,7 @@
 import fsExtra from 'fs-extra';
 import path from 'path';
-import {build} from 'esbuild-wasm'
-import { args } from './tools/StreamCommand.js';
+import {build} from 'esbuild-wasm';
+import {args} from './tools/StreamCommand.js';
 import './buildprojects.js';
 
 const __dirname = path.resolve();
@@ -11,18 +11,18 @@ const copyFrom = __dirname + '/src/', copyTo = __dirname + '/dist/';
 const filesToCopy = ['static', 'SystemData'];
 console.log('Copying js files...');
 
-for(const i of filesToCopy){
+for (const i of filesToCopy) {
     await fsExtra.copy(copyFrom + i, copyTo + i);
 }
 
 /* js to ts */
 
 const fromScript = copyFrom + 'scripts/';
-await fsExtra.ensureDir(copyTo+'scripts/');
+await fsExtra.ensureDir(copyTo + 'scripts/');
 
 const {dependencies, name: packageName} = await fsExtra.readJSON(__dirname + '/package.json');
 
-build({
+await build({
     external: ['./static/ImportWithoutCache.cjs', ...Object.keys(dependencies)],
     drop: ['debugger'],
     entryPoints: ['src/index.ts', fromScript + 'install.ts'],
@@ -32,10 +32,10 @@ build({
     format: 'esm',
     target: 'node17',
     minify: args.production,
-    sourcemap: args.production ? undefined: 'inline',
+    sourcemap: args.production ? undefined : 'inline',
     define: {
-        debug: !args.production,
-        esbuild: true,
+        debug: !args.production ? 'true' : '',
+        esbuild: 'true',
         packageName: `'${packageName}'`
     }
 });
@@ -44,27 +44,34 @@ build({
 
 /**
  * minify all the js files in the folder
- * @param {string} path 
+ * @param {string} path
  */
 async function minifyFolder(from, to, path) {
-    const files = await fsExtra.readdir(from + path, { withFileTypes: true });
+    const files = await fsExtra.readdir(from + path, {withFileTypes: true});
     await fsExtra.ensureDir(to + path);
 
+    const promises = [];
     for (const i of files) {
         const fullPath = path + i.name;
 
         if (i.isDirectory()) {
-            minifyFolder(from, to, fullPath + '/');
+            promises.push(
+                minifyFolder(from, to, fullPath + '/')
+            );
         } else if (fullPath.endsWith('.js')) {
-            build({
-                entryPoints: [from + fullPath],
-                bundle: false,
-                platform: 'node',
-                outfile: to + fullPath,
-                minify: true
-            });
+            promises.push(
+                build({
+                    entryPoints: [from + fullPath],
+                    bundle: false,
+                    platform: 'node',
+                    outfile: to + fullPath,
+                    minify: true
+                })
+            );
         }
     }
+
+    await Promise.all(promises);
 }
 
-minifyFolder(__dirname + '/src', __dirname + '/dist', '/static/client/');
+await minifyFolder(__dirname + '/src', __dirname + '/dist', '/static/client/');

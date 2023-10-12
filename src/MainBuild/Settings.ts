@@ -1,24 +1,24 @@
 import * as fileByUrl from '../RunTimeBuild/GetPages';
-import { v4 as uuidv4 } from 'uuid';
-import { BasicSettings, workingDirectory, SystemData } from '../RunTimeBuild/SearchFileSystem';
+import {v4 as uuidv4} from 'uuid';
+import {BasicSettings, SystemData, workingDirectory} from '../RunTimeBuild/SearchFileSystem';
 import * as BuildServer from '../RunTimeBuild/SearchPages';
-import { cookieParser } from '@tinyhttp/cookie-parser';
+import {cookieParser} from '@tinyhttp/cookie-parser';
 import cookieEncrypter from 'cookie-encrypter';
-import { allowPrint } from '../OutputInput/Console';
+import {allowPrint} from '../OutputInput/Console';
 import session from 'express-session';
-import { Settings as InsertModelsSettings } from '../CompileCode/InsertModels';
+import {Settings as InsertModelsSettings} from '../CompileCode/InsertModels';
 import bodyParser from 'body-parser';
-import { StartRequire, GetSettings } from './ImportModule';
-import { Request, Response, NextFunction } from '@tinyhttp/app';
-import { Settings as createNewPrintSettings } from '../OutputInput/Logger';
+import {GetSettings, StartRequire} from './ImportModule';
+import {NextFunction, Request, Response} from '@tinyhttp/app';
+import {Settings as createNewPrintSettings} from '../OutputInput/Logger';
 import MemorySession from 'memorystore';
-import { ExportSettings } from './SettingsTypes';
-import { settings as defineSettings } from '../CompileCode/CompileScript/PageBase';
-import {Export as ExportRam} from '../RunTimeBuild/FunctionScript'
-import { TransformSettings } from '../CompileCode/transform/Script';
-import { SyntaxSettings } from '../CompileCode/transform/EasySyntax';
-import { DevAllowWebsiteExtensions, DevIgnoredWebsiteExtensions, updateDevAllowWebsiteExtensions, updateDevIgnoredWebsiteExtensions } from '../ImportFiles/StaticFiles';
-import { cacheSitemap, GlobalSitemapBuilder } from '../CompileCode/XMLHelpers/SitemapBuilder';
+import {ExportSettings} from './SettingsTypes';
+import {settings as defineSettings} from '../CompileCode/CompileScript/PageBase';
+import {Export as ExportRam} from '../RunTimeBuild/FunctionScript';
+import {TransformSettings} from '../CompileCode/transform/Script';
+import {SyntaxSettings} from '../CompileCode/transform/EasySyntax';
+import {DevAllowWebsiteExtensions, DevIgnoredWebsiteExtensions, updateDevAllowWebsiteExtensions, updateDevIgnoredWebsiteExtensions} from '../ImportFiles/StaticFiles';
+import {cacheSitemap, GlobalSitemapBuilder} from '../CompileCode/XMLHelpers/SitemapBuilder';
 
 export const MB_IN_BYTES = 1048576;
 
@@ -26,22 +26,21 @@ export const MINUIT_MILLISECONDS = 60 * 1000;
 export const HOUR_MILLISECONDS = MINUIT_MILLISECONDS * 60;
 export const DAY_MILLISECONDS = 86400000;
 
-const
-    CookiesSecret = uuidv4().substring(0, 32),
-    SessionSecret = uuidv4(),
-    MemoryStore = MemorySession(session),
+const MemoryStore = MemorySession(session);
+let CookiesSecret = uuidv4().substring(0, 32);
+let SessionSecret = uuidv4();
+let sessionStore: any = null;
 
-    CookiesMiddleware = cookieParser(CookiesSecret),
-    CookieEncrypterMiddleware = cookieEncrypter(CookiesSecret, {}),
-    CookieSettings = { httpOnly: true, signed: true, maxAge: DAY_MILLISECONDS * 30 };
+function updateCookiesMiddleware(cookiesSecret: string) {
+    fileByUrl.Settings.Cookies = <any>cookieParser(cookiesSecret);
+    fileByUrl.Settings.CookieEncrypter = <any>cookieEncrypter(cookiesSecret, {});
+}
 
-fileByUrl.Settings.Cookies = <any>CookiesMiddleware;
-fileByUrl.Settings.CookieEncrypter = <any>CookieEncrypterMiddleware;
-fileByUrl.Settings.CookieSettings = CookieSettings;
+fileByUrl.Settings.CookieSettings = {httpOnly: true, signed: true, maxAge: DAY_MILLISECONDS * 30};
 
 let DevMode_ = true, compilationScan: Promise<() => Promise<void>>, SessionStore;
 
-let formidableServer, bodyParserServer;
+let formidableServer: any, bodyParserServer: any;
 
 const serveLimits = {
     sessionTotalRamMB: 150,
@@ -49,10 +48,11 @@ const serveLimits = {
     sessionCheckPeriodMinutes: 30,
     fileLimitMB: 10,
     requestLimitMB: 4
-}
+};
 
 let pageInRamActivate: () => Promise<void>;
-export function pageInRamActivateFunc(){
+
+export function pageInRamActivateFunc() {
     return pageInRamActivate;
 }
 
@@ -61,20 +61,20 @@ const baseValidPath = [(path: string) => path.split('.').at(-2) != 'serv']; // i
 
 export const Export: ExportSettings = {
     get settingsPath() {
-        return workingDirectory + BasicSettings.WebSiteFolder + "/Settings";
+        return workingDirectory + BasicSettings.WebSiteFolder + '/Settings';
     },
-    get websiteDirectory(){
-        return BasicSettings.WebSiteFolder
+    get websiteDirectory() {
+        return BasicSettings.WebSiteFolder;
     },
-    set websiteDirectory(directory){
-        BasicSettings.WebSiteFolder = directory
+    set websiteDirectory(directory) {
+        BasicSettings.WebSiteFolder = directory;
     },
     set development(value) {
-        if(DevMode_ == value) return
+        if (DevMode_ == value) return;
         DevMode_ = value;
         if (!value) {
             compilationScan = BuildServer.compileAll(Export);
-            process.env.NODE_ENV = "production";
+            process.env.NODE_ENV = 'production';
         }
         fileByUrl.Settings.DevMode = value;
         allowPrint(value);
@@ -84,19 +84,35 @@ export const Export: ExportSettings = {
     },
     middleware: {
         get cookies(): (req: Request, _res: Response<any>, next?: NextFunction) => void {
-            return <any>CookiesMiddleware;
+            return <any>fileByUrl.Settings.Cookies;
         },
         get cookieEncrypter() {
-            return CookieEncrypterMiddleware;
+            return fileByUrl.Settings.CookieEncrypter;
         },
         get session() {
             return SessionStore;
+        },
+        get sessionStore() {
+            return sessionStore;
         },
         get formidable() {
             return formidableServer;
         },
         get bodyParser() {
             return bodyParserServer;
+        },
+        set cookies(value: any) {
+            fileByUrl.Settings.Cookies = value;
+        },
+        set cookieEncrypter(value) {
+            fileByUrl.Settings.CookieEncrypter = value;
+        },
+        set session(value) {
+            SessionStore = value;
+        },
+        set sessionStore(value) {
+            sessionStore = value;
+            buildSession();
         }
     },
     secret: {
@@ -106,6 +122,14 @@ export const Export: ExportSettings = {
         get session() {
             return SessionSecret;
         },
+        set cookies(value) {
+            CookiesSecret = value;
+            updateCookiesMiddleware(value);
+        },
+        set session(value) {
+            SessionSecret = value;
+            buildSession();
+        }
     },
     general: {
         importOnLoad: [],
@@ -119,7 +143,7 @@ export const Export: ExportSettings = {
                 } else {
                     fileByUrl.ClearAllPagesFromRam();
                 }
-            }
+            };
         },
         get pageInRam() {
             return ExportRam.PageRam;
@@ -145,57 +169,57 @@ export const Export: ExportSettings = {
         get plugins() {
             return InsertModelsSettings.plugins;
         },
-        get define(){
-            return defineSettings.define
+        get define() {
+            return defineSettings.define;
         },
         set define(value) {
             defineSettings.define = value;
         },
-        get pathAliases(){
-            return SyntaxSettings.pathAliases
+        get pathAliases() {
+            return SyntaxSettings.pathAliases;
         },
-        set pathAliases(value){
-            SyntaxSettings.pathAliases = value
+        set pathAliases(value) {
+            SyntaxSettings.pathAliases = value;
         },
-        get globals(){
-            return TransformSettings.globals
+        get globals() {
+            return TransformSettings.globals;
         },
-        set globals(value){
-            for(const i in value){
+        set globals(value) {
+            for (const i in value) {
                 value[i] = String(value[i]);
             }
-            TransformSettings.globals = value
+            TransformSettings.globals = value;
         }
     },
     routing: {
         rules: {},
         urlStop: [],
         validPath: baseValidPath,
-        get allowExt(){
-            return DevAllowWebsiteExtensions
+        get allowExt() {
+            return DevAllowWebsiteExtensions;
         },
-        set allowExt(value){
-            updateDevAllowWebsiteExtensions(value)
+        set allowExt(value) {
+            updateDevAllowWebsiteExtensions(value);
         },
-        get ignoreExt(){
+        get ignoreExt() {
             return DevIgnoredWebsiteExtensions;
         },
-        set ignoreExt(value){
+        set ignoreExt(value) {
             updateDevIgnoredWebsiteExtensions(value);
         },
         ignorePaths: [],
         sitemap: {
-            get file(){
-                return GlobalSitemapBuilder.location
+            get file() {
+                return GlobalSitemapBuilder.location;
             },
-            set file(value){
-                GlobalSitemapBuilder.location = value
+            set file(value) {
+                GlobalSitemapBuilder.location = value;
             },
-            get updateAfterHours(){
-                return cacheSitemap.internal / HOUR_MILLISECONDS
+            get updateAfterHours() {
+                return cacheSitemap.internal / HOUR_MILLISECONDS;
             },
-            set updateAfterHours(value){
-                cacheSitemap.internal = value * HOUR_MILLISECONDS
+            set updateAfterHours(value) {
+                cacheSitemap.internal = value * HOUR_MILLISECONDS;
             }
         },
         get errorPages() {
@@ -206,28 +230,28 @@ export const Export: ExportSettings = {
         }
     },
     serveLimits: {
-        get cacheDays(){
+        get cacheDays() {
             return fileByUrl.Settings.CacheDays;
         },
-        set cacheDays(value){
+        set cacheDays(value) {
             fileByUrl.Settings.CacheDays = value;
         },
-        get cookiesExpiresDays(){
-            return CookieSettings.maxAge / DAY_MILLISECONDS;
+        get cookiesExpiresDays() {
+            return fileByUrl.Settings.CookieSettings.maxAge / DAY_MILLISECONDS;
         },
-        set cookiesExpiresDays(value){
-            CookieSettings.maxAge = value * DAY_MILLISECONDS;
+        set cookiesExpiresDays(value) {
+            fileByUrl.Settings.CookieSettings.maxAge = value * DAY_MILLISECONDS;
         },
         set sessionTotalRamMB(value: number) {
-            if(serveLimits.sessionTotalRamMB == value) return
+            if (serveLimits.sessionTotalRamMB == value) return;
             serveLimits.sessionTotalRamMB = value;
             buildSession();
         },
-        get sessionTotalRamMB(){
+        get sessionTotalRamMB() {
             return serveLimits.sessionTotalRamMB;
         },
         set sessionTimeMinutes(value: number) {
-            if(serveLimits.sessionTimeMinutes == value) return
+            if (serveLimits.sessionTimeMinutes == value) return;
             serveLimits.sessionTimeMinutes = value;
             buildSession();
 
@@ -236,7 +260,7 @@ export const Export: ExportSettings = {
             return serveLimits.sessionTimeMinutes;
         },
         set sessionCheckPeriodMinutes(value: number) {
-            if(serveLimits.sessionCheckPeriodMinutes == value) return
+            if (serveLimits.sessionCheckPeriodMinutes == value) return;
             serveLimits.sessionCheckPeriodMinutes = value;
             buildSession();
 
@@ -245,7 +269,7 @@ export const Export: ExportSettings = {
             return serveLimits.sessionCheckPeriodMinutes;
         },
         set fileLimitMB(value: number) {
-            if(serveLimits.fileLimitMB == value) return
+            if (serveLimits.fileLimitMB == value) return;
             serveLimits.fileLimitMB = value;
             buildFormidable();
 
@@ -254,7 +278,7 @@ export const Export: ExportSettings = {
             return serveLimits.fileLimitMB;
         },
         set requestLimitMB(value: number) {
-            if(serveLimits.requestLimitMB == value) return
+            if (serveLimits.requestLimitMB == value) return;
             serveLimits.requestLimitMB = value;
             buildFormidable();
             buildBodyParser();
@@ -276,19 +300,19 @@ export const Export: ExportSettings = {
             sites: []
         }
     }
-}
+};
 
 export function buildFormidable() {
     formidableServer = {
         maxFileSize: Export.serveLimits.fileLimitMB * MB_IN_BYTES,
-        uploadDir: SystemData + "/UploadFiles/",
+        uploadDir: SystemData + '/UploadFiles/',
         multiples: true,
         maxFieldsSize: Export.serveLimits.requestLimitMB * MB_IN_BYTES
     };
 }
 
 export function buildBodyParser() {
-    bodyParserServer = (<any>bodyParser).json({ limit: Export.serveLimits.requestLimitMB + 'mb' });
+    bodyParserServer = (<any>bodyParser).json({limit: Export.serveLimits.requestLimitMB + 'mb'});
 }
 
 
@@ -299,11 +323,11 @@ export function buildSession() {
     }
 
     SessionStore = session({
-        cookie: { maxAge: Export.serveLimits.sessionTimeMinutes * MINUIT_MILLISECONDS, sameSite: true },
+        cookie: {maxAge: Export.serveLimits.sessionTimeMinutes * MINUIT_MILLISECONDS, sameSite: true},
         secret: SessionSecret,
         resave: false,
         saveUninitialized: false,
-        store: new MemoryStore({
+        store: Export.middleware.sessionStore ?? new MemoryStore({
             checkPeriod: Export.serveLimits.sessionCheckPeriodMinutes * MINUIT_MILLISECONDS,
             max: Export.serveLimits.sessionTotalRamMB * MB_IN_BYTES
         })
@@ -311,7 +335,7 @@ export function buildSession() {
 }
 
 function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'ignore' | 'only' = 'ignore') {
-    if(!json) return false;
+    if (!json) return false;
     let hasImplanted = false;
     for (const i in json) {
         const include = rules.includes(i);
@@ -328,9 +352,9 @@ function copyJSON(to: any, json: any, rules: string[] = [], rulesType: 'ignore' 
  * @param {any} target - any - The target object to merge into.
  * @param from - {[key: string]: {[key: string]: any}}
  */
-function mergeNested1(target: any, from?: {[key: string]: {[key: string]: any}}){
-    if(!from) return;
-    for(const i in from){
+function mergeNested1(target: any, from?: { [key: string]: { [key: string]: any } }) {
+    if (!from) return;
+    for (const i in from) {
         target[i] ??= {};
         Object.assign(target[i], from[i]);
     }
@@ -339,7 +363,7 @@ function mergeNested1(target: any, from?: {[key: string]: {[key: string]: any}})
 // read the settings of the website
 export async function requireSettings() {
     const Settings: ExportSettings = await GetSettings(Export);
-    if(Settings == null) return;
+    if (Settings == null) return;
 
     if (Settings.development)
         mergeNested1(Settings, <any>Settings.implDev);
@@ -374,7 +398,7 @@ export async function requireSettings() {
     copyJSON(Export.serve, Settings.serve);
 
     /* --- problematic updates --- */
-    Export.development = Settings.development
+    Export.development = Settings.development;
 
     if (Settings.general?.importOnLoad) {
         Export.general.importOnLoad = <any>await StartRequire(<any>Settings.general.importOnLoad, DevMode_);
@@ -389,11 +413,12 @@ export async function requireSettings() {
 /**
  * If you change to production build on run time, this you need to call this to make sure the production build is used
  */
-export async function waitProductionBuild(){
+export async function waitProductionBuild() {
     await (await compilationScan)?.();
 }
 
 export function buildFirstLoad() {
+    updateCookiesMiddleware(CookiesSecret);
     buildSession();
     buildFormidable();
     buildBodyParser();
