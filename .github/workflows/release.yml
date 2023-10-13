@@ -6,14 +6,16 @@ on:
 concurrency: release-${{ github.ref }}
 jobs:
   release:
+    timeout-minutes: 30
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: "17"
+          node-version: "20"
       - name: Install modules
-        run: npm ci
+        run: npm ci --ignore-scripts && npm install -g wasm-pack
       - name: Build
         run: npm run build production && npm run postinstall
       - name: Release

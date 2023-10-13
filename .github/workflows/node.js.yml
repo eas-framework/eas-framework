@@ -5,29 +5,32 @@ name: Node.js CI
 
 on:
   push:
-    branches: [master]
+    branches: [ master ]
   pull_request:
-    branches: [master]
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     strategy:
       matrix:
-        node-version: [16.x, 17.x]
+        node-version: [ 18.x, 20.x ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
       - uses: actions/checkout@v3
+      - uses: browser-actions/setup-chrome@v1
       - name: Use Node.js ${{ matrix.node-version }}
+
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts && npm install -g wasm-pack
 
       - name: Build
         run: npm run build && npm run postinstall
@@ -35,4 +38,4 @@ jobs:
       - name: Coverage
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: npm run coverage && npx codecov        
+        run: PUPPETEER_EXECUTABLE_PATH=$(which chrome) npm run coverage && npx codecov
