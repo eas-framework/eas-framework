@@ -34,7 +34,7 @@ await build({
     minify: args.production,
     sourcemap: args.production ? undefined : 'inline',
     define: {
-        debug: !args.production ? 'true' : '',
+        debug: !args.production ? 'true' : 'false',
         esbuild: 'true',
         packageName: `'${packageName}'`
     }

@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-#![feature(once_cell)]
 
 mod actions;
 mod html_search;
