@@ -12,12 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
+      - uses: browser-actions/setup-chrome@v1
+
         with:
           node-version: "20"
       - name: Install modules
         run: npm ci --ignore-scripts && npm install -g wasm-pack@0.10.3
       - name: Build
         run: npm run build production && npm run postinstall
+      - name: Test
+        run: PUPPETEER_EXECUTABLE_PATH=$(which chrome) npm run test:dist
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
