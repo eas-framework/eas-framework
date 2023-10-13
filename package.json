@@ -103,7 +103,7 @@
     "esbuild-wasm": "^0.19.4",
     "fs-extra": "^10.0.0",
     "husky": "^7.0.4",
-    "puppeteer": "^14.2.1",
+    "puppeteer": "^21.3.8",
     "reflect-metadata": "^0.1.13",
     "semantic-release": "^22.0.5",
     "typescript": "^4.6.2"
