@@ -1,22 +1,22 @@
-import { GetPlugin } from '../../../CompileCode/InsertModels';
-import { transform } from '@swc/core';
-import { getTypes, BasicSettings } from '../../../RunTimeBuild/SearchFileSystem';
+import {GetPlugin} from '../../../CompileCode/InsertModels';
+import {transform} from '@swc/core';
+import {BasicSettings, getTypes} from '../../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../../OutputInput/EasyFs';
-import { extname } from 'node:path';
-import sass from 'sass';
-import { v4 as uuid } from 'uuid';
+import {extname} from 'node:path';
+import * as sass from 'sass';
+import {v4 as uuid} from 'uuid';
 import path from 'path';
-import { fileURLToPath } from 'node:url';
-import { createImporter, PrintSassErrorTracker, sassStyle, sassSyntax } from '../../../BuildInComponents/Components/style/sass';
-import { SessionBuild } from '../../../CompileCode/Session';
+import {fileURLToPath} from 'node:url';
+import {createImporter, PrintSassErrorTracker, sassStyle, sassSyntax} from '../../../BuildInComponents/Components/style/sass';
+import {SessionBuild} from '../../../CompileCode/Session';
 import StringTracker from '../../../EasyDebug/StringTracker';
-import { ESBuildPrintErrorStringTracker } from '../../../CompileCode/transpiler/printMessage';
-import { backToOriginal, backToOriginalSss } from '../../../EasyDebug/SourceMapLoad';
-import { TransformJSC } from '../../../CompileCode/transpiler/settings';
+import {ESBuildPrintErrorStringTracker} from '../../../CompileCode/transpiler/printMessage';
+import {backToOriginal, backToOriginalSss} from '../../../EasyDebug/SourceMapLoad';
+import {TransformJSC} from '../../../CompileCode/transpiler/settings';
 
 async function SASSSvelte(content: StringTracker, lang: string, fullPath: string) {
     try {
-        const { css, sourceMap, loadedUrls } = await sass.compileStringAsync(content.eq, {
+        const {css, sourceMap, loadedUrls} = await sass.compileStringAsync(content.eq, {
             syntax: sassSyntax(<any>lang),
             style: sassStyle(lang),
             importer: createImporter(fullPath),
@@ -34,7 +34,7 @@ async function SASSSvelte(content: StringTracker, lang: string, fullPath: string
 
     return {
         code: new StringTracker()
-    }
+    };
 }
 
 async function ScriptSvelte(content: StringTracker, lang: string, connectSvelte: string[], isDebug: boolean, svelteExt = ''): Promise<StringTracker> {
@@ -66,15 +66,15 @@ async function ScriptSvelte(content: StringTracker, lang: string, connectSvelte:
     });
 
     try {
-        const { code, map } = (await transform(content.eq, {
+        const {code, map} = (await transform(content.eq, {
             jsc: TransformJSC({
                 parser: {
                     syntax: 'typescript',
-                    ...GetPlugin(lang.toUpperCase() +"Options")
+                    ...GetPlugin(lang.toUpperCase() + 'Options')
                 }
-            }, { __DEBUG__: '' + isDebug }),
+            }, {__DEBUG__: '' + isDebug}),
             sourceMaps: true,
-            ...GetPlugin("transformOptions"),
+            ...GetPlugin('transformOptions'),
         }));
         content = await backToOriginal(content, code, map);
     } catch (err) {
@@ -85,7 +85,7 @@ async function ScriptSvelte(content: StringTracker, lang: string, connectSvelte:
 
     if (lang == 'ts')
         content = content.replacer(/___toKen`([\w\W]+?)`/mi, args => {
-            return mapToken[args[1].eq] ?? new StringTracker()
+            return mapToken[args[1].eq] ?? new StringTracker();
         });
 
     return content;
@@ -108,11 +108,12 @@ export async function preprocess(fullPath: string, smallPath: string, isDebug: b
         styleLang = args[4]?.eq ?? 'css';
         if (styleLang == 'css') return args[0];
 
-        const { code, dependencies: deps } = await SASSSvelte(args[7], styleLang, fullPath);
+        const {code, dependencies: deps} = await SASSSvelte(args[7], styleLang, fullPath);
         deps && dependencies.push(...deps);
         hadStyle = true;
         styleCode && code.AddTextBeforeNoTrack(styleCode);
-        return args[1].Plus(args[6], code, args[8]);;
+        return args[1].Plus(args[6], code, args[8]);
+        ;
     });
 
     if (!hadStyle && styleCode) {
@@ -127,7 +128,14 @@ export async function preprocess(fullPath: string, smallPath: string, isDebug: b
     }
 
 
-    return { scriptLang, styleLang, code: text.eq, map: text.StringTack(savePath, httpSource), dependencies: sessionInfo.dependencies, svelteFiles: connectSvelte.map(x => x[0] == '/' ? getTypes.Static[0] + x : path.normalize(fullPath + '/../' + x)) };
+    return {
+        scriptLang,
+        styleLang,
+        code: text.eq,
+        map: text.StringTack(savePath, httpSource),
+        dependencies: sessionInfo.dependencies,
+        svelteFiles: connectSvelte.map(x => x[0] == '/' ? getTypes.Static[0] + x : path.normalize(fullPath + '/../' + x))
+    };
 }
 
 export function Capitalize(name: string) {
