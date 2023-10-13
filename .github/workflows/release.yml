@@ -6,6 +6,8 @@ on:
 concurrency: release-${{ github.ref }}
 jobs:
   release:
+    timeout-minutes: 30
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
