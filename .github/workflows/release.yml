@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: "20"
       - name: Install modules
-        run: npm ci
+        run: npm ci --ignore-scripts && npm install -g wasm-pack
       - name: Build
         run: npm run build production && npm run postinstall
       - name: Release
