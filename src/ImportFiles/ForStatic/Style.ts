@@ -1,4 +1,4 @@
-import * as sass from 'sass';
+import sass from 'sass';
 import EasyFs from '../../OutputInput/EasyFs';
 import path from 'path';
 import {fileURLToPath, pathToFileURL} from 'url';

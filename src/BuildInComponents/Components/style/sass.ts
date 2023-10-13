@@ -1,7 +1,7 @@
 import {fileURLToPath, pathToFileURL} from 'url';
 import StringTracker from '../../../EasyDebug/StringTracker';
 import {BasicSettings, getTypes} from '../../../RunTimeBuild/SearchFileSystem';
-import * as sass from 'sass';
+import sass from 'sass';
 import {createNewPrint} from '../../../OutputInput/Logger';
 import {RawSourceMap} from 'source-map-js';
 import {SessionBuild} from '../../../CompileCode/Session';

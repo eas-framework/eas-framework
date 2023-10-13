@@ -3,7 +3,7 @@ import {transform} from '@swc/core';
 import {BasicSettings, getTypes} from '../../../RunTimeBuild/SearchFileSystem';
 import EasyFs from '../../../OutputInput/EasyFs';
 import {extname} from 'node:path';
-import * as sass from 'sass';
+import sass from 'sass';
 import {v4 as uuid} from 'uuid';
 import path from 'path';
 import {fileURLToPath} from 'node:url';
@@ -29,6 +29,7 @@ async function SASSSvelte(content: StringTracker, lang: string, fullPath: string
             dependencies: loadedUrls.map(x => fileURLToPath(<any>x))
         };
     } catch (err) {
+        console.log('sassError', err);
         PrintSassErrorTracker(err, content);
     }
 
