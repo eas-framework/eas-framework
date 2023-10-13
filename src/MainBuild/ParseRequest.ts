@@ -1,5 +1,5 @@
-import { multipartType } from 'formidable/src/plugins/multipart.js';
-import { querystringType } from 'formidable/src/plugins/querystring.js';
+const multipartType = 'multipart';
+const querystringType = 'urlencoded';
 
 export function firstValuesOrFullArray(form, fields, exceptions = []) {
     /**
