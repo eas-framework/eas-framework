@@ -97,7 +97,7 @@ export class SessionBuild {
     }
 
     async dependence(smallPath: string, fullPath = BasicSettings.fullWebSitePath + smallPath) {
-        if (this.dependencies[smallPath]) return;
+        if (this.dependencies[smallPath]) return true;
 
         const haveDep = await EasyFs.stat(fullPath, 'mtimeMs', true, null); // check page changed date, for dependenceObject;
         if (haveDep) {
